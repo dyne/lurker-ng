@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.10 2002-07-11 16:38:14 terpstra Exp $
+/*  $Id: append.c,v 1.11 2002-07-12 11:27:32 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -405,6 +405,90 @@ int kap_append_append(Kap k, KRecord* kr, void* data, size_t len)
 {
 	return kap_append_write(k, kr,
 		kr->records, data, len);
+}
+
+/** Find the largest record which satisfies a given property.
+ *  test is called with test(arg, record) to determine if record
+ *  satisfies the property.
+ */
+int kap_append_find(
+	Kap		k, 
+	KRecord*	kr,
+	int		(*test)(void* arg, unsigned char* rec),
+	void*		arg,
+	ssize_t*	offset,
+	unsigned char*	rec)
+{
+	int out;
+	size_t	l, r, m;
+	
+	/* Begin binary searching the array.
+	 * If there is a hit, it must be in the record: [0, count)
+	 * Our invariant is that the hit (if it exists) is in [l, r)
+	 *                       and r >= l
+	 */
+	l = 0;
+	r = kr->records;
+	
+	/* While the range contains more than one record */
+	while (r - l > 1)
+	{
+		m = (l+r)/2;
+		
+		out = kap_append_read(k, kr, m, rec, 1);
+		if (out) return out;
+		
+		if (test(arg, rec))
+		{	/* This object passes, so the largest with the
+			 * property is >= m: [m, inf)
+			 * Intersect with invariant [l, r) to get:
+			 *   -> [m, r) 
+			 */
+			l = m;
+		}
+		else
+		{	/* This object fails, so the largest with the
+			 * property is < m: (-inf, m)
+			 * Intersect with the invariant [l, r) to get:
+			 *   -> [l, m)
+			 */
+			r = m;
+		}
+	}
+	
+	/* If the range is [l, l) = empty set.
+	 * The invariant guarantees that if a hit exists it is in this range.
+	 * Therefore there is no hit.
+	 */
+	if (r == l)
+	{
+		*offset = -1;
+		return KAP_NOT_FOUND;
+	}
+	
+	/* Ok, the range the answer lies in [l, r).
+	 * r-l <= 1 since the while (r - l > 1) failed
+	 * r>=l     by invariant
+	 * r!=l     by if (r == l) failed
+	 * Thus: r > l -> r-1>0 -> r-l>=1 and r-l<=1 -> r-l=1
+	 * thus the answer lies in [l, l+1) = [l, l]
+	 * Test to see that it satisfies the test!
+	 */
+	out = kap_append_read(k, kr, l, rec, 1);
+	if (out) return out;
+	
+	if (test(arg, rec))
+	{	/* Positive match */
+		*offset = l;
+	}
+	else
+	{	/* This is the only record it could have been, and it fails. */
+		*offset = -1;
+		
+		assert(l == 0);
+	}
+	
+	return 0;
 }
 
 struct Kap_Append* append_init(void)

@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.12 2002-07-11 23:50:54 terpstra Exp $
+/*  $Id: kap.h,v 1.13 2002-07-12 11:27:32 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -268,7 +268,18 @@ int	kap_append_read(Kap k, const KRecord* kr,
 int	kap_append_append(Kap k, KRecord* kr, 
 	void* data, size_t len);
 
-/* Encode the offset information for a KRecord into a buffer 
+/** Find the largest record which satisfies a given property.
+ *  test is called with test(arg, record) to determine if record
+ *  satisfies the property.
+ *  Upon return, rec will hold to matching record, and offset the
+ *  position. If not found, offset == -1 and KAP_NOT_FOUND is returned.
+ *  Errors: all kap_append_read() and KAP_NOT_FOUND
+ */
+int	kap_append_find(Kap k, KRecord* kr,
+	int (*test)(void* arg, unsigned char* rec), void* arg,
+	ssize_t* offset, unsigned char* rec);
+
+/** Encode the offset information for a KRecord into a buffer 
  * Return number of bytes processed.
  */
 size_t kap_decode_krecord(const unsigned char* where,       KRecord* kr);
