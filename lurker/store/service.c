@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.72 2002-06-15 21:35:31 terpstra Exp $
+/*  $Id: service.c,v 1.73 2002-06-16 08:46:04 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -682,15 +682,59 @@ static int my_service_quote(
 	return 0;
 }
 
+static void my_service_kill_html(
+	char*	buf)
+{
+	char* w = buf;
+	
+	while (*buf) switch (*buf)
+	{
+	case '&':
+		if      (!strncmp(buf+1, "lt;", 3)) { *w++ = '<'; buf += 4; }
+		else if (!strncmp(buf+1, "gt;", 3)) { *w++ = '>'; buf += 4; }
+		else if (!strncmp(buf+1, "apos;",5)){ *w++ = '\'';buf += 6; }
+		else if (!strncmp(buf+1, "nbsp;",5)){ *w++ = ' '; buf += 6; }
+		else if (!strncmp(buf+1, "amp;",4)) { *w++ = '&'; buf += 5; }
+		else if (!strncmp(buf+1, "quot;",5)){ *w++ = '"'; buf += 6; }
+		else { *w++ = *buf++; }
+		break;
+	case '<':
+		if ((buf[1] == 'b' || buf[1] == 'B') &&
+		    (buf[2] == 'r' || buf[2] == 'R'))
+		{
+			*w++ = '\n';
+		}
+		
+		/* Scan to end */
+		while (*buf && *buf != '>') switch (*buf)
+		{
+		case '"':
+			buf++;
+			while (*buf && *buf != '"')
+				if (*buf++ == '\\' && *buf) buf++;
+			break;
+		default:
+			buf++;
+		}
+		
+		break;
+	default:
+		*w++ = *buf++;
+	}
+	
+	*w = 0;
+}
+
 static int my_service_dump(
 	My_Service_Handle	h,
 	const char*		dat,
 	size_t			len,
-	const char*		coding)
+	const char*		coding,
+	int			html)
 {
 	char*	b;
 	char	buf[10240];
-	size_t	fill, tmp;
+	size_t	fill, tmp, got;
 	iconv_t	ic;
 	
 	/* Make a guess at what the coding is supposed to be. */
@@ -711,12 +755,20 @@ static int my_service_dump(
 	
 	while (len)
 	{
-		fill = sizeof(buf);
+		fill = sizeof(buf)-1;
 		b = &buf[0];
 		tmp = iconv(ic, (ICONV_CONST char**)&dat, &len, &b, &fill);
 		
+		got = sizeof(buf)-1 - fill;
+		if (html)
+		{
+			buf[got] = 0;
+			my_service_kill_html(&buf[0]);
+			got = strlen(&buf[0]);
+		}
+		
 		/*!!! can miss stuff on 10k boundaries. oh well. */
-		if (my_service_quote(h, &buf[0], sizeof(buf) - fill) != 0)
+		if (my_service_quote(h, &buf[0], got) != 0)
 			break;
 		
 		if (tmp == (size_t)-1 && errno != E2BIG && errno != EAGAIN)
@@ -829,7 +881,9 @@ static int my_service_traverse(
 		if (draw)
 		{
 			buffer = lu_mbox_select_body(in, body, &length, &nfree);
-			if (my_service_dump(h, buffer, length, charset) != 0)
+			if (my_service_dump(h, buffer, length, charset,
+				!strcmp(body->subtype, "html") ||
+				!strcmp(body->subtype, "HTML")) != 0)
 				count = -1;
 			if (nfree) fs_give((void **)&buffer);
 		}
@@ -2017,6 +2071,9 @@ static int my_service_mindex(
 	message_id		ids[LU_PROTO_INDEX];
 	int			i;
 	message_id		count;
+	Lu_Summary_Message	msg;
+	time_t			tt;
+	struct tm*		tm;
 	
 	if (sscanf(request, "%d@%d", &list, &offset) != 2)
 	{	/* They did something funny. */
@@ -2126,6 +2183,28 @@ static int my_service_mindex(
 	
 	if (my_service_list(h, l, lu_breader_records(b), offset) != 0) goto my_service_mindex_error1;
 	lu_breader_free(b);
+	
+	msg = lu_summary_read_msummary(ids[0]);
+	tt = msg.timestamp;
+	tm = localtime(&tt);
+	
+	if (my_service_buffer_write(h, " <time>\n")      != 0) goto my_service_mindex_error0;
+	if (my_service_buffer_write(h, "  <year>")       != 0) goto my_service_mindex_error0;
+	if (my_service_write_int   (h, tm->tm_year+1900) != 0) goto my_service_mindex_error0;
+	if (my_service_buffer_write(h, "</year>\n")      != 0) goto my_service_mindex_error0;
+	if (my_service_buffer_write(h, "  <mon>")        != 0) goto my_service_mindex_error0;
+	if (my_service_write_int   (h, tm->tm_mon+1)     != 0) goto my_service_mindex_error0;
+	if (my_service_buffer_write(h, "</mon>\n")       != 0) goto my_service_mindex_error0;
+	if (my_service_buffer_write(h, "  <mday>")       != 0) goto my_service_mindex_error0;
+	if (my_service_write_int   (h, tm->tm_mday)      != 0) goto my_service_mindex_error0;
+	if (my_service_buffer_write(h, "</mday>\n")      != 0) goto my_service_mindex_error0;
+	if (my_service_buffer_write(h, "  <hour>")       != 0) goto my_service_mindex_error0;
+	if (my_service_write_int   (h, tm->tm_hour)      != 0) goto my_service_mindex_error0;
+	if (my_service_buffer_write(h, "</hour>\n")      != 0) goto my_service_mindex_error0;
+	if (my_service_buffer_write(h, "  <min>")        != 0) goto my_service_mindex_error0;
+	if (my_service_write_int   (h, tm->tm_min)       != 0) goto my_service_mindex_error0;
+	if (my_service_buffer_write(h, "</min>\n")       != 0) goto my_service_mindex_error0;
+	if (my_service_buffer_write(h, " </time>\n")     != 0) goto my_service_mindex_error0;
 	
 	for (i = 0; i < count; i++)
 	{
