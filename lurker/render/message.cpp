@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.15 2003-06-14 01:03:58 terpstra Exp $
+/*  $Id: message.cpp,v 1.16 2003-06-20 12:04:46 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -153,7 +153,7 @@ void my_service_quote(
 	my_service_pic(o, s, e-s);
 }
 
-void message_display(ostream& o, DwEntity& e)
+void message_display(ostream& o, DwEntity& e, const string& charset, bool html)
 {
 	DwString out;
 	// if (e.hasHeaders() && 
@@ -184,18 +184,6 @@ void message_display(ostream& o, DwEntity& e)
 		out = e.Body().AsString();
 	}
 	
-	string charset = "ISO-8859-1"; // a nice default for ascii
-	if (e.Headers().HasContentType())
-	{
-		DwParameter* p = e.Headers().ContentType().FirstParameter();
-		while (p)
-		{
-			if (p->Attribute() == "charset")
-				charset = p->Value().c_str();
-			p = p->Next();
-		}
-	}
-	
 	CharsetEscape decode(charset.c_str());
 	string utf8 = decode.write(out.c_str(), out.length());
 	
@@ -205,14 +193,38 @@ void message_display(ostream& o, DwEntity& e)
 		     + utf8;
 	}
 	
-	my_service_quote(o, utf8.c_str(), utf8.length());
+	if (html)
+	{
+		string::size_type start, end;
+		
+		start = 0;
+		while ((end = utf8.find('<', start)) != string::npos)
+		{
+			my_service_quote(o, utf8.c_str()+start, end-start);
+			start = utf8.find('>', end);
+			
+			if (start == string::npos) break;
+			++start;
+		}
+		
+		// deal with half-open tag at end of input
+		if (start != string::npos)
+			my_service_quote(o, utf8.c_str()+start, utf8.length()-start);
+	}
+	else
+	{
+		my_service_quote(o, utf8.c_str(), utf8.length());
+	}
 }
 
-void message_build(ostream& o, DwEntity& e, long& x)
+// this will only output mime information if the dump is false
+void message_build(ostream& o, DwEntity& e, 
+	const string& parentCharset, bool dump, long& x)
 {
 	// We are the requested entity.
 	++x;
 	
+	string charset = parentCharset;
 	string type = "text/plain";
 	string name = "";
 	
@@ -220,8 +232,18 @@ void message_build(ostream& o, DwEntity& e, long& x)
 	if (e.Headers().HasContentType())
 	{
 		DwMediaType& mt = e.Headers().ContentType();
-		type = (mt.TypeStr() + "/" + mt.SubtypeStr()).c_str();
+		
+		DwString ftype = mt.TypeStr() + "/" + mt.SubtypeStr();
+		ftype.ConvertToLowerCase();
+		type = ftype.c_str();
 		name = mt.Name().c_str();
+		
+		for (DwParameter* p = mt.FirstParameter(); p; p = p->Next())
+		{
+			DwString attr = p->Attribute();
+			attr.ConvertToLowerCase(); // case insens
+			if (attr == "charset") charset = p->Value().c_str();
+		}
 	}
 	
 	if (e.Headers().HasContentDisposition())
@@ -231,8 +253,12 @@ void message_build(ostream& o, DwEntity& e, long& x)
 			name = dt.Filename().c_str();
 	}
 	
-	o << "<mime id=\"" << x << "\" type=\"" << type << "\"";
-	if (name != "") o << " name=\"" << xmlEscape << name << "\"";
+	// The question is: which charset affects the headers?
+	// I claim that the parent charset does - this is being friendly
+	// anyways since one shouldn't have non us-ascii in the headers
+	CharsetEscape ches(parentCharset.c_str());
+	o << "<mime id=\"" << x << "\" type=\"" << xmlEscape << ches.write(type) << "\"";
+	if (name != "") o << " name=\"" << xmlEscape << ches.write(name) << "\"";
 	o << ">";
 	
 	// if (e.hasHeaders() && 
@@ -243,22 +269,45 @@ void message_build(ostream& o, DwEntity& e, long& x)
 		{
 		case DwMime::kTypeMessage:
 			if (e.Body().Message())
-				message_build(o, *e.Body().Message(), x);
+				message_build(o, *e.Body().Message(), charset, dump, x);
 			break;
 		
 		case DwMime::kTypeMultipart:
 			for (DwBodyPart* p = e.Body().FirstBodyPart(); p != 0; p = p->Next())
-				message_build(o, *p, x);
+			{
+				bool plain = false;
+				if (p->Headers().HasContentType())
+				{
+					DwMediaType& mt = p->Headers().ContentType();
+					
+					plain =	mt.Type()    == DwMime::kTypeText &&
+						mt.Subtype() == DwMime::kSubtypePlain;
+				}
+				
+				if (t.Subtype() != DwMime::kSubtypeAlternative || 
+				    p->Next() == 0 || plain)
+				{	// display all parts, or plain, or last
+					message_build(o, *p, charset, dump, x);
+					
+					// if we printed something, we are done
+					if (t.Subtype() == DwMime::kSubtypeAlternative)
+						dump = false;
+				}
+				else
+				{
+					message_build(o, *p, charset, false, x);
+				}
+			}
 			break;
 		
 		case DwMime::kTypeText:
-			message_display(o, e);
+			if (dump) message_display(o, e, charset, t.Subtype() == DwMime::kSubtypeHtml);
 			break;
 		}
 	}
 	else
 	{
-		message_display(o, e);
+		if (dump) message_display(o, e, charset, false);
 	}
 	
 	o << "</mime>";
@@ -671,7 +720,8 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 	cache.o << " </threading>\n";
 	
 	long aid = 0;
-	message_build(cache.o, message, aid);
+	// default charset is ISO-8859-1
+	message_build(cache.o, message, "ISO-8859-1", true, aid);
 	
 	cache.o	<< "</message>\n";
 	

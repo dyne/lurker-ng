@@ -19,10 +19,6 @@ Unfulfilled requirements:
 	Phrase searching
 
 BUGS:
-	One can have a charset in a multipart which seems to be inheritted
-	UTF-8 in attachment name... fawk.
-		(http://kevb.net:3000/lurker/mbox/20030609.031031.0abceb9d.txt
-	strip html? (like 0.1f)
 	Some searches miss messages on intersection?
 		(http://sea.kevb.net:3000/lurker/search/20040101.000000.00000000@lurker,ml%3Aplug.html)
 	There is a slight bug in advance() pre-commit post-insert.

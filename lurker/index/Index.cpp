@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.23 2003-06-14 00:22:48 terpstra Exp $
+/*  $Id: Index.cpp,v 1.24 2003-06-20 12:04:46 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -528,7 +528,7 @@ int Index::index_control(time_t import)
 	return 0;
 }
 
-int Index::index_entity(DwEntity& e)
+int Index::index_entity(DwEntity& e, const string& charset)
 {
 	DwString text;
 	if (e.Headers().HasContentTransferEncoding())
@@ -557,19 +557,6 @@ int Index::index_entity(DwEntity& e)
 		text = e.Body().AsString();
 	}
 	
-	string charset = "ISO-8859-1"; // a nice default for ascii
-	if (e.Headers().HasContentType())
-	{
-		DwParameter* p;
-		
-		for (p = e.Headers().ContentType().FirstParameter();
-		     p; p = p->Next())
-		{
-			if (p->Attribute() == "charset")
-				charset = p->Value().c_str();
-		}
-	}
-	
 	CharsetEscape decode(charset.c_str());
 	string utf8 = decode.write(text.c_str(), text.length());
 	
@@ -584,8 +571,22 @@ int Index::index_entity(DwEntity& e)
 	return 0;
 }
 
-int Index::index_keywords(DwEntity& e)
+int Index::index_keywords(DwEntity& e, const string& parentCharset)
 {
+	string charset = parentCharset;
+	
+	if (e.Headers().HasContentType())
+	{
+		DwMediaType& mt = e.Headers().ContentType();
+		
+		for (DwParameter* p = mt.FirstParameter(); p; p = p->Next())
+		{
+			DwString attr = p->Attribute();
+			attr.ConvertToLowerCase(); // case insens
+			if (attr == "charset") charset = p->Value().c_str();
+		}
+	}
+	
 	// if (e.hasHeaders() && 
 	if (e.Headers().HasContentType())
 	{
@@ -594,25 +595,26 @@ int Index::index_keywords(DwEntity& e)
 		{
 		case DwMime::kTypeMessage:
 			if (e.Body().Message()) 
-				index_keywords(*e.Body().Message());
+				index_keywords(*e.Body().Message(), charset);
 			break;
 			
 		case DwMime::kTypeMultipart:
+			// index all alternatives in multipart
 			for (DwBodyPart* p = e.Body().FirstBodyPart(); p != 0; p = p->Next())
-				index_keywords(*p);
+				index_keywords(*p, charset);
 			break;
 			
 		case DwMime::kTypeText:
 			if (t.Subtype() == DwMime::kSubtypePlain)
 			{
-				if (index_entity(e) != 0) return -1;
+				if (index_entity(e, charset) != 0) return -1;
 			}
 			break;
 		}
 	}
 	else
 	{
-		if (index_entity(e) != 0) return -1;
+		if (index_entity(e, charset) != 0) return -1;
 	}
 	
 	return 0;
@@ -631,9 +633,9 @@ int Index::index(time_t envelope, time_t import, bool check, bool& exist)
 	
 	if (exist) return 0;
 	
-	if (index_threading(       ) < 0) return -1;
-	if (index_control  (import ) < 0) return -1;
-	if (index_keywords (message) < 0) return -1;
+	if (index_threading(      )                < 0) return -1;
+	if (index_control  (import)                < 0) return -1;
+	if (index_keywords (message, "ISO-8859-1") < 0) return -1;
 	
 	return 0;
 }

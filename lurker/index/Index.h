@@ -1,4 +1,4 @@
-/*  $Id: Index.h,v 1.6 2003-06-08 16:23:50 terpstra Exp $
+/*  $Id: Index.h,v 1.7 2003-06-20 12:04:46 terpstra Exp $
  *  
  *  Index.h - Insert all the keywords from the given email
  *  
@@ -57,8 +57,8 @@ struct Index
 	int index_summary(bool check, bool& exist);
 	int index_threading();
 	int index_control(time_t import);
-	int index_entity(DwEntity& e); // decode + utf-8 transform
-	int index_keywords(DwEntity& e);
+	int index_entity(DwEntity& e, const string& charset); // decode + utf-8 transform
+	int index_keywords(DwEntity& e, const string& parentCharset);
 };
 
 #endif
