@@ -1,4 +1,4 @@
-/*  $Id: View.cpp,v 1.6 2003-04-25 17:05:10 terpstra Exp $
+/*  $Id: View.cpp,v 1.7 2003-04-25 23:21:03 terpstra Exp $
  *  
  *  View.cpp - Snapshot of commit state
  *  
@@ -64,7 +64,11 @@ int View::rawseek(Merger* out, const string& k, bool forward)
 		{
 			// mid is rounded down -> mid < right
 			mid = (left + right) / 2;
-			s = const_cast<File*>(&*i)->openBlock(mid, true);
+			
+			// Use a temporary to work around g++ 2.95 brokenness
+			auto_ptr<Source> st(const_cast<File*>(&*i)->openBlock(mid, true));
+			s = st;
+			
 			if (!s.get()) return -1;
 			
 			// eof is impossible since mid < right
@@ -86,7 +90,10 @@ int View::rawseek(Merger* out, const string& k, bool forward)
 		
 		if (forward && mid != left) // s hold mid
 		{
-			s = const_cast<File*>(&*i)->openBlock(left, true);
+			// Work around g++ 2.95 bug
+			auto_ptr<Source> st(const_cast<File*>(&*i)->openBlock(left, true));
+			s = st;
+			
 			if (!s.get()) return -1;
 			
 			// empty File is impossible
@@ -98,7 +105,10 @@ int View::rawseek(Merger* out, const string& k, bool forward)
 		}
 		else if (!forward)
 		{
-			s = const_cast<File*>(&*i)->openBlock(left, false);
+			// Work around g++ 2.95 bug
+			auto_ptr<Source> st(const_cast<File*>(&*i)->openBlock(left, false));
+			s = st;
+			
 			if (!s.get()) return -1;
 			
 			// empty File is impossible
