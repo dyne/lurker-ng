@@ -1,3 +1,10 @@
+Fix manpages utf8 -
+Add 'or' searching
+Make groups use or searching internally
+Maildir support
+Language control from web?
+Attachment option?
+
 Ideas:
 	Maybe exclude tab indented paragraphs from pre-formatting
 	Printable css?
