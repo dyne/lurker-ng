@@ -1,4 +1,4 @@
-/*  $Id: records.h,v 1.1.1.1 2002-01-21 00:03:07 terpstra Exp $
+/*  $Id: records.h,v 1.2 2002-01-21 02:35:26 terpstra Exp $
  *  
  *  records.h - the format of the databases
  *  
@@ -39,12 +39,17 @@
 # endif
 #endif 
 
-#define	LU_KEYWORD_MBOX		'm'
-#define LU_KEYWORD_WORD		'w'
-#define LU_KEYWORD_SUBJECT	's'
-#define LU_KEYWORD_MESSAGE_ID	'i'
+/* lu_import_message */
+#define	LU_KEYWORD_LIST		'l'
 #define LU_KEYWORD_AUTHOR	'a'
+#define LU_KEYWORD_SUBJECT	's'
+
+/* lu_reply_to_resolution */
+#define LU_KEYWORD_MESSAGE_ID	'i'
 #define LU_KEYWORD_REPLY_TO	'r'
+
+/* import processing */
+#define LU_KEYWORD_WORD		'w'
 
 /** This is the type we use as a unique message identifier
  */

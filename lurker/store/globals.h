@@ -1,6 +1,6 @@
-/*  $Id: globals.h,v 1.1.1.1 2002-01-21 00:03:07 terpstra Exp $
+/*  $Id: globals.h,v 1.2 2002-01-21 02:35:26 terpstra Exp $
  *  
- *  records.h - the format of the databases
+ *  globals.h - the global variables and methods for the daemon
  *  
  *  Copyright (C) 2002 - Wesley W. Terpstra
  *  
@@ -80,7 +80,7 @@ extern ThreadSummary  lu_read_tsummary(message_id tid);
  *  specified file. This should be all the is required outside the db.c
  *  module. The flat_offset can be found in a message summary record.
  */
-extern int write_variable(FILE* out, lu_addr flat_offset);
+extern int lu_write_variable(FILE* out, lu_addr flat_offset);
 
 /** Pass the timestamp of the server arrival time and the client send
  *  time. The heuristic of forward import is used to calculate a real
@@ -92,6 +92,8 @@ extern time_t lu_timestamp_heuristic(time_t server, time_t client);
 /** This imports the passed summary information about the message into
  *  our database. You should have selected the message with the earliest
  *  timestamp_heuristic available.
+ *  
+ *  Next, you have to call lu_reply_to_resolution.
  */
 extern message_id lu_import_message(
 	lu_word list, lu_word mbox, lu_addr mbox_offset,
@@ -99,6 +101,22 @@ extern message_id lu_import_message(
 	const char* subject,
 	const char* author_name,
 	const char* author_email);
+
+/** This connects reply-to links for (possibly out of sequence) messages.
+ *  Don't forget to push all the body keywords after this.
+ */
+extern int lu_reply_to_resolution(
+	message_id id,
+	const char* msg_id,
+	const char* reply_to_msg_id);
+
+/** Here come the all important keyword functions.
+ */
+extern int push_keyword(const char* keyword, message_id message);
+
+/** Here go prototypes for the search, however, I don't know how they'll work 
+ *  yet.
+ */
 
 /** Search the configuration for the mailing list which has the specified id
  */

@@ -1,4 +1,4 @@
-/*  $Id: db.c,v 1.2 2002-01-21 01:18:00 terpstra Exp $
+/*  $Id: db.c,v 1.3 2002-01-21 02:35:26 terpstra Exp $
  *  
  *  db.c - manage the databases
  *  
@@ -149,6 +149,107 @@ ThreadSummary lu_read_tsummary(message_id tid)
 	}
 	
 	return out;
+}
+
+int lu_write_variable(FILE* out, lu_addr flat_offset)
+{
+	char	buf[4096];
+	char*	w;
+	char*	e;
+	int	nulls;
+	int	got;
+	
+	off_t offset = flat_offset;
+	
+	if (lseek(lu_variable_fd, offset, SEEK_SET) != offset)
+	{
+		return -1;
+	}
+	
+	nulls = 0;
+	while (nulls < 3)
+	{
+		got = read(lu_variable_fd, &buf[0], sizeof(buf));
+		if (got <= 0) break;
+		e = &buf[got];
+		
+		for (w = &buf[0]; w != e;)
+			if (!*w++ && ++nulls == 3)
+				break;
+		
+		fwrite(&buf[0], 1, (w - &buf[0]), out);
+	}
+	
+	if (nulls != 3) return -1;
+	
+	return 0;
+}
+
+/** Here we generally assume that the server is smarter than the client when
+ *  it comes to timestamps. However, due to mail delays it is conceivable that
+ *  that the client message could arrive up to 3 days after it was sent.
+ *  
+ *  So, if the client timestamp is with (server - 3d, server], we believe it.
+ *  Otherwise we use the servers time. However, we also know that the mboxes
+ *  are fed to us in chronological order. So, if this mechanism says that we're
+ *  going back in time, it is wrong. We choose to use same time as the last input
+ *  message in this case.
+ */
+time_t lu_timestamp_heuristic(time_t server, time_t client)
+{
+	time_t out;
+	
+	if (client > server || server - 3*60*60*24 > client)
+		out = server;
+	else
+		out = client;
+	
+	/* Before one we've already archived? Not possible. */
+	if (out < lu_last_time)
+	{
+		out = lu_last_time;
+	}
+	
+	return out;
+}
+
+message_id lu_import_message(
+	lu_word list, lu_word mbox, lu_addr mbox_offset,
+	time_t timestamp, 
+	const char* subject,
+	const char* author_name,
+	const char* author_email)
+{
+	/* This function has to create the message stub info.
+	 * 
+	 * It must push the variable information for the message.
+	 * Then it must push summary information for the message.
+	 * 
+	 * Then we have to see if this message is in a thread by checking
+	 * if it falls within squishy_subject time window.
+	 * Worse still, this message might be the 'missing link' and require
+	 * merging two seperate threads.
+	 * 
+	 * Finally, we push keywords for the list, author, and subject.
+	 */
+}
+
+int lu_reply_to_resolution(
+	message_id id,
+	const char* msg_id,
+	const char* reply_to_msg_id)
+{
+	/* Then comes reply-to resolution:
+	 * 
+	 * Has something replied to us? We push a keyword for our own
+	 * message id. Then we run a query to see if an messages are in
+	 * reply-to our message-id. For each of them, we update their 
+	 * reply-to link in the summary.
+	 * 
+	 * Have we replied to something? We push a keyword for what we
+	 * reply-to. Then we so a query to see if it exists. If it does,
+	 * we update our reply-to summary informationn.
+	 */
 }
 
 int lu_open_db()
