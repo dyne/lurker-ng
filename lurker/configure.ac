@@ -82,11 +82,13 @@ exec_prefix_backup="$exec_prefix"
 if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
 if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
 vardir=`eval echo ${localstatedir}/lib/${PACKAGE}`
+etcdir=`eval echo ${sysconfdir}`
 prefix="$prefix_backup"
 exec_prefix="$exec_prefix_backup"
 
 AC_SUBST(wwwdir)
 AC_SUBST(vardir)
+AC_SUBST(etcdir)
 
 AC_CONFIG_FILES([
 	Makefile libesort/Makefile common/Makefile index/Makefile

@@ -1,3 +1,6 @@
+# Lurker configuration file (lurker.conf).
+# Install as @etcdir@/lurker.conf on your system.
+
 # The name lurker uses to refer to the archive.
 # 
 # This will be displayed at the top-right of every page.

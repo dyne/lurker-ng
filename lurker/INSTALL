@@ -42,6 +42,28 @@ Quick start
   
   You may want to strip the binaries as they can be quite large.
 
+  This will install these files:
+  
+  	/usr/local/lib/cgi-bin/*.cgi
+  		- The CGIs which power lurker
+  		- These must be placed such that the webserver can run them
+  	/usr/local/var/www/lurker/*
+  		- The lurker content which must be web accessible
+  		- The subdirectories "attach, list, mbox, message, mindex,
+  		  search, splash, and thread" must all be writeable by
+  		  whatever user executes lurker.cgi
+  	/usr/local/bin/lurker-*
+  		- Command-line utilities for importing email, cleaning
+  		  cached web files, and interfacing with shell scripts
+  	/usr/local/var/lib/lurker/*
+  		- The lurker database directory where mail is imported to
+  		- The directory and its contents must be writeable by the
+  		  user who runs lurker-index
+  		- This must be readable by the user who runs lurker.cgi
+  
+  You must install the file /usr/local/etc/lurker.conf by hand.
+  Then customize it using the provided lurker.conf as a starting point.
+
 4 Setup delivery of new mail to lurker-index
   
   For procmail, 
@@ -84,6 +106,10 @@ Quick start
       is relative to the location of lurker.cgi and cfgfile is relative to
       the docdir.
   
+  NOTE: The docdir here is the location of lurker.docroot.
+  This has nothing at all to do with your webservers document root.
+  Typically this is /usr/local/var/www/lurker or /var/www/lurker.
+  
   If you run apache with a directory structure like:
 
 	www/
@@ -96,6 +122,7 @@ Quick start
 			.htaccess
 			index.html
 			browserdetect.js
+			lurker.docroot
 			splash/
 			search/
 			mindex/
