@@ -1,4 +1,4 @@
-/*  $Id: esortc.h,v 1.1 2003-08-15 15:40:05 terpstra Exp $
+/*  $Id: esortc.h,v 1.2 2003-08-16 18:15:25 terpstra Exp $
  *  
  *  esortc.h - Public interface to libesort for C
  *  
@@ -63,8 +63,10 @@ Writer	esort_writer_opendb_extended(const char* database, int mode, int synced, 
 void	esort_writer_destroy(Writer);
 
 /* Methods for reading a Reader or Writer */
-Walker	esort_reader_seek(Reader r, const char* key, unsigned long keylen, int direction);
-Walker	esort_reader_seek_prefix(Reader r, const char* prefix, unsigned long prefixlen, const char* key, unsigned long keylen, int direction);
+Walker	esort_reader_seek (Reader r, const char* key,    unsigned long keylen, int direction);
+Walker	esort_reader_seekp(Reader r, const char* prefix, unsigned long prefixlen, const char* key, unsigned long keylen, int direction);
+Walker	esort_writer_seek (Writer r, const char* key,    unsigned long keylen, int direction);
+Walker	esort_writer_seekp(Writer r, const char* prefix, unsigned long prefixlen, const char* key, unsigned long keylen, int direction);
 
 /* Methods for writing to a Writer */
 int	esort_writer_insert(Writer w, const char* key, unsigned long keylen);

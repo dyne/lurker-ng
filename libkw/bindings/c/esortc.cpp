@@ -1,4 +1,4 @@
-/*  $Id: esortc.cpp,v 1.1 2003-08-15 15:40:05 terpstra Exp $
+/*  $Id: esortc.cpp,v 1.2 2003-08-16 18:15:25 terpstra Exp $
  *  
  *  esortc.cpp - C binding for the ESort API
  *  
@@ -96,33 +96,33 @@ void esort_writer_destroy(Writer w)
 Walker esort_reader_seek(Reader r, const char* key, unsigned long keylen, int direction)
 {
 	ESort::Reader* rr = reinterpret_cast<ESort::Reader*>(r);
-	
-	ESort::Direction d;
-	switch (direction)
-	{
-	case ESORT_FORWARD:	d = ESort::Forward;  break;
-	case ESORT_BACKWARD:	d = ESort::Backward; break;
-	default:		assert(0); exit(1);
-	}
-	
-	std::auto_ptr<ESort::Walker> rw(rr->seek(std::string(key, keylen), d));
-	return rw.release();
+	ESort::Direction d = (ESort::Direction)direction;
+	std::auto_ptr<ESort::Walker> o(rr->seek(std::string(key, keylen), d));
+	return o.release();
 }
 
-Walker esort_reader_seek_prefix(Reader r, const char* prefix, unsigned long prefixlen, const char* key, unsigned long keylen, int direction)
+Walker esort_reader_seekp(Reader r, const char* prefix, unsigned long prefixlen, const char* key, unsigned long keylen, int direction)
 {
 	ESort::Reader* rr = reinterpret_cast<ESort::Reader*>(r);
-	
-	ESort::Direction d;
-	switch (direction)
-	{
-	case ESORT_FORWARD:	d = ESort::Forward;  break;
-	case ESORT_BACKWARD:	d = ESort::Backward; break;
-	default:		assert(0); exit(1);
-	}
-	
-	std::auto_ptr<ESort::Walker> rw(rr->seek(std::string(key, keylen), d));
-	return rw.release();
+	ESort::Direction d = (ESort::Direction)direction;
+	std::auto_ptr<ESort::Walker> o(rr->seek(std::string(key, keylen), d));
+	return o.release();
+}
+
+Walker esort_writer_seek(Writer w, const char* key, unsigned long keylen, int direction)
+{
+	ESort::Writer* rw = reinterpret_cast<ESort::Writer*>(w);
+	ESort::Direction d = (ESort::Direction)direction;
+	std::auto_ptr<ESort::Walker> o(rw->seek(std::string(key, keylen), d));
+	return o.release();
+}
+
+Walker esort_writer_seekp(Writer w, const char* prefix, unsigned long prefixlen, const char* key, unsigned long keylen, int direction)
+{
+	ESort::Writer* rw = reinterpret_cast<ESort::Writer*>(w);
+	ESort::Direction d = (ESort::Direction)direction;
+	std::auto_ptr<ESort::Walker> o(rw->seek(std::string(key, keylen), d));
+	return o.release();
 }
 
 int esort_writer_insert(Writer w, const char* key, unsigned long keylen)
