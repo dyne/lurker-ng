@@ -57,6 +57,8 @@
    </xsl:for-each>
   </td>
   <td align="right">
+   <!-- make this the same height as mindex -->
+   <img src="../imgs/a.png" width="1" height="24" alt=""/>
    <xsl:value-of select="sum(day)"/>
   </td>
  </xsl:element>

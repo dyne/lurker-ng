@@ -191,8 +191,9 @@ td.chart img {
   padding: 0px 1px 0px 0px;
 }
 
-td.chart {
+table.index td.chart {
   padding: 1px;
+  vertical-align: bottom;
 }
 
 td.clipped {
