@@ -8,7 +8,6 @@
 #include <string.h>
 
 typedef unsigned char	Input;
-typedef set<Input>	Inputs;
 
 const char*	func;
 const Input*	regexp;
@@ -349,8 +348,9 @@ regex:	regcat			{ $$ = $1; }
 /************************************************************ Code for DFAs */
 
 typedef basic_string<NFA_State> 	DFA_State;
-typedef map<Input, DFA_State>		Transition;
+typedef map<Input, const DFA_State*>	Transition;
 typedef	map<DFA_State, Transition>	DFA;
+typedef map<Input, NFA_States>		Inputs;
 
 void display(const DFA_State& state)
 {
@@ -365,7 +365,7 @@ void display(const Transition& t)
 	for (i = t.begin(); i != t.end(); i++)
 	{
 		printf("\t%c: ", i->first);
-		display(i->second);
+		display(*i->second);
 		printf("\n");
 	}
 }
@@ -392,21 +392,6 @@ DFA_State flatten(const NFA_States& states)
 	return out;
 }
 
-NFA_States take_branch(const NFA& nfa, const DFA_State& state, Input c)
-{
-	NFA_States out;
-	DFA_State::const_iterator i;
-	
-	for (i = state.begin(); i != state.end(); i++)
-	{
-		const NFA_Rule& n = nfa[*i];
-		if (c == n.ch)
-			out.insert(n.transition.begin(), n.transition.end());
-	}
-	
-	return out;
-}
-
 Inputs examine_exits(const NFA& nfa, const DFA_State& state)
 {
 	Inputs out;
@@ -415,34 +400,14 @@ Inputs examine_exits(const NFA& nfa, const DFA_State& state)
 	for (i = state.begin(); i != state.end(); i++)
 	{
 		const NFA_Rule& n = nfa[*i];
-		out.insert(n.ch);
+		out[n.ch].insert(n.transition.begin(), n.transition.end());
 	}
 	
 	return out;
 }
 
-Transition transition(const NFA& nfa, const DFA_State& what)
+void dedeterministic_it(DFA& out, const NFA& nfa, DFA_State& start)
 {
-	Transition out;
-	Inputs inputs = examine_exits(nfa, what);
-	
-	Inputs::iterator i;
-	for (i = inputs.begin(); i != inputs.end(); i++)
-	{
-		NFA_States where = take_branch(nfa, what, *i);
-		expand_epsilon(nfa, where);
-		DFA_State dest = flatten(where);
-		
-		if (dest.length())
-			out[*i] = dest;
-	}
-	
-	return out;
-}
-
-DFA dedeterministic_it(const NFA& nfa, DFA_State& start)
-{
-	DFA		out;
 	set<DFA_State>	todo;
 	
 	NFA_States where;
@@ -455,17 +420,29 @@ DFA dedeterministic_it(const NFA& nfa, DFA_State& start)
 	{
 		DFA_State what = *todo.begin();
 		todo.erase(todo.begin());
-
-		Transition& t = out[what] = transition(nfa, what);
-		Transition::iterator i;
-		for (i = t.begin(); i != t.end(); i++)
+		
+		Transition& t = out[what];
+		Inputs inputs = examine_exits(nfa, what);
+		
+		Inputs::iterator i;
+		for (i = inputs.begin(); i != inputs.end(); i++)
 		{
-			if (out.find(i->second) == out.end())
-				todo.insert(i->second);
+			NFA_States& where = i->second;
+			expand_epsilon(nfa, where);
+			DFA_State dest = flatten(where);
+			
+			if (dest.length())
+			{
+				if (out.find(dest) == out.end())
+				{
+					todo.insert(dest);
+					out[dest] = Transition();
+				}
+				
+				t[i->first] = &out.find(dest)->first;
+			}
 		}
 	}
-	
-	return out;
 }
 
 bool is_final(const DFA_State& dfa)
@@ -492,8 +469,8 @@ bool differ(const Transition& a, const Transition& b)
 	{
 		if (ia->first != ib->first) return true;
 		
-		CState ca = reduced_map[ia->second];
-		CState cb = reduced_map[ib->second];
+		CState ca = reduced_map[*ia->second];
+		CState cb = reduced_map[*ib->second];
 		
 		if ((ca > cb && marks[ca][cb]) ||
                     (cb > ca && marks[cb][ca]))
@@ -684,8 +661,9 @@ void compile(const NFA& nfa)
 	
 //	display(nfa);
 	
+	DFA dfa;
 	DFA_State start;
-	DFA dfa = dedeterministic_it(nfa, start);
+	dedeterministic_it(dfa, nfa, start);
 	
 //	display(dfa);
 	
@@ -726,7 +704,7 @@ void compile(const NFA& nfa)
 		
 		for (j = t.begin(); j != t.end(); j++)
 		{
-			CState d = reduced_map[j->second];
+			CState d = reduced_map[*j->second];
 			go[j->first] = d;
 		}
 		
