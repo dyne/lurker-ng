@@ -7,10 +7,10 @@ libkap_a_SOURCES = \
 	btree.c append.c wbuffer.c kap.c
 
 kapmake_SOURCES = kapmake.c
-kapmake_LDADD = libkap.a
+kapmake_LDADD = libkap.a -lm
 
 kapdump_SOURCES = kapdump.c
-kapdump_LDADD = libkap.a
+kapdump_LDADD = libkap.a -lm
 
 tests:	test-append test-btree test-full test-avl profile
 	./test-avl
@@ -19,19 +19,19 @@ tests:	test-append test-btree test-full test-avl profile
 	cat *.c *.cc *.h | ./test-full
 
 test-append: test-append.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
 
 test-avl: test-avl.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
 
 test-btree: test-btree.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
 
 test-full: test-full.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
 
 profile: profile.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
 
 clean-local:
 	rm -f test-append test-btree test-full test-avl profile
