@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.8 2002-07-01 19:13:31 terpstra Exp $
+/*  $Id: btree.c,v 1.9 2002-07-02 21:10:17 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -242,6 +242,26 @@ void encode_sector_header(unsigned char* scan, int leaf, int hits)
 	*scan = hits;
 }
 
+inline size_t needed_for_leaf_entry(Kap k)
+{
+	return 1 + k->btree->leaf_size + k->btree->max_key_size;
+}
+
+inline size_t needed_for_tree_entry(Kap k)
+{
+	return k->btree->tree_size + k->btree->max_key_size;
+}
+
+inline size_t needed_for_leaf_sector(Kap k)
+{	/* Must be able to fit in the header and at least two entries */
+	return needed_for_leaf_entry(k) * 2 + SECTOR_HEADER_SIZE;
+}
+
+inline size_t needed_for_tree_sector(Kap k)
+{	/* Must be able to fit the header, two entries, and the right ptr */
+	return needed_for_tree_entry(k)*2 + SECTOR_HEADER_SIZE + k->btree->tree_size;
+}
+
 /***************************************** Control btree parameters */
 
 struct Kap_Btree* btree_init(void)
@@ -276,11 +296,9 @@ int kap_btree_set_sectorsize(Kap k, ssize_t size)
 		return ERANGE;
 	if (size < 32)
 		return ERANGE;
-	if (SECTOR_HEADER_SIZE + 1 + k->btree->leaf_size + k->btree->max_key_size 
-		> size)
+	if (needed_for_leaf_sector(k) > size)
 		return ERANGE;
-	if (SECTOR_HEADER_SIZE +   2*k->btree->tree_size + k->btree->max_key_size 
-		> size)
+	if (needed_for_tree_sector(k) > size)
 		return ERANGE;
 	
 	k->btree->sector_size = size;
@@ -289,24 +307,31 @@ int kap_btree_set_sectorsize(Kap k, ssize_t size)
 
 int kap_btree_set_maxkeysize(Kap k, ssize_t size)
 {
+	ssize_t bak;
+	
 	if (!k->btree) return KAP_NO_BTREE;
 	if (k->btree->fd != -1) return KAP_ALREADY_OPEN;
 	
 	if (size < 2)
 		return ERANGE;
-	if (SECTOR_HEADER_SIZE + 1 + k->btree->leaf_size + size
-		> k->btree->sector_size)
-		return ERANGE;
-	if (SECTOR_HEADER_SIZE +   2*k->btree->tree_size + size
-		> k->btree->sector_size)
-		return ERANGE;
 	
+	bak = k->btree->max_key_size;
 	k->btree->max_key_size = size;
+	
+	if (needed_for_leaf_sector(k) > k->btree->sector_size ||
+	    needed_for_tree_sector(k) > k->btree->sector_size)
+	{
+		k->btree->max_key_size = bak;
+		return ERANGE;
+	}
+	
 	return 0;
 }
 
 int kap_btree_set_treesize(Kap k, short size)
 {
+	short bak;
+	
 	if (!k->btree) return KAP_NO_BTREE;
 	if (k->btree->fd != -1) return KAP_ALREADY_OPEN;
 	
@@ -315,16 +340,22 @@ int kap_btree_set_treesize(Kap k, short size)
 	if (size > sizeof(off_t))
 		return ERANGE;
 	
-	if (SECTOR_HEADER_SIZE + 2*size + k->btree->max_key_size
-		> k->btree->sector_size)
-		return ERANGE;
-	
+	bak = k->btree->tree_size;
 	k->btree->tree_size = size;
+	
+	if (needed_for_tree_sector(k) > k->btree->sector_size)
+	{
+		k->btree->tree_size = bak;
+		return ERANGE;
+	}
+	
 	return 0;
 }
 
 int kap_btree_set_leafsize(Kap k, ssize_t size)
 {
+	ssize_t bak;
+	
 	if (!k->btree) return KAP_NO_BTREE;
 	if (k->btree->fd != -1) return KAP_ALREADY_OPEN;
 	
@@ -333,11 +364,15 @@ int kap_btree_set_leafsize(Kap k, ssize_t size)
 	if (size > 255)
 		return ERANGE;
 	
-	if (SECTOR_HEADER_SIZE + 1 + size + k->btree->max_key_size
-		> k->btree->sector_size)
-		return ERANGE;
-	
+	bak = k->btree->leaf_size;
 	k->btree->leaf_size = size;
+	
+	if (needed_for_leaf_sector(k) > k->btree->sector_size)
+	{
+		k->btree->leaf_size = bak;
+		return ERANGE;
+	}
+	
 	return 0;
 }
 
@@ -553,8 +588,8 @@ static int is_full(Kap k, const unsigned char* sector)
 	size = scan - sector;
 	remain = k->btree->sector_size - size;
 	
-	if (leaf) return remain < 1 + k->btree->leaf_size + k->btree->max_key_size;
-	else      return remain <   2*k->btree->tree_size + k->btree->max_key_size;
+	if (leaf) return remain < needed_for_leaf_entry(k);
+	else      return remain < needed_for_tree_entry(k);
 }
 
 /***************************************** Btree insertion code */
@@ -580,7 +615,7 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	unsigned char* scan;
 	
 	int hits, leaf, count;
-	size_t klen, follows, remains;
+	size_t klen, follows, remains, needed;
 	
 	int pl, ph, sl, sh;
 	
@@ -590,10 +625,14 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	
 	
 	
-	/* Find the mid point of the child */
-	mid = k->btree->sectb + k->btree->sector_size/2;
-	
+	/* Find the (adjusted for needed free space) mid point of the child */
 	decode_sector_header(k->btree->sectb, &leaf, &count);
+	
+	if (leaf)	needed = needed_for_leaf_entry(k);
+	else		needed = needed_for_tree_entry(k);
+	
+	mid = k->btree->sectb + (k->btree->sector_size - needed) / 2;
+	
 	
 	scan = k->btree->sectb + SECTOR_HEADER_SIZE;
 	if (!leaf) scan += k->btree->tree_size;
@@ -705,23 +744,23 @@ static int travel_down(Kap k, const char* key, off_t x,
 	size_t		remains;
 	int		leaf, hits;
 	
+	/* Scheme for tree nodes: (-inf, a) <a> [a, b) <b> [b, inf) */
+	
 	while (decode_sector_header(k->btree->secta, &leaf, &hits),
 	       !leaf)
 	{
 		/* Find the first address (ptr) such that the following
-		 * key (scan) obeys: key <= scan
+		 * key (scan) obeys: key < scan
 		 */
 		
-		for (i = 0, 
-			ptr = k->btree->secta + SECTOR_HEADER_SIZE,
-			scan = ptr + k->btree->tree_size;
+		for (i = 0, ptr = k->btree->secta + SECTOR_HEADER_SIZE;
 		     i < hits;
 		     i++, ptr = scan + klen + 1)
 		{
 			scan = ptr + k->btree->tree_size;
 			klen = strlen(scan);
 			
-			if (strcmp(key, scan) <= 0)
+			if (strcmp(key, scan) < 0)
 				break;
 		}
 		
@@ -743,7 +782,7 @@ static int travel_down(Kap k, const char* key, off_t x,
 			if (WRITE_SECTOR(k->btree, child, k->btree->sectb))
 				return errno;
 			
-			if (strcmp(key, scan) > 0)
+			if (strcmp(key, ptr) >= 0)
 			{	/* We want to recurse to split instead */
 				child = split;
 				swap = k->btree->sectc;
