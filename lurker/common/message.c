@@ -1,5 +1,5 @@
 /*
- * $Id: message.c,v 1.11 2002-01-28 08:52:56 cbond Exp $
+ * $Id: message.c,v 1.12 2002-01-28 12:05:49 cbond Exp $
  *  
  *  message.c - parse mail.
  *  
@@ -34,8 +34,8 @@
 
 #include "message.h"
 
+static char *strnstr(const char *, const char *, size_t);
 static int message_offset(char *, size_t *);
-static char *message_next(char *, size_t);
 
 /*
  * Parse a message at the specified offset.  (We'll have
@@ -45,9 +45,9 @@ struct msg *
 mail_parse(int fd, off_t offset)
 {
 	char *buffer, *end, *off;
+	size_t maplog, offc;
 	struct msg *out;
 	struct stat sb;
-	size_t maplog, offc;
 
 	if (fstat(fd, &sb) < 0)
 		return (NULL);
@@ -76,10 +76,6 @@ mail_parse(int fd, off_t offset)
 		if (maplog + offset >= sb.st_size)
 			maplog = sb.st_size - offset;
 
-		/*
-		 * Round length up to the nearest page size multiple, and
-		 * include compensation for the offset rounding.
-		 */
 		out->region = maplog + offset - offc;
 		buffer = (char *)mmap(NULL, out->region, PROT_READ | PROT_WRITE,
 					MAP_PRIVATE, fd, offc);
@@ -94,10 +90,10 @@ mail_parse(int fd, off_t offset)
 		 * the end of this message as well.
 		 */
 		if (maplog > 1 << 10)
-			end = message_next(out->buffer + (maplog / 2),
+			end = strnstr(out->buffer + (maplog / 2), "\nFrom ",
 				maplog / 2);
 		else
-			end = message_next(out->buffer, maplog);
+			end = strnstr(out->buffer, "\nFrom ", maplog);
 		if (end == NULL && maplog >= sb.st_size - offset)
 			end = out->buffer + maplog;
 	}
@@ -105,7 +101,7 @@ mail_parse(int fd, off_t offset)
 	/*
 	 * Seek to the end of this message.
 	 */
-	if (lseek(fd, offset + end - out->buffer + 1, SEEK_SET) < 0)
+	if (lseek(fd, end - out->buffer + 1, SEEK_CUR) < 0)
 		return (NULL);
 
 	end[0] = 0;
@@ -125,24 +121,6 @@ mail_parse(int fd, off_t offset)
 		(size_t)(off - out->buffer), &out->bss, "localhost", 0);
 
 	return (out);
-}
-
-/*
- * Locate the next occurance of '^From ' in the buffer,
- * in an attempt to locate the end of the current msg.
- *
- * (The buffer may not be NULL-terminated, which is why
- *  we're not using strstr for this.)
- */
-static char *
-message_next(char *s, size_t len)
-{
-	const char *orig, *k = "From ";
-
-	for (orig = s; len > s - orig; ++s)
-		if (*s == '\n' && strncmp(s + 1, k, 5) == 0)
-			return (s);
-	return (NULL);
 }
 
 /*
@@ -176,7 +154,8 @@ mail_select(struct msg *in, struct mail_bodystruct *body, size_t *len, int *nfr)
 
 	switch ((int)body->encoding) {
 		case ENCQUOTEDPRINTABLE:
-			output = (char *(*)(unsigned char*, unsigned long, unsigned long*))rfc822_qprint;
+			output = (char *(*)(unsigned char*, unsigned long,
+					unsigned long*))rfc822_qprint;
 			break;
 		case ENCBASE64:
 			output = (char *(*)())rfc822_base64;
@@ -209,4 +188,20 @@ mail_free(struct msg *in)
 	if (in->env)
 		mail_free_envelope(&in->env);
 	free(in);
+}
+
+/*
+ * Find substring s2 in s, which is not NULL-terminated.
+ */
+char *
+strnstr(const char *s, const char *s2, size_t len)
+{
+	const char *orig;
+	size_t len2;
+
+	len2 = strlen(s2);
+	for (orig = s; len > s - orig; ++s)
+		if (*s == *s2 && strncmp(s + 1, s2 + 1, len2 - 1) == 0)
+			return ((char *)s);
+	return (NULL);
 }
