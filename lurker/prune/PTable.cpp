@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.17 2004-08-19 14:52:29 terpstra Exp $
+/*  $Id: PTable.cpp,v 1.18 2004-08-24 16:21:12 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -44,9 +44,11 @@
 using namespace std;
 
 PTable::PTable(const Config& cfg_, ESort::Reader* reader_, time_t stamp_, 
-               bool verbose_, time_t modifiedLimit_, time_t accessedLimit_)
+               bool purge_, bool verbose_, 
+               time_t modifiedLimit_, time_t accessedLimit_)
  : cfg(cfg_), reader(reader_), stamp(stamp_), now(time(0)), 
-   verbose(verbose_), modifiedLimit(modifiedLimit_), accessedLimit(accessedLimit_)
+   purge(purge_), verbose(verbose_), 
+   modifiedLimit(modifiedLimit_), accessedLimit(accessedLimit_)
 {
 }
 
@@ -282,10 +284,12 @@ string PTable::calc()
 			newIds.begin()->timestamp();
 	}
 	
-	if (threshold > MASSACRE_THRESHOLD)
+	if (threshold > MASSACRE_THRESHOLD || purge)
 	{
-		if (verbose)
+		if (verbose && threshold > MASSACRE_THRESHOLD)
 			cout << "New messages span too large a window; entering massacre mode." << endl;
+		if (verbose && purge)
+			cout << "Purging all cache." << endl;
 		
 		for (KSI i = state.begin(); i != state.end(); ++i)
 		{

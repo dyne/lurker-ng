@@ -1,4 +1,4 @@
-/*  $Id: PTable.h,v 1.6 2004-08-19 14:52:29 terpstra Exp $
+/*  $Id: PTable.h,v 1.7 2004-08-24 16:21:12 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -69,6 +69,7 @@ class PTable
 	time_t			config;
 	time_t			stamp;
 	time_t			now;
+	bool			purge;
 	bool			verbose;
 	time_t			modifiedLimit;
 	time_t			accessedLimit;
@@ -105,7 +106,8 @@ class PTable
 	
  public:
  	PTable(const Config& cfg, ESort::Reader* reader, time_t stamp, 
- 		bool verbose, time_t modifiedLimit, time_t accessedLimit);
+ 		bool purge, bool verbose, 
+ 		time_t modifiedLimit, time_t accessedLimit);
 	
 	string load();	// pull all summaries off disk
 	string calc();	// decide what to do with cache
