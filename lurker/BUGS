@@ -1,25 +1,25 @@
 Ideas:
 	Reorder threads by reply-to?
+	Timezones suck. Need to localize times to the browser?
+	Link to mailing lists from complete thread view?
 	More robust detection of 'From ' lines? Too many people screw it up.
 		(Content-Length could help or maybe @ needed in email)
-	Escape 'From ' in messages we store with -m?
+--- 1.0 boundary ---
 	Printable css?
-	Hover over tree pops up some of the subtree?
-	Maybe warn the user if the group/list search terms conflict?
-	Timezones suck. Need to localize times to the browser?
 	In-message forward/backward for search results?
 	Pack the threading tree more densely somehow?
+	Boolean "or" in search?
+	Phrase searching?
+	Message count estimates for searches / indexes?
+	Hover over tree pops up some of the subtree?
+	Multi-level btree style files (faster search, slower import)?
 	Deleted message keyword?
 	Maybe make an effort to mangle email addresses?
 	Re-add optional lurkerd to watch mboxs?
-
-Unfulfilled requirements (deferred for after 1.0):
-	Multi-level btree style files
-	Message count estimates
-	Boolean "or" in search
-	Phrase searching
 
 BUGS:
 	There is a slight bug in advance() pre-commit post-insert.
 		(you don't always see fresh keys if partially past it)
 		(... but this doesn't affect lurker, so not priority)
+	Escape 'From ' in messages we store with -m
+	Sometimes we get blank pages until reload
