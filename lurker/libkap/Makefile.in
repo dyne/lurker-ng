@@ -102,7 +102,7 @@ bin_PROGRAMS = kapmake kapdump
 
 libkap_a_SOURCES = \
 	kap.h private.h \
-	btree.c \
+	btree.c append.c \
 	kap.c
 
 
@@ -119,7 +119,7 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 libkap_a_AR = $(AR) cru
 libkap_a_LIBADD =
-am_libkap_a_OBJECTS = btree.$(OBJEXT) kap.$(OBJEXT)
+am_libkap_a_OBJECTS = btree.$(OBJEXT) append.$(OBJEXT) kap.$(OBJEXT)
 libkap_a_OBJECTS = $(am_libkap_a_OBJECTS)
 bin_PROGRAMS = kapmake$(EXEEXT) kapdump$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
@@ -139,8 +139,9 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/btree.Po $(DEPDIR)/kap.Po \
-@AMDEP_TRUE@	$(DEPDIR)/kapdump.Po $(DEPDIR)/kapmake.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/append.Po $(DEPDIR)/btree.Po \
+@AMDEP_TRUE@	$(DEPDIR)/kap.Po $(DEPDIR)/kapdump.Po \
+@AMDEP_TRUE@	$(DEPDIR)/kapmake.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -206,6 +207,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/append.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/btree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/kap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/kapdump.Po@am__quote@

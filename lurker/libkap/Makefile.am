@@ -4,7 +4,7 @@ bin_PROGRAMS = kapmake kapdump
 
 libkap_a_SOURCES = \
 	kap.h private.h \
-	btree.c \
+	btree.c append.c \
 	kap.c
 
 kapmake_SOURCES = kapmake.c
