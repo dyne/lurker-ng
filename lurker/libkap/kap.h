@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.2 2002-07-01 15:41:46 terpstra Exp $
+/*  $Id: kap.h,v 1.3 2002-07-01 16:09:30 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -27,6 +27,11 @@
 #define _LIBKAP_H
 
 #include <sys/types.h>
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 /* The opaque kap handle */
 struct Kap_T;
@@ -255,5 +260,9 @@ int	kap_kread(Kap k, const KRecord* kr,
 int	kap_append(Kap k, const char* key, 
 	void* data, size_t len);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
