@@ -23,6 +23,15 @@
         <th align="left">Timestamp</th></tr>
     <xsl:apply-templates select="summary"/>
  </table>
+
+ <hr/>
+ <p/>
+ 
+ <form action="../lurker-search.cgi">
+  <input type="hidden" name="format" value="{$ext}"/>
+  <input type="text"   name="query"  value="th:{id} " size="50"/>
+  <input type="submit" name="submit" value="Search!"/>
+ </form> 
 </xsl:template>
 
 </xsl:stylesheet>
