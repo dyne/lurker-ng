@@ -1,4 +1,4 @@
-/*  $Id: rbuffer.c,v 1.11 2003-01-04 20:21:21 terpstra Exp $
+/*  $Id: rbuffer.c,v 1.12 2003-03-30 14:01:38 terpstra Exp $
  *  
  *  rbuffer.c - Implements a buffering system that read combines
  *  
@@ -112,7 +112,7 @@
 
 /* This is the maximum value ptr can attain.
  */
-#define BPTR_MAX	0xFFFFUL
+#define BPTR_MAX	0xFFFFL
 
 /*------------------------------------------------ Private types */
 

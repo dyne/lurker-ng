@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.15 2002-08-25 15:59:12 terpstra Exp $
+/*  $Id: kap.c,v 1.16 2003-03-30 14:01:38 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -80,12 +80,16 @@
 
 #if defined(HAVE_FCNTL_H) && defined(HAVE_F_GETLK)
 #define USE_LOCK_FCNTL
-#elif defined(HAVE_FLOCK)
+#else
+#if defined(HAVE_FLOCK)
 #define USE_LOCK_FLOCK
-#elif defined(HAVE_LOCKF)
+#else
+#if defined(HAVE_LOCKF)
 #define USE_LOCK_LOCKF
 #else
-#warning Not locking KAP databases on open
+ #warning Not locking KAP databases on open
+#endif
+#endif
 #endif
 
 #ifdef DMALLOC
@@ -280,9 +284,11 @@ int kap_lock(int fd)
 #if defined(USE_LOCK_FLOCK)
 	if (flock(fd, LOCK_EX) == -1)
 		return -1;
-#elif defined(USE_LOCK_LOCKF)
+#else
+#if defined(USE_LOCK_LOCKF)
 	if (lockf(fd, F_LOCK, 0) == -1)
 		return -1;
+#endif
 #endif
 	
 	return 0;
@@ -302,8 +308,10 @@ int kap_unlock(int fd)
 
 #if defined(USE_LOCK_FLOCK)
 	flock(fd, LOCK_UN);
-#elif defined(USE_LOCK_LOCKF)
+#else
+#if defined(USE_LOCK_LOCKF)
 	lockf(fd, F_ULOCK, 0);
+#endif
 #endif
 	
 	return 0;

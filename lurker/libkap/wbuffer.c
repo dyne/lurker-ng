@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.17 2002-08-27 21:30:41 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.18 2003-03-30 13:59:55 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -221,7 +221,7 @@ static long		pswaps;
 #endif
 
 /* Constants for use by the avl tree - set before each op */
-#define	KINVALID	0xFFFFUL
+#define	KINVALID	0xFFFFL
 
 /*------------------------------------------------- Private methods */
 
@@ -526,7 +526,7 @@ static int promote_key(Kap k, const char* key, aptr hits)
  */
 static int calc_storage(Kap k, int yield)
 {
-	double accum, val;
+	double accum, val, tmp;
 	
 	/*!!!!! This doesn't actually HAVE to flush things...
 	 * I could make it be smarter
@@ -550,7 +550,8 @@ static int calc_storage(Kap k, int yield)
 	for (scan = 0; scan < k->wbuffer->kfill; scan++)
 	{
 		kw = k->wbuffer->scache[scan].keyword;
-		val = sqrt(k->wbuffer->kcache[kw].hits);
+		tmp = k->wbuffer->kcache[kw].hits;
+		val = sqrt(tmp);
 		if (k->wbuffer->num_appends * val / (val + accum) <= 2)
 			break;
 		
@@ -578,10 +579,12 @@ static int calc_storage(Kap k, int yield)
 	for (scan = cutoff-1; scan != 0; scan--)
 	{
 		kw = k->wbuffer->scache[scan].keyword;
-		accum += sqrt(k->wbuffer->kcache[kw].hits);
+		tmp = k->wbuffer->kcache[kw].hits;
+		accum += sqrt(tmp);
 	}
 	kw = k->wbuffer->scache[0].keyword;
-	accum += sqrt(k->wbuffer->kcache[kw].hits);
+	tmp = k->wbuffer->kcache[kw].hits;
+	accum += sqrt(tmp);
 	
 	/* Begin assigning the buffer -- start from the large side so that
 	 * if we screw up due to rounding, only the small guy suffers
@@ -590,7 +593,8 @@ static int calc_storage(Kap k, int yield)
 	for (scan = 0; scan != cutoff; scan++)
 	{
 		kw = k->wbuffer->scache[scan].keyword;
-		val = sqrt(k->wbuffer->kcache[kw].hits);
+		tmp = k->wbuffer->kcache[kw].hits;
+		val = sqrt(tmp);
 		size = (k->wbuffer->num_appends * val / accum);
 		
 		if (size < 2) size = 2;
