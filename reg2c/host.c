@@ -1,4 +1,4 @@
-/*  $Id: host.c,v 1.13 2003-06-12 22:15:18 terpstra Exp $
+/*  $Id: host.c,v 1.14 2003-06-12 22:56:01 terpstra Exp $
  *  
  *  host.c - collection of useful web regexps for reg2c
  *  
@@ -53,7 +53,7 @@
 #define SIGBLOCK_REG	"(-- (\n" NOT_LF "+)+)"
 #define ART_REG		"([\t ]" NOT_LF "+)"
 
-#define ASCII_PIC_REG   "(\n(" SIGBLOCK_REG "|" ART_REG "))+\n"
+#define ASCII_PIC_REG   "((\n(" SIGBLOCK_REG "|" ART_REG "))+\n)"
 
 int main(int argc, const char** argv)
 {
