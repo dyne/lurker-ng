@@ -1,4 +1,4 @@
-/*  $Id: params.cpp,v 1.9 2004-08-24 16:06:30 terpstra Exp $
+/*  $Id: params.cpp,v 1.10 2004-08-27 15:04:05 terpstra Exp $
  *  
  *  params.cpp - Parse the config file for helper scripts
  *  
@@ -38,9 +38,11 @@ void help(const char* name)
 {
 	cerr << "Lurker-params (v" << VERSION << ") parses params from the config file.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> [-d -a -n -e -x -m -i -w -h -r]\n";
+	cerr << "Usage: " << name << " -c <config-file> -f <locale>\n";
+	cerr << "                         [-d -a -n -e -x -m -i -w -h -r]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
+	cerr << "\t-f <locale>      Output the fields for this locale\n";
 	cerr << "\t-d               Output only the dbdir parameter\n";
 	cerr << "\t-a               Output only the archive parameter\n";
 	cerr << "\t-n               Output only the administrator name\n";
@@ -73,13 +75,17 @@ int main(int argc, char** argv)
 	bool        web_cache     = false;
 	bool        hide_email    = false;
 	bool        raw_email     = false;
+	string lc;
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:danexmiwhr?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:f:danexmiwhr?")) != -1)
 	{
 		switch ((char)c)
 		{
 		case 'c':
 			config = optarg;
+			break;
+		case 'f':
+			lc = optarg;
 			break;
 		case 'd':
 			++fields;
@@ -147,8 +153,8 @@ int main(int argc, char** argv)
 	}
 	
 	if (!fields || dbdir)         cout << cfg.dbdir         << "\n";
-	if (!fields || archive)       cout << cfg.archive       << "\n";
-	if (!fields || admin_name)    cout << cfg.admin_name    << "\n";
+	if (!fields || archive)       cout << cfg.archive(lc)   << "\n";
+	if (!fields || admin_name)    cout << cfg.admin_name(lc)<< "\n";
 	if (!fields || admin_address) cout << cfg.admin_address << "\n";
 	if (!fields || xslt)          cout << cfg.xslt          << "\n";
 	if (!fields || pgpv_mime)     cout << cfg.pgpv_mime     << "\n";

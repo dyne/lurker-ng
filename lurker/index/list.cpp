@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.7 2004-08-24 16:06:30 terpstra Exp $
+/*  $Id: list.cpp,v 1.8 2004-08-27 15:04:05 terpstra Exp $
  *  
  *  list.cpp - Parse the config file for helper scripts
  *  
@@ -38,9 +38,11 @@ void help(const char* name)
 {
 	cerr << "Lurker-list (v" << VERSION << ") parses lists from the config file.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> [-i -g -t -a -l -d -s -o] [listid ...]\n";
+	cerr << "Usage: " << name << " -c <config-file> -f <locale>\n";
+	cerr << "                         [-i -g -t -a -l -d -s -o] [listid ...]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
+	cerr << "\t-f <locale>      Output the fields for this locale\n";
 	cerr << "\t-i               Output only the list id\n";
 	cerr << "\t-g               Output only the group\n";
 	cerr << "\t-t               Output only the title\n";
@@ -69,13 +71,17 @@ int main(int argc, char** argv)
 	bool        desc     = false;
 	bool        language = false;
 	bool        offline  = false;
+	string lc;
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:igtaldso?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:f:igtaldso?")) != -1)
 	{
 		switch ((char)c)
 		{
 		case 'c':
 			config = optarg;
+			break;
+		case 'f':
+			lc = optarg;
 			break;
 		case 'i':
 			++fields;
@@ -153,16 +159,22 @@ int main(int argc, char** argv)
 			output.push_back(l->second);
 	}
 	
+	if (lc != "" && !lstring::locale_normalize(lc))
+	{
+		cerr << "'" << lc << "' is not a valid locale\n";
+		return 1;
+	}
+	
 	vector<List>::const_iterator o;
 	for (o = output.begin(); o != output.end(); ++o)
 	{
-		if (!fields || ids)     cout << o->mbox        << "\n";
-		if (!fields || group)   cout << o->group       << "\n";
-		if (!fields || title)   cout << o->title       << "\n";
-		if (!fields || address) cout << o->address     << "\n";
-		if (!fields || link)    cout << o->link        << "\n";
-		if (!fields || desc)    cout << o->description << "\n";
-		if (!fields || language)cout << o->language    << "\n";
+		if (!fields || ids)     cout << o->mbox            << "\n";
+		if (!fields || group)   cout << o->group           << "\n";
+		if (!fields || title)   cout << o->title(lc)       << "\n";
+		if (!fields || address) cout << o->address         << "\n";
+		if (!fields || link)    cout << o->link(lc)        << "\n";
+		if (!fields || desc)    cout << o->description(lc) << "\n";
+		if (!fields || language)cout << o->language        << "\n";
 		if (!fields || offline) cout << (o->offline?"true\n":"false\n");
 	}
 	

@@ -35,6 +35,8 @@ v1.2:
 	Include a fixed version of Silas Jantzen's apache RewriteRule
 	Included a ton of lurker UI translations, see the AUTHORS file
 	Added a '-u' option to lurker-index to trust the user Date header
+	Added support for 3 digit language codes and 2 digit country code
+	Made the config file able to deal with translations in '[]'s
 
 v1.1:
 	Create mbox and attach directory upon install

@@ -1,4 +1,4 @@
-/*  $Id: splash.cpp,v 1.10 2004-08-20 02:42:45 terpstra Exp $
+/*  $Id: splash.cpp,v 1.11 2004-08-27 15:04:05 terpstra Exp $
  *  
  *  splash.cpp - Handle a splash/ command
  *  
@@ -49,7 +49,7 @@ int handle_splash(const Config& cfg, ESort::Reader* db, const string& param)
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/splash.xsl\"?>\n"
 		<< "<splash xml:lang=\"" << req.language << "\">\n"
-		<< " " << cfg << "\n";
+		<< " " << cfg(req.language) << "\n";
 	
 	Config::Groups::const_iterator group;
 	for (group = cfg.groups.begin(); group != cfg.groups.end(); ++group)
@@ -57,15 +57,15 @@ int handle_splash(const Config& cfg, ESort::Reader* db, const string& param)
 		cache.o << " <group>\n"
 			<< "  <id>" << group->first << "</id>\n";
 		
-		if (group->second.heading != "")
-			cache.o << "  <heading>" << group->second.heading << "</heading>\n";
+		if (group->second.heading.is_set())
+			cache.o << "  <heading>" << group->second.heading(req.language) << "</heading>\n";
 		
 		Config::Members::const_iterator member;
 		for (member = group->second.members.begin(); member != group->second.members.end(); ++member)
 		{
 			Config::Lists::const_iterator i = cfg.lists.find(*member);
 			if (i == cfg.lists.end()) continue;
-			cache.o << "  " << i->second << "\n";
+			cache.o << "  " << i->second(req.language) << "\n";
 		}
 		
 		cache.o << " </group>\n";

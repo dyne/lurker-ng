@@ -144,7 +144,7 @@
              <xsl:element name="option">
               <xsl:attribute name="value"><xsl:value-of select="language"/></xsl:attribute>
               <!-- We only allow languages without a region code in search -->
-              <xsl:if test="language = substring($lang, 1, 2)">
+              <xsl:if test="language = translate($lang, '-ABCDEFGHIJKLMNOPQRSTUVWXYZ', '')">
                <xsl:attribute name="selected">SELECTED</xsl:attribute>
               </xsl:if>
               <xsl:choose>

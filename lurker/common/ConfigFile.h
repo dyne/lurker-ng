@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.8 2004-08-24 21:14:56 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.9 2004-08-27 15:04:05 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -44,16 +44,57 @@ using std::map;
 using std::set;
 using std::ostream;
 
+// localized string
+class lstring
+{
+ protected:
+ 	map<string, string> s;
+ 	static map<string, string>* c; // conversion from one spelling to common
+ 	
+ 	static void prep_c();
+ 	
+ public:
+ 	lstring(const string& fb);
+ 	lstring() { }
+ 	
+ 	// If the locale is funky, returns false
+ 	bool translate(const string& locale, const string& translation);
+ 	
+ 	string localize(const string& locale) const;
+ 	string operator () (const string& locale) const
+ 	{ return localize(locale); }
+ 	
+ 	bool is_set() const;
+ 	
+ 	// normalize the language to a common spelling - false if broken
+ 	static bool lang_normalize(string& lang);
+ 	static bool locale_normalize(string& locale);
+};
+
 struct List
 {
+	// filenames and addresses are not localized, nor are identifiers
 	string mbox;
-	string title;
 	string address;
-	string description;
-	string link;
 	string group;
 	string language;
-	bool   offline;
+	
+	bool offline;
+	
+	// localize these
+	lstring title;		// could make sense in some cases 
+	lstring description;	// clearly should be translated
+	lstring link;		// different language on different pages
+	
+ 	struct SerializeMagic
+ 	{
+ 		const List& m;
+ 		string l;
+ 		SerializeMagic(const List& m_, const string& l_)
+ 		: m(m_), l(l_) { }
+ 	};
+ 	SerializeMagic operator () (const string& locale) const
+ 	{ return SerializeMagic(*this, locale); }
 };
 
 class Config
@@ -73,7 +114,7 @@ class Config
  	
  	struct GroupData
  	{
- 		string  heading;
+ 		lstring heading;
  		Members members;
  	};
  	
@@ -82,13 +123,18 @@ class Config
  	Lists  lists;
  	Groups groups;
  	 	
+ 	// never localize paths, commands, or addresses
  	string	dbdir;
- 	string	archive;
- 	string	admin_name;
- 	string	admin_address;
  	string	xslt;
  	string	pgpv_mime;
  	string	pgpv_inline;
+ 	string	admin_address;
+ 	
+ 	// some names are spelt differently by locales
+ 	
+ 	lstring	archive;
+ 	lstring	admin_name;
+ 	
  	bool	web_cache;
  	bool	hide_email;
  	bool	raw_email;
@@ -116,9 +162,19 @@ class Config
  	// Open the config from this file.
  	int load(const string& file, bool toplevel = true);
  	int process_command(const string& key, const string& val, const string& dir);
+ 	
+ 	struct SerializeMagic
+ 	{
+ 		const Config& c;
+ 		string l;
+ 		SerializeMagic(const Config& c_, const string& l_)
+ 		: c(c_), l(l_) { }
+ 	};
+ 	SerializeMagic operator () (const string& locale) const
+ 	{ return SerializeMagic(*this, locale); }
 };
 
-ostream& operator << (ostream& o, const List& l);
-ostream& operator << (ostream& o, const Config& c);
+ostream& operator << (ostream& o, const List::SerializeMagic& lm);
+ostream& operator << (ostream& o, const Config::SerializeMagic& cm);
 
 #endif

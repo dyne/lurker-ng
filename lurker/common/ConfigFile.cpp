@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.10 2004-08-26 16:52:10 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.11 2004-08-27 15:04:05 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -36,15 +36,312 @@
 
 using namespace std;
 
+map<string, string>* lstring::c = 0;
+
+lstring::lstring(const string& fallback)
+{
+	s[""] = fallback;
+}
+
+void lstring::prep_c()
+{
+	c = new map<string, string>();
+	
+	// source: http://www.w3.org/WAI/ER/IG/ert/iso639.htm
+	static const char* code[][2] =
+	{	{"abk", "ab"},
+		{"aar", "aa"},
+		{"afr", "af"},
+		{"alb", "sq"},
+		{"amh", "am"},
+		{"ara", "ar"},
+		{"arm", "hy"},
+		{"asm", "as"},
+		{"aym", "ay"},
+		{"aze", "az"},
+		{"bak", "ba"},
+		{"baq", "eu"},
+		{"ben", "bn"},
+		{"bih", "bh"},
+		{"bis", "bi"},
+		{"bre", "be"},
+		{"bul", "bg"},
+		{"bur", "my"},
+		{"bel", "be"},
+		{"cat", "ca"},
+		{"chi", "zh"},
+		{"cos", "co"},
+		{"ces", "cs"},
+		{"dan", "da"},
+		{"dut", "nl"},
+		{"dzo", "dz"},
+		{"eng", "en"},
+		{"epo", "eo"},
+		{"est", "et"},
+		{"fao", "fo"},
+		{"fij", "fj"},
+		{"fin", "fi"},
+		{"fra", "fr"},
+		{"fry", "fy"},
+		{"glg", "gl"},
+		{"geo", "ka"},
+		{"deu", "de"},
+		{"ell", "el"},
+		{"kal", "kl"},
+		{"grn", "gn"},
+		{"guj", "gu"},
+		{"hau", "ha"},
+		{"heb", "he"},
+		{"hin", "hi"},
+		{"hun", "hu"},
+		{"ice", "is"},
+		{"ind", "id"},
+		{"ina", "ia"},
+		{"iku", "iu"},
+		{"ipk", "ik"},
+		{"gai", "ga"},
+		{"ita", "it"},
+		{"jpn", "ja"},
+		{"jav", "jv"},
+		{"kan", "kn"},
+		{"kas", "ks"},
+		{"kaz", "kk"},
+		{"khm", "km"},
+		{"kin", "rw"},
+		{"kir", "ky"},
+		{"kor", "ko"},
+		{"kur", "ku"},
+		{"oci", "oc"},
+		{"lao", "lo"},
+		{"lat", "la"},
+		{"lav", "lv"},
+		{"lin", "ln"},
+		{"lit", "lt"},
+		{"mac", "mk"},
+		{"mlg", "mg"},
+		{"may", "ms"},
+		{"mlt", "ml"},
+		{"mao", "mi"},
+		{"mar", "mr"},
+		{"mol", "mo"},
+		{"mon", "mn"},
+		{"nau", "na"},
+		{"nep", "ne"},
+		{"nor", "no"},
+		{"ori", "or"},
+		{"orm", "om"},
+		{"pan", "pa"},
+		{"fas", "fa"},
+		{"pol", "pl"},
+		{"por", "pt"},
+		{"pus", "ps"},
+		{"que", "qu"},
+		{"roh", "rm"},
+		{"ron", "ro"},
+		{"run", "rn"},
+		{"rus", "ru"},
+		{"smo", "sm"},
+		{"sag", "sg"},
+		{"san", "sa"},
+		{"scr", "sh"},
+		{"sna", "sn"},
+		{"snd", "sd"},
+		{"sin", "si"},
+		{"ssw", "ss"},
+		{"slk", "sk"},
+		{"slv", "sl"},
+		{"som", "so"},
+		{"sot", "st"},
+		{"esl", "es"},
+		{"sun", "su"},
+		{"swa", "sw"},
+		{"sve", "sv"},
+		{"tgl", "tl"},
+		{"tgk", "tg"},
+		{"tam", "ta"},
+		{"tat", "tt"},
+		{"tel", "te"},
+		{"tha", "th"},
+		{"bod", "bo"},
+		{"tir", "ti"},
+		{"tog", "to"},
+		{"tso", "ts"},
+		{"tsn", "tn"},
+		{"tur", "tr"},
+		{"tuk", "tk"},
+		{"twi", "tw"},
+		{"uig", "ug"},
+		{"ukr", "uk"},
+		{"urd", "ur"},
+		{"uzb", "uz"},
+		{"vie", "vi"},
+		{"vol", "vo"},
+		{"cym", "cy"},
+		{"wol", "wo"},
+		{"xho", "xh"},
+		{"yid", "yi"},
+		{"yor", "yo"},
+		{"zha", "za"},
+		{"zul", "zu"},
+		{"sqi", "sq"},
+		{"hye", "hy"},
+		{"eus", "eu"},
+		{"mya", "my"},
+		{"zho", "zh"},
+		{"cze", "cs"},
+		{"nla", "nl"},
+		{"fre", "fr"},
+		{"kat", "ka"},
+		{"ger", "de"},
+		{"gre", "el"},
+		{"isl", "is"},
+		{"iri", "ga"},
+		{"jaw", "jv"},
+		{"mak", "mk"},
+		{"msa", "ms"},
+		{"mri", "mi"},
+		{"per", "fa"},
+		{"rum", "ro"},
+		{"slo", "sk"},
+		{"spa", "es"},
+		{"swe", "sv"},
+		{"tib", "bo"},
+		{"wel", "cy"},
+		// I think these are the same?
+		{"jw",  "jv"},
+		// ditto
+		{"hr", "scc"},
+		{"sr", "scc"},
+		{"srp", "scc"},
+		{"", ""}
+	};
+	
+	for (unsigned int i = 0; code[i][0] != ""; ++i)
+		(*c)[code[i][0]] = code[i][1];
+}
+
+bool lstring::lang_normalize(string& lang)
+{
+	if (!c) prep_c();
+	
+	if (lang.length() != 2 && lang.length() != 3)
+		return false;
+	
+	// lower-case it:
+	string iso(lang);
+	for (string::size_type i = 0; i < iso.length(); ++i)
+	{
+		if (iso[i] >= 'A' && iso[i] <= 'Z')
+			iso[i] = iso[i] - 'A' + 'a';
+		if (iso[i] < 'a' || iso[i] > 'z')
+			return false; // not an ISO 639 code!
+	}
+	
+	// Resolve different language spellings to one spelling
+	if (c->find(iso) != c->end())
+		lang = (*c)[iso];
+	else	lang = iso;
+	
+	return true;
+}
+	
+bool lstring::locale_normalize(string& locale)
+{
+	string::size_type i, e;
+	
+	if ((e = locale.find('-')) == string::npos &&
+	    (e = locale.find('_')) == string::npos)
+		e = locale.length();
+	
+	string lang(locale, 0, e);
+	if (!lang_normalize(lang)) return false;
+	
+	string region;
+	if (e != locale.length())
+	{
+		region.assign(locale, e+1, string::npos);
+		if (region.length() != 2) return false; // not an ISO 3166 code
+		
+		for (i = 0; i < 2; ++i)
+		{
+			if (region[i] >= 'a' && region[i] <= 'z')
+				region[i] = region[i] - 'a' + 'A';
+			if (region[i] < 'A' || region[i] > 'Z')
+				return false; // not an ISO 3166 code!
+		}
+		
+		locale = lang + "-" + region;
+	}
+	else
+	{
+		locale = lang;
+	}
+	
+	return true;
+}
+
+bool lstring::translate(const string& language_, const string& translation)
+{
+	string language(language_);
+	if (language != "" && !locale_normalize(language)) return false;
+	
+	string::size_type i;
+	
+	// this overrides whatever we have got so far
+	s[language] = translation;
+	
+	// maybe a localized string for which we lack a language setting?
+	if ((i = language.find('-')) != string::npos)
+	{
+		string iso(language, 0, i);
+		if (s.find(iso) == s.end()) translate(iso, translation);
+	}
+	
+	// maybe we lack a fallback language completely
+	if (s.find("") == s.end()) translate("", translation);
+	
+	return true;
+}
+
+string lstring::localize(const string& language_) const
+{
+	string language(language_);
+	if (language != "" && !locale_normalize(language)) return "(bug) bad locale";
+	
+	map<string, string>::const_iterator o;
+	string::size_type i;
+	
+	// correct locale? use it
+	if ((o = s.find(language)) != s.end()) return o->second;
+	
+	// correct language? use it
+	if ((i = language.find('-')) != string::npos)
+	{
+		string iso(language, 0, i);
+		if ((o = s.find(iso)) != s.end()) return o->second;
+	}
+	
+	// fallback? use it
+	if ((o = s.find("")) != s.end()) return o->second;
+	
+	return ""; // not set!
+}
+
+bool lstring::is_set() const
+{
+	return !s.empty();
+}
+
 Config::Config()
  : list(0), group("lists"), error(), lists(), groups(),
    dbdir(""), 
-   archive("Unconfigured Host"),
-   admin_name("Unset admin name"),
-   admin_address(""),
    xslt("cat -"),
    pgpv_mime("off"),
    pgpv_inline("off"),
+   admin_address(""),
+   
+   archive("Unconfigured Archivew"),
+   admin_name("Unset admin name"),
    web_cache(true),
    hide_email(false),
    raw_email(true),
@@ -177,9 +474,28 @@ bool isSimple(const string& s)
 	return true;
 }
 
-int Config::process_command(const string& key, const string& val, const string& dir)
+int Config::process_command(const string& keys, const string& val, const string& dir)
 {
 //	cout << key << "-" << val << endl;
+	
+	string lc; // locale code
+	string key(keys);
+	
+	string::size_type o, c;
+	if ((o = key.find('[')) != string::npos &&
+	    (c = key.find(']')) != string::npos &&
+	    c > o)
+	{
+		// localization option
+		lc.assign(key, o+1, (c-o) - 1);
+		key.erase(o, (c-o) + 1);
+		
+		if (!lstring::locale_normalize(lc))
+		{
+			error << "Localization code '" << lc << "' is not valid." << endl;
+			return -1;
+		}
+	}
 	
 	string::size_type len = string::npos;
 	
@@ -192,12 +508,18 @@ int Config::process_command(const string& key, const string& val, const string& 
 			return -1;
 		}
 		
+		if (lc != "")
+		{
+			error << "group id cannot be localized" << endl;
+			return -1;
+		}
+		
 		group = val;
 	}
 	else if (key == "heading")
 	{
-		len = 40;
-		groups[group].heading = val;
+		len = 60;
+		groups[group].heading.translate(lc, val);
 	}
 	else if (key == "list")
 	{
@@ -207,19 +529,26 @@ int Config::process_command(const string& key, const string& val, const string& 
 			error << "List id '" << val << "' is not a simple lowercase string!" << endl;
 			return -1;
 		}
-		
-		if (lists.find(val) != lists.end())
+		if (lc != "")
 		{
-			error << "List id '" << val << "' is already defined." << endl;
+			error << "list id cannot be localized" << endl;
 			return -1;
 		}
 		
-		groups[group].members.insert(val);
-		list = &lists[val];
-		list->mbox = val;
-		list->group = group;
-		list->language = "en";
-		list->offline = false;
+		if (lists.find(val) == lists.end())
+		{
+			groups[group].members.insert(val);
+			list = &lists[val];
+			list->mbox = val;
+			list->group = group;
+			list->language = "en";
+			list->offline = false;
+		}
+		else
+		{
+			// re-enter list scope
+			list = &lists[val];
+		}
 	}
 	else if (key == "title")
 	{
@@ -231,13 +560,18 @@ int Config::process_command(const string& key, const string& val, const string& 
 			return -1;
 		}
 		
-		list->title = val;
+		list->title.translate(lc, val);
 	}
 	else if (key == "address")
 	{
 		if (!list)
 		{
 			error << "No list has been defined for address '" << val << "'!" << endl;
+			return -1;
+		}
+		if (lc != "")
+		{
+			error << "list address cannot be localized" << endl;
 			return -1;
 		}
 		
@@ -251,7 +585,7 @@ int Config::process_command(const string& key, const string& val, const string& 
 			return -1;
 		}
 		
-		list->link = val;
+		list->link.translate(lc, val);
 	}
 	else if (key == "language")
 	{
@@ -260,21 +594,32 @@ int Config::process_command(const string& key, const string& val, const string& 
 			error << "No list has been defined for language '" << val << "'!" << endl;
 			return -1;
 		}
-		
-		if (val.length() != 2 || !isSimple(val))
+		if (lc != "")
 		{
-			error << "Language is not a two digit language code!" << endl;
+			error << "list language cannot be localized" << endl;
+			return -1;
+		}
+		
+		string lval(val);
+		if (!lstring::lang_normalize(lval))
+		{
+			error << "Language '" << val << "' is not an ISO 639 language code!" << endl;
 			error << "Regional variants are not relevant for searches." << endl;
 			return -1;
 		}
 		
-		list->language = val;
+		list->language = lval;
 	}
 	else if (key == "offline")
 	{
 		if (!list)
 		{
 			error << "No list has been defined for offline setting '" << val << "'!" << endl;
+			return -1;
+		}
+		if (lc != "")
+		{
+			error << "list offline cannot be localized" << endl;
 			return -1;
 		}
 		
@@ -296,38 +641,68 @@ int Config::process_command(const string& key, const string& val, const string& 
 			return -1;
 		}
 		
-		list->description = val;
+		list->description.translate(lc, val);
 	}
 	else if (key == "dbdir")
 	{
+		if (lc != "")
+		{
+			error << "dbdir cannot be localized" << endl;
+			return -1;
+		}
 		dbdir = val;
 	}
 	else if (key == "admin_name")
 	{
-		admin_name = val;
+		admin_name.translate(lc, val);
 	}
 	else if (key == "admin_address")
 	{
+		if (lc != "")
+		{
+			error << "admin_address cannot be localized" << endl;
+			return -1;
+		}
 		admin_address = val;
 	}
 	else if (key == "archive")
 	{
-		archive = val;
+		archive.translate(lc, val);
 	}
 	else if (key == "xslt")
 	{
+		if (lc != "")
+		{
+			error << "xslt command cannot be localized" << endl;
+			return -1;
+		}
 		xslt = val;
 	}
 	else if (key == "pgp_verify_mime")
 	{
+		if (lc != "")
+		{
+			error << "pgp_verify_mime command cannot be localized" << endl;
+			return -1;
+		}
 		pgpv_mime = val;
 	}
 	else if (key == "pgp_verify_inline")
 	{
+		if (lc != "")
+		{
+			error << "pgp_verify_inline command cannot be localized" << endl;
+			return -1;
+		}
 		pgpv_inline = val;
 	}
 	else if (key == "web_cache")
 	{
+		if (lc != "")
+		{
+			error << "web_cache cannot be localized" << endl;
+			return -1;
+		}
 		if (val == "off" || val == "false")
 			web_cache = false;
 		else if (val == "on" || val == "true")
@@ -340,6 +715,11 @@ int Config::process_command(const string& key, const string& val, const string& 
 	}
 	else if (key == "hide_email")
 	{
+		if (lc != "")
+		{
+			error << "hide_email cannot be localized" << endl;
+			return -1;
+		}
 		if (val == "off" || val == "false")
 			hide_email = false;
 		else if (val == "on" || val == "true")
@@ -352,6 +732,11 @@ int Config::process_command(const string& key, const string& val, const string& 
 	}
 	else if (key == "raw_email")
 	{
+		if (lc != "")
+		{
+			error << "raw_email cannot be localized" << endl;
+			return -1;
+		}
 		if (val == "off" || val == "false")
 			raw_email = false;
 		else if (val == "on" || val == "true")
@@ -364,6 +749,11 @@ int Config::process_command(const string& key, const string& val, const string& 
 	}
 	else if (key == "include")
 	{
+		if (lc != "")
+		{
+			error << "include cannot be localized" << endl;
+			return -1;
+		}
 		string file;
 		
 		if (val[0] == '/')
@@ -388,37 +778,43 @@ int Config::process_command(const string& key, const string& val, const string& 
 	return 0;
 }
 
-ostream& operator << (ostream& o, const List& l)
+ostream& operator << (ostream& o, const List::SerializeMagic& lm)
 {
-	o << "<list>"
-	  << "<id>" << l.mbox << "</id>"
-	  << "<group>" << l.group << "</group>"
-	  << "<language>" << l.language << "</language>";
+	const List& m = lm.m;
+	const string& l = lm.l;
 	
-	if (l.offline)
+	o << "<list>"
+	  << "<id>" << m.mbox << "</id>"
+	  << "<group>" << m.group << "</group>"
+	  << "<language>" << m.language << "</language>";
+	
+	if (m.offline)
 		o << "<offline/>";
 	
-	if (l.link.length() > 0)
-		o << "<link>" << xmlEscape << l.link << "</link>";
+	if (m.link.is_set())
+		o << "<link>" << xmlEscape << m.link(l) << "</link>";
 		
-	if (l.description.length() > 0)
-		o << "<description>" << xmlEscape << l.description << "</description>";
+	if (m.description.is_set())
+		o << "<description>" << xmlEscape << m.description(l) << "</description>";
 	
 	o  << "<email";
-	if (l.address.length() > 0)
-		o << " address=\"" << xmlEscape << l.address << "\"";
-	if (l.title.length() > 0)
-		o << " name=\"" << xmlEscape << l.title << "\"";
+	if (m.address.length() > 0)
+		o << " address=\"" << xmlEscape << m.address << "\"";
+	if (m.title.is_set())
+		o << " name=\"" << xmlEscape << m.title(l) << "\"";
 	else
-		o << " name=\"" << l.mbox << "\"";
+		o << " name=\"" << m.mbox << "\"";
 	
 	o << "/></list>";
 	
 	return o;
 }
 
-ostream& operator << (ostream& o, const Config& c)
+ostream& operator << (ostream& o, const Config::SerializeMagic& cm)
 {
+	const Config& c = cm.c;
+	const string& l = cm.l;
+	
 	// expire = time(0) + 60*5; // 5 minute cache
 	//
 	// tm = gmtime(&expire);
@@ -441,15 +837,15 @@ ostream& operator << (ostream& o, const Config& c)
 	
 	o << "<archive>";
 	
-	if (c.archive.length() > 0)
-		o << xmlEscape << c.archive;
+	if (c.archive.is_set())
+		o << xmlEscape << c.archive(l);
 	else	o << "Some Mailing List Archive";
 	
 	o << "</archive><email";
 	if (c.admin_address.length() > 0)
 		o << " address=\"" << xmlEscape << c.admin_address << "\"";
-	if (c.admin_name.length() > 0)
-		o << " name=\"" << xmlEscape << c.admin_name << "\"";
+	if (c.admin_name.is_set())
+		o << " name=\"" << xmlEscape << c.admin_name(l) << "\"";
 	o << "/></server>";
 	
 	return o;

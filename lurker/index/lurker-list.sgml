@@ -57,6 +57,7 @@ lurker-list.1: lurker-list.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg>\-c &lt;config-file&gt;</arg>
+      <arg>\-f &lt;locale&gt;</arg>
       <arg>\-i \-g \-t \-a \-l \-d \-s \-o</arg>
       <arg>listid ...</arg>
     </cmdsynopsis>
@@ -79,6 +80,13 @@ lurker-list.1: lurker-list.sgml
         <term><option>\-c config-file</option></term>
         <listitem>
           <para>Use this config file for lurker settings.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>\-f locale</option></term>
+        <listitem>
+          <para>Choose lurker config fields from the specified locale
+          (it defaults to selecting the fallback case for each field).</para>
         </listitem>
       </varlistentry>
       <varlistentry>

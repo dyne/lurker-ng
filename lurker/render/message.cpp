@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.38 2004-08-24 21:52:39 terpstra Exp $
+/*  $Id: message.cpp,v 1.39 2004-08-27 15:04:05 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -865,14 +865,14 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/message.xsl\"?>\n"
 		<< "<message xml:lang=\"" << req.language << "\">\n"
-		<< " " << cfg << "\n"
+		<< " " << cfg(req.language) << "\n"
 		<< " " << source << "\n";
 	
 	vector<MBox>::iterator m;
 	for (m = boxes.begin(); m != boxes.end(); ++m)
 	{
 		cache.o	<< " <mbox>\n"
-			<< "  " << m->cfg << "\n";
+			<< "  " << m->cfg(req.language) << "\n";
 		
 		if (m->next.id().timestamp() != 0)
 			cache.o << "  <next>" << m->next << "</next>\n";

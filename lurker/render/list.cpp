@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.10 2004-08-25 14:30:40 terpstra Exp $
+/*  $Id: list.cpp,v 1.11 2004-08-27 15:04:05 terpstra Exp $
  *  
  *  list.cpp - Handle a list/ command
  *  
@@ -185,8 +185,8 @@ int handle_list(const Config& cfg, ESort::Reader* db, const string& param)
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/list.xsl\"?>\n"
 		<< "<list xml:lang=\"" << req.language << "\">\n"
-		<< " " << cfg << "\n"
-		<< " " << list << "\n";
+		<< " " << cfg(req.language) << "\n"
+		<< " " << list(req.language) << "\n";
 	
 	for (vector<string>::iterator i = order.begin(); i != order.end(); ++i)
 	{

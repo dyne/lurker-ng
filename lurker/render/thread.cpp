@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.9 2004-08-20 02:42:45 terpstra Exp $
+/*  $Id: thread.cpp,v 1.10 2004-08-27 15:04:05 terpstra Exp $
  *  
  *  thread.cpp - Handle a thread/ command
  *  
@@ -104,7 +104,7 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/thread.xsl\"?>\n"
 		<< "<thread xml:lang=\"" << req.language << "\">\n"
-		<< " " << cfg << "\n"
+		<< " " << cfg(req.language) << "\n"
 		<< " <hash>" << subject_hash(source.subject().c_str()) << "</hash>\n";
 	
 	set<string>::const_iterator list;
@@ -112,7 +112,7 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 	{
 		Config::Lists::const_iterator desc = cfg.lists.find(*list);
 		if (desc == cfg.lists.end()) continue;
-		cache.o << " " << desc->second << "\n";
+		cache.o << " " << desc->second(req.language) << "\n";
 	}
 	
 	int head = -1;

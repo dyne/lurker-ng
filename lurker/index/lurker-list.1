@@ -1,4 +1,4 @@
-.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-list.1,v 1.5 2004-08-24 16:06:30 terpstra Exp $
+.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-list.1,v 1.6 2004-08-27 15:04:05 terpstra Exp $
 .\"
 .\"	transcript compatibility for postscript use.
 .\"
@@ -56,7 +56,7 @@
 lurker\-list \(em parses lists from the config file 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker\-list\fR [\-c <config-file>]  [\-i \-g \-t \-a \-l \-d \-s \-o]  [listid ...]  
+\fBlurker\-list\fR [\-c <config-file>]  [\-f <locale>]  [\-i \-g \-t \-a \-l \-d \-s \-o]  [listid ...]  
 .SH "DESCRIPTION" 
 .PP 
 \fBlurker\-list\fR outputs various lurker settings 
@@ -68,6 +68,9 @@ is specified, then all fields are dumped.
 .SH "OPTIONS" 
 .IP "\fB\-c config-file\fP" 10 
 Use this config file for lurker settings. 
+.IP "\fB\-f locale\fP" 10 
+Choose lurker config fields from the specified locale 
+(it defaults to selecting the fallback case for each field). 
 .IP "\fB\-i\fP" 10 
 Output only the list id 
 .IP "\fB\-g\fP" 10 
@@ -116,4 +119,4 @@ Before reporting a bug, please confirm that the bug you found is
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
 <lurker\-users@lists.sourceforge.net>. 
-.\" created by instant / docbook-to-man, Mon 23 Aug 2004, 18:11 
+.\" created by instant / docbook-to-man, Fri 27 Aug 2004, 16:53 

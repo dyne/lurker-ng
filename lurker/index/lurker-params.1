@@ -1,4 +1,4 @@
-.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-params.1,v 1.6 2004-08-24 16:06:30 terpstra Exp $
+.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-params.1,v 1.7 2004-08-27 15:04:05 terpstra Exp $
 .\"
 .\"	transcript compatibility for postscript use.
 .\"
@@ -56,7 +56,7 @@
 lurker\-params \(em parses parameters from the config file 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker\-params\fR [\-c <config-file>]  [\-d \-a \-n \-e \-x \-m \-i \-w \-h \-r]  
+\fBlurker\-params\fR [\-c <config-file>]  [\-f <locale>]  [\-d \-a \-n \-e \-x \-m \-i \-w \-h \-r]  
 .SH "DESCRIPTION" 
 .PP 
 \fBlurker\-params\fR outputs various lurker settings 
@@ -65,6 +65,9 @@ instead use this as it respects include.
 .SH "OPTIONS" 
 .IP "\fB\-c config-file\fP" 10 
 Use this config file for lurker settings. 
+.IP "\fB\-f locale\fP" 10 
+Choose lurker config fields from the specified locale 
+(it defaults to selecting the fallback case for each field). 
 .IP "\fB\-d\fP" 10 
 Output only the dbdir parameter 
 .IP "\fB\-a\fP" 10 
@@ -117,4 +120,4 @@ Before reporting a bug, please confirm that the bug you found is
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
 <lurker\-users@lists.sourceforge.net>. 
-.\" created by instant / docbook-to-man, Mon 23 Aug 2004, 18:11 
+.\" created by instant / docbook-to-man, Fri 27 Aug 2004, 16:53 
