@@ -72,7 +72,13 @@
 <xsl:template match="k"><a href="../message/{../../mid}.{$ext}"><img alt="M" border="0" src="i/k.png"/></a></xsl:template>
 
 <xsl:template match="summary">
- <tr>
+ <xsl:element name="tr">
+  <xsl:if test="(position() mod 2) = 0">
+   <xsl:attribute name="class">row1</xsl:attribute>
+  </xsl:if>
+  <xsl:if test="(position() mod 2) = 1">
+   <xsl:attribute name="class">row2</xsl:attribute>
+  </xsl:if>
   <td nowrap="1">
    <xsl:if test="draw"><xsl:apply-templates select="draw"/></xsl:if>
    <xsl:if test="not(draw)">
@@ -81,7 +87,7 @@
   </td>
   <td nowrap="1"><xsl:apply-templates select="email"/></td>
   <td nowrap="1"><xsl:value-of select="time"/></td>
- </tr>
+ </xsl:element>
 </xsl:template>
 
 <xsl:template match="summary" mode="list">

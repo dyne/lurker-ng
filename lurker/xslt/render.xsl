@@ -17,9 +17,9 @@
 <!--- The default is to render to xml and use browser -->
 <xsl:variable name="ext">xml</xsl:variable>
 
-<xsl:output method="html" indent="yes" encoding="UTF-8"
+<xsl:output method="html" indent="no" encoding="UTF-8"
     doctype-system="http://www.w3.org/TR/html4/strict.dtd"
-    doctype-public="-//W3C//DTD HTML 4.01//EN"/>
+    doctype-public="-//W3C//DTD HTML 4.0 Transitional//EN"/>
 
 <!-- Document Root -->
 <xsl:template match="/">

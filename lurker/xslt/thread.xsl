@@ -17,8 +17,8 @@
  </h2>
  
  <p/>
- <table cellpadding="0" cellspacing="0" border="0">
-    <tr><th align="left">Threading</th>
+ <table border="0" cellspacing="0" cellpadding="0" class="thread">
+    <tr class="row1"><th align="left">Threading</th>
         <th align="left">Author</th>
         <th align="left">Timestamp</th></tr>
     <xsl:apply-templates select="summary"/>
