@@ -1,4 +1,4 @@
-/*  $Id: kapdump.c,v 1.2 2002-07-04 13:04:47 terpstra Exp $
+/*  $Id: kapdump.c,v 1.3 2002-07-04 13:19:32 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool
  *  
@@ -94,6 +94,11 @@ int main(int argc, char * const * argv)
 	ssize_t	record_size	= 4;
 	
 	int mode = KAP_BTREE | KAP_APPEND;
+	
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
+	bind_textdomain_codeset(PACKAGE, "utf-8");
 	
 	while ((c = getopt(argc, argv, "hvbs:k:t:l:r:")) != -1)
 	{

@@ -1,4 +1,4 @@
-/*  $Id: kapmake.c,v 1.1 2002-07-04 11:43:40 terpstra Exp $
+/*  $Id: kapmake.c,v 1.2 2002-07-04 13:19:32 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool
  *  
@@ -41,6 +41,10 @@
 #include "../intl/libgnuintl.h"
 #endif
 
+#ifdef HAVE_ERRNO_H
+# include <errno.h>
+#endif
+
 #define _(String) gettext (String)
 #define gettext_noop(String) (String)
 #define N_(String) gettext_noop (String)
@@ -48,7 +52,7 @@
 void help()
 {
 	fputs("\n", stderr);
-	fputs(_("kapmake [options] <file> <tmpf>\n"), stderr);
+	fputs(_("kapmake [options] <file>\n"), stderr);
 	fputs("\n", stderr);
 	
 	fputs(_("\t-v        \tDisplay version information and exit\n"), stderr);
@@ -60,8 +64,7 @@ void help()
 	fputs(_("\t-l <bytes>\tMaximum number of bytes used in leaf records (252)\n"), stderr);
 	fputs(_("\t-r <bytes>\tSize of append records                         (4)\n"), stderr);
 	fputs("\n", stderr);
-	fputs(_("\t<file>\tThe eventual filename for the databases\n"), stderr);
-	fputs(_("\t<tmpf>\tThe temporary filename for the databases (will be appended to)\n"), stderr);
+	fputs(_("\t<file>\tThe database to append into\n"), stderr);
 	fputs("\n", stderr);
 }
 
@@ -79,7 +82,10 @@ int main(int argc, char * const * argv)
 	Kap k;
 	
 	const char*	file;
-	const char*	tmpfile;
+	char*		key;
+	char*		data;
+	KRecord*	kr;
+	ssize_t		len, klen;
 	
 	ssize_t	sector_size	= 8096;
 	ssize_t	max_key_size	= 100;
@@ -88,6 +94,11 @@ int main(int argc, char * const * argv)
 	ssize_t	record_size	= 4;
 	
 	int mode = KAP_BTREE | KAP_APPEND;
+	
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
+	bind_textdomain_codeset(PACKAGE, "utf-8");
 	
 	while ((c = getopt(argc, argv, "hvbs:k:t:l:r:")) != -1)
 	{
@@ -138,14 +149,13 @@ int main(int argc, char * const * argv)
 		}
 	}
 	
-	if (optind + 2 != argc)
+	if (optind + 1 != argc)
 	{
 		help();
 		return 1;
 	}
 	
-	file    = argv[optind++];
-	tmpfile = argv[optind];
+	file    = argv[optind];
 	
 	/* Minimize all parameters so we can do the user ones in order */
 	out = kap_create(&k, KAP_BTREE);
@@ -177,6 +187,40 @@ int main(int argc, char * const * argv)
 	if (out != 0) bail(out, "kap_append_set_recordsize");
 */
 	
+	key  = malloc(max_key_size);
+	data = malloc(leaf_size);
+	if (!key || !data) bail(ENOMEM, "malloc");
+	
+	kr = (KRecord*)data;
+	
+	out = kap_open(k, ".", file);
+	if (out != 0) bail(out, "kap_open");
+	
+	while (fscanf(stdin, "+%d,%d->", &klen, &len) == 2)
+	{
+		if (klen >= max_key_size)
+			bail(ERANGE, "key_len >= max_key_size");
+		
+		if (fread(key, klen+1, 1, stdin) != 1)
+			bail(errno, "read");
+		if (key[klen] != ',')
+			bail(EINVAL, _("comma missing"));
+		key[klen] = 0;
+		
+		if (fread(data, len, 1, stdin) != 1)
+			bail(errno, "read");
+		
+		out = kap_btree_write(k, key, data, len);
+		if (out) bail(out, "kap_btree_write");
+		
+		if (fread(key, 1, 1, stdin) != 1)
+			bail(errno, "read");
+		if (key[0] != '\n')
+			bail(errno, _("lf missing"));
+	}
+	
+	out = kap_close(k);
+	if (out != 0) bail(out, "kap_close");
 	
 	return 0;
 }
