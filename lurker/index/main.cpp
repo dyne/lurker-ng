@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.9 2003-04-26 12:10:14 terpstra Exp $
+/*  $Id: main.cpp,v 1.10 2003-04-27 19:32:37 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -318,9 +318,14 @@ int main(int argc, char** argv)
 		
 		if (got == 0)
 		{
-			DwString msg(buf.c_str(), buf.length());
-			buf = "";
-			if (index(msg, batch, dropdup) != 0) return 1;
+			// Don't index the empt string!
+			if (buf.length() && (batch == -1 || buf[0] == 'F'))
+			{
+				DwString msg(buf.c_str(), buf.length());
+				buf = "";
+				if (index(msg, batch, dropdup) != 0) return 1;
+			}
+			
 			break;
 		}
 	}
