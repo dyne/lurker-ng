@@ -35,7 +35,7 @@ Main keyword.cgi :
 
 LinkLibraries keyword.cgi : libcommon ;
 
-InstallBin $(VARDIR)/www/$(PACKAGE) : 
+InstallBin $(LIBDIR)/cgi-bin : 
 	lurker.cgi 
 	jump.cgi 
 	keyword.cgi

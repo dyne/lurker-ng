@@ -62,12 +62,14 @@ Quick start
   You must make certain that .xsl and .xml files have type text/xml.
   You must set the default charset to utf-8 for these files.
   You must make lurker your 404 error handler.
+  You must pass the config file and document root to lurker.cgi as ?
+      delimited arguments in QUERY_STRING 'cfgfile?docdir'
   
   For apache, put:
 	AddType text/xml .xsl
 	AddType text/xml .xml
 	AddDefaultCharset utf-8
-	ErrorDocument 404 /cgi-bin/lurker.cgi?/path/to/lurker.conf
+	ErrorDocument 404 /cgi-bin/lurker.cgi?/path/to/lurker.conf?../htdocs
   ... in an .htaccess file beside index.html.
 
 8 point your browser at the url where lurker is installed
