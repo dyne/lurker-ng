@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.27 2002-07-11 23:39:20 terpstra Exp $
+/*  $Id: indexer.c,v 1.28 2002-07-11 23:53:32 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -91,7 +91,7 @@ static const char* my_indexer_dows[7] = {
 
 /*------------------------------------------------ Private helper methods */
 
-AVL_DEFINE(
+AVL_DEFINE_INSERT(
 	indexer, 
 	my_indexer_ptr, 
 	MY_INDEXER_MAX,
