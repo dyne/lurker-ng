@@ -27,7 +27,7 @@
     <xsl:apply-templates mode="email-link" select="summary/email"/>
    </div>
   </td>
-  <td>
+  <td nowrap="NOWRAP">
    <xsl:apply-templates mode="date" select="summary"/>
   </td>
  </xsl:element>
