@@ -2,6 +2,7 @@
 <xsl:stylesheet 
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:exslt="http://exslt.org/common"
     version="1.0">
 
 
@@ -90,25 +91,35 @@
 <!-- Format summary lists -->
 
 <xsl:template name="msg-thread">
- <a href="../message/{../../mid}.{$ext}" class="thm">
+ <xsl:variable name="sum">
+  <xsl:choose>
+   <xsl:when test="ancestor::snippet">
+    <xsl:copy-of select="summary"/>
+   </xsl:when>
+   <xsl:when test="descendant::summary">
+    <xsl:copy-of select="descendant::summary"/>
+   </xsl:when>
+   <xsl:when test="ancestor::summary">
+    <xsl:copy-of select="ancestor::summary"/>
+   </xsl:when>
+  </xsl:choose>
+ </xsl:variable>
+ 
+ <xsl:element name="a">
+  <xsl:attribute name="class">thm</xsl:attribute>
+  <xsl:attribute name="href">
+   <xsl:text>../message/</xsl:text>
+   <xsl:value-of select="exslt:node-set($sum)/summary/mid"/>
+   <xsl:text>.</xsl:text>
+   <xsl:value-of select="$ext"/>
+  </xsl:attribute>
+  
   <xsl:element name="img">
    <xsl:attribute name="alt"><xsl:value-of select="$malt"/></xsl:attribute>
    
-   <xsl:if test="ancestor::snippet">
-    <xsl:attribute name="title">
-     <xsl:apply-templates select="summary" mode="post"/>
-    </xsl:attribute>
-   </xsl:if>
-   <xsl:if test="ancestor::summary">
-    <xsl:attribute name="title">
-     <xsl:apply-templates select="ancestor::summary" mode="post"/>
-    </xsl:attribute>
-   </xsl:if>
-   <xsl:if test="descendant::summary">
-    <xsl:attribute name="title">
-     <xsl:apply-templates select="descendant::summary" mode="post"/>
-    </xsl:attribute>
-   </xsl:if>
+   <xsl:attribute name="title">
+    <xsl:apply-templates select="exslt:node-set($sum)" mode="post"/>
+   </xsl:attribute>
    
    <xsl:attribute name="src">
     <xsl:text>../imgs/</xsl:text>
@@ -124,7 +135,7 @@
     </xsl:choose>
    </xsl:attribute>
   </xsl:element>
- </a>
+ </xsl:element>
 </xsl:template>
 
 <xsl:template match="a"><img alt="." src="../imgs/a.png"/></xsl:template>
@@ -206,8 +217,8 @@
 </xsl:template>
 
 <xsl:template match="server" mode="footer">
- Lurker <xsl:copy-of select="version"/> - 
- <xsl:copy-of select="$adminby"/> <xsl:apply-templates select="email"/>
+ Lurker <xsl:value-of select="version"/> - 
+ <xsl:value-of select="$adminby"/> <xsl:apply-templates select="email"/>
 </xsl:template>
 
 </xsl:stylesheet>
