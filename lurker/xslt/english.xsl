@@ -28,6 +28,8 @@
  <xsl:variable name="theselists">these mailing lists</xsl:variable>
  <xsl:variable name="reply">reply</xsl:variable>
  
+ <xsl:variable name="startdate">Later than</xsl:variable>
+ <xsl:variable name="enddate">Earlier than</xsl:variable>
  <xsl:variable name="thedate">the</xsl:variable>
  <xsl:variable name="ofdate">of</xsl:variable>
  <xsl:variable name="datedivide">/</xsl:variable>

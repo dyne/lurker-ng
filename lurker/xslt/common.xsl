@@ -21,6 +21,27 @@
  </xsl:choose>
 </xsl:template>
 
+<!-- Output option-ranges -->
+
+<xsl:template name="option-range">
+ <xsl:param name="start"/>
+ <xsl:param name="last"/>
+ <xsl:param name="select"/>
+ <xsl:element name="option">
+  <xsl:attribute name="value"><xsl:value-of select="$start"/></xsl:attribute>
+  <xsl:if test="$start = $select">
+   <xsl:attribute name="selected">yes</xsl:attribute>
+  </xsl:if>
+  <xsl:value-of select="$start"/>
+ </xsl:element>
+ <xsl:if test="$start &lt; $last">
+  <xsl:call-template name="option-range">
+   <xsl:with-param name="start"> <xsl:value-of select="$start+1"/></xsl:with-param>
+   <xsl:with-param name="last"> <xsl:value-of select="$last"/></xsl:with-param>
+   <xsl:with-param name="select"><xsl:value-of select="$select"/> </xsl:with-param>
+  </xsl:call-template>
+ </xsl:if>
+</xsl:template>
 
 <!-- Format email address -->
 

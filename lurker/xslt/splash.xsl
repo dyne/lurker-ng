@@ -107,117 +107,99 @@
  <br/><br/><hr/>
  <h2>Lurker <xsl:copy-of select="$search"/></h2>
 
- <div class="center">
  <form action ="../lurker-search.cgi">
   <input type="hidden" name="format" value="{$ext}"/>
   <input type="text"   name="query"  value="" size="50"/>
   <input type="submit" name="submit" value="{$search}!"/>
- <hr class="search"/>
+  <hr class="search"/>
   <table class="search">
-   <tr><td><xsl:copy-of select="$author"/></td>
+   <tr><th><xsl:copy-of select="$author"/></th>
        <td class="center"><input type="text" name="author"  size="53" value=""/></td></tr>
-   <tr><td><xsl:copy-of select="$subject"/></td>
+   <tr><th><xsl:copy-of select="$subject"/></th>
        <td class="center"><input type="text" name="subject" size="53" value=""/></td></tr>
-   <tr><td><xsl:copy-of select="$date"/></td>
-    <td class="center"><select name="weekday">
-       <option value=""><xsl:value-of select="$all-da"/></option>
-       <option value="sun"><xsl:value-of select="$sun"/></option>
-       <option value="mon"><xsl:value-of select="$mon"/></option>
-       <option value="tue"><xsl:value-of select="$tue"/></option>
-       <option value="wed"><xsl:value-of select="$wed"/></option>
-       <option value="thu"><xsl:value-of select="$thu"/></option>
-       <option value="fri"><xsl:value-of select="$fri"/></option>
-       <option value="sat"><xsl:value-of select="$sat"/></option>
-     </select>
-     <xsl:text>, </xsl:text>
+   <tr><th><xsl:copy-of select="$startdate"/></th>
+    <td>
      <xsl:value-of select="$thedate"/>
      <xsl:text> </xsl:text>
-     <select name="dom">
-       <option value="">1-31</option>
-       <option value="1">1</option>
-       <option value="2">2</option>
-       <option value="3">3</option>
-       <option value="4">4</option>
-       <option value="5">5</option>
-       <option value="6">6</option>
-       <option value="7">7</option>
-       <option value="8">8</option>
-       <option value="9">9</option>
-       <option value="10">10</option>
-       <option value="11">11</option>
-       <option value="12">12</option>
-       <option value="13">13</option>
-       <option value="14">14</option>
-       <option value="15">15</option>
-       <option value="16">16</option>
-       <option value="17">17</option>
-       <option value="18">18</option>
-       <option value="19">19</option>
-       <option value="20">20</option>
-       <option value="21">21</option>
-       <option value="22">22</option>
-       <option value="23">23</option>
-       <option value="24">24</option>
-       <option value="25">25</option>
-       <option value="26">26</option>
-       <option value="27">27</option>
-       <option value="28">28</option>
-       <option value="29">29</option>
-       <option value="30">30</option>
-       <option value="31">31</option>
+     <select name="start-mday">
+       <xsl:call-template name="option-range">
+         <xsl:with-param name="start">1</xsl:with-param>
+         <xsl:with-param name="last">31</xsl:with-param>
+         <xsl:with-param name="select">1</xsl:with-param>
+       </xsl:call-template>
      </select>
      <xsl:text> </xsl:text>
      <xsl:value-of select="$ofdate"/>
      <xsl:text> </xsl:text>
-     <select name="month">
-       <option value=""><xsl:value-of select="$all-mo"/></option>
-       <option value="jan"><xsl:value-of select="$jan"/></option>
-       <option value="feb"><xsl:value-of select="$feb"/></option>
-       <option value="mar"><xsl:value-of select="$mar"/></option>
-       <option value="apr"><xsl:value-of select="$apr"/></option>
-       <option value="may"><xsl:value-of select="$may"/></option>
-       <option value="jun"><xsl:value-of select="$jun"/></option>
-       <option value="jul"><xsl:value-of select="$jul"/></option>
-       <option value="aug"><xsl:value-of select="$aug"/></option>
-       <option value="sep"><xsl:value-of select="$sep"/></option>
-       <option value="oct"><xsl:value-of select="$oct"/></option>
-       <option value="nov"><xsl:value-of select="$nov"/></option>
-       <option value="dec"><xsl:value-of select="$dec"/></option>
+     <select name="start-mon">
+       <option value="1"><xsl:value-of select="$jan"/></option>
+       <option value="2"><xsl:value-of select="$feb"/></option>
+       <option value="3"><xsl:value-of select="$mar"/></option>
+       <option value="4"><xsl:value-of select="$apr"/></option>
+       <option value="5"><xsl:value-of select="$may"/></option>
+       <option value="6"><xsl:value-of select="$jun"/></option>
+       <option value="7"><xsl:value-of select="$jul"/></option>
+       <option value="8"><xsl:value-of select="$aug"/></option>
+       <option value="9"><xsl:value-of select="$sep"/></option>
+       <option value="10"><xsl:value-of select="$oct"/></option>
+       <option value="11"><xsl:value-of select="$nov"/></option>
+       <option value="12"><xsl:value-of select="$dec"/></option>
      </select>
      <xsl:text> </xsl:text>
      <xsl:value-of select="$datedivide"/>
      <xsl:text> </xsl:text>
-     <select name="year">
-       <option value=""><xsl:value-of select="$all-ye"/></option>
-       <option value="2002">2002</option>
-       <option value="2001">2001</option>
-       <option value="2000">2000</option>
-       <option value="1999">1999</option>
-       <option value="1998">1998</option>
-       <option value="1997">1997</option>
-       <option value="1996">1996</option>
-       <option value="1995">1995</option>
-       <option value="1994">1994</option>
-       <option value="1993">1993</option>
-       <option value="1992">1992</option>
-       <option value="1991">1991</option>
-       <option value="1990">1990</option>
-       <option value="1989">1989</option>
-       <option value="1988">1988</option>
-       <option value="1987">1987</option>
-       <option value="1986">1986</option>
-       <option value="1985">1985</option>
-       <option value="1984">1984</option>
-       <option value="1983">1983</option>
-       <option value="1982">1982</option>
-       <option value="1981">1981</option>
-       <option value="1980">1980</option>
+     <select name="start-year">
+       <xsl:call-template name="option-range">
+         <xsl:with-param name="start">1980</xsl:with-param>
+         <xsl:with-param name="last">2003</xsl:with-param>
+         <xsl:with-param name="select">1980</xsl:with-param>
+       </xsl:call-template>
+     </select>
+    </td>
+   </tr>
+   <tr><th><xsl:copy-of select="$enddate"/></th>
+    <td>
+     <xsl:value-of select="$thedate"/>
+     <xsl:text> </xsl:text>
+     <select name="end-mday">
+       <xsl:call-template name="option-range">
+         <xsl:with-param name="start">1</xsl:with-param>
+         <xsl:with-param name="last">31</xsl:with-param>
+         <xsl:with-param name="select">31</xsl:with-param>
+       </xsl:call-template>
+     </select>
+     <xsl:text> </xsl:text>
+     <xsl:value-of select="$ofdate"/>
+     <xsl:text> </xsl:text>
+     <select name="end-mon">
+       <option value="1"><xsl:value-of select="$jan"/></option>
+       <option value="2"><xsl:value-of select="$feb"/></option>
+       <option value="3"><xsl:value-of select="$mar"/></option>
+       <option value="4"><xsl:value-of select="$apr"/></option>
+       <option value="5"><xsl:value-of select="$may"/></option>
+       <option value="6"><xsl:value-of select="$jun"/></option>
+       <option value="7"><xsl:value-of select="$jul"/></option>
+       <option value="8"><xsl:value-of select="$aug"/></option>
+       <option value="9"><xsl:value-of select="$sep"/></option>
+       <option value="10"><xsl:value-of select="$oct"/></option>
+       <option value="11"><xsl:value-of select="$nov"/></option>
+       <option value="12" selected="yes"><xsl:value-of select="$dec"/></option>
+     </select>
+     <xsl:text> </xsl:text>
+     <xsl:value-of select="$datedivide"/>
+     <xsl:text> </xsl:text>
+     <select name="end-year">
+       <xsl:call-template name="option-range">
+         <xsl:with-param name="start">1980</xsl:with-param>
+         <xsl:with-param name="last">2003</xsl:with-param>
+         <xsl:with-param name="select">2003</xsl:with-param>
+       </xsl:call-template>
      </select>
     </td>
    </tr>
    <tr>
-    <td><xsl:copy-of select="$appearinlist"/></td>
-    <td class="center">
+    <th><xsl:copy-of select="$appearinlist"/></th>
+    <td>
      <select name="list">
       <option value=""><xsl:value-of select="$all-li"/></option>
       <xsl:apply-templates mode="select" select="list"/>
@@ -226,7 +208,6 @@
    </tr>
   </table>
  </form>
- </div>
 
  <br/><hr/>
 
