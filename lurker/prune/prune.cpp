@@ -1,4 +1,4 @@
-/*  $Id: prune.cpp,v 1.5 2003-05-14 10:36:13 terpstra Exp $
+/*  $Id: prune.cpp,v 1.6 2003-05-16 16:22:17 terpstra Exp $
  *  
  *  prune.cpp - Prune obsolete / stale cache files
  *  
@@ -51,10 +51,12 @@ void help(const char* name)
 {
 	cerr << "Lurker-prune (v" << VERSION << ") prunes the web-server cache.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> -d <docroot> [-v]\n";
+	cerr << "Usage: " << name << " -c <config-file> -d <docroot> [-m <d> -a <d> -v]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-d <docroot>     The base directory of the lurker cache\n";
+	cerr << "\t-m <days>        Keep cached files for at most this many days      [7]\n";
+	cerr << "\t-a <days>        Kill cached files not accessed for this many days [1]\n";
 	cerr << "\t-v               Verbose operation\n";
 	cerr << "\n";
 	cerr << "Prune obsolete or stale html/xml from the web-server accessible cache.\n";
@@ -69,10 +71,12 @@ int main(int argc, char** argv)
 	const char* config  = 0;
 	const char* docroot = 0;
 	int         verbose = 0;
+	time_t      modifyTime = 60*60*24*7;
+	time_t      accessTime = 60*60*24*1;
 	
 	srandom(time(0));
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:d:v?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:d:m:a:v?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -81,6 +85,22 @@ int main(int argc, char** argv)
 			break;
 		case 'd':
 			docroot = optarg;
+			break;
+		case 'm':
+			modifyTime = atol(optarg)*60*60*24;
+			if (!modifyTime)
+			{
+				help(argv[0]);
+				return 1;
+			}
+			break;
+		case 'a':
+			accessTime = atol(optarg)*60*60*24;
+			if (!accessTime)
+			{
+				help(argv[0]);
+				return 1;
+			}
 			break;
 		case 'v':
 			verbose = 1;
@@ -176,7 +196,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	PTable ptable(db.get(), cbuf.st_mtime, dbuf.st_mtime, verbose);
+	PTable ptable(db.get(), cbuf.st_mtime, dbuf.st_mtime, verbose, modifyTime, accessTime);
 	string ok;
 	
 	if ((ok = ptable.load()) != "")

@@ -1,4 +1,4 @@
-/*  $Id: mbox.cpp,v 1.2 2003-05-16 12:31:51 terpstra Exp $
+/*  $Id: mbox.cpp,v 1.3 2003-05-16 16:22:17 terpstra Exp $
  *  
  *  mbox.cpp - Cleanup after an mbox/ command
  *  
@@ -31,9 +31,6 @@
 
 #include <iostream>
 
-#define EXPIRE_TIME_CREATION	60*60*24*30*2
-#define EXPIRE_TIME_ACCESS	60*60*24*7
-
 using namespace std;
 
 void PTable::calc_mbox(KSI ks)
@@ -45,7 +42,7 @@ void PTable::calc_mbox(KSI ks)
 	 *   kill after a period of no accesses
 	 */
 	
-	if (now - ks->second.mtime >= EXPIRE_TIME_CREATION)
+	if (now - ks->second.mtime >= modifiedLimit)
 	{
 		ks->second.kill = true;
 		if (verbose)
@@ -53,7 +50,7 @@ void PTable::calc_mbox(KSI ks)
 		return;
 	}
 	
-	if (now - ks->second.atime >= EXPIRE_TIME_ACCESS)
+	if (now - ks->second.atime >= accessedLimit)
 	{
 		ks->second.kill = true;
 		if (verbose)

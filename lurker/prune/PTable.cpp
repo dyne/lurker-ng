@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.7 2003-05-16 12:31:51 terpstra Exp $
+/*  $Id: PTable.cpp,v 1.8 2003-05-16 16:22:16 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -40,8 +40,10 @@
 
 using namespace std;
 
-PTable::PTable(ESort::Reader* reader_, time_t config_, time_t stamp_, bool verbose_)
- : reader(reader_), config(config_), stamp(stamp_), now(time(0)), verbose(verbose_)
+PTable::PTable(ESort::Reader* reader_, time_t config_, time_t stamp_, 
+               bool verbose_, time_t modifiedLimit_, time_t accessedLimit_)
+ : reader(reader_), config(config_), stamp(stamp_), now(time(0)), 
+   verbose(verbose_), modifiedLimit(modifiedLimit_), accessedLimit(accessedLimit_)
 {
 }
 
