@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.32 2002-06-21 18:19:03 terpstra Exp $
+/*  $Id: main.c,v 1.33 2002-06-21 20:12:32 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -160,7 +160,8 @@ static void* lu_sched_sync(void* die)
 	 * position my_calc_storage. However, it is harmless to exit at
 	 * this point.
 	 */
-	
+	 
+	syslog(LOG_NOTICE, _("syncing databases to disk ...\n"));
 	my_main_sync();
 	
 	if (!die) return 0;
