@@ -1,5 +1,5 @@
 Suggestion: errordocument failthrough configable
-Suggestion: include documentation in a mbox format in default lurker.com
+Suggestion: include documentation in a mbox format in default lurker install
 Suggestion: base path mboxes are relative to
 
 Unfulfilled requirements:
@@ -20,5 +20,3 @@ BUGS:
 	
 	Attachments are never cached because we need to tell the browser
 	the content-type and we have no way to record this.
-	
-	Stale locks?

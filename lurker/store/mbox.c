@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.28 2002-05-21 13:25:48 terpstra Exp $
+/*  $Id: mbox.c,v 1.29 2002-05-31 15:09:12 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -102,7 +102,7 @@ static int my_mbox_lock_mbox(
 	if (flock(mbox->fd, LOCK_SH) == -1)
 		return -1;
 #elif defined(USE_LOCK_LOCKF)
-	if (lockf(mbox->fd, F_TLOCK, 0) == -1)
+	if (lockf(mbox->fd, F_LOCK, 0) == -1)
 		return -1;
 #endif
 
@@ -124,6 +124,7 @@ static int my_mbox_unlock_mbox(
 #endif
 	
 #ifdef USE_LOCK_FCNTL
+	memset (&lck, 0, sizeof (struct flock));
 	lck.l_type = F_UNLCK;
 	fcntl(mbox->fd, F_SETLK, &lck);
 #endif
