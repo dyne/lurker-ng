@@ -131,7 +131,7 @@ dist_man_MANS = lurker-prune.1
 subdir = prune
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
-CONFIG_HEADER = $(top_builddir)/tools/config.h
+CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 bin_PROGRAMS = lurker-prune$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
@@ -145,7 +145,7 @@ lurker_prune_LDADD = $(LDADD)
 lurker_prune_DEPENDENCIES = ../common/libcommon.a ../libesort/libesort.a
 lurker_prune_LDFLAGS =
 
-DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/tools
+DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/PTable.Po ./$(DEPDIR)/attach.Po \

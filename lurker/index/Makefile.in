@@ -130,7 +130,7 @@ dist_man_MANS = lurker-index.1 lurker-list.1 lurker-params.1
 subdir = index
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
-CONFIG_HEADER = $(top_builddir)/tools/config.h
+CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 bin_PROGRAMS = lurker-index$(EXEEXT) lurker-list$(EXEEXT) \
 	lurker-params$(EXEEXT)
@@ -154,7 +154,7 @@ lurker_params_DEPENDENCIES = ../common/libcommon.a \
 	../libesort/libesort.a
 lurker_params_LDFLAGS =
 
-DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/tools
+DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Index.Po ./$(DEPDIR)/getdate.Po \
