@@ -5,6 +5,7 @@ v0.10:
 	Interpret mime headers relative to current charset
 	Print only the best alternative of multipart/alternative
 	Strip html tags from messages with only html
+	Fixed a bug with mixing compression and missing 'From ' lines
 
 v0.9:
 	Don't segfault in rare cases if using '-d' on import (zero restart)

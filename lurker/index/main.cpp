@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.26 2003-06-12 23:47:53 terpstra Exp $
+/*  $Id: main.cpp,v 1.27 2003-06-20 12:17:28 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -115,12 +115,12 @@ int index(const DwString& msg, long batch, bool check, bool compress)
 	}
 	
 	off_t start = length + append.length();
-	
 	string::size_type unwind = append.length();
 	
 	time_t import = time(0);
 	time_t arrival;
 	
+	char prefix[100];
 	const char* d = msg.c_str();
 	if (d[0] == 'F' && d[1] == 'r' && d[2] == 'o' && d[3] == 'm' && d[4] == ' ')
 	{
@@ -135,6 +135,7 @@ int index(const DwString& msg, long batch, bool check, bool compress)
 		string date(d, long(e)-long(d));
 		
 		arrival = get_date(date.c_str(), &import);
+		prefix[0] = 0;
 	}
 	else
 	{
@@ -142,12 +143,9 @@ int index(const DwString& msg, long batch, bool check, bool compress)
 		
 		/** Make a local-timezone timestamp for the message envelope.
 		 */
-		char buf[100];
-		strftime(buf, 100,
+		strftime(prefix, sizeof(prefix),
 		  "From lurker-index@localhost %a %b %2d %02H:%02M:%02S %Y\n",
 		  localtime(&arrival));
-		  
-		append.append(buf);
 	}
 	
 	// Err, messages from the future? I don't think so.
@@ -165,8 +163,8 @@ int index(const DwString& msg, long batch, bool check, bool compress)
 		z_stream stream;
 		int err;
 		
-		stream.next_in   = (unsigned char*)msg.c_str();
-		stream.avail_in  = msg.length();
+		stream.next_in   = (unsigned char*)&prefix[0];
+		stream.avail_in  = strlen(&prefix[0]);
 		stream.next_out  = (unsigned char*)buf;
 		stream.avail_out = sizeof(buf);
 		
@@ -177,6 +175,23 @@ int index(const DwString& msg, long batch, bool check, bool compress)
 		// -MAX_WBITS is an undocumented feature needed to omit header
 		err = deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
 			-MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+		
+		do
+		{
+			assert (err == Z_OK);
+			if (stream.avail_out == 0)
+			{
+				append.append(buf, sizeof(buf));
+				stream.next_out  = (unsigned char*)buf;
+				stream.avail_out = sizeof(buf);
+			}
+			err = deflate(&stream, Z_NO_FLUSH);
+		} while (stream.avail_in != 0);
+		
+		// comprses the real body
+		stream.next_in   = (unsigned char*)msg.c_str();
+		stream.avail_in  = msg.length();
+		err = Z_OK;
 		
 		do
 		{
@@ -213,6 +228,7 @@ int index(const DwString& msg, long batch, bool check, bool compress)
 	}
 	else
 	{
+		append.append(prefix);
 		append.append(msg.c_str(), msg.length());
 	}
 	
