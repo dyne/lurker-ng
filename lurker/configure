@@ -1292,7 +1292,7 @@ INSTALL_STRIP_PROGRAM="\${SHELL} \$(install_sh) -c -s"
 # We need awk for the "check" target.  The system "awk" is bad on
 # some platforms.
 
-		    		    		    ac_config_headers="$ac_config_headers common/config.h"
+		    		    		    ac_config_headers="$ac_config_headers common/system.h"
 
 # Check whether --with-wwwdir or --without-wwwdir was given.
 if test "${with_wwwdir+set}" = set; then
@@ -6872,7 +6872,7 @@ do
   "xslt/Makefile" ) CONFIG_FILES="$CONFIG_FILES xslt/Makefile" ;;
   "lurker.conf" ) CONFIG_FILES="$CONFIG_FILES lurker.conf" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
-  "common/config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS common/config.h" ;;
+  "common/system.h" ) CONFIG_HEADERS="$CONFIG_HEADERS common/system.h" ;;
   *) { { echo "$as_me:6876: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
@@ -7388,7 +7388,7 @@ done; }
   fi
   # Run the commands associated with the file.
   case $ac_file in
-    common/config.h ) # update the timestamp
+    common/system.h ) # update the timestamp
 echo timestamp >"common/stamp-h1"
  ;;
   esac

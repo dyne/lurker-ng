@@ -1,4 +1,4 @@
-/*  $Id: mindex.c,v 1.2 2002-02-10 10:09:40 terpstra Exp $
+/*  $Id: mindex.c,v 1.3 2002-02-10 10:52:17 terpstra Exp $
  *  
  *  mindex.c - output results from a mindex/ lookup
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
 #include "handler.h"
 #include "common.h"
 #include "protocol.h"

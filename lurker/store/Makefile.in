@@ -87,13 +87,13 @@ sbin_PROGRAMS = @PACKAGE@d
 	breader.h  breader.c  \
 	search.h   search.c   \
 	service.h  service.c  \
-	main.c
+	main.c     btree.h
 
 
 @PACKAGE@d_LDADD = @STORAGE_LIBS@ ../common/libcommon.a
 subdir = store
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
-CONFIG_HEADER = $(top_builddir)/common/config.h
+CONFIG_HEADER = $(top_builddir)/common/system.h
 CONFIG_CLEAN_FILES =
 sbin_PROGRAMS = @PACKAGE@d$(EXEEXT)
 PROGRAMS = $(sbin_PROGRAMS)

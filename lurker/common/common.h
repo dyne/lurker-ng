@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.4 2002-02-10 04:16:47 terpstra Exp $
+/*  $Id: common.h,v 1.5 2002-02-10 10:52:17 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -24,7 +24,7 @@
 
 /*------------------------------------------------ System setup methods */
 
-#include "config.h"
+#include "system.h"
 
 #define STORAGE			PACKAGE "d"
 #define RENDER			PACKAGE ".cgi"

@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.1.1.1 2002-01-21 00:03:06 terpstra Exp $
+/*  $Id: search.c,v 1.2 2002-02-10 10:52:17 terpstra Exp $
  *  
  *  search.c - output results from a search/ lookup
  *  
@@ -22,7 +22,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#include "common.h"
 #include "handler.h"
 
 int lu_search_handler(char* parameter)

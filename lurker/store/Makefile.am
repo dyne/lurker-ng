@@ -12,6 +12,6 @@ sbin_PROGRAMS = @PACKAGE@d
 	breader.h  breader.c  \
 	search.h   search.c   \
 	service.h  service.c  \
-	main.c
+	main.c     btree.h
 
 @PACKAGE@d_LDADD = @STORAGE_LIBS@ ../common/libcommon.a

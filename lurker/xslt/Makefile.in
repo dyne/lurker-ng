@@ -77,7 +77,7 @@ wwwdir = @wwwdir@
 EXTRA_DIST = message.xslt mindex.xslt
 subdir = xslt
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
-CONFIG_HEADER = $(top_builddir)/common/config.h
+CONFIG_HEADER = $(top_builddir)/common/system.h
 CONFIG_CLEAN_FILES =
 DIST_SOURCES =
 DIST_COMMON = Makefile.am Makefile.in
@@ -162,9 +162,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
+install-data-am: install-data-local
 
 install-exec-am:
 
@@ -182,18 +180,19 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-generic
 
-uninstall-am: uninstall-info-am
+uninstall-am: uninstall-info-am uninstall-local
 
 .PHONY: all all-am check check-am clean clean-generic distclean \
 	distclean-generic distdir dvi dvi-am info info-am install \
-	install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic uninstall uninstall-am uninstall-info-am
+	install-am install-data install-data-am install-data-local \
+	install-exec install-exec-am install-info install-info-am \
+	install-man install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-generic uninstall uninstall-am \
+	uninstall-info-am uninstall-local
 
 
-install-data-hook:
+install-data-local:
 	@list='$(EXTRA_DIST)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f="`echo $$p | sed -e 's|.xslt$$||'`"; \
@@ -201,6 +200,14 @@ install-data-hook:
 	  $(mkinstalldirs) $(DESTDIR)$(wwwdir)/$$f; \
 	  echo "$(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f/render.xslt"; \
 	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f/render.xslt; \
+	done
+
+uninstall-local:
+	@list='$(EXTRA_DIST)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|.xslt$$||'`"; \
+	  echo "rm -f $(DESTDIR)$(wwwdir)/$$f/render.xslt"; \
+	  rm -f $(DESTDIR)$(wwwdir)/$$f/render.xslt; \
 	done
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -1,4 +1,4 @@
-/*  $Id: thread.c,v 1.1.1.1 2002-01-21 00:03:06 terpstra Exp $
+/*  $Id: thread.c,v 1.2 2002-02-10 10:52:17 terpstra Exp $
  *  
  *  thread.c - output results from a thread/ lookup
  *  
@@ -22,7 +22,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#include "common.h"
 #include "handler.h"
 
 int lu_thread_handler(char* parameter)
