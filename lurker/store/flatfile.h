@@ -1,4 +1,4 @@
-/*  $Id: flatfile.h,v 1.5 2002-02-22 01:18:58 terpstra Exp $
+/*  $Id: flatfile.h,v 1.6 2002-06-18 13:51:59 terpstra Exp $
  *  
  *  flatfile.h - Knows how to manage the keyword flatfile database
  *  
@@ -37,7 +37,7 @@ extern int lu_flatfile_quit (void);
 
 /*-------------------------------------------------- Append methods */
 
-extern int lu_flatfile_write_keyword_block(
+extern message_id lu_flatfile_write_keyword_block(
 	const char*	keyword, 
 	message_id*	buf,
 	message_id	count);

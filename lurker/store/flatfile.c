@@ -1,4 +1,4 @@
-/*  $Id: flatfile.c,v 1.10 2002-06-14 11:16:58 terpstra Exp $
+/*  $Id: flatfile.c,v 1.11 2002-06-18 13:51:59 terpstra Exp $
  *  
  *  flatfile.c - Knows how to manage the keyword flatfile database
  *  
@@ -600,7 +600,7 @@ static int my_flatfile_defrag_record(Lu_Flatfile_Handle h)
  *  been queued up. Hence we may end up jumping to several orders of magnitude
  *  larger storage size.
  */
-int lu_flatfile_write_keyword_block(
+message_id lu_flatfile_write_keyword_block(
 	const char*	keyword, 
 	message_id*	buf,
 	message_id	count)
@@ -612,14 +612,14 @@ int lu_flatfile_write_keyword_block(
 	off_t		ind;
 	
 	if (my_flatfile_locate_keyword(keyword, &where) != 0)
-		return -1;
+		return lu_common_minvalid;
 	
 	/* Is this an old record? */
 	if (where == 0)
 	{	/* Nope, hence no current size - make new record */
 		if (my_flatfile_allocate_cell(my_flatfile_cell_type(count), &spot) != 0)
 		{
-			return -1;
+			return lu_common_minvalid;
 		}
 		
 		records = 0;
@@ -631,7 +631,7 @@ int lu_flatfile_write_keyword_block(
 			if (my_flatfile_free_cell(spot, count) != 0)
 				syslog(LOG_ERR, _("Permanently lost storage\n"));
 			
-			return -1;
+			return lu_common_minvalid;
 		}
 		
 		if (my_flatfile_reset_keyword(keyword, spot) != 0)
@@ -639,7 +639,7 @@ int lu_flatfile_write_keyword_block(
 			if (my_flatfile_free_cell(spot, count) != 0)
 				syslog(LOG_ERR, _("Permanently lost storage\n"));
 			
-			return -1;
+			return lu_common_minvalid;
 		}
 		
 		where = spot;
@@ -649,7 +649,7 @@ int lu_flatfile_write_keyword_block(
 		if (my_flatfile_sread(my_flatfile_fd, where, &records, sizeof(message_id),
 			_("reading old message count")) != sizeof(message_id))
 		{
-			return -1;
+			return lu_common_minvalid;
 		}
 		
 		new_records = records + count;
@@ -661,7 +661,7 @@ int lu_flatfile_write_keyword_block(
 			if (my_flatfile_allocate_cell(
 				my_flatfile_cell_type(new_records), &spot) != 0)
 			{
-				return -1;
+				return lu_common_minvalid;
 			}
 			
 			/* Record that this cell is large */
@@ -670,7 +670,7 @@ int lu_flatfile_write_keyword_block(
 				if (my_flatfile_free_cell(spot, new_records) != 0)
 					syslog(LOG_ERR, _("Permanently lost storage\n"));
 				
-				return -1;
+				return lu_common_minvalid;
 			}
 			
 			memcpy(&buf[0], &records, sizeof(message_id));
@@ -683,7 +683,7 @@ int lu_flatfile_write_keyword_block(
 				if (my_flatfile_free_cell(spot, new_records) != 0)
 					syslog(LOG_ERR, _("Permanently lost storage\n"));
 				
-				return -1;
+				return lu_common_minvalid;
 			}
 			
 			if (my_flatfile_reset_keyword(keyword, spot) != 0)
@@ -691,7 +691,7 @@ int lu_flatfile_write_keyword_block(
 				if (my_flatfile_free_cell(spot, new_records) != 0)
 					syslog(LOG_ERR, _("Permanently lost storage\n"));
 				
-				return -1;
+				return lu_common_minvalid;
 			}
 			
 			where = spot;
@@ -705,16 +705,16 @@ int lu_flatfile_write_keyword_block(
 	if (my_flatfile_swrite(my_flatfile_fd, ind, buf, count * sizeof(message_id),
 		_("writing new message_id records")) != count * sizeof(message_id))
 	{
-		return -1;
+		return lu_common_minvalid;
 	}
 	
 	if (my_flatfile_swrite(my_flatfile_fd, where, &new_records, sizeof(message_id),
 		_("writing new message_id counter")) != sizeof(message_id))
 	{
-		return -1;
+		return lu_common_minvalid;
 	}
 	
-	return 0;
+	return new_records;
 }
 
 int lu_flatfile_pop_keyword(

@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1a)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.24 2002-06-14 11:16:58 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.25 2002-06-18 13:51:58 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -67,11 +67,16 @@ AC_C_INLINE
 AC_C_CHAR_UNSIGNED
 
 AC_HEADER_TIME
-AC_CHECK_HEADERS(unistd.h signal.h fcntl.h io.h time.h sys/mman.h sys/time.h sys/file.h assert.h sys/fcntl.h errno.h syslog.h)
 
 AC_FUNC_ALLOCA
 AC_FUNC_MMAP
 
+ST_CHECK(STORAGE)
+DB3_CHECK(STORAGE)
+C_CLIENT_CHECK(STORAGE)
+XSLT_CHECK(RENDER)
+
+AC_CHECK_HEADERS(unistd.h signal.h fcntl.h io.h time.h sys/mman.h sys/time.h sys/file.h assert.h sys/fcntl.h errno.h syslog.h)
 AC_CHECK_FUNCS(setsid fork flock fcntl lockf)
 
 AC_MSG_CHECKING(for F_GETLK)
@@ -91,11 +96,6 @@ AM_ICONV
 if test "x$am_cv_func_iconv" != "xyes"; then
   AC_MSG_ERROR(Need iconv to function)
 fi
-
-PKG_CHECK_MODULES(STORAGE, st >= 1.3)
-DB3_CHECK(STORAGE)
-C_CLIENT_CHECK(STORAGE)
-XSLT_CHECK(RENDER)
 
 dnl Use -Wall if we have gcc.
 changequote(,)dnl
