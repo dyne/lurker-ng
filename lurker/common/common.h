@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.9 2002-05-11 19:24:59 terpstra Exp $
+/*  $Id: common.h,v 1.10 2002-05-29 08:09:52 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -32,7 +32,7 @@
 #define DEFAULT_CONFIG_FILE	SYSCONFDIR    "/" PACKAGE ".conf"
 #define	DEFAULT_PID_FILE	LOCALSTATEDIR "/" PACKAGE ".pid"
 
-#define WORD_BREAKS		" !\"#%&'()*+,;<=>?[]^`{|}~"
+#define WORD_BREAKS		" !\"'()*,;<>[]^`{|}"
 
 #if SIZEOF_CHAR == 1
 typedef unsigned char lu_byte;

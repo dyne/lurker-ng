@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.3 2002-05-11 19:24:59 terpstra Exp $
+/*  $Id: search.c,v 1.4 2002-05-29 08:09:54 terpstra Exp $
  *  
  *  search.h - Uses the breader to execute a given search
  *  
@@ -101,6 +101,7 @@ int lu_search_start(
 			*keywords && !isspace(*keywords) && w != e; 
 			keywords++, w++)
 		{
+			/* Special case work around file system */
 			*w = *keywords;
 		}
 		

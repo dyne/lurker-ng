@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.53 2002-05-27 14:53:37 terpstra Exp $
+/*  $Id: service.c,v 1.54 2002-05-29 08:09:54 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -25,7 +25,7 @@
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
 
-/* #define DEBUG 1 */
+#define DEBUG 1
 
 #include "common.h"
 #include "io.h"
@@ -74,7 +74,7 @@
 				"(\\?" POST_REG ")?" \
 			")"
 
-#define EMAIL_REG	"(" USER_REG "@" HOST_REG ")"
+#define EMAIL_REG	"(" USER_REG "@" HOST_REG "\\." TOKEN_REG ")"
 
 #define QUOTE_REG	"(\n" INDENT_REG "[^\n]*\n(" INDENT_REG "[^\n]*\n)*)"
 
@@ -437,13 +437,13 @@ static int my_service_write_url(
 
 	for (start = buf; *buf; buf++)
 	{
-		if (	(*buf < 'a' && *buf > 'z') &&
-			(*buf < 'A' && *buf > 'Z') &&
-			(*buf < '0' && *buf > '9') &&
+		if (	(*buf < 'a' || *buf > 'z') &&
+			(*buf < 'A' || *buf > 'Z') &&
+			(*buf < '0' || *buf > '9') &&
 			(*buf != '/' && *buf != ':' && 
 			 *buf != '-' && *buf != '_'))
 		{
-			snprintf(&hex[0], sizeof(hex), "%%%2X", *buf);
+			snprintf(&hex[0], sizeof(hex), "%%%02X", *buf);
 			
 			if (my_service_buffer_writel(h, start, buf - start) != 0)
 				return -1;
@@ -1494,9 +1494,6 @@ static void my_service_draw_snippet_row(
 	int	c;
 	int	col = 0;
 
-#ifdef DEBUG
-	printf("\nOffset: %d", tree[i].column);
-#endif
 	/* First, draw the current row */
 	for (p = *draw_head; p != -1; p = tree[p].draw_next)
 	{
@@ -2138,6 +2135,7 @@ static int my_service_search(
 	message_id	offset;
 	const char*	delim;
 	const char*	detail;
+	char*		demux;
 	
 	delim = strchr(request, ' ');
 	
@@ -2170,7 +2168,12 @@ static int my_service_search(
 		goto my_service_search_error0;
 	}
 	
-	if (lu_search_start(delim+1, &detail) != 0)
+	delim++;
+	
+	for (demux = (char*)delim; *demux; demux++)
+		if (*demux == 1) *demux = '/';
+	
+	if (lu_search_start(delim, &detail) != 0)
 	{
 		my_service_error(h,
 			"Search failed",
@@ -2209,9 +2212,11 @@ static int my_service_search(
 	if (my_service_buffer_write(h, "<search>\n <offset>")  != 0) goto my_service_search_error1;
 	if (my_service_write_int(h, offset)                    != 0) goto my_service_search_error1;
 	if (my_service_buffer_write(h, "</offset>\n <query>")  != 0) goto my_service_search_error1;
-	if (my_service_write_str(h, delim+1)                   != 0) goto my_service_search_error1;
+	if (my_service_write_str(h, delim)                     != 0) goto my_service_search_error1;
 	if (my_service_buffer_write(h, "</query>\n <queryurl>")!= 0) goto my_service_search_error1;
-	if (my_service_write_url(h, delim+1)                   != 0) goto my_service_search_error1;
+ 	for (demux = (char*)delim; *demux; demux++)
+		if (*demux == '/') *demux = 1;
+	if (my_service_write_url(h, delim)                     != 0) goto my_service_search_error1;
 	if (my_service_buffer_write(h, "</queryurl>\n <hits>") != 0) goto my_service_search_error1;
 	if (my_service_write_int(h, 0)                         != 0) goto my_service_search_error1;
 	if (my_service_buffer_write(h, "</hits>\n")            != 0) goto my_service_search_error1;

@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.13 2002-05-11 19:24:59 terpstra Exp $
+/*  $Id: search.c,v 1.14 2002-05-29 08:09:54 terpstra Exp $
  *  
  *  search.c - redirect search postings
  *  
@@ -120,21 +120,24 @@ static void extract_keyword(
 			if (*s >= 127 || *s < 0) { s++; continue; }
 			
 			if ((*s >= 48 && *s <= 57) ||
-			    (*s >= 64 && *s <= 90) ||
 			    (*s >= 97 && *s <=122))
 			{
 				*(*w)++ = *s++;
+			}
+			else if (*s >= 65 && *s <= 90)
+			{
+				*(*w)++ = *s++ - 'A' + 'a';
 			}
 			else if (*s == '/')
 			{	/* special case: '/' can't live on FS */
 				for (t = "%01"; *w != e && *t; t++)
 					*(*w)++ = *t;
-				/* lurker knows 01 = / */
+				/* lurkerd knows 01 = / */
 				s++;
 			}
 			else
 			{
-				sprintf(&buf[0], "%%%2X", *s++);
+				sprintf(&buf[0], "%%%02X", *s++);
 				for (t = &buf[0]; *w != e && *t; t++)
 					*(*w)++ = *t;
 			}

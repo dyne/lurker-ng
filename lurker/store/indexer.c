@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.18 2002-05-22 18:42:55 terpstra Exp $
+/*  $Id: indexer.c,v 1.19 2002-05-29 08:09:54 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -92,7 +92,7 @@ static const char* my_indexer_dows[7] = {
  * 'sith', 'vpn', and 'maul.sith.vpn' because '.' is listed here.
  */
 static const char my_indexer_word_splits[] =
-"$@./:\\-_";
+"$@./:\\-_~&=%?#+";
 static char my_indexer_is_split[256];
 
 /* These are characters which should be interpretted as word breaks.
