@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.45 2003-01-04 20:27:01 terpstra Exp $
+/*  $Id: mbox.c,v 1.46 2003-04-11 12:27:36 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -1035,6 +1035,8 @@ int lu_mbox_map_message(
 	const char*	end;
 	const char*	e;
 	
+	assert (start != -1);
+	
 	/* Keep trying till we have enough mapped to access the header of the
 	 * next message.
 	 */
@@ -1047,24 +1049,25 @@ int lu_mbox_map_message(
 		/* We know that there are headers b/c of the scan step */
 		assert (start < size);
 		
+		/* Don't try for more than there is.
+		 */
+		if (size - start > amt)
+			amt = size - start;
+		
 		if (my_mbox_mmap(mbox, msg, start, amt) != 0)
 			return -1;
 		
 		assert (msg->map.off <= start);
-		assert (msg->map.size + msg->map.off >= 
-			start + LU_MBOX_INIT_MSG_SIZE);
+		assert (msg->map.size + msg->map.off >= start + amt);
 		
 		/* Convert to a char* pointer
 		 */
 		buf = msg->map.base;
 		buf += (start - msg->map.off);
 		
-		/* Get range bounds.
+		/* Mark the bounds of the buffer.
 		 */
-		if (size - start <= amt)
-			e = &buf[size - start];
-		else
-			e = &buf[amt];
+		e = &buf[amt];
 		
 		/* Look for an end to the message.  (This is either an EOF or
 		 * an unmangled '\nFrom'.)
@@ -1078,7 +1081,7 @@ int lu_mbox_map_message(
 		}
 		
 		/* Did we conclude that all the way to EOF is a message? */
-		if (size - start <= amt)
+		if (size - start == amt)
 		{	/* We scanned all the way to EOF */
 			end = e;
 			break;
