@@ -30,4 +30,4 @@ echo "Done"
 
 echo -n "Purging temporary files..... "
 rm merge.raw mid.raw mbox.raw offset.raw keyword.raw
-echo -n "Done"
+echo "Done"
