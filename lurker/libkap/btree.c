@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.17 2002-07-09 22:42:45 terpstra Exp $
+/*  $Id: btree.c,v 1.18 2002-07-11 16:09:37 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -742,7 +742,7 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	/* Scan now points at the key which overflows the mid point 
 	 * next is the first entry to go in the split_child
 	 */
-	klen = strlen(scan) + 1;
+	klen = strlen((char*)scan) + 1;
 	
 	
 	
@@ -868,7 +868,7 @@ static int travel_down(Kap k, const char* key, off_t x,
 		{	/* Sorry for the unreadable code, but this is the bottleneck */
 			scan = ptr + k->btree->tree_size;
 			
-			s = key;
+			s = (const unsigned char*)key;
 			while (*scan)
 			{
 				if (*s != *scan) break;
@@ -898,7 +898,7 @@ static int travel_down(Kap k, const char* key, off_t x,
 			if (WRITE_SECTOR(k->btree, child, k->btree->sectb))
 				return errno;
 			
-			s = key;
+			s = (const unsigned char*)key;
 			while (*ptr)
 			{
 				if (*s != *ptr) break;
@@ -930,7 +930,7 @@ static int travel_down(Kap k, const char* key, off_t x,
 	scan = k->btree->secta + SECTOR_HEADER_SIZE;
 	while (i < hits)
 	{	/* Sorry for the unreadable code, but this is the bottleneck */
-		s = key;
+		s = (const unsigned char*)key;
 		while (*scan)
 		{
 			if (*s != *scan) break;
@@ -954,7 +954,7 @@ static int travel_down(Kap k, const char* key, off_t x,
 	
 	if (i != hits)
 	{	/* found a key >= search */
-		ptr = scan + strlen(scan)+1;
+		ptr = scan + strlen((char*)scan)+1;
 		dlen = *ptr++;
 		
 		memcpy(k->btree->scratch, ptr, dlen);
@@ -985,10 +985,10 @@ static int travel_down(Kap k, const char* key, off_t x,
 	 */
 	assert (nlen != -1);
 	
-	if (i < hits && !strcmp(key, scan))
+	if (i < hits && !strcmp(key, (char*)scan))
 	{	/* key already exists; just new data. */
 		/* Shift remains */
-		klen = strlen(scan)+1;
+		klen = strlen((char*)scan)+1;
 		ptr = scan + klen;
 		*ptr++ = nlen;
 		
@@ -1137,7 +1137,7 @@ struct Read_Back
 {
 	const char*	key;
 	unsigned char*	buf;
-	size_t*		len;
+	ssize_t*	len;
 };
 
 static int kap_read_back(void* arg, const char* key, unsigned char* buf, ssize_t* len)
@@ -1243,7 +1243,7 @@ int kap_btree_read_next(Kap k, char* key,
 	struct ReadNext_Back nfo;
 	
 	/* Make key point to the next largest possible key */
-	ks = key;
+	ks =  (unsigned char*)key;
 	while (*ks) ks++;
 	
 	if (ks+1 == (unsigned char*)key + k->btree->max_key_size)
