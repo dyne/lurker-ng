@@ -1,4 +1,4 @@
-/*  $Id: Config.cpp,v 1.3 2003-04-23 22:57:41 terpstra Exp $
+/*  $Id: Config.cpp,v 1.4 2003-04-25 21:11:28 terpstra Exp $
  *  
  *  Config.cpp - Knows how to load the config file
  *  
@@ -154,7 +154,7 @@ int Config::process_command(const string& key, const string& val)
 	if (key == "list")
 	{
 		len = 16;
-		if (!isSimple(val))
+		if (!isSimple(val) || val.length() == 0)
 		{
 			error << "List id '" << val << "' is not a simple string!" << endl;
 			return -1;
