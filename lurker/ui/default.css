@@ -160,7 +160,8 @@ td.even{
 }
 
 ul {
-  margin: 0em;
+  margin-bottom: 0em;
+  margin-top: 0em;
 }
 
 h1.group {
