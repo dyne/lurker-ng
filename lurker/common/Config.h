@@ -1,4 +1,4 @@
-/*  $Id: Config.h,v 1.5 2003-04-24 12:56:46 terpstra Exp $
+/*  $Id: Config.h,v 1.6 2003-04-25 23:39:19 terpstra Exp $
  *  
  *  Config.h - Knows how to load the config file
  *  
@@ -54,6 +54,11 @@ class Config
 {
  private:
  	List* list;
+#if __GNUC__ == 2
+	strstream error;
+#else
+	std::stringstream error;
+#endif
  	
  public:
  	typedef map<string, List> Lists;
@@ -70,11 +75,16 @@ class Config
  	string	docUrl;
  	string	cgiUrl;
  	
+ 	// get the error string
+ 	string getError()
+ 	{
 #if __GNUC__ == 2
-	strstream error;
+		string out(error.str(), error.rdbuf()->pcount());
+		return out;
 #else
-	std::stringstream error;
+		return error.str();
 #endif
+ 	}
  	
  	Config() : lists(), list(0) { }
  	

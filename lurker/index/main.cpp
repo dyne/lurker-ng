@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.7 2003-04-25 23:22:36 terpstra Exp $
+/*  $Id: main.cpp,v 1.8 2003-04-25 23:39:26 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -237,7 +237,7 @@ int main(int argc, char** argv)
 	Config cfg;
 	if (cfg.load(config) != 0)
 	{
-		cerr << cfg.error.str() << flush;
+		cerr << cfg.getError() << flush;
 		return 1;
 	}
 	

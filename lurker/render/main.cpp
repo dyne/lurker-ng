@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.4 2003-04-23 23:22:09 terpstra Exp $
+/*  $Id: main.cpp,v 1.5 2003-04-25 23:39:26 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -167,7 +167,7 @@ int main(int argc, char** argv)
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
 		cout << error(_("Cannot open config file"), "Config::load",
-			cfg.error.str());
+			cfg.getError());
 		return 1;
 	}
 	
