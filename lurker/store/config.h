@@ -1,4 +1,4 @@
-/*  $Id: config.h,v 1.5 2002-02-12 07:16:40 terpstra Exp $
+/*  $Id: config.h,v 1.6 2002-02-12 15:36:24 cbond Exp $
  *  
  *  config.h - Knows how to load the config file
  *  
@@ -23,6 +23,9 @@
  */
 
 #include <db.h>
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/stat.h>
 
 /*------------------------------------------------ Public types */            
 
@@ -34,7 +37,16 @@ typedef struct Lu_Config_Mbox_T
 	
 	time_t	next_message;
 	int	locked;
-	
+	struct	stat sb;
+	struct	map_info {
+#define		map_off(m, n)	((char *)(m)->map.start + n - (m)->map.off)
+#define		map_end(m)	((char *)(m)->map.addr + (m)->map.size)
+		void*	addr;
+		void*	start;
+		size_t	size;
+		off_t	off;
+	} map;
+
 	/* only used during load of config */
 	struct Lu_Config_Mbox_T*	next;
 } Lu_Config_Mbox;
@@ -63,10 +75,6 @@ extern int		lu_config_lists;
 extern char* lu_config_dbdir;
 extern char* lu_config_wwwdir;
 extern char* lu_config_pidfile;
-
-extern char* lu_config_list_host;
-extern char* lu_config_admin_name;
-extern char* lu_config_admin_address;
 
 extern DB_ENV* lu_config_env;
 
