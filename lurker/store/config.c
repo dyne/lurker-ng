@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.18 2002-07-12 14:54:44 terpstra Exp $
+/*  $Id: config.c,v 1.19 2002-07-12 15:15:04 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -53,7 +53,6 @@ char*	lu_config_list_host	= 0;
 char*	lu_config_admin_name	= 0;
 char*	lu_config_admin_address	= 0;
 
-DB_ENV*		lu_config_env     = 0;
 Kap		lu_config_keyword = 0;
 
 Lu_Config_List*	lu_config_list  = 0;
@@ -690,44 +689,7 @@ int lu_config_init(const char* cfg)
 
 int lu_config_open(void)
 {
-	unsigned char		digest[16];
-	struct MD5Context	md5;
-	int			error;
-	
-	if ((error = db_env_create(&lu_config_env, 0)) != 0)
-	{
-		fprintf(stderr, _("Creating db3 environment: %s\n"), 
-			db_strerror(error));
-		return -1;
-	}
-
-#ifdef DEBUG
-	lu_config_env->set_errfile(lu_config_env, stderr);
-#endif
-	
-	MD5Init(&md5);
-	MD5Update(&md5, (unsigned char*)lu_config_dbdir, strlen(lu_config_dbdir));
-	MD5Final(digest, &md5);
-	
-	/* Give ourselves a special and unique shared memory key */
-	if ((error = lu_config_env->set_shm_key(
-		lu_config_env, *(long*)&digest[0])) != 0)
-	{
-		fprintf(stderr, _("Setting db3 shared memory key: %s\n"), 
-			db_strerror(error));
-		return -1;
-	}
-	
-	/* Open the environment */
-	if ((error = lu_config_env->open(lu_config_env, lu_config_dbdir, 
-		DB_INIT_MPOOL |	DB_RECOVER |
-		DB_CREATE | DB_SYSTEM_MEM,
-		LU_S_READ | LU_S_WRITE)) != 0)
-	{
-		fprintf(stderr, _("Opening the db3 environment: %s\n"),
-			db_strerror(error));
-		return -1;
-	}
+	int error;
 	
 	if ((error = kap_create(&my_config_mbox_db, KAP_BTREE)) != 0 ||
 	    (error = kap_btree_set_maxkeysize(my_config_mbox_db, 24)) != 0 ||
@@ -794,13 +756,6 @@ int lu_config_close(void)
 {
 	int error;
 	int fail = 0;
-	
-	if ((error = lu_config_env->close(lu_config_env, 0)) != 0)
-	{
-		syslog(LOG_ERR, _("Closing db3 environment: %s\n"),
-			db_strerror(error));
-		fail = -1;
-	}
 	
 	if ((error = kap_destroy(my_config_mbox_db)) != 0)
 	{

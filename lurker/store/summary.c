@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.29 2002-07-12 13:47:16 terpstra Exp $
+/*  $Id: summary.c,v 1.30 2002-07-12 15:15:05 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -629,7 +629,7 @@ int lu_summary_write_lists(
 	}
 	
 	error = kap_kclose(my_summary_offset_db, &kr, &key[0]);
-	if (error && error != DB_NOTFOUND)
+	if (error)
 	{
 		syslog(LOG_ERR, _("Could not close occurance db: %s\n"),
 			kap_strerror(error));
