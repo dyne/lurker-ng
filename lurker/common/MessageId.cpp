@@ -1,4 +1,4 @@
-/*  $Id: MessageId.cpp,v 1.2 2003-04-21 18:25:31 terpstra Exp $
+/*  $Id: MessageId.cpp,v 1.3 2003-05-03 12:16:07 terpstra Exp $
  *  
  *  MessageId.cpp - Helper class for manipulating internal message ids
  *  
@@ -30,6 +30,7 @@
 
 #include <cstring>
 #include <cstdio>
+#include <cstdlib>
 
 inline int dehex(char x)
 {
