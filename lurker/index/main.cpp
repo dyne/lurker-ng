@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.11 2003-05-03 11:49:29 terpstra Exp $
+/*  $Id: main.cpp,v 1.12 2003-05-07 16:31:13 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -53,7 +53,7 @@ void help(const char* name)
 {
 	cerr << "Lurker-index (v" << VERSION << ") imports messages to the archive.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> -l <list> ( -m | -b <count> ) [ -v -d ]\n";
+	cerr << "Usage: " << name << " -c <config-file> -l <list> (-m | -b <count>) [-v -d -f]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-l <list>        Import messages to the named list\n";
@@ -61,6 +61,7 @@ void help(const char* name)
 	cerr << "\t-m               Import a single message\n";
 	cerr << "\t-v               Verbose operation\n";
 	cerr << "\t-d               Drop duplicates per list\n";
+	cerr << "\t-f               Fast import (but vulnerable to power-failure)\n";
 	cerr << "\n";
 	cerr << "Index messages from standard input and store them in the lurker database.\n";
 	cerr << "Either import a single message, or import a batch of messages in mbox format.\n";
@@ -204,6 +205,7 @@ int main(int argc, char** argv)
 	long        batch   = 0;
 	int         verbose = 0;
 	int         dropdup = 0;
+	bool        synced  = true;
 	
 	srandom(time(0));
 	
@@ -228,6 +230,9 @@ int main(int argc, char** argv)
 			break;
 		case 'd':
 			dropdup = 1;
+			break;
+		case 'f':
+			synced = false;
 			break;
 		default:
 			help(argv[0]);
@@ -256,6 +261,7 @@ int main(int argc, char** argv)
 	}
 	list = &i->second;
 	
+	ESort::Parameters params(synced);
 	// work around g++ 2.95 borkage
 	auto_ptr<ESort::Writer> dbt(ESort::Writer::open(cfg.dbdir + "/db"));
 	db = dbt;
