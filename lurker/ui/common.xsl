@@ -157,6 +157,7 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
 </xsl:template>
 <xsl:template name="date-fields">
  <xsl:param name="date"/>
+ <input type="hidden" name="utc" value="0"/>
  <input type="hidden" name="sec" value="{substring($date,14,2)}"/>
  <input type="hidden" name="min" value="{substring($date,12,2)}"/>
  <select name="hour">

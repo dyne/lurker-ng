@@ -71,3 +71,15 @@ function timezone(utc)
 	s += h.toString() + twostr(m);
 	document.write(s);
 }
+
+function form_timezone(form)
+{
+	var d = new Date(0);
+	d.setSeconds(form.sec.value);
+	d.setMinutes(form.min.value);
+	d.setHours(form.hour.value);
+	d.setDate(form.mday.value);
+	d.setMonth(form.mon.value-1);
+	d.setFullYear(form.year.value);
+	form.utc.value = d.valueOf() / 1000;
+}

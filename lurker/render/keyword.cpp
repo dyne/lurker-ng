@@ -1,4 +1,4 @@
-/*  $Id: keyword.cpp,v 1.11 2003-06-23 14:38:43 terpstra Exp $
+/*  $Id: keyword.cpp,v 1.12 2003-07-03 15:18:17 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -93,6 +93,9 @@ int main()
 	tms.tm_mday = args.find("mday") != args.end() ? atol(args["mday"].c_str()) : 1;
 	tms.tm_mon  = args.find("mon" ) != args.end() ? atol(args["mon" ].c_str()) - 1 : 0;
 	tms.tm_year = args.find("year") != args.end() ? atol(args["year"].c_str()) - 1900 : 138;
+	
+	time_t utc = atol(args["utc"].c_str());
+	if (utc) tms = *gmtime(&utc);
 	
 	char buf[26];
 	strftime(buf, 25, "%Y%m%d.%H%M%S", &tms);

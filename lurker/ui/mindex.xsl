@@ -77,7 +77,7 @@
        </xsl:choose>
       </td>
       <td width="100%" nowrap="NOWRAP" align="center">
-       <form action="{server/cgi-url}/jump.cgi">
+       <form action="{server/cgi-url}/jump.cgi" onsubmit="form_timezone(this)">
         <input type="hidden" name="doc-url" value="{server/doc-url}"/>
         <input type="hidden" name="format" value="{$ext}"/>
         <input type="hidden" name="list" value="{list/id}"/>

@@ -73,7 +73,7 @@
     <table class="navigation">
      <tr><th align="left"><xsl:value-of select="$search-menu"/></th></tr>
      <tr><td nowrap="NOWRAP" align="center">
-      <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">
+      <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8" onsubmit="form_timezone(this)">
        <input type="hidden" name="doc-url" value="{server/doc-url}"/>
        <input type="hidden" name="format" value="{$ext}"/>
        

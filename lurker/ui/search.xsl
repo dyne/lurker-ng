@@ -147,7 +147,7 @@
         <img src="../imgs/a.png" width="1" height="24" alt=""/>
       </td>
       <td nowrap="NOWRAP" align="center">
-       <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">
+       <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8" onsubmit="form_timezone(this)">
         <input type="hidden" name="doc-url" value="{server/doc-url}"/>
         <input type="hidden" name="format"  value="{$ext}"/>
         <input type="hidden" name="query"   value="{translate(query,',',' ')}"/>

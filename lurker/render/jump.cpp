@@ -1,4 +1,4 @@
-/*  $Id: jump.cpp,v 1.5 2003-06-23 14:38:43 terpstra Exp $
+/*  $Id: jump.cpp,v 1.6 2003-07-03 15:18:17 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -43,6 +43,9 @@ int main()
 	tms.tm_mday = atol(args["mday"].c_str());
 	tms.tm_mon  = atol(args["mon" ].c_str()) - 1;
 	tms.tm_year = atol(args["year"].c_str()) - 1900;
+	
+	time_t utc = atol(args["utc"].c_str());
+	if (utc) tms = *gmtime(&utc);
 	
 	char buf[26];
 	strftime(buf, 25, "%Y%m%d.%H%M%S", &tms);

@@ -111,7 +111,7 @@
         <img src="../imgs/a.png" width="1" height="24" alt=""/>
       </td>
       <td nowrap="NOWRAP" align="center" width="100%">
-       <form action="{server/cgi-url}/jump.cgi">
+       <form action="{server/cgi-url}/jump.cgi" onsubmit="form_timezone(this)">
         <input type="hidden" name="doc-url" value="{server/doc-url}"/>
         <input type="hidden" name="format" value="{$ext}"/>
         <input type="hidden" name="list" value="{list/id}"/>
