@@ -1,4 +1,4 @@
-/*  $Id: expiry.c,v 1.7 2002-05-22 12:21:15 terpstra Exp $
+/*  $Id: expiry.c,v 1.8 2002-05-29 08:10:47 terpstra Exp $
  *  
  *  expiry.c - Record when pages should be destroyed
  *  
@@ -25,7 +25,7 @@
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
 
-#define DEBUG 1
+/* #define DEBUG 1 */
 
 #include "common.h"
 #include "io.h"

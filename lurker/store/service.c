@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.54 2002-05-29 08:09:54 terpstra Exp $
+/*  $Id: service.c,v 1.55 2002-05-29 08:10:47 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -25,7 +25,7 @@
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
 
-#define DEBUG 1
+/* #define DEBUG 1 */
 
 #include "common.h"
 #include "io.h"
