@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.10 2003-06-11 14:24:54 terpstra Exp $
+/*  $Id: message.cpp,v 1.11 2003-06-11 14:34:58 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -292,10 +292,25 @@ void message_format_address(ostream& o, DwAddress* a, const string& charset)
 				// Deal with the horror
 				name = decode_header(name, charset.c_str());
 				
-				o << "<email name=\"" << xmlEscape 
-				  << name << "\" address=\"" << xmlEscape
-				  << m->LocalPart().c_str() << "@" << xmlEscape
-				  << m->Domain().c_str() << "\"/>";
+				DwString addr = m->LocalPart() + "@" + m->Domain();
+				for (size_t i = 0; i < addr.length(); ++i)
+				{
+					if (addr[i] <= 0x20 || addr[i] >= 0x7f)
+					{	// fucked up address
+						addr = "";
+						break;
+					}
+				}
+				if (addr.length() > 128) addr = "";
+				
+				o << "<email";
+				if (name != "")
+					o << " name=\"" << xmlEscape 
+					  << name << "\"";
+				if (addr != "")
+					o << " address=\"" << xmlEscape
+					  << addr.c_str() << "\"";
+				o << "/>";
 			}
 		}
 	}
