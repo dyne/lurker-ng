@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.7 2003-04-26 12:10:13 terpstra Exp $
+/*  $Id: Index.cpp,v 1.8 2003-04-26 13:01:55 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -52,6 +52,7 @@
 
 #include <unistd.h>
 #include <iconv.h>
+#include <cerrno>
 
 using namespace std;
 
