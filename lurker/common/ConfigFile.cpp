@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.9 2004-08-24 21:14:54 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.10 2004-08-26 16:52:10 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -264,6 +264,7 @@ int Config::process_command(const string& key, const string& val, const string& 
 		if (val.length() != 2 || !isSimple(val))
 		{
 			error << "Language is not a two digit language code!" << endl;
+			error << "Regional variants are not relevant for searches." << endl;
 			return -1;
 		}
 		
