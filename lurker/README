@@ -1,5 +1,7 @@
 For installation instructions, please read INSTALL.
-For contact information please read AUTHORS.
+For contact information, please read AUTHORS.
+For common questions, please read FAQ.
+For information on high volume archives, please read LIMITS.
 
 ---------------
 What is lurker?
@@ -93,7 +95,6 @@ What were the design goals?
 
  Libraries used (should be minimal):
 	libst
-	libxslt1
 	libc-client
 
  Portability: 

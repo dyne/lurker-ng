@@ -15,6 +15,9 @@ v0.1e:
 	Prettier arrows from Kevin Teague
 	Should compile on BSD again
 	Fixed alignment issue on ia64
+	Added a FAQ
+	Made mmap of >512M always fail (on 32bit) to prevent address space
+		hoarding which prevents smaller mmaps from working
 
 v0.1d:
 	Fixed an off by one error in btree.c (could assert-fail)

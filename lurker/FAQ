@@ -1,2 +1,115 @@
 Why shouldn't I open the lurker mboxs with a mail reader?
 Why does lurker appear to use so much RAM?
+Why not store all the messages as XML instead of rendering them as it?
+What is better: one large mbox or lots of small ones?
+After adding a list I get "CORRUPT dataset". Why?
+
+---
+
+Q: Why shouldn't I open the lurker mboxs with a mail reader?
+
+A: Mail readers like to modify the X-Status header by adding or removing
+   flags which denote that the message is new, or opened, or read, etc.
+   These changes result in displacement changes in the file even if you do
+   nothing but read the file. Also, your mail reader may re-order messages
+   by some criterea. Finally, you might accidentally delete a message.
+   
+   Solutions:
+     1. Use a procmail rule to copy mail to a lurker mbox and your own mbox
+        which you delete messages from:
+          :0 c
+          lurkers-copy.mbox
+     2. Make the mailbox read only for you, but appendable by the mail
+        user (or whatever user appends to the mbox):
+          chown mail.youruser lurkers.mbox
+          chmod 0640 lurkers.mbox
+
+
+Q: Why does lurker appear to use so much RAM?
+
+A: Well, lurker likes to mmap(). Lurker only uses 8Mb of RAM. There should
+   be very little fluctuation in this. However, the VSZ will show how much
+   lurker has mapped. This RAM is not in use; the kernel has not really given
+   it to lurker. The RSS is how much RAM the kernel has presently given
+   lurker as page cache. Again, lurker is not hoarding this RAM; there was
+   just nothing else using it so the kernel buffered the last few disk
+   operations for lurker. 
+
+   Example of top on a lurker process that has run for a while:
+	 PID USER     PRI  NI  SIZE  RSS SHARE STAT %CPU %MEM   TIME COMMAND
+	1756 terpstra   9   0  229M 229M  221M S     0.0 30.3   3:43 lurkerd
+   Note that 229M-221M = 8M as expected. The 221M is shared and can be
+   reclaimed by any needy process.
+
+   Examples of "ps aux" on an old and restarted lurker process:
+	USER       PID %CPU %MEM   VSZ  RSS TTY      STAT START   TIME COMMAND
+	terpstra  1756  0.0 30.3 610204 234548 ?     S    Aug18   3:43 ./lurkerd
+	terpstra 28493  2.0  4.0 610204 5104 pts/2   T    21:50   0:00 ./lurkerd
+   Note the VSZ (mmap'd space) is the same, but the RSS (currently held
+   cache) is larger for the older process. As lurker runs, often RAM
+   accumulates since most systems have more RAM than normal processes use.
+   This is *ok* since the kernel is quite happy to reallocate this memory.
+
+
+Q: Why not store all the messages as XML instead of rendering them as it?
+
+A: Lurker is designed to hold lots of email. Many other programs need
+   mailing list archives in mbox format. It doesn't cost much for me to
+   re-parse a specific email, so there is not much speed lost. On the other
+   hand, I save a lot of disk space.
+   
+   Example of archivers that use mbox->html + indexer:
+	1Gb mbox
+	2Gb html (larger on average)
+	500Mb index
+	---
+	250% space wasted
+
+   Example of lurker:
+	1Gb mbox
+	300Mb index
+	---
+	30% space wasted
+
+   As you can see, since lurker builds the indexer into the *mbox* the
+   index should be smaller. Also, why store the larger html/xml when it
+   probably won't be necessary?
+   
+   Finally, even though I love XML, I think it is important to be able to
+   retreive to original email without any concerns that translation back and
+   forth may have slightly altered the contents of the email. Therefore, I
+   consider keeping the mbox essential, and it seems natural to leave the
+   data in this native format.
+
+
+Q: What is better: one large mbox or lots of small ones?
+
+A: No difference. However, recall that lurker has to open all of the mboxes,
+   so if you have a lot of mailing lists, it is probably better to keep the
+   archives as one large mbox so you don't run out of file descriptors.
+
+
+Q: After adding a list I get "CORRUPT dataset". Why?
+
+    lurkerd[20868]: CORRUPT dataset: Imported a message from a new mbox
+    which has timestamp earlier than present. This means an mbox was
+    added to the config file after the existing database had passed this
+    timestamp. All timestamps in this mbox will be wrecked.
+
+A: Well, lurker assigns internal message numbers to email it imports in
+   chronological order. If you attempt to add a new list and import messages
+   which are earlier than the last imported message, you will get this
+   error.
+   
+   Solution? Stop lurker, run the "purge" script, start lurker. Wait for the
+   import to complete.
+   
+   Also, creating a new list should not be a problem as long as there is no
+   history for the list. If you add a new list and start importing messages
+   from the current time, all is well.
+   
+   As to why I am not planning on fixing this: This assumption greatly
+   simplifies the lurker code. Also, it makes certain operations possible
+   to implement efficiently, like: searches always return most recent posts
+   first, efficient keyword search + date range, etc.
+

@@ -1,7 +1,4 @@
 TODO for 0.1e:
-	Detect xf:escape-uri
-	Add FAQ
-	Profile append locations
 	Possibly cache append locations
 	Release
 

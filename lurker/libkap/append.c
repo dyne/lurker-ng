@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.21 2002-08-24 19:15:39 terpstra Exp $
+/*  $Id: append.c,v 1.22 2002-08-24 20:22:09 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -201,6 +201,13 @@ static size_t round_mmap_up(size_t amt)
 {
 	size_t out = 0xC000; /* Can't quite map 2Gb- so use 110000... */
 	while (out < amt) out <<= 1;
+	
+	if (sizeof(void*) == 4 && out > 512*1024*1024)
+	{
+		/* Intentionally fail; greedy is bad */
+		return 0xFFFFFFFFUL;
+	}
+	
 	return out;
 }
 
