@@ -1,4 +1,4 @@
-/*  $Id: rbuffer.c,v 1.7 2002-07-21 22:54:23 terpstra Exp $
+/*  $Id: rbuffer.c,v 1.8 2002-07-26 13:32:37 terpstra Exp $
  *  
  *  rbuffer.c - Implements a buffering system that read combines
  *  
@@ -508,7 +508,7 @@ static int find(
 	{	/* No matches */
 		assert(left_off == 0);
 		*offset = -1;
-		return 0;
+		return KAP_NOT_FOUND;
 	}
 	
 	/* Invariant was: largest matching element in range [l, r)
@@ -559,6 +559,7 @@ static int find(
 	{	/* This is the only record it could have been, and it fails. */
 		*offset = -1;
 		assert(l == 0 && left_off == 0);
+		return KAP_NOT_FOUND;
 	}
 		
 	return 0;
