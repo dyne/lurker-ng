@@ -1,12 +1,13 @@
 wwwdir = @wwwdir@
 
-XSLTS = message mindex
+EXTRA_DIST = message.xslt mindex.xslt
 
 install-data-hook:
-	@list='$(XSLTS)'; for p in $$list; do \
-	  if test -f "$$p.xslt"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$(mkinstalldirs) $(DESTDIR)$(wwwdir)/$$p"; \
-	  $(mkinstalldirs) $(DESTDIR)$(wwwdir)/$$p; \
-	  echo "$(INSTALL_DATA) $$d$$p.xslt $(DESTDIR)$(wwwdir)/$$p/render.xslt"; \
-	  $(INSTALL_DATA) $$d$$p.xslt $(DESTDIR)$(wwwdir)/$$p/render.xslt; \
+	@list='$(EXTRA_DIST)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|.xslt$$||'`"; \
+	  echo "$(mkinstalldirs) $(DESTDIR)$(wwwdir)/$$f"; \
+	  $(mkinstalldirs) $(DESTDIR)$(wwwdir)/$$f; \
+	  echo "$(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f/render.xslt"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f/render.xslt; \
 	done
