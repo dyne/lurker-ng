@@ -1,4 +1,4 @@
-/*  $Id: db.c,v 1.4 2002-01-21 07:27:35 terpstra Exp $
+/*  $Id: db.c,v 1.5 2002-01-22 23:10:59 terpstra Exp $
  *  
  *  db.c - manage the databases
  *  
@@ -264,26 +264,23 @@ int lu_reply_to_resolution(
 int lu_open_db()
 {
 	int	error;
-	char	buf[400];
 	off_t	offset;
 	
-	snprintf(&buf[0], sizeof(buf), "%s/summary.flat", lu_dbdir);
-	lu_summary_fd = open(&buf[0], 
+	lu_summary_fd = open("summary.flat", 
 		O_RDWR | O_BINARY | O_CREAT,
 		LU_S_READ | LU_S_WRITE);
 	if (lu_summary_fd == -1)
 	{
-		perror(&buf[0]);
+		perror("summary.flat");
 		return -1;
 	}
 	
-	snprintf(&buf[0], sizeof(buf), "%s/variable.flat", lu_dbdir);
-	lu_variable_fd = open(&buf[0], 
+	lu_variable_fd = open("variable.flat", 
 		O_RDWR | O_BINARY | O_CREAT,
 		LU_S_READ | LU_S_WRITE);
 	if (lu_variable_fd == -1)
 	{
-		perror(&buf[0]);
+		perror("variable.flat");
 		return -1;
 	}
 	
