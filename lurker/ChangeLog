@@ -12,6 +12,7 @@ v1.1:
 	Added hide_email config option
 	Absolute urls now support SSL (https)
 	Create lurker.docroot during install
+	Empty admin_address now means unlinked administrator
 
 v1.0:
 	Froze the 1.* series against all changes other than bug fixes

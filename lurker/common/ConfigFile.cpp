@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.2 2004-01-06 19:20:19 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.3 2004-01-06 21:22:54 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -38,7 +38,7 @@ Config::Config()
    dbdir(""), 
    archive("Unconfigured Host"),
    admin_name("Unset admin name"),
-   admin_address("Unset admin address"),
+   admin_address(""),
    xslt("cat -"),
    pgpv_mime("off"),
    pgpv_inline("off"),
