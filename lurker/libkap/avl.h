@@ -1,4 +1,4 @@
-/*  $Id: avl.h,v 1.3 2002-07-11 16:14:20 terpstra Exp $
+/*  $Id: avl.h,v 1.4 2002-07-11 16:31:36 terpstra Exp $
  *  
  *  avl.h - Manage a AVL search tree
  *  
@@ -401,7 +401,7 @@ inline int my_avl_##PREFIX##_right_shrunk(RECTYPE* n) \
 	} \
 } \
 \
-inline int my_avl_##PREFIX##_kill_largest(RECTYPE* n, RECTYPE* w) \
+static int my_avl_##PREFIX##_kill_largest(RECTYPE* n, RECTYPE* w) \
 { \
 	int tmp; \
 	\
@@ -423,7 +423,7 @@ inline int my_avl_##PREFIX##_kill_largest(RECTYPE* n, RECTYPE* w) \
 	return AVL_BALANCE; \
 } \
 \
-inline int my_avl_##PREFIX##_kill_smallest(RECTYPE* n, RECTYPE* w) \
+static int my_avl_##PREFIX##_kill_smallest(RECTYPE* n, RECTYPE* w) \
 { \
 	int tmp; \
 	\
