@@ -1,4 +1,4 @@
-/*  $Id: CharsetEscape.h,v 1.2 2003-04-21 18:25:31 terpstra Exp $
+/*  $Id: CharsetEscape.h,v 1.3 2003-05-03 19:13:39 terpstra Exp $
  *  
  *  CharsetEscape.h - A stream manipulator-like thing for charset conversion
  *  
@@ -45,6 +45,8 @@ class CharsetEscape
  	// If the charset is invalid, iso-8859-1 is used instead
  	CharsetEscape(const char* charset);
  	~CharsetEscape();
+ 	
+ 	bool valid() const { return ic != (iconv_t)-1; }
  	
  	void write(ostream& o, const char* s, size_t amt);
  	

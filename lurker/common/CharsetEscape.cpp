@@ -1,4 +1,4 @@
-/*  $Id: CharsetEscape.cpp,v 1.4 2003-04-25 23:31:43 terpstra Exp $
+/*  $Id: CharsetEscape.cpp,v 1.5 2003-05-03 19:13:39 terpstra Exp $
  *  
  *  CharsetEscape.h - A stream manipulator-like thing for charset conversion
  *  
@@ -39,15 +39,13 @@
 #include "CharsetEscape.h"
 
 CharsetEscape::CharsetEscape(const char* charset)
- : ic(iconv_open("utf-8", charset))
+ : ic(iconv_open("UTF-8", charset))
 {
-	if (ic == (iconv_t)-1)
-		ic = iconv_open("utf-8", "iso-8859-1");
 }
 
 CharsetEscape::~CharsetEscape()
 {
-	iconv_close(ic);
+	if (valid()) iconv_close(ic);
 }
 
 void iconv_bug_kill_nulls(char* ob, size_t is)
@@ -62,6 +60,40 @@ void iconv_bug_kill_nulls(char* ob, size_t is)
 
 void CharsetEscape::write(ostream& o, const char* ib, size_t is)
 {
+	if (!valid())
+	{	// when not valid, just keep ascii chars
+	
+		while (1)
+		{
+			const char* s;
+			const char* e;
+			
+			for (s = ib, e = s + is; s != e; ++s)
+			{	// if it moves, kill it!
+				if ((*s < 0x20 || *s >= 127) &&
+				    (*s != '\n' && *s != '\t'))
+				{
+					break;
+				}
+			}
+			
+			// write out what we have
+			if (s != ib) o.write(ib, long(s - ib));
+			
+			is -= long(s - ib);
+			ib = s;
+			
+			if (!is) break;
+			
+			// skip the offensive byte
+			++ib;
+			--is;
+			o << '?';
+		}
+		
+		return;
+	}
+	
 	char buf[8096];
 	
 	char*		ob = &buf[0];
