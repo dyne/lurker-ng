@@ -77,7 +77,11 @@ wwwdir = @wwwdir@
 
 imgsdir = @wwwdir@/imgs
 
-dist_imgs_DATA = a.png b.png c.png d.png e.png f.png g.png h.png i.png j.png k.png
+dist_imgs_DATA = \
+	a.png b.png c.png d.png e.png \
+	f.png g.png h.png i.png j.png k.png \
+	next.png prev.png
+
 subdir = imgs
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/system.h
