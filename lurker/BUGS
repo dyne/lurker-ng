@@ -1,5 +1,4 @@
 BUGS:
-1	Messages should use message-id for identification.
 2	Seperate lists can receive the same message.
 		-> If we implement insertion earlier in the id list, we
 		   screw ourselves for index caching.
@@ -7,16 +6,6 @@ BUGS:
 4	xml browsable with remote stylesheets
 5	Attachments should be cacheable - fix it somehow.
 6	Make threading work somehow.
-
-	#1 *** Message ID instead of docid should be URL
-		a: find a good md5 implementation.
-		b: decide what fields to use to generate id if missing
-		c: build a message-id generating function.
-		d: add message-id to the variable data (first thing)
-		e: remove message-id from keyword DB, fork into a direct db3
-		   database: message-id -> docid.
-		f: Change all message links to print message-id instead of
-		   docid.
 
 	#2 *** Same message in multiple lists:
 		a: finish #2 since this depends on it
