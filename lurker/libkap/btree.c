@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.20 2002-07-11 23:50:54 terpstra Exp $
+/*  $Id: btree.c,v 1.21 2002-07-12 13:31:46 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -1213,6 +1213,36 @@ int kap_btree_write(Kap k, const char* key,
 	
 	if (out) return out;
 	if (nfo.fail) return KAP_KEY_EXIST;
+	
+	return 0;
+}
+
+struct Rewrite_Back
+{
+	const unsigned char*	buf;
+	size_t			len;
+};
+
+static int kap_rewrite_back(void* arg, const char* key, unsigned char* buf, ssize_t* len)
+{
+	struct Rewrite_Back* nfo = arg;
+	
+	memcpy(buf, nfo->buf, nfo->len);
+	*len = nfo->len;
+	return 1;
+}
+
+int kap_btree_rewrite(Kap k, const char* key,
+	const unsigned char* buf, ssize_t len)
+{
+	int out;
+	struct Rewrite_Back nfo;	
+	
+	nfo.buf = buf;
+	nfo.len = len;
+	out = kap_btree_op(k, key, &kap_rewrite_back, &nfo);
+	
+	if (out) return out;
 	
 	return 0;
 }

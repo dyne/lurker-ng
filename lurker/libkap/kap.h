@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.15 2002-07-12 12:55:39 terpstra Exp $
+/*  $Id: kap.h,v 1.16 2002-07-12 13:31:46 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -213,6 +213,14 @@ int	kap_btree_read(Kap k, const char* key,
  *  Errors: kap_btree_op(), KAP_KEY_EXIST
  */
 int	kap_btree_write(Kap k, const char* key,
+	const unsigned char* buf, ssize_t len);
+
+/** Do a simple database write.
+ *  This method WILL overwrite an existing record.
+ *  This is a convenience method implemented on top of kap_btree_op.
+ *  Errors: kap_btree_op()
+ */
+int	kap_btree_rewrite(Kap k, const char* key,
 	const unsigned char* buf, ssize_t len);
 
 /** Do a database read for the first key which is >= the search key.
