@@ -118,6 +118,40 @@
  </xsl:choose>
 </xsl:template>
 
+<!-- Encode email headers with charset wrappers -->
+
+<xsl:variable name="subject-allow"> &quot;#$%&amp;+,/:;&lt;=&gt;?@[\]^{|}</xsl:variable>
+<xsl:variable name="email-allow"> #$%&amp;+/:[]^{|}</xsl:variable>
+
+<xsl:template name="email-header">
+ <xsl:param name="charset"/>
+ <xsl:param name="str"/>
+ 
+ <xsl:variable name="pure">
+  <xsl:call-template name="my-escape-uri">
+   <xsl:with-param name="str" select="translate($str, $charset, '')"/>
+  </xsl:call-template>
+ </xsl:variable>
+ 
+ <xsl:choose>
+  <xsl:when test="contains($pure, '%')">
+   <xsl:variable name="uri">
+    <xsl:call-template name="my-escape-uri">
+     <xsl:with-param name="str" select="$str"/>
+    </xsl:call-template>
+   </xsl:variable>
+ 
+   <xsl:text>=?utf-8?Q?</xsl:text>
+   <xsl:value-of select="translate($uri, '%', '=')"/>
+   <xsl:text>?=</xsl:text>
+  </xsl:when>
+  
+  <xsl:otherwise>
+   <xsl:value-of select="$str"/>
+  </xsl:otherwise>
+ </xsl:choose>
+</xsl:template>
+
 <!-- Format email address -->
 
 <xsl:template name="email-simple" match="email" mode="simple">
@@ -129,33 +163,17 @@
 </xsl:template>
 
 <xsl:template name="email-mailto" match="email" mode="mailto">
- <xsl:text>mailto:</xsl:text>
  <xsl:if test="@name">
-  <xsl:variable name="pure">
-   <xsl:call-template name="my-escape-uri">
-    <xsl:with-param name="str" select="translate(@name, ' ', '')"/>
-   </xsl:call-template>
-  </xsl:variable>
-  <xsl:variable name="uri">
-   <xsl:call-template name="my-escape-uri">
-    <xsl:with-param name="str" select="@name"/>
-   </xsl:call-template>
-  </xsl:variable>
-  
-  <xsl:choose>
-   <xsl:when test="contains($pure, '%')">
-    <xsl:text>%3D%3Futf-8%3FQ%3F</xsl:text>
-    <xsl:call-template name="my-escape-uri">
-     <xsl:with-param name="str" select="translate($uri, '%', '=')"/>
+  <xsl:call-template name="my-escape-uri">
+   <xsl:with-param name="str">
+    <xsl:call-template name="email-header">
+     <xsl:with-param name="str" select="@name"/>
+     <xsl:with-param name="charset" select="$email-allow"/>
     </xsl:call-template>
-    <xsl:text>%3F%3D%20</xsl:text>
-   </xsl:when>
-   <xsl:otherwise>
-    <xsl:value-of select="$uri"/>
-    <xsl:text>%20</xsl:text>
-   </xsl:otherwise>
-  </xsl:choose>
+   </xsl:with-param>
+  </xsl:call-template>
   
+  <xsl:text>%20</xsl:text>
  </xsl:if>
  
  <xsl:text>%3C</xsl:text>
@@ -175,6 +193,7 @@
 <xsl:template match="email[@address]">
  <xsl:element name="a">
   <xsl:attribute name="href">
+   <xsl:text>mailto:</xsl:text>
    <xsl:call-template name="email-mailto"/>
   </xsl:attribute>
   <xsl:call-template name="email-cut"/>
@@ -190,6 +209,7 @@
 
  <xsl:element name="a">
   <xsl:attribute name="href">
+   <xsl:text>mailto:</xsl:text>
    <xsl:call-template name="email-mailto"/>
   </xsl:attribute>
   <xsl:call-template name="email-simple"/>

@@ -11,15 +11,51 @@
 <xsl:template match="search" mode="body">
  <h2>
   <xsl:if test="prev">
-   <a href="0%20{queryurl}.{$ext}"><img border="0" src="../imgs/first.png" alt="&lt;&lt;="/></a>
-   <a href="{prev}%20{queryurl}.{$ext}"><img border="0" src="../imgs/prev.png" alt="&lt;-"/></a>
+   <xsl:element name="a">
+    <xsl:attribute name="href">
+     <xsl:text>0%20</xsl:text>
+     <xsl:call-template name="my-escape-uri">
+      <xsl:with-param name="str" select="queryurl"/>
+     </xsl:call-template>
+     <xsl:text>.</xsl:text>
+     <xsl:value-of select="$ext"/>
+    </xsl:attribute>
+    
+    <img border="0" src="../imgs/first.png" alt="&lt;&lt;="/>
+   </xsl:element>
+   
+   <xsl:element name="a">
+    <xsl:attribute name="href">
+     <xsl:value-of select="prev"/>
+     <xsl:text>%20</xsl:text>
+     <xsl:call-template name="my-escape-uri">
+      <xsl:with-param name="str" select="queryurl"/>
+     </xsl:call-template>
+     <xsl:text>.</xsl:text>
+     <xsl:value-of select="$ext"/>
+    </xsl:attribute>
+    
+    <img border="0" src="../imgs/prev.png" alt="&lt;-"/>
+   </xsl:element>
   </xsl:if>
   <xsl:if test="not(prev)">
    <img src="../imgs/a.png" alt="..."/>
    <img src="../imgs/a.png" alt=".."/>
   </xsl:if>
   <xsl:if test="next">
-   <a href="{next}%20{queryurl}.{$ext}"><img border="0" src="../imgs/next.png" alt="-&gt;"/></a>
+   <xsl:element name="a">
+    <xsl:attribute name="href">
+     <xsl:value-of select="next"/>
+     <xsl:text>%20</xsl:text>
+     <xsl:call-template name="my-escape-uri">
+      <xsl:with-param name="str" select="queryurl"/>
+     </xsl:call-template>
+     <xsl:text>.</xsl:text>
+     <xsl:value-of select="$ext"/>
+    </xsl:attribute>
+    
+    <img border="0" src="../imgs/next.png" alt="-&gt;"/>
+   </xsl:element>
   </xsl:if>
   <xsl:if test="not(next)">
    <img src="../imgs/a.png" alt=".."/>

@@ -22,12 +22,76 @@
 
   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
 
-  <xsl:if test="reply">
-   <a href="mailto:{reply}">(<xsl:value-of select="$reply"/>)</a>
-  </xsl:if>
-  <xsl:if test="not(reply)">
-   <span class="na">(<xsl:value-of select="$reply"/>)</span>
-  </xsl:if>
+  <xsl:choose>
+   <xsl:when test="email[@address] or list/email[@address]">
+    <xsl:element name="a">
+     <xsl:attribute name="href">
+      <xsl:text>mailto:</xsl:text>
+      
+      <xsl:choose>
+       <xsl:when test="email[@address]">
+        <xsl:apply-templates select="email" mode="mailto"/>
+        <xsl:text>?</xsl:text>
+        
+        <xsl:if test="list/email[@address]">
+         <xsl:text>CC=</xsl:text>
+         <xsl:for-each select="list/email[@address]">
+          <xsl:call-template name="email-mailto"/>
+          <xsl:if test="position() != last()">%2C%20</xsl:if>
+         </xsl:for-each>
+         <xsl:text>&amp;</xsl:text>
+        </xsl:if>
+       </xsl:when>
+       
+       <xsl:otherwise>
+         <xsl:for-each select="list/email[@address]">
+          <xsl:call-template name="email-mailto"/>
+          <xsl:if test="position() != last()">%2C%20</xsl:if>
+         </xsl:for-each>
+         <xsl:text>?</xsl:text>
+       </xsl:otherwise>
+      </xsl:choose>
+      
+      <xsl:text>Subject=</xsl:text>
+      <xsl:call-template name="my-escape-uri">
+       <xsl:with-param name="str">
+        <xsl:choose>
+         <xsl:when test="subject">
+          <xsl:if test="not(contains(subject, ':'))">
+           <xsl:text>Re: </xsl:text>
+          </xsl:if>
+          <xsl:call-template name="email-header">
+           <xsl:with-param name="str" select="subject"/>
+           <xsl:with-param name="charset" select="$subject-allow"/>
+          </xsl:call-template>
+         </xsl:when>
+         <xsl:otherwise>
+          <xsl:text>Re: No Subject</xsl:text>
+         </xsl:otherwise>
+        </xsl:choose>
+       </xsl:with-param>
+      </xsl:call-template>
+      
+      <xsl:text>&amp;References=</xsl:text>
+      <xsl:call-template name="my-escape-uri">
+       <xsl:with-param name="str" select="mid"/>
+      </xsl:call-template>
+      
+      <xsl:text>&amp;In-Reply-To=</xsl:text>
+      <xsl:call-template name="my-escape-uri">
+       <xsl:with-param name="str" select="mid"/>
+      </xsl:call-template>
+     </xsl:attribute>
+     
+     <xsl:text>(</xsl:text>
+     <xsl:value-of select="$reply"/>
+     <xsl:text>)</xsl:text>
+    </xsl:element>
+   </xsl:when>
+   <xsl:otherwise>
+    <span class="na">(<xsl:value-of select="$reply"/>)</span>
+   </xsl:otherwise>
+  </xsl:choose>
 
   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
 

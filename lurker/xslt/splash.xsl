@@ -228,6 +228,7 @@
    <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
    <xsl:element name="a">
     <xsl:attribute name="href">
+     <xsl:text>mailto:</xsl:text>
      <xsl:apply-templates select="email" mode="mailto"/>
     </xsl:attribute>
 
