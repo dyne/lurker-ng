@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.17 2002-02-25 07:55:09 terpstra Exp $
+/*  $Id: mbox.c,v 1.18 2002-02-25 08:01:31 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -299,34 +299,6 @@ static int my_mbox_process_mbox(
 			lu_mbox_find_charset(m.body));
 	}
 		
-	id = lu_summary_import_message(
-		list->id, 
-		mbox->id, 
-		mbox->length, 
-		stamp,
-		&decode_subj [0], 
-		&author_name [0],
-		&author_email[0]);
-
-	if (id == lu_common_minvalid)
-	{
-		lu_mbox_destroy_message(&m);
-		return -1;
-	}
-		
-	error = lu_indexer_import(
-		&m, 
-		list->id,
-		mbox->id,
-		stamp,
-		id);
-		
-	if (error != 0)
-	{
-		lu_mbox_destroy_message(&m);
-		return -1;
-	}
-	
 	/* Empty fields initially */
 	message_id[0] = reply_to[0] = 0;
 	
@@ -358,6 +330,36 @@ static int my_mbox_process_mbox(
 			reply_to[0] = 0;
 	}
 
+	id = lu_summary_import_message(
+		list->id, 
+		mbox->id, 
+		mbox->length, 
+		stamp,
+		&decode_subj [0], 
+		&author_name [0],
+		&author_email[0]);
+
+	if (id == lu_common_minvalid)
+	{
+		lu_mbox_destroy_message(&m);
+		return -1;
+	}
+		
+	error = lu_indexer_import(
+		&m, 
+		list->id,
+		mbox->id,
+		stamp,
+		id,
+		&message_id[0],
+		&reply_to[0]);
+		
+	if (error != 0)
+	{
+		lu_mbox_destroy_message(&m);
+		return -1;
+	}
+	
 	/*!!! Unwind the indexer pushes if reply_to fails */
 	lu_summary_reply_to_resolution(
 		id,

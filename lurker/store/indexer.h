@@ -1,4 +1,4 @@
-/*  $Id: indexer.h,v 1.5 2002-02-21 03:51:38 terpstra Exp $
+/*  $Id: indexer.h,v 1.6 2002-02-25 08:01:31 terpstra Exp $
  *  
  *  indexer.h - Handles indexing a message for keyword searching
  *  
@@ -41,4 +41,6 @@ int lu_indexer_import(
 	lu_word		list,
 	lu_word		mbox,
 	time_t		stamp,
-	message_id	id);
+	message_id	id,
+	const char*	msg_id,
+	const char*	reply_id);
