@@ -1,4 +1,4 @@
-/*  $Id: io.h,v 1.2 2003-04-21 18:25:33 terpstra Exp $
+/*  $Id: io.h,v 1.3 2003-05-03 12:18:15 terpstra Exp $
  *  
  *  io.h - I/O headers needed for the OS
  *  
@@ -27,5 +27,7 @@
 #include <sys/file.h>
 
 #include <unistd.h>
+#include <fcntl.h>
+
 #include <cerrno>
 #include <cstdio>
