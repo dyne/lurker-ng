@@ -1,4 +1,4 @@
-/*  $Id: protocol.h,v 1.7 2002-02-22 01:34:22 terpstra Exp $
+/*  $Id: protocol.h,v 1.8 2002-02-22 04:54:39 terpstra Exp $
  *  
  *  protocol.h - What do we use to communicate
  *  
@@ -29,6 +29,7 @@
 #define	LU_PROTO_LISTS		"lists "
 #define LU_PROTO_GETMBOX	"getmbox "
 #define LU_PROTO_ATTACH		"attach "
+#define LU_PROTO_THREAD		"thread "
 
 /* Messages to a page */
 #define LU_PROTO_INDEX	20

@@ -1,4 +1,4 @@
-/*  $Id: thread.c,v 1.3 2002-02-11 03:45:51 terpstra Exp $
+/*  $Id: thread.c,v 1.4 2002-02-22 04:54:39 terpstra Exp $
  *  
  *  thread.c - output results from a thread/ lookup
  *  
@@ -24,18 +24,36 @@
 
 #include "common.h"
 #include "handler.h"
+#include "protocol.h"
 
 int lu_thread_handler(
 	char* parameter, 
 	const char* uri, 
 	lu_doctype t)
 {
-	FILE* f;
+	int i;
 	
-	if ((f = lu_render_open(parameter)) == 0)
+	if (t != LU_XML && t != LU_HTML)
+	{	/* Don't know how to deal with other types */
+		printf("Status: 404 Not Found\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&not_found[0], uri);
 		return -1;
+	}
 	
-	fprintf(f, "This is an example page");
+	if (sscanf(parameter, "%d", &i) != 1)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Reading parameters",
+			parameter,
+			"Not formatted as &lt;message-id&gt;");
+		return -1;
+	}
 	
-	return lu_render_close(f);
+	fprintf(lu_server_link, "%s %i%c", 
+		LU_PROTO_THREAD, i, LU_PROTO_ENDREQ);
+	
+	return lu_forward_xml(parameter);
 }
