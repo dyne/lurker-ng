@@ -1,4 +1,4 @@
-/*  $Id: globals.h,v 1.5 2002-01-28 08:32:13 terpstra Exp $
+/*  $Id: globals.h,v 1.6 2002-01-31 03:46:19 terpstra Exp $
  *  
  *  globals.h - the global variables and methods for the daemon
  *  
@@ -108,6 +108,10 @@ extern time_t lu_timestamp_heuristic(time_t server, time_t client);
  *  our database. You should have selected the message with the earliest
  *  timestamp_heuristic available.
  *  
+ *  This operation is irreversable. You cannot make the message go away if
+ *  the later operations fail. Therefore, it checks to see if we have
+ *  already loaded this message. If we have, it reports success again.
+ *  
  *  Next, you have to call lu_reply_to_resolution.
  */
 extern message_id lu_import_message(
@@ -118,7 +122,7 @@ extern message_id lu_import_message(
 	const char* author_email);
 
 /** This connects reply-to links for (possibly out of sequence) messages.
- *  Don't forget to push all the body keywords after this.
+ *  Don't forget to push all the keywords after this (body, subject, list...)
  */
 extern int lu_reply_to_resolution(
 	message_id id,

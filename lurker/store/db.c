@@ -1,4 +1,4 @@
-/*  $Id: db.c,v 1.10 2002-01-28 08:32:13 terpstra Exp $
+/*  $Id: db.c,v 1.11 2002-01-31 03:46:19 terpstra Exp $
  *  
  *  db.c - manage the databases
  *  
@@ -22,11 +22,12 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "records.h"
-#include "io.h"
+#include "keyword.h"
 #include "globals.h"
+#include "io.h"
 
 #include <string.h>
+#include <ctype.h>
 
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
@@ -219,6 +220,337 @@ time_t lu_timestamp_heuristic(time_t server, time_t client)
 	return out;
 }
 
+#define LU_SQUISHY_MAX	80
+
+static int lu_squishy_subject(const char* subject, char* target)
+{
+	/* Alright, we want to drop 're:', 'fwd:', etc.
+	 * Also, we don't want to be confused by fluctuations in whitespace.
+	 * Anything after a 'was:' should be cut.
+	 * Changes in case shouldn't be confusing.
+	 * Punctuation is disregarded.
+	 * We want a maximum length. (LU_SQUISHY_MAX)
+	 */
+	
+	const char* r;
+	const char* s;
+	char* e;
+	char* w;
+	int state, ws;
+	
+	/* Skip past any number of: ' *[^ :]{0, 8}:' sequences
+	 */
+	state = 1;
+	
+	r = s = subject;
+	while (*s)
+	{
+		if (state == 0)
+		{
+			if (*s == ':')
+			{
+				state = 1;
+			}
+			else if (*s == ' ' || s - r > 8)
+			{
+				break;
+			}
+			
+			s++;
+		}
+		else
+		{	/* We're skiping past whitespace */
+			if (isspace(*s))
+			{
+				s++;
+			}
+			else
+			{
+				r = s;
+				state = 0;
+			}
+		}
+	}
+	
+	/* Ok, begin writing the string out to target.
+	 * We compress whitespace to a single space.
+	 * Change everything to lower case.
+	 * Drop punctuation on the floor.
+	 * Stop on a ':' and discard any word that preceded it. (was:)
+	 */
+	ws = 0;
+	for (	w = target, e = w + LU_SQUISHY_MAX-1; 
+		*r && w != e; r++)
+	{
+		if (isspace(*r))
+		{
+			ws = 1;
+		}
+		else
+		{
+			if (ws)
+			{
+				*w++ = ' ';
+				ws = 0;
+				
+				/* Need to retest since we are doing a double
+				 * write
+				 */
+				if (target == e) break;
+			}
+			
+			if (*r == ':')
+			{	/* Nasty colons! */
+				break;
+			}
+			
+			if (isalnum(*r))
+			{
+				*w++ = tolower(*r);
+			}
+		}
+	}
+	
+	if (*r == ':')
+	{	/* Rewind 'w' by one word */
+		if (w != target) w--;
+		
+		for (; w != target; w--)
+			if (isspace(*w))
+				break;
+	}
+	
+	*w = 0;
+	return w - target;
+}
+
+/* Unlink the thread from the linked list of threads in the hash.
+ * The passed thread is assumed to be the correct record. It is not
+ * rewritten; it is merely used to locate neighbours.
+ */
+static int pop_thread(message_id thread_id, ThreadSummary* thread)
+{
+	/*!!!*/
+}
+
+/* Append the thread to the linked list of threads in the hash.
+ * The passed thread is assumed to be the correct record and is rewritten with
+ * appropriate link information.
+ */
+static int push_thread(message_id thread_id, ThreadSummary* thread)
+{
+	/*!!!*/
+}
+
+#define LU_THREAD_OVERLAP_TIME	60*60*24*14
+
+/* This function uses the given data to try and find a thread which the given
+ * message would belong in. If the message brings the timestamp of two seperate
+ * threads close enough together, it will merge them.
+ * 
+ * lu_keyword_invalid -> no thread existed, make your own.
+ * 
+ * The caller is responsible for either setting his thread_parent to the
+ * returned id if != lu_keyword_invalid. Also, he must insert himself into
+ * the linked list for the thread. The parent summary is returned as a 
+ * convenience (less disk hits). message_count++ is a good move too.
+ * 
+ * The caller does not need to undo this operation if the import fails since 
+ * merging two threads that ARE related and leaving them merged is harmless.
+ * ie: the message does exist, so these are the same thread, so we don't need
+ * to back out of this change.
+ */
+static int lu_find_thread_maybe_merge(
+	lu_word list, const char* subject, time_t timestamp,
+	ThreadSummary* parent, message_id* out)
+{
+	char		thread_key_after[sizeof(lu_word) + LU_SQUISHY_MAX + sizeof(lu_quad)];
+	char		thread_key_prior[sizeof(lu_word) + LU_SQUISHY_MAX + sizeof(lu_quad)];
+	int		thread_key_len;
+	char		squishy[LU_SQUISHY_MAX];
+	int		squishy_len;
+	lu_quad		tm;
+	DBC*		cursor;
+	DBT		key;
+	DBT		ind;
+	DBT		val;
+	int		error;
+	int		is_before;
+	int		is_after;
+	ThreadSummary	prior;
+	ThreadSummary	after;
+	message_id	prior_id;
+	message_id	after_id;
+	lu_quad		prior_time, after_time;
+	
+	/*------------------------- Step one: find the threads we might join */
+	
+	/* Get the key for where this thread lies */
+	tm = timestamp;
+	thread_key_len = sizeof(lu_word);
+	memcpy(&thread_key_after[0], &list, thread_key_len);
+	thread_key_len += lu_squishy_subject(subject, &thread_key_after[thread_key_len]);
+	memcpy(&thread_key_after[thread_key_len], &tm, sizeof(lu_quad));
+	thread_key_len += sizeof(lu_quad);
+	
+	squishy_len = lu_squishy_subject(subject, &squishy[0]);
+	
+	/* Find the smallest entry >= our thread in the thread btree */
+	error = lu_thread_db->cursor(lu_thread_db, 0, &cursor, 0);
+	if (error)
+	{
+		syslog(LOG_ERR, "Unable to create thread DB cursor: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+	
+	memset(&key, 0, sizeof(DBT));
+	memset(&ind, 0, sizeof(DBT));
+	memset(&val, 0, sizeof(DBT));
+	
+	key.ulen = sizeof(thread_key_after);
+	key.flags = DB_DBT_USERMEM;
+	ind.ulen = sizeof(message_id);
+	ind.flags = DB_DBT_USERMEM;
+	val.ulen = sizeof(ThreadSummary);
+	val.flags = DB_DBT_USERMEM;
+	
+	key.data = &thread_key_after[0];
+	key.size = thread_key_len;
+	ind.data = &after_id;
+	val.data = &after;
+	
+	error = cursor->c_get(cursor, &key, &ind, DB_SET_RANGE);
+	if (error && error != DB_NOTFOUND)
+	{
+		syslog(LOG_ERR, "Unable to find next thread record: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+	
+	if (error == DB_NOTFOUND || 
+	    memcmp(&squishy[0], &thread_key_after[sizeof(lu_word)], squishy_len))
+	{
+		after_time = 0;
+	}
+	else
+	{
+		if (error != DB_NOTFOUND)
+		{
+			error = lu_thread_db->get(lu_thread_db, 0, &ind, &val, 0);
+			if (error)
+			{
+				syslog(LOG_ERR, "Unable to retrieve thread summary: %s\n",
+					db_strerror(error));
+				return -1;
+			}
+		}
+		
+		memcpy(&after_time, &thread_key_after[key.size-sizeof(lu_quad)], 
+			sizeof(lu_quad));
+	}
+	
+	key.data = &thread_key_prior[0];
+	/* key.len unset b/c db3 writes into the key w/o reading it */
+	ind.data = &prior_id;
+	val.data = &prior;
+	
+	if (error == DB_NOTFOUND)
+		error = cursor->c_get(cursor, &key, &val, DB_LAST);
+	else
+		error = cursor->c_get(cursor, &key, &val, DB_PREV);
+	
+	if (error && error != DB_NOTFOUND)
+	{
+		syslog(LOG_ERR, "Unable to find prev thread record: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+	
+	if (error == DB_NOTFOUND ||
+	    memcmp(&squishy[0], &thread_key_prior[sizeof(lu_word)], squishy_len))
+	{
+		prior_time = 0;
+	}
+	else
+	{
+		if (error != DB_NOTFOUND)
+		{
+			error = lu_thread_db->get(lu_thread_db, 0, &ind, &val, 0);
+			if (error)
+			{
+				syslog(LOG_ERR, "Unable to retrieve thread summary: %s\n",
+					db_strerror(error));
+				return -1;
+			}
+		}
+		
+		memcpy(&prior_time, &thread_key_prior[key.size-sizeof(lu_quad)], 
+			sizeof(lu_quad));
+	}
+	
+	error = cursor->c_close(cursor);
+	if (error)
+	{
+		syslog(LOG_ERR, "Unable to close thread cursor: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+		
+	/* Ok, we now have the data loaded, do a quick consistency check */
+	if (after_time != 0 && (after_time != after.start || after.start > after.end))
+	{
+		syslog(LOG_ERR, "Corrupt thread database - aftert\n");
+		return -1;
+	}
+	
+	if (prior_time != 0 && (prior_time != prior.start || prior.start > prior.end))
+	{
+		syslog(LOG_ERR, "Corrupt thread database - prior\n");
+		return -1;
+	}
+	
+	/*------------------------- Step two: decide what to do */
+	
+	/* Now will the new message land in the prior thread? */
+	is_before = (prior_time != 0 && 
+	    timestamp + LU_THREAD_OVERLAP_TIME > prior.start &&
+	    prior.end + LU_THREAD_OVERLAP_TIME > timestamp);
+	
+	is_after = (after_time != 0 &&
+	    timestamp + LU_THREAD_OVERLAP_TIME > after.start &&
+	    after.end + LU_THREAD_OVERLAP_TIME > timestamp);
+	
+	if (is_before && !is_after)
+	{	/* Ok, merge with the prior thread and not the later */
+		memcpy(parent, &prior, sizeof(ThreadSummary));
+		*out = prior_id;
+		return 0;
+	}
+	
+	if (is_after && !is_before)
+	{
+		memcpy(parent, &after, sizeof(ThreadSummary));
+		*out = after_id;
+		return 0;
+	}
+	
+	if (!is_after && !is_before)
+	{	/* thread for this record */
+		*out = lu_kw_invalid;
+		return 0;
+	}
+	
+	/*------------------------- Step three: merge threads */
+	
+	/* Union-find dictates that the larger set be the parent.
+	 */
+	/*!!!*/
+	
+	*out = prior_id;
+	return 0;
+}
+
 message_id lu_import_message(
 	lu_word list, lu_word mbox, lu_addr mbox_offset,
 	time_t timestamp, 
@@ -226,22 +558,278 @@ message_id lu_import_message(
 	const char* author_name,
 	const char* author_email)
 {
-	/* This function has to create the message stub info.
+	/* This function has to create the message stub info:
 	 * 
-	 * It must push the variable information for the message.
-	 * Then it must push summary information for the message.
+	 * First, find what thread to plop it in and possibly merge threads
+	 * that this joins.
 	 * 
-	 * Then we have to see if this message is in a thread by checking
-	 * if it falls within squishy_subject time window.
-	 * Worse still, this message might be the 'missing link' and require
-	 * merging two seperate threads.
-	 * 
-	 * Finally, we push keywords for the list, author, and subject.
+	 * We must push the variable information for the message.
+	 * Then we must push summary information for the message.
+	 * Then we link it up with it's thread buddies.
 	 */
 	 
-	 printf("HOLA! %s <%s>\n", author_name, author_email);
-	 
-	 return 0;
+	off_t		sum_off;
+	off_t		var_off;
+	lu_addr		high_bits;
+	size_t		sub_len, aun_len, aue_len;
+	message_id	id;
+	MessageSummary	sum;
+	message_id	prev_id;
+	MessageSummary	prev;
+	message_id	thread_id;
+	ThreadSummary	thread;
+	char		thread_key[sizeof(lu_word) + LU_SQUISHY_MAX + sizeof(lu_quad)];
+	int		thread_key_len;
+	lu_quad		tm;
+	DBT		key;
+	DBT		ind;
+	int		error;
+	
+	/*!!! check for already loaded status */
+	
+	id = lu_msg_free;
+	
+	if (lu_find_thread_maybe_merge(list, subject, timestamp,
+		&thread, &thread_id) != 0)
+	{
+		goto lu_import_message_error0;
+	}
+	
+	var_off = lseek(lu_summary_fd, 0, SEEK_END);
+	if (var_off == -1)
+	{
+		syslog(LOG_ERR, "Could not seek to end of variable.flat: %s\n",
+			strerror(errno));
+		goto lu_import_message_error0;
+	}
+	
+	sub_len = strlen(subject) + 1;
+	if (write(lu_summary_fd, subject, sub_len) != sub_len)
+	{
+		syslog(LOG_ERR, "Could not write subject to end of variable.flat: %s\n",
+			strerror(errno));
+		goto lu_import_message_error1;
+	}
+	
+	aun_len = strlen(author_name) + 1;
+	if (write(lu_summary_fd, author_name, aun_len) != aun_len)
+	{
+		syslog(LOG_ERR, "Could not write author name to end of variable.flat: %s\n",
+			strerror(errno));
+		goto lu_import_message_error1;
+	}
+	
+	aue_len = strlen(author_email) + 1;
+	if (write(lu_summary_fd, author_email, aue_len) != aue_len)
+	{
+		syslog(LOG_ERR, "Could not write author email to end of variable.flat: %s\n",
+			strerror(errno));
+		goto lu_import_message_error1;
+	}
+	
+	sum.mbox_offset   = mbox_offset;
+ 	sum.flat_offset   = var_off;
+	sum.timestamp     = timestamp;
+	sum.in_reply_to   = lu_kw_invalid;	/* nothing yet */
+	sum.thread_next   = lu_kw_invalid;	/* we are at the end */
+	sum.thread_parent = (thread_id==lu_kw_invalid)?id:thread_id;
+	
+	high_bits = mbox;
+	high_bits <<= (sizeof(lu_addr)-2)*8;
+	sum.mbox_offset |= high_bits;
+	
+	high_bits = list;
+	high_bits <<= (sizeof(lu_addr)-2)*8;
+	sum.flat_offset |= high_bits;
+	
+	sum_off = id;
+	sum_off *= sizeof(MessageSummary);
+	if (lseek(lu_summary_fd, sum_off, SEEK_SET) != sum_off)
+	{
+		syslog(LOG_ERR, "Seeking for write of message summary: %s\n",
+			strerror(errno));
+		goto lu_import_message_error1;
+	}
+	
+	if (write(lu_summary_fd, &sum, sizeof(MessageSummary)) != 
+		sizeof(MessageSummary))
+	{
+		syslog(LOG_ERR, "Writing message summary: %s\n",
+			strerror(errno));
+		goto lu_import_message_error2;
+	}
+	
+	if (thread_id == lu_kw_invalid)
+	{
+		prev_id   = lu_kw_invalid;
+		thread.thread_end  = id; /* we are the last record too */
+		
+		thread.start = timestamp;
+		thread.end   = timestamp;
+		thread.message_count = 1;
+		
+		thread_id = id;
+		
+		/* Get the key for where this thread lies */
+		tm = timestamp;
+		thread_key_len = sizeof(lu_word);
+		memcpy(&thread_key[0], &list, thread_key_len);
+		thread_key_len += lu_squishy_subject(subject, &thread_key[thread_key_len]);
+		memcpy(&thread_key[thread_key_len], &tm, sizeof(lu_quad));
+		thread_key_len += sizeof(lu_quad);
+		
+		memset(&key, 0, sizeof(DBT));
+		memset(&ind, 0, sizeof(DBT));
+		
+		key.data = &thread_key[0];
+		key.size = thread_key_len;
+		ind.ulen = sizeof(message_id);
+		ind.size = DB_DBT_USERMEM;
+		ind.data = &id;
+		
+		error = lu_thread_db->put(lu_thread_db, 0, &key, &ind, 0);
+		if (error)
+		{
+			syslog(LOG_ERR, "Failed to push indirect thread reference: %s\n",
+				db_strerror(errno));
+		}
+		
+		/* Push the thread to the end of the list, simultaneously
+		 * writing out our changes.
+		 */
+		if (push_thread(thread_id, &thread) != 0)
+			goto lu_import_message_error3;
+	}
+	else
+	{
+		/* Try to retarget the thread next pointer of the other guy
+		 */
+		prev_id = thread.thread_end;
+		sum_off = prev_id;
+		sum_off *= sizeof(MessageSummary);
+		if (lseek(lu_summary_fd, sum_off, SEEK_SET) != sum_off)
+		{
+			syslog(LOG_ERR, "Seeking for read of prior link summary: %s\n",
+				strerror(errno));
+			goto lu_import_message_error2;
+		}
+		
+		if (read(lu_summary_fd, &prev, sizeof(MessageSummary)) != sizeof(MessageSummary))
+		{
+			syslog(LOG_ERR, "Reading of prior link summary: %s\n",
+				strerror(errno));
+			goto lu_import_message_error2;
+		}
+		
+		if (lseek(lu_summary_fd, sum_off, SEEK_SET) != sum_off)
+		{
+			syslog(LOG_ERR, "Seeking for write of prior link summary: %s\n",
+				strerror(errno));
+			goto lu_import_message_error2;
+		}
+		
+		prev.thread_next = id;
+		
+		if (write(lu_summary_fd, &prev, sizeof(MessageSummary)) != sizeof(MessageSummary))
+		{
+			syslog(LOG_ERR, "Writing of prior link summary: %s\n",
+				strerror(errno));
+			goto lu_import_message_error3;
+		}
+		
+		/* Ok, now we need to update the threading record itself.
+		 */
+		
+		thread.thread_end = id;
+		thread.message_count++;
+		
+		/* we import in order so we are the newest message in this
+		 * thread and this thread is the newest in the mbox
+		 */
+		thread.end = timestamp;
+		
+		/* Pop the thread's current location */
+		if (pop_thread(thread_id, &thread) != 0)
+			goto lu_import_message_error3;
+		
+		/* Push the thread to the end of the list, simultaneously
+		 * writing out our changes.
+		 */
+		if (push_thread(thread_id, &thread) != 0)
+			goto lu_import_message_error4;
+	}
+	
+	return id;
+
+lu_import_message_error4:
+	/* somehow repush the thread into it's context
+	 * not sure how to do this. not sure that it matters.
+	 * when the message finally is imported, this thread will be pushed
+	 * to the end at that point. till then it's missing, but whatever
+	 * !!!
+	 */
+
+lu_import_message_error3:
+	/* Well, we could change the thread_next ptr on prev_id at this point.
+	 * Indeed, I will restore it, but it's not critical; the thread_end
+	 * record still remains unmoved and we should be terminating loops
+	 * with that anyways: it would continue to work.
+	 * Still: consistency is good.
+	 */
+	
+	if (prev_id != lu_kw_invalid)
+	{
+		prev.thread_next = lu_kw_invalid;
+		
+		sum_off = prev_id;
+		sum_off *= sizeof(MessageSummary);
+		if (lseek(lu_summary_fd, sum_off, SEEK_SET) != sum_off)
+		{
+			syslog(LOG_WARNING, "Unable to seek to restore next thread entry: %s\n",
+				strerror(errno));
+		}
+		else
+		{
+			if (write(lu_summary_fd, &prev, sizeof(ThreadSummary)) != 
+				sizeof(ThreadSummary))
+			{
+				syslog(LOG_WARNING, "Unable to write to restore next thread entry: %s\n",
+					strerror(errno));
+			}
+		}
+	}
+	else
+	{
+	
+	/* The other case is that we need to yank out a record which we placed
+	 * in the btree to locate the thread hash entry.
+	 */
+		error = lu_thread_db->del(lu_thread_db, 0, &key, 0);
+		if (error)
+		{
+			syslog(LOG_ERR, "Failed to remove indirect thread reference: %s\n",
+				db_strerror(errno));
+		}
+	}
+	
+lu_import_message_error2:
+	sum_off = id;
+	sum_off *= sizeof(MessageSummary);
+	if (ftruncate(lu_summary_fd, sum_off) != 0)
+	{
+		syslog(LOG_ERR, "Unable to reclaim space in summary.flat on failed lu_import_message: %s\n",
+			strerror(errno));
+	}
+	
+lu_import_message_error1:
+	if (ftruncate(lu_variable_fd, var_off) != 0)
+	{
+		syslog(LOG_ERR, "Unable to reclaim space in variable.flat on failed lu_import_message: %s\n",
+			strerror(errno));
+	}
+	
+lu_import_message_error0:
+	return lu_kw_invalid;
 }
 
 int lu_reply_to_resolution(
@@ -405,6 +993,8 @@ int lu_open_db()
 			perror("Grabbing last summary block");
 			return -1;
 		}
+		
+		lu_last_time = sum.timestamp;
 	}
 	
 	return 0;
