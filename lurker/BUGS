@@ -8,6 +8,7 @@ Ideas:
 	Maybe manually cache tail of the append layer
 
 Unfulfilled requirements:
+	Configure check for escape-uri
 	Legend for colours and their meaning
 	Better packing of tree
 	German pot
