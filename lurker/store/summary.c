@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.9 2002-02-24 23:40:12 terpstra Exp $
+/*  $Id: summary.c,v 1.10 2002-02-25 00:13:30 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -763,7 +763,7 @@ int lu_summary_write_variable(
 					switch (nulls)
 					{
 					case 0:
-						write(arg, "  <subject>");
+						write(arg, "   <subject>");
 						break;
 					case 1:
 						write(arg, " name=\"");
@@ -797,7 +797,7 @@ int lu_summary_write_variable(
 				have = 0;
 				
 				if (nulls == 1)
-					write(arg, "  <email");
+					write(arg, "   <email");
 			}
 		}
 		
@@ -807,7 +807,7 @@ int lu_summary_write_variable(
 			switch (nulls)
 			{
 			case 0:
-				write(arg, "  <subject>");
+				write(arg, "   <subject>");
 				break;
 			case 1:
 				write(arg, "name=\"");

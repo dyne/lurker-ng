@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.24 2002-02-22 02:43:59 terpstra Exp $
+/*  $Id: service.c,v 1.25 2002-02-25 00:13:30 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -263,6 +263,24 @@ static int my_service_write_int(
 	char buf[20];
 	sprintf(&buf[0], "%d", id);
 	return my_service_buffer_write(h, &buf[0]);
+}
+
+static int my_service_write_time(
+	My_Service_Handle	h,
+	lu_quad			t)
+{
+	char  buf[80];
+	char* e;
+	time_t tm = t;
+	
+	strcpy(&buf[0], ctime(&tm));
+	for (e = &buf[0]; *e; e++)
+		if (*e == '\n')
+			break;
+	
+	*e = 0;
+	
+	return my_service_write_str(h, &buf[0]);
 }
 
 static int my_service_write_url(
@@ -590,25 +608,22 @@ static int my_service_list(
 }
 
 static int my_service_summary(
-	My_Service_Handle h,
-	message_id id)
+	My_Service_Handle	h,
+	message_id		id)
 {
 	Lu_Summary_Message	msg;
-	time_t			tm;
 	
 	msg = lu_summary_read_msummary(id);
 	
-	tm = msg.timestamp;
-	
-	if (my_service_buffer_write(h, " <summary>\n  <id>")     != 0) return -1;
-	if (my_service_write_int(h, id)                          != 0) return -1;
-	if (my_service_buffer_write(h, "</id>\n  <timestamp>")   != 0) return -1;
-	if (my_service_write_int(h, msg.timestamp)               != 0) return -1;
-	if (my_service_buffer_write(h, "</timestamp>\n  <time>") != 0) return -1;
-	if (my_service_write_str(h, ctime(&tm))                  != 0) return -1;
-	if (my_service_buffer_write(h, "</time>\n  <thread>")    != 0) return -1;
-	if (my_service_write_int(h, msg.thread_parent)           != 0) return -1;
-	if (my_service_buffer_write(h, "</thread>\n")            != 0) return -1;
+	if (my_service_buffer_write(h, "  <summary>\n   <id>")    != 0) return -1;
+	if (my_service_write_int(h, id)                           != 0) return -1;
+	if (my_service_buffer_write(h, "</id>\n   <timestamp>")   != 0) return -1;
+	if (my_service_write_int(h, msg.timestamp)                != 0) return -1;
+	if (my_service_buffer_write(h, "</timestamp>\n   <time>") != 0) return -1;
+	if (my_service_write_time(h, msg.timestamp)               != 0) return -1;
+	if (my_service_buffer_write(h, "</time>\n   <thread>")    != 0) return -1;
+	if (my_service_write_int(h, msg.thread_parent)            != 0) return -1;
+	if (my_service_buffer_write(h, "</thread>\n")             != 0) return -1;
 	
 	if (lu_summary_write_variable(
 		(int(*)(void*, const char*))        &my_service_buffer_write,
@@ -616,7 +631,7 @@ static int my_service_summary(
 		h,
 		msg.flat_offset) != 0) return -1;
 	
-	if (my_service_buffer_write(h, " </summary>\n") != 0) return -1;
+	if (my_service_buffer_write(h, "  </summary>\n") != 0) return -1;
 	
 	return 0;
 }
@@ -883,7 +898,6 @@ static int my_service_getmsg(
 	char*		eptr;
 	message_id	id;
 	lu_addr		bits;
-	time_t		tm;
 	
 	lu_word		list_id;
 	lu_word		mbox_id;
@@ -895,6 +909,11 @@ static int my_service_getmsg(
 	
 	Lu_Config_List*		list;
 	Lu_Config_Mbox*		mbox;
+	
+	Lu_Breader_Handle	b;
+	char			keyword[LU_KEYWORD_LEN+1];
+	
+	message_id		count, ind, get, i, buf[1024];
 	
 	id = strtoul(request, &eptr, 0);
 	if (eptr == request || (*eptr && !isspace(*eptr)))
@@ -968,10 +987,31 @@ static int my_service_getmsg(
 		goto my_service_getmsg_error1;
 	}
 	
-	if (my_service_xml_head(h)                       != 0) goto my_service_getmsg_error2;
-	if (my_service_buffer_write(h, "<message>\n")    != 0) goto my_service_getmsg_error2;
-	if (my_service_server(h)                         != 0) goto my_service_getmsg_error2;
-	if (my_service_list(h, list, lu_common_minvalid) != 0) goto my_service_getmsg_error2;
+	if (mmsg.env->message_id)
+	{
+		snprintf(&keyword[0], sizeof(keyword), "%s%s",
+			LU_KEYWORD_REPLY_TO,
+			lu_common_cleanup_id(mmsg.env->message_id));
+		
+		b = lu_breader_new(&keyword[0]);
+		if (b == 0)
+		{
+			my_service_error(h,
+				"Internal Error",
+				"Lurkerd was unable to access the reply-to keyword",
+				request);
+			goto my_service_getmsg_error2;
+		}
+	}
+	else
+	{
+		b = 0;
+	}
+	
+	if (my_service_xml_head(h)                       != 0) goto my_service_getmsg_error3;
+	if (my_service_buffer_write(h, "<message>\n")    != 0) goto my_service_getmsg_error3;
+	if (my_service_server(h)                         != 0) goto my_service_getmsg_error3;
+	if (my_service_list(h, list, lu_common_minvalid) != 0) goto my_service_getmsg_error3;
 	
 	/* Find the last component of the path */
 	if (mbox->path)
@@ -985,60 +1025,87 @@ static int my_service_getmsg(
 			}
 		}
 		
-		if (my_service_buffer_write(h, " <mbox>")   != 0) goto my_service_getmsg_error2;
-		if (my_service_write_str(h, last)           != 0) goto my_service_getmsg_error2;
-		if (my_service_buffer_write(h, "</mbox>\n") != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(h, " <mbox>")   != 0) goto my_service_getmsg_error3;
+		if (my_service_write_str(h, last)           != 0) goto my_service_getmsg_error3;
+		if (my_service_buffer_write(h, "</mbox>\n") != 0) goto my_service_getmsg_error3;
 	}
 	
-	tm = msg.timestamp;
-	
-	if (my_service_buffer_write(h, " <id>")                 != 0) goto my_service_getmsg_error2;
-	if (my_service_write_int   (h, id)                      != 0) goto my_service_getmsg_error2;
-	if (my_service_buffer_write(h, "</id>\n <timestamp>")   != 0) goto my_service_getmsg_error2;
-	if (my_service_write_int   (h, msg.timestamp)           != 0) goto my_service_getmsg_error2;
-	if (my_service_buffer_write(h, "</timestamp>\n <time>") != 0) goto my_service_getmsg_error2;
-	if (my_service_write_str   (h, ctime(&tm))              != 0) goto my_service_getmsg_error2;
-	if (my_service_buffer_write(h, "</time>\n <thread>")    != 0) goto my_service_getmsg_error2;
-	if (my_service_write_int   (h, msg.thread_parent)       != 0) goto my_service_getmsg_error2;
-	if (my_service_buffer_write(h, "</thread>")             != 0) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(h, " <id>")                 != 0) goto my_service_getmsg_error3;
+	if (my_service_write_int   (h, id)                      != 0) goto my_service_getmsg_error3;
+	if (my_service_buffer_write(h, "</id>\n <timestamp>")   != 0) goto my_service_getmsg_error3;
+	if (my_service_write_int   (h, msg.timestamp)           != 0) goto my_service_getmsg_error3;
+	if (my_service_buffer_write(h, "</timestamp>\n <time>") != 0) goto my_service_getmsg_error3;
+	if (my_service_write_time  (h, msg.timestamp)           != 0) goto my_service_getmsg_error3;
+	if (my_service_buffer_write(h, "</time>\n <thread>")    != 0) goto my_service_getmsg_error3;
+	if (my_service_write_int   (h, msg.thread_parent)       != 0) goto my_service_getmsg_error3;
+	if (my_service_buffer_write(h, "</thread>\n")           != 0) goto my_service_getmsg_error3;
 	
 	if (msg.in_reply_to != lu_common_minvalid)
 	{
-		if (my_service_buffer_write(h, "<inreplyto>")     != 0) goto my_service_getmsg_error2;
-		if (my_service_write_int   (h, msg.in_reply_to)   != 0) goto my_service_getmsg_error2;
-		if (my_service_buffer_write(h, "</inreplyto>\n")  != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(h, " <inreplyto>\n")  != 0) goto my_service_getmsg_error3;
+		if (my_service_summary(h, msg.in_reply_to)        != 0) goto my_service_getmsg_error3;
+		if (my_service_buffer_write(h, " </inreplyto>\n") != 0) goto my_service_getmsg_error3;
 	}
 	
-	/*!!! list those message that reply to this one */
+	if (b != 0)
+	{
+ 		count = lu_breader_records(b);
+ 		ind = 0;
+ 		
+		if (my_service_buffer_write(h, " <replies>\n") != 0) goto my_service_getmsg_error3;
+		
+ 		while (count)
+ 		{
+ 			get = count;
+ 			if (get > sizeof(buf)/sizeof(message_id))
+ 				get = sizeof(buf)/sizeof(message_id);
+ 			
+ 			if (lu_breader_read(b, ind, get, &buf[0]) != 0)
+ 				goto my_service_getmsg_error3;
+ 			
+ 			for (i = 0; i < get; i++)
+ 			{
+ 				if (my_service_summary(h, buf[i]) != 0)
+ 					goto my_service_getmsg_error3;
+ 			}
+ 			
+ 			ind   += get;
+ 			count -= get;
+ 		}
+ 		
+		if (my_service_buffer_write(h, " </replies>\n") != 0) goto my_service_getmsg_error3;
+ 	}
 	
-	if (my_service_addresses(h, mmsg.env->from,     "from"    ) != 0) goto my_service_getmsg_error2;
-	if (my_service_addresses(h, mmsg.env->sender,   "sender"  ) != 0) goto my_service_getmsg_error2;
-	if (my_service_addresses(h, mmsg.env->reply_to, "reply-to") != 0) goto my_service_getmsg_error2;
-	if (my_service_addresses(h, mmsg.env->to,       "to"      ) != 0) goto my_service_getmsg_error2;
-	if (my_service_addresses(h, mmsg.env->cc,       "cc"      ) != 0) goto my_service_getmsg_error2;
-	if (my_service_addresses(h, mmsg.env->bcc,      "bcc"     ) != 0) goto my_service_getmsg_error2;
+	if (my_service_addresses(h, mmsg.env->from,     "from"    ) != 0) goto my_service_getmsg_error3;
+	if (my_service_addresses(h, mmsg.env->sender,   "sender"  ) != 0) goto my_service_getmsg_error3;
+	if (my_service_addresses(h, mmsg.env->reply_to, "reply-to") != 0) goto my_service_getmsg_error3;
+	if (my_service_addresses(h, mmsg.env->to,       "to"      ) != 0) goto my_service_getmsg_error3;
+	if (my_service_addresses(h, mmsg.env->cc,       "cc"      ) != 0) goto my_service_getmsg_error3;
+	if (my_service_addresses(h, mmsg.env->bcc,      "bcc"     ) != 0) goto my_service_getmsg_error3;
 	
 	if (mmsg.env->message_id)
 	{
-		if (my_service_buffer_write(h, " <message-id>"     ) != 0) goto my_service_getmsg_error2;
-		if (my_service_write_str   (h, mmsg.env->message_id) != 0) goto my_service_getmsg_error2;
-		if (my_service_buffer_write(h, "</message-id>\n"   ) != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(h, " <message-id>"     ) != 0) goto my_service_getmsg_error3;
+		if (my_service_write_str   (h, mmsg.env->message_id) != 0) goto my_service_getmsg_error3;
+		if (my_service_buffer_write(h, "</message-id>\n"   ) != 0) goto my_service_getmsg_error3;
 	}
 	
 	if (mmsg.env->subject)
 	{
-		if (my_service_buffer_write(h, " <subject>"     ) != 0) goto my_service_getmsg_error2;
-		if (my_service_write_str   (h, mmsg.env->subject) != 0) goto my_service_getmsg_error2;
-		if (my_service_buffer_write(h, "</subject>\n"   ) != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(h, " <subject>"     ) != 0) goto my_service_getmsg_error3;
+		if (my_service_write_str   (h, mmsg.env->subject) != 0) goto my_service_getmsg_error3;
+		if (my_service_buffer_write(h, "</subject>\n"   ) != 0) goto my_service_getmsg_error3;
 	}
 	
-	if (my_service_traverse(h, &mmsg, mmsg.body, 0) == -1) goto my_service_getmsg_error2;
-	if (my_service_buffer_write(h, "</message>\n")  != 0) goto my_service_getmsg_error2;
+	if (my_service_traverse(h, &mmsg, mmsg.body, 0) == -1) goto my_service_getmsg_error3;
+	if (my_service_buffer_write(h, "</message>\n")  != 0) goto my_service_getmsg_error3;
 	
 	lu_mbox_destroy_message(&mmsg);
 	lu_mbox_destroy_map(&cmsg);
 	return 0;
 	
+my_service_getmsg_error3:
+	if (b != 0) lu_breader_free(b);
 my_service_getmsg_error2:
 	lu_mbox_destroy_message(&mmsg);
 my_service_getmsg_error1:
@@ -1164,6 +1231,57 @@ my_service_mindex_error1:
 	lu_breader_free(b);
 	
 my_service_mindex_error0:
+	return -1;
+}
+
+static int my_service_thread(
+	My_Service_Handle h, 
+	const char* request)
+{
+	char*			eptr;
+	message_id		id;
+	
+	Lu_Summary_Thread	th;
+	
+	id = strtoul(request, &eptr, 0);
+	if (eptr == request || (*eptr && !isspace(*eptr)))
+	{	/* There was nothing valid, or it did not end in whitespace
+		 * or a null.
+		 */
+		my_service_error(h,
+			"Malformed request",
+			"Lurkerd received a request for a non-numeric thread",
+			request);
+		goto my_service_thread_error0;
+	}
+	
+	th = lu_summary_read_tsummary(id);
+	if (th.start == 0)
+	{
+		my_service_error(h,
+			"Malformed request",
+			"Request for non-existant thread",
+			request);
+		goto my_service_thread_error0;
+	}
+	
+	/*!!! Load reply linkages */
+	/*!!! Invoke drawing algorithm */
+	
+	if (my_service_xml_head(h)                        != 0) goto my_service_thread_error1;
+	if (my_service_buffer_write(h, "<thread>\n <id>") != 0) goto my_service_thread_error1;
+	if (my_service_write_int(h, id)                   != 0) goto my_service_thread_error1;
+	if (my_service_buffer_write(h, "</id>\n")         != 0) goto my_service_thread_error1;
+	
+	/*!!! render contents */
+	
+	if (my_service_buffer_write(h, "</thread>\n") != 0) goto my_service_thread_error1;
+	
+	return 0;
+	
+my_service_thread_error1:
+	/* noop */	
+my_service_thread_error0:
 	return -1;
 }
 
@@ -1349,6 +1467,8 @@ static int my_service_digest_request(My_Service_Handle h, const char* request)
 		out = my_service_search(h, request+sizeof(LU_PROTO_SEARCH)-1);
 	if (!memcmp(request, LU_PROTO_LISTS, sizeof(LU_PROTO_LISTS)-1)) 
 		out = my_service_lists(h, request+sizeof(LU_PROTO_LISTS)-1);
+	if (!memcmp(request, LU_PROTO_THREAD, sizeof(LU_PROTO_THREAD)-1)) 
+		out = my_service_thread(h, request+sizeof(LU_PROTO_THREAD)-1);
 	
 	/* Get rid of any buffering */
 	my_service_buffer_flush(h);
