@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.11 2002-02-21 03:51:38 terpstra Exp $
+/*  $Id: indexer.c,v 1.12 2002-02-25 07:32:13 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -605,6 +605,6 @@ int lu_indexer_import(
 	printf("]\n");
 	return 0;
 #else
-	return my_indexer_dump_words(0, id);
+	return my_indexer_dump_words(my_indexer_avl_root, id);
 #endif
 }
