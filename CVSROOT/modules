@@ -26,4 +26,4 @@
 # spread out over the entire source repository.
 
 lurker lurker libesort
-libkw  libkw libesort
+libkw  libkw &libesort
