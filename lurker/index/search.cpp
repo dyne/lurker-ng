@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.3 2004-08-24 21:15:59 terpstra Exp $
+/*  $Id: search.cpp,v 1.4 2004-08-25 14:54:53 terpstra Exp $
  *  
  *  search.cpp - Search for messages in lurker database (optionally delete)
  *  
@@ -30,6 +30,7 @@
 
 #include <iostream>
 #include <assert.h>
+#include <stdio.h>
 
 using namespace std;
 
