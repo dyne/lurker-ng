@@ -1,4 +1,4 @@
-/*  $Id: prefix.h,v 1.2 2002-02-03 07:20:03 terpstra Exp $
+/*  $Id: prefix.h,v 1.3 2002-02-10 04:16:48 terpstra Exp $
  *  
  *  prefix.h - What to place in front of keywords we search for
  *  
@@ -41,3 +41,6 @@
 
 /* import processing */
 #define LU_KEYWORD_WORD		""	/* body keywords */
+
+/* The longest length a keyword can be */
+#define LU_KEYWORD_LEN		80

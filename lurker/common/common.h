@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.3 2002-02-03 23:40:23 terpstra Exp $
+/*  $Id: common.h,v 1.4 2002-02-10 04:16:47 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -89,6 +89,14 @@ typedef long time_t;
 #include <syslog.h>
 #else
 #define syslog(x, y, ...)
+#endif
+
+#ifdef HAVE_ASSERT_H
+#include <assert.h>
+#endif
+
+#ifndef assert
+#define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
 #endif
 
 /*------------------------------------------------ Public types */
