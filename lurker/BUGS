@@ -4,15 +4,13 @@ Ideas:
 		-- human recognizable
 	secured lists? login required?
 	ml:debian-devel instead of ml:#
-	consider mmaping the append file for faster writes
-		-- would restrict us to 6Gb max email on 32bit systems
-		-- would make us much faster
 
 Unfulfilled requirements:
 	Better packing of tree
 
 BUGS:
 	Writes to an open KRecord are not reflected in read cache
+	We no longer support block device operation for append
 	We don't check for double append
 	
 	Attachments are never cached because we need to tell the browser

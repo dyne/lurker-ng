@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.15 2002-07-12 19:01:59 terpstra Exp $
+/*  $Id: append.c,v 1.16 2002-07-19 16:11:04 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -30,7 +30,7 @@
 #include "../config.h"
 #include "private.h"
 
-/* If you need btrees larger than 2Gb you must define this: */
+/* If you need appends larger than 2Gb you must define this: */
 /* #define DISABLE_MMAP */
 
 #if defined(HAVE_MMAP) && defined(HAVE_MUNMAP) && !defined(DISABLE_MMAP)
@@ -112,7 +112,66 @@ struct Kap_Append
 	int	grow_dir;
 	size_t	record_size;
 	off_t	eof;
+	off_t	prealloc;
+
+#ifdef USE_MMAP
+	char*	mmap;
+#endif
 };
+
+/***************************************** Strategies for accessing the disk */
+
+#ifdef USE_MMAP
+# define  READ_RECORDS(k, s, b, a) (memcpy(b, &k->mmap[s], a), 0)
+# define WRITE_RECORDS(k, s, b, a) (memcpy(&k->mmap[s], b, a), 0)
+
+static size_t round_mmap_up(size_t amt)
+{
+	size_t out = 0xC000; /* Can't quite map 2Gb- so use 110000... */
+	while (out < amt) out <<= 1;
+	return out;
+}
+
+#else
+
+static int READ_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t amount)
+{
+	if (lseek(k->fd, sector, SEEK_SET) != sector)
+	{
+		if (errno == 0) errno = EINTR;
+		return -1;
+	}
+	
+	if (kap_read_full(k->fd, buf, amonut) != 0)
+	{
+		if (errno == 0) errno = EINTR;
+		return -1;
+	}
+	
+	return 0;
+}
+
+static int WRITE_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t amount)
+{
+	if (lseek(k->fd, sector, SEEK_SET) != sector)
+	{
+		if (errno == 0) errno = EINTR;
+		return -1;
+	}
+	
+	if (kap_write_full(k->fd, buf, amount) != 0)
+	{
+		if (errno == 0) errno = EINTR;
+		return -1;
+	}
+	
+	return 0;
+}
+
+#endif
+
+/***************************************** Decoder methods */
+
 
 /* Map a jump to it's length:
  * 	0 ->	1
@@ -181,59 +240,107 @@ static int offset_to_jump(off_t offset)
  */
 static off_t allocate_cell(Kap k, int jump)
 {
+	/* About allocated buffer */
 	off_t	amt;
 	off_t	where;
-	off_t	remain;
-	off_t	eof;
 	
-	unsigned char	buf[4096];
+	/* About preallocated space */
+	off_t	clear;
+	off_t	remain;
+	
+	/* New official eof */
+	off_t	eof;
+	void*	tmp;
+
+	unsigned char	buf[8192];
 	unsigned char	out[sizeof(off_t)];
+	
+	/* Calculate the buffer information */
 	
 	amt = jump_to_length(jump);
 	amt *= k->append->record_size;
 	
 	where = k->append->eof;
-	if (k->append->grow_dir == GROW_DOWN)
+	if (where + amt > k->append->prealloc)
 	{
-		/*!!! TEST FOR OVERLAP HERE */
-		if (where < amt) return 0;
-		where -= amt;
+		clear = k->append->prealloc;
+		remain = where + amt - k->append->prealloc;
+		
+		/* Align to buff size */
+		remain += sizeof(buf) -1;
+		remain -= remain % sizeof(buf);
+		
+		k->append->prealloc += remain;
+	}
+	else
+	{	/* already zerod */
+		clear = 0;
+		remain = 0;
 	}
 	
-	if (lseek(k->append->fd, where, SEEK_SET) != where)
-		return 0;
 	
 	/* Write a whole whack of zeros to the file */
-	memset(&buf[0], 0, sizeof(buf));
 	
-	remain = amt;
-	while (remain > sizeof(buf))
+	if (remain)
+	{
+		if (lseek(k->append->fd, clear, SEEK_SET) != clear)
+			return 0;
+	
+		memset(&buf[0], 0, sizeof(buf));
+	}
+	
+	while (remain)
 	{
 		if (kap_write_full(k->append->fd, &buf[0], sizeof(buf)) != 0)
+		{
+			k->append->prealloc -= remain;
 			return 0;
+		}
 		remain -= sizeof(buf);
 	}
 	
-	if (kap_write_full(k->append->fd, &buf[0], remain) != 0)
-		return 0;
+	eof = where + amt;
+	
+#ifdef	USE_MMAP
+	if (round_mmap_up(k->append->eof) !=
+	    round_mmap_up(eof))
+	{
+		tmp = mmap(
+			0,
+			round_mmap_up(eof),
+			PROT_READ|PROT_WRITE,
+			MAP_SHARED,
+			k->append->fd,
+			0);
+		
+		if (tmp == MAP_FAILED)
+			return 0;
+		
+		if (munmap(
+			k->append->mmap,
+			round_mmap_up(k->append->eof)) 
+			!= 0)
+		{
+			munmap(tmp, round_mmap_up(eof));
+			return 0;
+		}
+		
+		k->append->mmap = tmp;
+	}
+#endif
 	
 	/* Okay, we seem to have the storage, update the eof marker */
-	if (k->append->grow_dir == GROW_DOWN)
+	k->append->eof = eof;
+	kap_encode_offset(&out[0], eof, sizeof(off_t));
+	if (WRITE_RECORDS(
+		k->append, 
+		LIBKAP_APPEND_HEAD_LEN,
+		&out[0], 
+		sizeof(off_t)) != 0)
 	{
-		lseek(k->append->fd, sizeof(off_t), SEEK_END);
-		eof = where;
-	}
-	else
-	{
-		lseek(k->append->fd, LIBKAP_APPEND_HEAD_LEN, SEEK_SET);
-		eof = where + amt;
+		return 0;
 	}
 	
-	kap_encode_offset(&out[0], eof, sizeof(off_t));
-	if (kap_write_full(k->append->fd, &out[0], sizeof(off_t)) != 0)
-		return 0;
-		
-	k->append->eof = eof;
 	return where;
 }
 
@@ -315,18 +422,14 @@ int kap_append_read(Kap k, const KRecord* kr,
 			amt = len - start;
 		}
 		
-		if (lseek(k->append->fd, 
+		if (READ_RECORDS(
+			k->append,
 			kr->jumps[i]+(rstart*k->append->record_size), 
-			SEEK_SET)
-			!= kr->jumps[i]+(rstart*k->append->record_size))
-			return errno;
-		
-		if (kap_read_full(
-			k->append->fd, 
 			((unsigned char*)data)+(start*k->append->record_size),
-			amt*k->append->record_size)
-			!= 0)
+			amt*k->append->record_size) != 0)
+		{
 			return errno;
+		}
 	}
 	
 	return 0;
@@ -388,18 +491,14 @@ int kap_append_write(Kap k, KRecord* kr,
 			amt = len - start;
 		}
 		
-		if (lseek(k->append->fd, 
+		if (WRITE_RECORDS(
+			k->append,
 			kr->jumps[i]+(rstart*k->append->record_size), 
-			SEEK_SET)
-			!= kr->jumps[i]+(rstart*k->append->record_size))
-			return errno;
-		
-		if (kap_write_full(
-			k->append->fd, 
 			((unsigned char*)data)+(start*k->append->record_size),
-			amt*k->append->record_size)
-			!= 0)
+			amt*k->append->record_size) != 0)
+		{
 			return errno;
+		}
 	}
 	
 	return 0;
@@ -503,12 +602,26 @@ struct Kap_Append* append_init(void)
 	
 	out->fd          = -1;
 	out->record_size = 4;
+
+#ifdef USE_MMAP
+	out->mmap = MAP_FAILED;
+#endif
 	
 	return out;
 }
 
 int kap_append_sync(Kap k)
 {
+#ifdef USE_MMAP
+	if (msync(
+		k->append->mmap,
+		round_mmap_up(k->append->eof),
+		MS_SYNC|MS_INVALIDATE) != 0)
+	{
+		return errno;
+	}
+#endif
+		
 	if (fsync(k->append->fd) != 0)
 	{
 		return errno;
@@ -546,6 +659,14 @@ int kap_append_close(Kap k)
 	if ((ret = kap_append_sync(k))        != 0) out = ret;
 	if ((ret = kap_unlock(k->append->fd)) != 0) out = ret;
 	if ((ret = close(k->append->fd))      != 0) out = ret;
+	
+#ifdef USE_MMAP
+	if (k->append->mmap != MAP_FAILED)
+		if ((ret = munmap(
+			k->append->mmap,
+			round_mmap_up(k->append->eof))) != 0)
+			out = ret;
+#endif
 	
 	return out;
 }
@@ -604,8 +725,12 @@ int kap_append_open(Kap k, const char* dir, const char* prefix)
 #endif
 	
 	init = 0;
+
 	if (block_device)
 	{
+#if 0
+		assert(0);
+#else
 		k->append->grow_dir = GROW_DOWN;
 		k->append->eof = lseek(k->append->fd, LIBKAP_APPEND_HEAD_LEN+sizeof(off_t), SEEK_END);
 		
@@ -620,6 +745,7 @@ int kap_append_open(Kap k, const char* dir, const char* prefix)
 			init = 1;
 			lseek(k->append->fd, LIBKAP_APPEND_HEAD_LEN+sizeof(off_t), SEEK_END);
 		}
+#endif
 	}
 	else
 	{
@@ -667,6 +793,22 @@ int kap_append_open(Kap k, const char* dir, const char* prefix)
 		}
 		
 		kap_decode_offset(&ptr[0], &k->append->eof, sizeof(off_t));
+	}
+	
+	k->append->prealloc = k->append->eof;
+	
+	k->append->mmap = mmap(
+		0,
+		round_mmap_up(k->append->eof),
+		PROT_READ|PROT_WRITE,
+		MAP_SHARED,
+		k->append->fd,
+		0);
+	if (k->append->mmap == MAP_FAILED)
+	{
+		if (errno)	out = errno;
+		else		out = ENOMEM;
+		goto kap_append_open_error2;
 	}
 	
 	return 0;

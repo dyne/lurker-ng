@@ -9,6 +9,8 @@ v0.1d:
 	Added command-line option for disabling service
 	Made the AVL trees reentrant
 	Reintegrated the read buffer into libkap -> faster searches
+	mmap is used for .append files to allow async writes
+	We preallocate storage for append to prevent wasted writes
 
 v0.1c:
 	Added libkap which completely replaces all of libdb3 and flatfile
