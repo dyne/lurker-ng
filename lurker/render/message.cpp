@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.17 2003-06-23 14:38:43 terpstra Exp $
+/*  $Id: message.cpp,v 1.18 2003-06-25 14:34:09 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -49,6 +49,9 @@
 #include "Threading.h"
 #include "KeyReader.h"
 #include "Cache.h"
+
+#define OLD_PGP_HEADER	"-----BEGIN PGP SIGNED MESSAGE-----"
+#define OLD_PGP_DIVIDER	"-----BEGIN PGP SIGNATURE-----" 
 
 void    art_scan(const unsigned char** s, const unsigned char** e);
 void    url_scan(const unsigned char** s, const unsigned char** e);

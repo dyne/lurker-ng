@@ -1,4 +1,4 @@
-/*  $Id: params.cpp,v 1.5 2003-06-25 11:58:40 terpstra Exp $
+/*  $Id: params.cpp,v 1.6 2003-06-25 14:34:09 terpstra Exp $
  *  
  *  params.cpp - Parse the config file for helper scripts
  *  
@@ -38,7 +38,7 @@ void help(const char* name)
 {
 	cerr << "Lurker-params (v" << VERSION << ") parses params from the config file.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> [-d -a -n -e -x]\n";
+	cerr << "Usage: " << name << " -c <config-file> [-d -a -n -e -x -m -i -w]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-d               Output only the dbdir parameter\n";
@@ -46,6 +46,8 @@ void help(const char* name)
 	cerr << "\t-n               Output only the administrator name\n";
 	cerr << "\t-e               Output only the administrator email address\n";
 	cerr << "\t-x               Output only the xslt processing command\n";
+	cerr << "\t-m               Output only the mime pgp verifying command\n";
+	cerr << "\t-i               Output only the inline pgp verifying command\n";
 	cerr << "\t-w               Output only the web_cache state\n";
 	cerr << "\n";
 	cerr << "Output various lurker settings from the config file for use in shell scripts.\n";
@@ -64,9 +66,11 @@ int main(int argc, char** argv)
 	bool        admin_name    = false;
 	bool        admin_address = false;
 	bool        xslt          = false;
+	bool        pgpv_mime     = false;
+	bool        pgpv_inline   = false;
 	bool        web_cache     = false;
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:danexw?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:danexmiw?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -92,6 +96,14 @@ int main(int argc, char** argv)
 		case 'x':
 			++fields;
 			xslt = true;
+			break;
+		case 'm':
+			++fields;
+			pgpv_mime = true;
+			break;
+		case 'i':
+			++fields;
+			pgpv_inline = true;
 			break;
 		case 'w':
 			++fields;
@@ -127,6 +139,8 @@ int main(int argc, char** argv)
 	if (!fields || admin_name)    cout << cfg.admin_name    << "\n";
 	if (!fields || admin_address) cout << cfg.admin_address << "\n";
 	if (!fields || xslt)          cout << cfg.xslt          << "\n";
+	if (!fields || pgpv_mime)     cout << cfg.pgpv_mime     << "\n";
+	if (!fields || pgpv_inline)   cout << cfg.pgpv_inline   << "\n";
 	if (!fields || web_cache)     cout << (cfg.web_cache?"on":"off") << "\n";
 	
 	return 0;

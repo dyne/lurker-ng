@@ -1,4 +1,4 @@
-/*  $Id: Config.h,v 1.12 2003-06-25 11:58:40 terpstra Exp $
+/*  $Id: Config.h,v 1.13 2003-06-25 14:34:09 terpstra Exp $
  *  
  *  Config.h - Knows how to load the config file
  *  
@@ -82,6 +82,8 @@ class Config
  	string	admin_name;
  	string	admin_address;
  	string	xslt;
+ 	string	pgpv_mime;
+ 	string	pgpv_inline;
  	bool	web_cache;
  	
  	// parameters specific for rendering

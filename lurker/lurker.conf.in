@@ -13,6 +13,16 @@ admin_address = nill@bitbucket.org
 # This command is fed xml via stdin and expected to produce on stdout.
 xslt = xsltproc --nonet -
 
+# The commands lurker uses to verify signatures.
+# The output of these commands is displayed in the signature block.
+# The output must be encoded with a charset of UTF-8.
+# The return status must be 0 exactly when the signature is correct.
+# The photo id (if any) should be output to provided photo filename.
+# The substitutions %s, %b, and %p are the signature, body, and photo.
+# 
+# pgp_verify_mime   = gpg --photo-viewer "cat %i >%p" --show-photos --charset utf-8 --verify %s %b 2>&1 | cut -d: -f2-
+# pgp_verify_inline = gpg --photo-viewer "cat %i >%p" --show-photos --charset utf-8 --verify    %b 2>&1 | cut -d: -f2-
+
 # The directory where lurker will keep it's database information.
 dbdir = @VARDIR@/lib/@PACKAGE_NAME@
 

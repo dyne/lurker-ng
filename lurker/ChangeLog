@@ -7,7 +7,8 @@ v0.10:
 	Strip html tags from messages with only html
 	Fixed a bug with mixing compression and missing 'From ' lines
 	Unified all the copyrights to GPL v2
-	New option can disable web cache for low traffic sites
+	New config option can disable web cache for low traffic sites
+	New config options specify how to handle gpg signatures
 
 v0.9:
 	Don't segfault in rare cases if using '-d' on import (zero restart)

@@ -58,7 +58,7 @@
 lurker-params \(em parses parameters from the config file 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker-params\fP [-c <config-file>]  [-d -a -n -e -x]  
+\fBlurker-params\fP [-c <config-file>]  [-d -a -n -e -x -m -i -w]  
 .SH "DESCRIPTION" 
 .PP 
 \fBlurker-params\fP outputs various lurker settings 
@@ -77,6 +77,12 @@ Output only the administrator name
 Output only the administrator email address 
 .IP "\fB-x\fP" 10 
 Output only the xslt processing command 
+.IP "\fB-m\fP" 10 
+Output only the mime pgp verifying command 
+.IP "\fB-i\fP" 10 
+Output only the inline pgp verifying command 
+.IP "\fB-w\fP" 10 
+Output only the web_cache state 
 .SH "SEE ALSO" 
 .PP 
 lurker-index(1), lurker-prune(1), lurker-list(1) 
@@ -109,4 +115,4 @@ Before reporting a bug, please confirm that the bug you found is
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
 <lurker-users@lists.sourceforge.net>. 
-...\" created by instant / docbook-to-man, Mon 23 Jun 2003, 17:53 
+...\" created by instant / docbook-to-man, Wed 25 Jun 2003, 16:33 

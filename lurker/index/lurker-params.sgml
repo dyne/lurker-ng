@@ -57,7 +57,7 @@ lurker-params.1: lurker-params.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg>-c &lt;config-file&gt;</arg>
-      <arg>-d -a -n -e -x</arg>
+      <arg>-d -a -n -e -x -m -i -w</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -105,6 +105,24 @@ lurker-params.1: lurker-params.sgml
         <term><option>-x</option></term>
         <listitem>
           <para>Output only the xslt processing command</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-m</option></term>
+        <listitem>
+          <para>Output only the mime pgp verifying command</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-i</option></term>
+        <listitem>
+          <para>Output only the inline pgp verifying command</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-w</option></term>
+        <listitem>
+          <para>Output only the web_cache state</para>
         </listitem>
       </varlistentry>
     </variablelist>

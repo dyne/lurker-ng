@@ -2,8 +2,7 @@ Ideas:
 	Reorder threads by reply-to?
 	More robust detection of 'From ' lines? Too many people screw it up.
 		(Content-Length could help or maybe @ needed in email)
-	Turn off caching option?
-	Gpg keyring specification for signature checking + faces?
+	Escape 'From ' in messages we store with -m?
 	Printable css?
 	Hover over tree pops up some of the subtree?
 	Maybe warn the user if the group/list search terms conflict?

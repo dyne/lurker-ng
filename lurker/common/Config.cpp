@@ -1,4 +1,4 @@
-/*  $Id: Config.cpp,v 1.13 2003-06-25 11:58:40 terpstra Exp $
+/*  $Id: Config.cpp,v 1.14 2003-06-25 14:34:09 terpstra Exp $
  *  
  *  Config.cpp - Knows how to load the config file
  *  
@@ -39,7 +39,9 @@ Config::Config()
    archive("Unconfigured Host"),
    admin_name("Unset admin name"),
    admin_address("Unset admin address"),
-   xslt("no xslt configured"),
+   xslt("cat -"),
+   pgpv_mime("off"),
+   pgpv_inline("off"),
    web_cache(true)
 {
 }
@@ -260,6 +262,14 @@ int Config::process_command(const string& key, const string& val, const string& 
 	else if (key == "xslt")
 	{
 		xslt = val;
+	}
+	else if (key == "pgp_verify_mime")
+	{
+		pgpv_mime = val;
+	}
+	else if (key == "pgp_verify_inline")
+	{
+		pgpv_inline = val;
 	}
 	else if (key == "web_cache")
 	{
