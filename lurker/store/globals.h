@@ -1,4 +1,4 @@
-/*  $Id: globals.h,v 1.4 2002-01-23 07:33:12 terpstra Exp $
+/*  $Id: globals.h,v 1.5 2002-01-28 08:32:13 terpstra Exp $
  *  
  *  globals.h - the global variables and methods for the daemon
  *  
@@ -74,6 +74,9 @@ extern int lu_load_config(const char* cfg);
 /** This opens all the databases that we track data with.
  */
 extern int lu_open_db();
+
+extern int lu_sync_db();
+extern int lu_close_db();
 
 /** Double check that the mboxs haven't been switched. Then move the read
  *  heads to the right locations.

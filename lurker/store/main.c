@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.13 2002-01-28 07:44:59 terpstra Exp $
+/*  $Id: main.c,v 1.14 2002-01-28 08:32:13 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -34,6 +34,10 @@
 #include <ctype.h>
 
 #include <st.h>
+
+#ifdef HAVE_SIGNAL_H
+#include <signal.h>
+#endif
 
 #ifdef HAVE_SYSLOG_H
 #include <syslog.h>
@@ -262,8 +266,7 @@ static void process_mbox(Mbox* mbox, List* list, time_t stamp)
 		}
 		else if (m->env->from)
 		{
-			if (m->env->from
-			->personal)
+			if (m->env->from->personal)
 				author_name = m->env->from->personal;
 			if (m->env->from->mailbox && m->env->from->host)
 			{
@@ -479,6 +482,34 @@ static void* handle_client(void* arg)
 	return 0;
 }
 
+#ifdef HAVE_SIGNAL_H
+
+static void* lu_sched_sync(void* die)
+{	/* We know that at this point we aren't in the middle of a message
+	 * import thanks to the joys of controlled context switching.
+	 */
+	lu_sync_db();
+	
+	if (!die) return 0;
+	
+	lu_close_db();
+	
+	syslog(LOG_NOTICE, "shutting down ...\n");
+	exit(0);
+}
+
+static void lu_sync_buffers(int sig)
+{
+	st_thread_create(&lu_sched_sync, (void*)0, 0, 0);
+}
+
+static void lu_cleanup_quit(int sig)
+{
+	st_thread_create(&lu_sched_sync, (void*)1, 0, 0);
+}
+
+#endif
+
 int main(int argc, const char* argv[])
 {
 	FILE*		pid;
@@ -569,7 +600,18 @@ int main(int argc, const char* argv[])
 		return 1;
 	}
 	
-	openlog(STORAGE, LOG_PID, LOG_MAIL);
+	if (detach)
+		openlog(STORAGE, LOG_PID, LOG_MAIL);
+	else
+		openlog(STORAGE, LOG_PID | LOG_PERROR, LOG_MAIL);
+
+#ifdef HAVE_SIGNAL_H
+	signal(SIGHUP,  &lu_sync_buffers);
+	signal(SIGINT,  &lu_cleanup_quit);
+	signal(SIGQUIT, &lu_cleanup_quit);
+	signal(SIGABRT, &lu_cleanup_quit);
+	signal(SIGTERM, &lu_cleanup_quit);
+#endif
 	
 	/* Run all the tests */
 	if (lu_test_index() != 0)

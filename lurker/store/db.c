@@ -1,4 +1,4 @@
-/*  $Id: db.c,v 1.9 2002-01-28 07:14:44 terpstra Exp $
+/*  $Id: db.c,v 1.10 2002-01-28 08:32:13 terpstra Exp $
  *  
  *  db.c - manage the databases
  *  
@@ -405,6 +405,74 @@ int lu_open_db()
 			perror("Grabbing last summary block");
 			return -1;
 		}
+	}
+	
+	return 0;
+}
+
+int lu_sync_db()
+{
+	int error;
+	
+	if ((error = lu_thread_db->sync(lu_thread_db, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Syncing db3 database: thread.hash: %s\n",
+			db_strerror(error));
+	}
+	
+	if ((error = lu_merge_db->sync(lu_merge_db, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Syncing db3 database: merge.btree: %s\n",
+			db_strerror(error));
+	}
+	
+	if ((error = lu_mbox_db->sync(lu_mbox_db, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Syncing db3 database: mbox.btree: %s\n",
+			db_strerror(error));
+	}
+	
+	if ((error = lu_keyword_db->sync(lu_keyword_db, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Syncing db3 database: keyword.btree: %s\n",
+			db_strerror(error));
+	}
+	
+	return 0;
+}
+
+int lu_close_db()
+{
+	int error;
+	
+	if ((error = lu_thread_db->close(lu_thread_db, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Closing db3 database: thread.hash: %s\n",
+			db_strerror(error));
+	}
+	
+	if ((error = lu_merge_db->close(lu_merge_db, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Closing db3 database: merge.btree: %s\n",
+			db_strerror(error));
+	}
+	
+	if ((error = lu_mbox_db->close(lu_mbox_db, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Closing db3 database: mbox.btree: %s\n",
+			db_strerror(error));
+	}
+	
+	if ((error = lu_keyword_db->close(lu_keyword_db, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Closing db3 database: keyword.btree: %s\n",
+			db_strerror(error));
+	}
+	
+	if ((error = lu_db_env->close(lu_db_env, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Closing db3 environment: %s\n",
+			db_strerror(error));
 	}
 	
 	return 0;
