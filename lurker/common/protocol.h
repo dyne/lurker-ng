@@ -1,4 +1,4 @@
-/*  $Id: protocol.h,v 1.5 2002-02-12 05:28:32 terpstra Exp $
+/*  $Id: protocol.h,v 1.6 2002-02-22 00:51:43 terpstra Exp $
  *  
  *  protocol.h - What do we use to communicate
  *  
@@ -27,28 +27,6 @@
 #define LU_PROTO_MINDEX		"mindex "
 #define LU_PROTO_SEARCH		"search "
 #define	LU_PROTO_LISTS		"lists "
-
-typedef struct Lu_Proto_Message_T
-{
-	lu_word		list;
-	lu_word		mbox;
-	
-	char 		list_name[80];
-	char		list_address[80];
-	char		list_desc[200];
-	char		mbox_name[100];
-	
-	lu_quad		timestamp;
-	message_id	in_reply_to;
-	message_id	thread;
-	
-	lu_word		replys;		/* How many replys are there */
-	
-	message_id	reply[0];	/* All the replys to this message */
-	char		body[0];	/* The message follows - terminated by
-					 * the connection closing.
-					 */
-} Lu_Proto_Message;
 
 /* Messages to a page */
 #define LU_PROTO_INDEX	20

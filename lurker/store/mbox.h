@@ -1,4 +1,4 @@
-/*  $Id: mbox.h,v 1.5 2002-02-21 22:47:37 terpstra Exp $
+/*  $Id: mbox.h,v 1.6 2002-02-22 00:51:43 terpstra Exp $
  *  
  *  mbox.h - Knows how to follow mboxes for appends and import messages
  *  
@@ -59,7 +59,7 @@ extern int lu_mbox_map_message(
 
 /* This will unmap the memory used by the specified message.
  */
-extern int lu_mbox_map_destroy(
+extern int lu_mbox_destroy_map(
 	struct Lu_Config_Message*	msg);
 	
 /* This will parse a given message from a message mmap.

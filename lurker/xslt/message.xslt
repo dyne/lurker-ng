@@ -25,32 +25,49 @@
   <xsl:value-of select="@name"/>
 </xsl:template>
 
+<xsl:template match="mime">
+  <xsl:if test="not(position()=1)"><hr/></xsl:if>
+  <div align="right">
+   <xsl:if test="@name">
+     <a href="../attach/{/message/id}@{@id}@{@name}">
+     <xsl:value-of select="@name"/> (<xsl:value-of select="@type"/>)
+     </a>
+   </xsl:if>
+   <xsl:if test="not(@name)">
+     <a href="../attach/{/message/id}@{@id}.attach">
+     (<xsl:value-of select="@type"/>)
+     </a>
+   </xsl:if>
+  </div>
+  <xsl:apply-templates/>
+</xsl:template>
+
 <!-- Document Root -->
 <xsl:template match="/">
  <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
  <head>
   <title>
-    Lurker@<xsl:value-of select="/message/list/name"/> -
-    <xsl:value-of select="/message/subject"/>
+    Lurker@<xsl:value-of select="/message/server/hostname"/> 
+    - <xsl:value-of select="/message/list/email/@name"/>
+    - <xsl:value-of select="/message/subject"/>
   </title>
  </head>
  <body>
-  <h1>Lurker@<xsl:value-of select="/message/list/name"/>
-      <xsl:if test="/message/list/address">
-        <a href="mailto:{/message/list/address}">
-         <xsl:value-of select="/message/list/address"/>
-        </a>
-      </xsl:if>
-  </h1>
-
-  <h2><xsl:value-of select="/message/subject"/></h2>
+  <h1>Lurker@<xsl:value-of select="/message/server/hostname"/></h1>
+  <h2><xsl:apply-templates select="/message/list/email"/> - 
+      <xsl:value-of select="/message/subject"/></h2>
 
   <table>
     <xsl:if test="/message/from">
-     <tr><th align="left">From:</th><td><xsl:apply-templates select="/message/from"/></td></tr>
+     <tr><th align="left">From:</th><td width="100%"><xsl:apply-templates select="/message/from"/></td>
+         <td><a href="../thread/{/message/thread}.html">thread view</a></td></tr>
     </xsl:if>
     <xsl:if test="/message/sender">
-     <tr><th align="left">Sender:</th><td><xsl:apply-templates select="/message/sender"/></td></tr>
+     <tr><th align="left">Sender:</th><td><xsl:apply-templates select="/message/sender"/></td>
+         <td><a href="../mbox/{/message/id}.txt">
+             <xsl:if test="/message/mbox"><xsl:value-of select="/message/mbox"/></xsl:if>
+             <xsl:if test="not(/message/mbox)">mbox</xsl:if>
+             </a></td></tr>
     </xsl:if>
     <xsl:if test="/message/reply-to">
      <tr><th align="left">Reply-To:</th><td><xsl:apply-templates select="/message/reply-to"/></td></tr>
@@ -66,14 +83,11 @@
 
   <hr/>
   <blockquote>
-    <xsl:apply-templates select="/message/body"/>
+    <xsl:apply-templates select="/message/mime"/>
   </blockquote>
-  <hr/>
   
-  <a href="{/message/id}.mbox">Raw</a>
-  <xsl:text> </xsl:text>
-  <a href="../thread/{/message/thread}.html">Thread</a>
-
+ <hr/>
+ <p>Administrated by: <xsl:apply-templates select="/message/server/email"/></p>
  </body>
  </html>
 </xsl:template>

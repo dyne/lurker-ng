@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.20 2002-02-12 09:12:43 terpstra Exp $
+/*  $Id: service.c,v 1.21 2002-02-22 00:51:43 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -34,6 +34,7 @@
 #include "summary.h"
 #include "search.h"
 #include "breader.h"
+#include "mbox.h"
 #include "service.h"
 
 #include <ctype.h>
@@ -160,15 +161,7 @@ static int my_service_write_strl(
 	end = buf + length;
 	for (start = buf; buf != end; ++buf)
 	{
-		if (iscntrl(*buf) || (*buf & 0x80) != 0)
-		{
-			if (my_service_buffer_writel(fd, start, buf - start) != 0)
-				return -1;
-			
-			/*!!! Do some sort of unicode craziness */
-			start = buf+1;
-		}
-		else switch (*buf) 
+switch (*buf) 
 		{
 		case '\'':
 			if (my_service_buffer_writel(fd, start, buf - start) != 0)
@@ -218,11 +211,21 @@ static int my_service_write_strl(
 		case '\n':
 			if (my_service_buffer_writel(fd, start, buf - start) != 0)
 				return -1;
-			if (my_service_buffer_write(fd, "<br/>") != 0)
+			if (my_service_buffer_write(fd, "<br/>\n") != 0)
 				return -1;
 			
 			start = buf+1;
 			break;
+			
+		default:
+			if (iscntrl(*buf) || (*buf & 0x80) != 0)
+			{
+				if (my_service_buffer_writel(fd, start, buf - start) != 0)
+					return -1;
+				
+				/*!!! Do some sort of unicode craziness */
+				start = buf+1;
+			}
 		}
 	}
 	
@@ -318,6 +321,174 @@ static int my_service_server(
 	return 0;
 }
 
+static int my_service_addresses(
+	st_netfd_t fd,
+	ADDRESS* addr, 
+	const char* name)
+{
+	if (!addr) return 0;
+	
+	if (my_service_buffer_write(fd, " <") != 0) return -1;
+	if (my_service_write_str   (fd, name) != 0) return -1;
+	if (my_service_buffer_write(fd, ">" ) != 0) return -1;
+	
+	for (; addr; addr = addr->next)
+	{
+		if (!addr->personal && (!addr->mailbox || !addr->host))
+		{
+			continue;
+		}
+		
+		if (my_service_buffer_write(fd, "<email") != 0) return -1;
+		
+		if (addr->personal)
+		{
+			if (my_service_buffer_write(fd, " name=\""    ) != 0) return -1;
+			if (my_service_write_str   (fd, addr->personal) != 0) return -1;
+			if (my_service_buffer_write(fd, "\""          ) != 0) return -1;
+		}
+		
+		if (addr->mailbox && addr->host)
+		{
+			if (my_service_buffer_write(fd, " address=\"") != 0) return -1;
+			if (my_service_write_str   (fd, addr->mailbox) != 0) return -1;
+			if (my_service_buffer_write(fd, "@"          ) != 0) return -1;
+			if (my_service_write_str   (fd, addr->host   ) != 0) return -1;
+			if (my_service_buffer_write(fd, "\""         ) != 0) return -1;
+		}
+		
+		if (my_service_buffer_write(fd, "/>") != 0) return -1;
+	}
+	
+	if (my_service_buffer_write(fd, "</")  != 0) return -1;
+	if (my_service_write_str   (fd, name)  != 0) return -1;
+	if (my_service_buffer_write(fd, ">\n") != 0) return -1;
+	
+	return 0;
+}
+
+static char* my_service_find_name(
+	struct mail_bodystruct* body)
+{
+	PARAMETER* scan;
+	
+	for (scan = body->disposition.parameter; scan; scan = scan->next)
+	{
+		if (!strcmp(scan->attribute, "filename"))
+			return scan->value;
+	}
+	
+	for (scan = body->parameter; scan; scan = scan->next)
+	{
+		if (!strcmp(scan->attribute, "name"))
+			return scan->value;
+	}
+	
+	return 0;
+}
+
+static int my_service_dump(
+	st_netfd_t	fd,
+	const char*	buf,
+	size_t		len)
+{
+	/*!!! Search the message for URLs, email address, quotations, etc */
+	return my_service_write_strl(fd, buf, len);
+}
+
+static int my_service_traverse(
+	st_netfd_t		fd,
+	struct Lu_Mbox_Message* in, 
+	struct mail_bodystruct* body,
+	int			count)
+{
+	static const char* names[] = 
+	{	"text", "multipart", "message", "application", "audio", 
+		"image", "video", "model", "x-unknown"
+	};
+	    
+	struct mail_body_part*	p;
+	size_t			length;
+	char*			buffer;
+	int			nfree;
+	char*			name;
+	
+	if (!body)
+	{	/* You never know... */
+		return count;
+	}
+	
+	if (body->type > 8) body->type = 8;
+	
+	name = my_service_find_name(body);
+	
+	if (my_service_buffer_write(fd, "<mime id=\""    ) != 0) return -1;
+	if (my_service_write_int   (fd, count            ) != 0) return -1;
+	if (my_service_buffer_write(fd, "\" type=\""     ) != 0) return -1;
+	if (my_service_buffer_write(fd, names[body->type]) != 0) return -1;
+	if (my_service_buffer_write(fd, "/"              ) != 0) return -1;
+	if (my_service_buffer_write(fd, body->subtype    ) != 0) return -1;
+	if (my_service_buffer_write(fd, "\""             ) != 0) return -1;
+	
+	if (name)
+	{
+		if (my_service_buffer_write(fd, " name=\"") != 0) return -1;
+		if (my_service_write_str   (fd, name      ) != 0) return -1;
+		if (my_service_buffer_write(fd, "\""      ) != 0) return -1;
+	}
+	
+	if (my_service_buffer_write(fd, ">") != 0) return -1;
+
+	count++;
+	
+	switch ((int)body->type)
+	{
+		case TYPEMESSAGE:
+			/* This part contains an encapsulated message.
+			 */
+			count = my_service_traverse(fd, in, 
+				body->nested.msg->body, count);
+				
+			if (count == -1) return -1;
+			break;
+
+		case TYPETEXT:
+			/*
+			 * This is what we want to display -- stop.
+			 */
+			buffer = lu_mbox_select_body(in, body, &length, &nfree);
+			
+			if (my_service_dump(fd, buffer, length) != 0)
+				return -1;
+			
+			if (nfree)
+				fs_give((void **)&buffer);
+
+			break;
+
+		case TYPEMULTIPART:
+			/*
+			 * Multipart message.  Look at the nested parts
+			 * and hopefully find some plaintext.
+			 */
+			for (p = body->nested.part; p != NULL; p = p->next)
+			{
+				count = my_service_traverse(fd, in,
+					&p->body, count);
+				if (count == -1) break;
+			}
+			
+			break;
+			
+		default:
+			break;
+	}
+	
+	if (my_service_buffer_write(fd, "</mime>\n") != 0) return -1;
+	
+	return count;
+}
+
 static int my_service_list(
 	st_netfd_t fd,
 	Lu_Config_List* l,
@@ -325,9 +496,16 @@ static int my_service_list(
 {
 	if (my_service_buffer_write(fd, " <list>\n  <id>")       != 0) return -1;
 	if (my_service_write_int(fd, l->id)                      != 0) return -1;
-	if (my_service_buffer_write(fd, "</id>\n  <messages>")   != 0) return -1;
-	if (my_service_write_int(fd, msgs)                       != 0) return -1;
-	if (my_service_buffer_write(fd, "</messages>\n  <email") != 0) return -1;
+	if (my_service_buffer_write(fd, "</id>\n")               != 0) return -1;
+	
+	if (msgs != lu_common_minvalid)
+	{
+		if (my_service_buffer_write(fd, "  <messages>")  != 0) return -1;
+		if (my_service_write_int(fd, msgs)               != 0) return -1;
+		if (my_service_buffer_write(fd, "</messages>\n") != 0) return -1;
+	}
+	
+	if (my_service_buffer_write(fd, "  <email") != 0) return -1;
 	
 	if (l->name)
 	{
@@ -398,202 +576,167 @@ static int my_service_getmsg(
 	char*		eptr;
 	message_id	id;
 	lu_addr		bits;
-	off_t		off = 0;
-	char		buf[4096];
-	ssize_t		got;
-	char*		eom;
-	int		mbox_fd = -1;
-	int		seen;
-	int		had_seen;
+	time_t		tm;
 	
-	Lu_Proto_Message	out;
-	Lu_Summary_Message	msg;
+	lu_word		list_id;
+	lu_word		mbox_id;
+	off_t		offset;
+	
+	Lu_Summary_Message		msg;
+	struct Lu_Config_Message	cmsg;
+	struct Lu_Mbox_Message		mmsg;
 	
 	Lu_Config_List*		list;
-	Lu_Config_Mbox*		mbox = 0;
+	Lu_Config_Mbox*		mbox;
 	
 	id = strtoul(request, &eptr, 0);
 	if (eptr == request || (*eptr && !isspace(*eptr)))
 	{	/* There was nothing valid, or it did not end in whitespace
 		 * or a null.
 		 */
-		return -1;
+		my_service_error(fd,
+			"Malformed request",
+			"Lurkerd received a request for a non-numeric message",
+			request);
+		goto my_service_getmsg_error0;
 	}
-	
-	/* invalid message */
-	memset(&out, 0, sizeof(out));
 	
 	msg = lu_summary_read_msummary(id);
-	if (msg.timestamp != 0)
+	if (msg.timestamp == 0)
 	{
-		out.timestamp   = msg.timestamp;
-		out.in_reply_to = msg.in_reply_to;
-		out.thread      = msg.thread_parent;
-		
-		bits = msg.flat_offset;
-		bits >>= (sizeof(lu_addr)*8) - 16;
-		out.list = bits;
-		
-		bits = msg.mbox_offset;
-		bits >>= (sizeof(lu_addr)*8) - 16;
-		out.mbox = bits;
-		
-		bits = 0xFFFFUL;
-		bits <<= (sizeof(lu_addr)*8) - 16;
-		msg.mbox_offset &= ~bits;
-		
-		off = msg.mbox_offset;
-		
-		list = lu_config_find_list(out.list);
-		if (list) mbox = lu_config_find_mbox(list, out.mbox);
-		
-		if (list)
-		{
-			if (list->name)
-			{
-				strncpy(&out.list_name[0], list->name,
-					sizeof(out.list_name));
-			}
-			
-			if (list->address)
-			{
-				strncpy(&out.list_address[0], list->address,
-					sizeof(out.list_address));
-			}
-			
-			if (list->description)
-			{
-				strncpy(&out.list_desc[0], list->description,
-					sizeof(out.list_desc));
-			}
-			
-			out.list_name   [sizeof(out.list_name   )-1] = 0;
-			out.list_address[sizeof(out.list_address)-1] = 0;
-			out.list_desc   [sizeof(out.list_desc   )-1] = 0;
-		}
-		
-		if (mbox)
-		{
-			/* Find the last component of the path */
-			if (mbox->path)
-			{
-				last = scan = mbox->path;
-				for (; *scan; scan++)
-				{
-					if (*scan == '/')
-					{
-						last = scan + 1;
-					}
-				}
-				
-				strncpy(&out.mbox_name[0], last,
-					sizeof(out.mbox_name));
-			}
-			
-			out.mbox_name[sizeof(out.mbox_name)-1] = 0;
-			
-			/* We need a copy of this because while we are doing
-			 * our st_writes, we could get context switched and
-			 * the file closed. Also, we need an independent
-			 * read position, so dup() is out.
-			 */
-			mbox_fd = open(mbox->path, O_RDONLY);
-		}
+		my_service_error(fd,
+			"Internal Error",
+			"Lurkerd failed to retrieve the summary for the named message",
+			request);
+		goto my_service_getmsg_error0;
 	}
 	
-	if (st_write(fd, &out, sizeof(out), 5000000) != sizeof(out))
-	{	/* Couldn't service their request */
-		close(mbox_fd);
-		return -1;
-	}
+	bits = msg.flat_offset;
+	bits >>= (sizeof(lu_addr)*8) - 16;
+	list_id = bits;
 	
-	if (mbox_fd != -1)
+	bits = msg.mbox_offset;
+	bits >>= (sizeof(lu_addr)*8) - 16;
+	mbox_id = bits;
+	
+	bits = 0xFFFFUL;
+	bits <<= (sizeof(lu_addr)*8) - 16;
+	offset = msg.mbox_offset & ~bits;
+	
+	list = lu_config_find_list(list_id);
+	if (!list)
 	{
-		if (lseek(mbox_fd, off, SEEK_SET) != off)
-		{
-			close(mbox_fd);
-			return -1;
-		}
-		
-		had_seen = seen = 0;
-		while (seen != 6)
-		{
-			got = read(mbox_fd, &buf[0], sizeof(buf));
-			if (got <= 0)
-			{	/* Push whatever we defered. */
-				st_write(fd, "\nFrom ", had_seen, 5000000);
-				break;
-			}
-			
-			/* Recall: for loops test at the top. Therefore, if
-			 * we hit seen == 6, eom has been moved past the char
-			 * which did it already.
-			 */
-			had_seen = seen;
-			for (eom = &buf[0]; seen != 6 && eom != &buf[got]; eom++)
-			{
-				switch (*eom)
-				{
-				case '\n':
-					seen = 1;
-					break;
-				case 'F':
-					if (seen == 1) seen++; else seen = 0;
-					break;
-				case 'r':
-					if (seen == 2) seen++; else seen = 0;
-					break;
-				case 'o':
-					if (seen == 3) seen++; else seen = 0;
-					break;
-				case 'm':
-					if (seen == 4) seen++; else seen = 0;
-					break;
-				case ' ':
-					if (seen == 5) seen++; else seen = 0;
-					break;
-				default:
-					seen = 0;
-					break;
-				}
-			}
-			
-			/* There are three cases.
-			 * Case 1: we found an end of a message marker that
-			 *         crossed our buffer boundaries.
-			 * Case 2: we found an end of message marker in this
-			 *         message.
-			 * Case 3: we did not find an end of message marker,
-			 *         but the last 'seen' bytes might be the start
-			 *         of one.
-			 */
-			
-			/* Is this case 1? */
-			if (eom - &buf[0] + had_seen == 6)
-			{	/* Case 1. */
-				/* do nothing. */
-			}
-			else
-			{	/* Case 2 / 3. */
-				
-				/* Push whatever we defered as suspect. */
-				st_write(fd, "\nFrom ", had_seen, 5000000);
-			
-				/* Write all of what we got that wasn't potentially
-				 * the start of the next message. This works
-				 * for both cases 2&3
-				 */
-				if (st_write(fd, &buf[0], eom - &buf[0] - seen,
-					 5000000) != eom - &buf[0] - seen)
-				{
-					break;
-				}
-			}
-		}
-		
-		close(mbox_fd);
+		my_service_error(fd,
+			"Internal Error",
+			"Lurkerd has a message which refers to a missing mailing list",
+			request);
+		goto my_service_getmsg_error0;
 	}
 	
+	mbox = lu_config_find_mbox(list, mbox_id);
+	if (!mbox)
+	{
+		my_service_error(fd,
+			"Internal Error",
+			"Lurkerd has a message which refers to a missing mailbox",
+			request);
+		goto my_service_getmsg_error0;
+	}
+	
+	if (lu_mbox_map_message(mbox, &cmsg, offset) != 0)
+	{
+		my_service_error(fd,
+			"Internal Error",
+			"Lurkerd was unable to mmap the message into memory",
+			request);
+		goto my_service_getmsg_error0;
+	}
+	
+	if (lu_mbox_parse_message(&cmsg, &mmsg) != 0)
+	{
+		my_service_error(fd,
+			"Internal Error",
+			"Lurkerd was unable to parse the map'd message",
+			request);
+		goto my_service_getmsg_error1;
+	}
+	
+	if (my_service_xml_head(fd)                       != 0) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(fd, "<message>\n")    != 0) goto my_service_getmsg_error2;
+	if (my_service_server(fd)                         != 0) goto my_service_getmsg_error2;
+	if (my_service_list(fd, list, lu_common_minvalid) != 0) goto my_service_getmsg_error2;
+	
+	/* Find the last component of the path */
+	if (mbox->path)
+	{
+		last = scan = mbox->path;
+		for (; *scan; scan++)
+		{
+			if (*scan == '/')
+			{
+				last = scan + 1;
+			}
+		}
+		
+		if (my_service_buffer_write(fd, " <mbox>")   != 0) goto my_service_getmsg_error2;
+		if (my_service_write_str(fd, last)           != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(fd, "</mbox>\n") != 0) goto my_service_getmsg_error2;
+	}
+	
+	tm = msg.timestamp;
+	
+	if (my_service_buffer_write(fd, " <id>")                 != 0) goto my_service_getmsg_error2;
+	if (my_service_write_int   (fd, id)                      != 0) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(fd, "</id>\n <timestamp>")   != 0) goto my_service_getmsg_error2;
+	if (my_service_write_int   (fd, msg.timestamp)           != 0) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(fd, "</timestamp>\n <time>") != 0) goto my_service_getmsg_error2;
+	if (my_service_write_str   (fd, ctime(&tm))              != 0) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(fd, "</time>\n <thread>")    != 0) goto my_service_getmsg_error2;
+	if (my_service_write_int   (fd, msg.thread_parent)       != 0) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(fd, "</thread>")             != 0) goto my_service_getmsg_error2;
+	
+	if (msg.in_reply_to != lu_common_minvalid)
+	{
+		if (my_service_buffer_write(fd, "<inreplyto>")     != 0) goto my_service_getmsg_error2;
+		if (my_service_write_int   (fd, msg.in_reply_to)   != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(fd, "</inreplyto>\n")  != 0) goto my_service_getmsg_error2;
+	}
+	
+	/*!!! list those message that reply to this one */
+	
+	if (my_service_addresses(fd, mmsg.env->from,     "from"    ) != 0) goto my_service_getmsg_error2;
+	if (my_service_addresses(fd, mmsg.env->sender,   "sender"  ) != 0) goto my_service_getmsg_error2;
+	if (my_service_addresses(fd, mmsg.env->reply_to, "reply-to") != 0) goto my_service_getmsg_error2;
+	if (my_service_addresses(fd, mmsg.env->to,       "to"      ) != 0) goto my_service_getmsg_error2;
+	if (my_service_addresses(fd, mmsg.env->cc,       "cc"      ) != 0) goto my_service_getmsg_error2;
+	if (my_service_addresses(fd, mmsg.env->bcc,      "bcc"     ) != 0) goto my_service_getmsg_error2;
+	
+	if (mmsg.env->message_id)
+	{
+		if (my_service_buffer_write(fd, " <message-id>"     ) != 0) goto my_service_getmsg_error2;
+		if (my_service_write_str   (fd, mmsg.env->message_id) != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(fd, "</message-id>\n"   ) != 0) goto my_service_getmsg_error2;
+	}
+	
+	if (mmsg.env->subject)
+	{
+		if (my_service_buffer_write(fd, " <subject>"     ) != 0) goto my_service_getmsg_error2;
+		if (my_service_write_str   (fd, mmsg.env->subject) != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(fd, "</subject>\n"   ) != 0) goto my_service_getmsg_error2;
+	}
+	
+	if (my_service_traverse(fd, &mmsg, mmsg.body, 0) == -1) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(fd, "</message>\n")  != 0) goto my_service_getmsg_error2;
+	
+	lu_mbox_destroy_message(&mmsg);
+	lu_mbox_destroy_map(&cmsg);
+	return 0;
+	
+my_service_getmsg_error2:
+	lu_mbox_destroy_message(&mmsg);
+my_service_getmsg_error1:
+	lu_mbox_destroy_map(&cmsg);
+my_service_getmsg_error0:
 	return -1;
 }
 
@@ -860,7 +1003,7 @@ static int my_service_lists(
 	if (my_service_xml_head(fd)                  != 0) return -1;
 	if (my_service_buffer_write(fd, "<lists>\n") != 0) return -1;
 	if (my_service_server(fd)                    != 0) return -1;
-	
+
 	for (	scan = lu_config_list; 
 		scan != lu_config_list + lu_config_lists; 
 		scan++)

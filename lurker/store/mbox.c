@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.13 2002-02-21 22:47:37 terpstra Exp $
+/*  $Id: mbox.c,v 1.14 2002-02-22 00:51:43 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -158,7 +158,7 @@ static int my_mbox_mmap(
 		}
 		
 		/* Else, remap it */
-		lu_mbox_map_destroy(msg);
+		lu_mbox_destroy_map(msg);
 	}
 	
 #ifdef DEBUG
@@ -757,7 +757,7 @@ int lu_mbox_map_message(
 	return 0;
 }
 
-int lu_mbox_map_destroy(
+int lu_mbox_destroy_map(
 	struct Lu_Config_Message* msg)
 {
 	if (!msg->map.base)
