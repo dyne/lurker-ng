@@ -31,12 +31,17 @@ hr { color:black; background-color:black; clear:both; width:100% }
 
 
 table { border-collapse:collapse; border:hidden; table-layout:auto }
-#listTable { }    /* layout table for list names at top of splash */
+#listTable { table-layout:fixed; width:100% }  /* layout table for list names at top of splash */
 #searchTable { }  /* layout table for splash page search tool (below hr only) */
 #searchOut { }    /* search page output table */
 #mindexOut { }    /* mindex page output table */
 #threadOut { }    /* thread page output table */
 #h-fields { }     /* layout table for header fields in message */
+
+#col1 { }  /* column group 1 of splash page listTable */
+#col2 { }  /* column group 2 of splash page listTable */
+#col3 { }  /* column group 3 of splash page listTable */
+#col4 { }  /* column group 4 of splash page listTable */
 
 #listTable caption { background-color:#BBF; font-size:140%; margin-top:0; margin-bottom:1.2em;
                      font-family:Times New Roman, serif; font-weight:bold; padding-bottom:2px }
@@ -53,8 +58,8 @@ th { vertical-align:middle; text-align:left; text-indent:.5em;
 
 td { padding:0 2px 0px 2px; text-align:left; vertical-align:middle;
      font-family:Arial, sans-serif; font-size:100% }
-#listTable td { padding:0 10px 0 10px }
-#searchTable td { text-align:center }  /* input fields */
+#listTable td { padding:0 10px 0 10px; text-align:center }
+#searchTable td { text-align:center; font-family:Times New Roman, serif; font-weight:bold }  /* input fields + time-range */
 #h-fields td { vertical-align:top }
 .padded td { padding-bottom:1px }  /* Adds padding to output tables containing Discussion Tree icon */
 
@@ -77,6 +82,7 @@ td { padding:0 2px 0px 2px; text-align:left; vertical-align:middle;
 #jumpTo { text-align:center; margin-bottom:1.6em }  /* Time jump tool on mindex */
 
 
+#listdrop { width:400px }  /* sets width of list selector in splash page search */
 .na { color:#BBB }  /* used to fade text when link not available, but still has placeholder text */
 .mime-label { text-align:right; padding:4px }  /* Mime labels in message contents */
 .longtext  { width:400px }  /* sets width of text entry fields */

@@ -5,12 +5,13 @@
     version="1.0">
 
 <xsl:template match="list" mode="select">
-  <option value="{id}"><xsl:value-of select="email/@name"/>
+ <option value="{id}">
+  <xsl:value-of select="email/@name"/>
   <xsl:if test="email/@address">
    <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
    &lt;<xsl:value-of select="email/@address"/>&gt;
   </xsl:if>
-  </option>
+ </option>
 </xsl:template>
 
 <xsl:template match="list">
@@ -70,8 +71,6 @@
 <xsl:template match="splash" mode="body">
  <div id="listBlock">
  <table id="listTable">
-  <tr><caption><xsl:value-of select="$lists"/></caption></tr>
-  
   <xsl:variable name="size1" select="round((count(list)+3) div 4)"/>
   <xsl:variable name="size2" select="round((count(list)+2) div 4)"/>
   <xsl:variable name="size3" select="round((count(list)+1) div 4)"/>
@@ -83,6 +82,21 @@
   <xsl:variable name="off4" select="$off3+$size3"/>
   <xsl:variable name="off5" select="$off4+$size4"/>
 
+  <xsl:if test="count(list[position() &gt;= $off1 and position() &lt; $off2]) &gt; 0">
+   <colgroup id="col1"/>
+  </xsl:if>
+  <xsl:if test="count(list[position() &gt;= $off2 and position() &lt; $off3]) &gt; 0">
+   <colgroup id="col2"/>
+  </xsl:if>
+  <xsl:if test="count(list[position() &gt;= $off3 and position() &lt; $off4]) &gt; 0">
+   <colgroup id="col3"/>
+  </xsl:if>
+  <xsl:if test="count(list[position() &gt;= $off4 and position() &lt; $off5]) &gt; 0">
+   <colgroup id="col4"/>
+  </xsl:if>
+
+  <tr><caption><xsl:value-of select="$lists"/></caption></tr>
+  
   <xsl:call-template name="format">
    <xsl:with-param name="col1" select="list[position() &gt;= $off1 and position() &lt; $off2]"/>
    <xsl:with-param name="col2" select="list[position() &gt;= $off2 and position() &lt; $off3]"/>
@@ -106,24 +120,31 @@
   <input type="submit" name="submit" value="{$search}!"/>
  <hr id="searchHr"/>
   <table id="searchTable">
-   <tr><th><xsl:copy-of select="$author"/></th>
-       <td><input type="text" name="author" class="longtext"/></td></tr>
    <tr><th><xsl:copy-of select="$subject"/></th>
        <td><input type="text" name="subject" class="longtext"/></td></tr>
+   <tr><th><xsl:copy-of select="$author"/></th>
+       <td><input type="text" name="author" class="longtext"/></td></tr>
    <tr>
     <th><xsl:copy-of select="$appearinlist"/></th>
     <td>
-     <select name="list">
+     <select name="list" id="listdrop">
       <option value=""><xsl:value-of select="$all-li"/></option>
       <xsl:apply-templates mode="select" select="list"/>
      </select>
     </td>
    </tr>
-   <tr><th><xsl:copy-of select="$startdate"/></th>
-    <td>
+   <tr>
+    <td colspan="2">
      <input type="hidden" name="start-sec" value="0"/>
      <input type="hidden" name="start-min" value="0"/>
      <input type="hidden" name="start-hour" value="0"/>
+     <select name="start-mday">
+       <xsl:call-template name="option-range">
+         <xsl:with-param name="start">1</xsl:with-param>
+         <xsl:with-param name="last">31</xsl:with-param>
+         <xsl:with-param name="select">1</xsl:with-param>
+       </xsl:call-template>
+     </select><xsl:value-of select="$date1"/>
      <select name="start-mon">
        <option value="1" selected="yes"><xsl:value-of select="$jan"/></option>
        <option value="2"><xsl:value-of select="$feb"/></option>
@@ -137,13 +158,6 @@
        <option value="10"><xsl:value-of select="$oct"/></option>
        <option value="11"><xsl:value-of select="$nov"/></option>
        <option value="12"><xsl:value-of select="$dec"/></option>
-     </select><xsl:value-of select="$date1"/>
-     <select name="start-mday">
-       <xsl:call-template name="option-range">
-         <xsl:with-param name="start">1</xsl:with-param>
-         <xsl:with-param name="last">31</xsl:with-param>
-         <xsl:with-param name="select">1</xsl:with-param>
-       </xsl:call-template>
      </select><xsl:value-of select="$date2"/>
      <select name="start-year">
        <xsl:call-template name="option-range">
@@ -152,13 +166,19 @@
          <xsl:with-param name="select">1980</xsl:with-param>
        </xsl:call-template>
      </select>
-    </td>
-   </tr>
-   <tr><th><xsl:copy-of select="$enddate"/></th>
-    <td>
+
+     <xsl:text> </xsl:text><xsl:value-of select="$start-end"/><xsl:text> </xsl:text>
+
      <input type="hidden" name="end-sec" value="59"/>
      <input type="hidden" name="end-min" value="59"/>
      <input type="hidden" name="end-hour" value="23"/>
+     <select name="end-mday">
+       <xsl:call-template name="option-range">
+         <xsl:with-param name="start">1</xsl:with-param>
+         <xsl:with-param name="last">31</xsl:with-param>
+         <xsl:with-param name="select">31</xsl:with-param>
+       </xsl:call-template>
+     </select><xsl:value-of select="$date1"/>
      <select name="end-mon">
        <option value="1"><xsl:value-of select="$jan"/></option>
        <option value="2"><xsl:value-of select="$feb"/></option>
@@ -172,13 +192,6 @@
        <option value="10"><xsl:value-of select="$oct"/></option>
        <option value="11"><xsl:value-of select="$nov"/></option>
        <option value="12" selected="yes"><xsl:value-of select="$dec"/></option>
-     </select><xsl:value-of select="$date1"/>
-     <select name="end-mday">
-       <xsl:call-template name="option-range">
-         <xsl:with-param name="start">1</xsl:with-param>
-         <xsl:with-param name="last">31</xsl:with-param>
-         <xsl:with-param name="select">31</xsl:with-param>
-       </xsl:call-template>
      </select><xsl:value-of select="$date2"/>
      <select name="end-year">
        <xsl:call-template name="option-range">

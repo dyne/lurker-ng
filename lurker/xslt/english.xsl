@@ -33,6 +33,7 @@
  <xsl:variable name="theselists">these mailing lists</xsl:variable>
  <xsl:variable name="reply">reply</xsl:variable>
  
+ <xsl:variable name="start-end">to</xsl:variable>
  <xsl:variable name="startdate">Later than</xsl:variable>
  <xsl:variable name="enddate">Earlier than</xsl:variable>
  <xsl:variable name="date1">&#32;</xsl:variable>
