@@ -1,4 +1,4 @@
-/*  $Id: keyword.c,v 1.2 2002-01-23 07:33:12 terpstra Exp $
+/*  $Id: keyword.c,v 1.3 2002-01-24 23:11:54 terpstra Exp $
  *  
  *  keyword.c - manages a database for keyword searching
  *  
@@ -21,6 +21,12 @@
  *    along with this program; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+ 
+/* These constants control how much data keyword indexing will try to pull 
+ * from the disk at once to take advantage of no seeking.
+ */
+
+#define LU_BLOCK_AT_ONCE	10240
 
 #include "keyword.h"
 #include "io.h"
@@ -64,6 +70,9 @@ DB*	lu_keyword_db;
  * <4 byte record count>
  * The document ids follow immediately in sorted order.
  *
+ * The record count is *guaranteed* to be such that lu_cell_type will tell you
+ * what the cell-type of it is.
+ *
  * If the first docid == 0xFFFFFFFFUL then there is a special case:
  * In this case, the first part of the record is located elsewhere.
  * The next off_t sized bytes say where.
@@ -80,6 +89,9 @@ DB*	lu_keyword_db;
  * free records have been reclaimed -> 1/4 wasted. Of course, 0/4 is possible
  * also extremely unlikely.
  *
+ * We define an offset of '0' to be invalid. The front of the file holds a
+ * table, so this address is never needed.
+ *
  * How a search is executed is explained further down.
  */
 
@@ -87,6 +99,88 @@ DB*	lu_keyword_db;
  * We do allow up to 2^2 ... 2^(bits in message_id) sized blocks
  */
 #define TABLE_SIZE	(sizeof(message_id) * 8 - 1)
+
+/* Helper method to do a complete write 
+ */
+static ssize_t lu_write_full(int fd, const void* buf, size_t count, const char* msg)
+{
+	ssize_t out;
+	ssize_t did;
+	
+	out = 0;
+	while (count)
+	{
+		did = write(fd, buf, count);
+		
+		if (did <= 0 && errno != EINTR)
+		{
+			syslog(LOG_ERR, "%s keyword.flat: %s\n", 
+				msg, strerror(errno));
+			return -1;
+		}
+		
+		count -= did;
+		buf   += did;
+		out   += did;
+	}
+	
+	return out;
+}
+
+/* Helper method to do a complete read
+ */
+static ssize_t lu_read_full(int fd, void* buf, size_t count, const char* msg)
+{
+	ssize_t out;
+	ssize_t did;
+	
+	out = 0;
+	while (count)
+	{
+		did = read(fd, buf, count);
+		
+		if (did <= 0 && errno != EINTR)
+		{
+			syslog(LOG_ERR, "%s keyword.flat: %s\n", 
+				msg, strerror(errno));
+			return -1;
+		}
+		
+		count -= did;
+		buf   += did;
+		out   += did;
+	}
+	
+	return out;
+}
+
+/* Helper method which does a seek and then a write
+ */
+static ssize_t lu_swrite(int fd, off_t off, const void* buf, size_t count, const char* msg)
+{
+	if (lseek(fd, off, SEEK_SET) != off)
+	{
+		syslog(LOG_ERR, "%s seeking keyword.flat (%lld): %s\n",
+			msg, off, strerror(errno));
+		return -1;
+	}
+	
+	return lu_write_full(fd, buf, count, msg);
+}
+
+/* Helper method which does a seek and then a write
+ */
+static ssize_t lu_sread(int fd, off_t off, void* buf, size_t count, const char* msg)
+{
+	if (lseek(fd, off, SEEK_SET) != off)
+	{
+		syslog(LOG_ERR, "%s seeking keyword.flat (%lld): %s\n",
+			msg, off, strerror(errno));
+		return -1;
+	}
+	
+	return lu_read_full(fd, buf, count, msg);
+}
 
 /* This checks if the keyword db is empty. If it is, we write empty records
  * for the free list.
@@ -129,7 +223,7 @@ int lu_keyword_init()
 
 /* What is the free-block index for this size.
  */
-static char lu_celltype(message_id hits)
+static char lu_cell_type(message_id hits)
 {
 	/* The first record is used by the counter. This means that what
 	 * we need is actually hits + 1.
@@ -161,115 +255,167 @@ static char lu_celltype(message_id hits)
 }
 
 /* Create a record at the end of the disk. This record will be sparse if
- * the filesystem supports it. However, the function makes sure that
- * promise records have been allocated by the OS.
+ * the filesystem supports it.
  * Precondition: there must be no other free blocks of this size.
  */
-static int lu_create_empty_record(char cell_type, message_id promise)
+static int lu_create_empty_record(char cell_type)
 {
-	message_id buf[1024];
-	
-	ssize_t did;
+	message_id junk = 0;
 	off_t amount;
+	off_t ind;
 	off_t where = lseek(lu_keyword_fd, 0, SEEK_END);
 	
 	if (where == -1)
 	{
 		syslog(LOG_ERR, "seeking to eof keyword.flat: %s\n",
 			strerror(errno));
-		return -1;
+		goto lu_create_empty_record_error0;
 	}
 	
 	amount = 1 << (cell_type + 2); /* n is actualy 2^(n+2) */
-	/* assert (promise <= amount); */
-	
 	amount *= sizeof(message_id); /* We need to fit message_ids */
+	ind = where + amount - sizeof(message_id);
 	
-	/* The only way to be sure that we have these records locked down
-	 * is to write stuff to the disk there.
-	 */
-	memset(&buf[0], 0, sizeof(buf));
-	while (promise)
+	if (lu_swrite(lu_keyword_fd, ind, &junk, sizeof(message_id), 
+		"writing to extend file") != sizeof(message_id))
 	{
-		did = write(lu_keyword_fd, &buf[0], sizeof(buf));
-		if (did <= 0)
-		{	/* No space available - not a critical error */
-			syslog(LOG_WARNING, "out of free disk space\n");
-			
-			if (ftruncate(lu_keyword_fd, where) != 0)
-				syslog(LOG_ERR, "could not release claimed space: %llu\n",
-					amount);
-			
-			return -1;
-		}
-		
-		promise -= did / sizeof(message_id);
+		goto lu_create_empty_record_error0;
 	}
 	
-	if (lseek(lu_keyword_fd, where + amount - sizeof(message_id), SEEK_SET)
-		!= where + amount - sizeof(message_id))
-	{
-		syslog(LOG_ERR, "failed to seek into the ether keyword.flat: %s\n",
-			strerror(errno));
-		if (ftruncate(lu_keyword_fd, where) != 0)
-			syslog(LOG_ERR, "could not release claimed space: %llu\n",
-				amount);
-		return -1;
-	}
-	
-	if (write(lu_keyword_fd, &buf[0], sizeof(message_id)) != sizeof(message_id))
-	{	/* No space available - not a critical error */
-		syslog(LOG_WARNING, "out of free disk space\n");
-		if (ftruncate(lu_keyword_fd, where) != 0)
-			syslog(LOG_ERR, "could not release claimed space: %llu\n",
-				amount);
-		return -1;
-	}
-	
-	/* Alright, we've got the space, made sure the promised area is
-	 * available, and resized the file with sparse data in between.
+	/* Alright, we've got the space. - unwind with error1 now
 	 * Now we just have to mark it as free.
 	 */
 	
-	if (lseek(lu_keyword_fd, cell_type * sizeof(off_t), SEEK_SET) 
-		!= cell_type * sizeof(off_t))
+	ind = cell_type;
+	ind *= sizeof(off_t);
+	if (lu_swrite(lu_keyword_fd, ind, &where, sizeof(off_t),
+		"marking as free record") != sizeof(off_t))
 	{
-		syslog(LOG_ERR, "seeking within bounds of keyword.flat: %s\n",
-			strerror(errno));
-		
-		if (ftruncate(lu_keyword_fd, where) != 0)
-			syslog(LOG_ERR, "could not release claimed space: %llu\n",
-				amount);
-		
-		return -1;
-	}
-	
-	if (write(lu_keyword_fd, &where, sizeof(off_t)) != sizeof(off_t))
-	{
-		syslog(LOG_ERR, "writing record as free in keyword.flat: %s\n",
-			strerror(errno));
-		
-		if (ftruncate(lu_keyword_fd, where) != 0)
-			syslog(LOG_ERR, "could not release claimed space: %llu\n",
-				amount);
-		
-		return -1;
+		goto lu_create_empty_record_error1;
 	}
 	
 	/* Score! It all worked! */
+	return 0;
+	
+lu_create_empty_record_error1:
+	if (ftruncate(lu_keyword_fd, where) != 0)
+		syslog(LOG_ERR, "could not release claimed space: %llu\n",
+			amount);
+	
+lu_create_empty_record_error0:
+	return -1;
+}
+
+/** This function sticks a cell on the free list.
+ *  It may be reclaimed by later allocations.
+ */
+static int lu_free_cell(off_t which, message_id msgs)
+{
+	off_t prior;
+	off_t where = lu_cell_type(msgs);
+	where *= sizeof(off_t);
+	
+	if (lu_sread(lu_keyword_fd, where, &prior, sizeof(off_t),
+		"reading old free index") != sizeof(off_t))
+	{
+		goto lu_free_cell_error0;
+	}
+	
+	if (lu_swrite(lu_keyword_fd, which, &prior, sizeof(off_t),
+		"writing next free ptr") != sizeof(off_t))
+	{
+		goto lu_free_cell_error0;
+	}
+	
+	if (lu_swrite(lu_keyword_fd, where, &which, sizeof(off_t),
+		"reseting free head ptr") != sizeof(off_t))
+	{
+		goto lu_free_cell_error1;
+	}
+	
+	return 0;
+
+lu_free_cell_error1:
+	if (lu_swrite(lu_keyword_fd, which, &msgs, sizeof(off_t),
+		"LOST SPACE: restoring message counter") != sizeof(off_t))
+	{
+		goto lu_free_cell_error0;
+	}
+	
+lu_free_cell_error0:
+	return -1;
+}
+
+/** Pop a record off the free list. Return 0 if there is none.
+ */
+static int lu_pop_free_list(char cell_type, off_t* out)
+{
+	off_t next;
+	off_t where = cell_type;
+	where *= sizeof(off_t);
+	
+	if (lu_sread(lu_keyword_fd, where, out, sizeof(off_t),
+		"reading free record") != sizeof(off_t))
+	{
+		return -1;
+	}
+	
+	if (*out == 0)
+	{
+		return 0;
+	}
+	
+	if (lu_sread(lu_keyword_fd, *out, &next, sizeof(off_t),
+		"reading next free record") != sizeof(off_t))
+	{
+		return -1;
+	}
+	
+	if (lu_swrite(lu_keyword_fd, where, &next, sizeof(off_t),
+		"moving next free to head") != sizeof(off_t))
+	{
+		return -1;
+	}
+	
+	return 0;
+}
+
+/* Allocate a free block, possibly resusing the free list or creating a new
+ * block.
+ */
+static int lu_allocate_cell(char cell_type, off_t* out)
+{
+	if (lu_pop_free_list(cell_type, out) != 0)
+		return -1;
+	
+	if (*out != 0)
+	{
+		return 0;
+	}
+	
+	if (lu_create_empty_record(cell_type) != 0)
+		return -1;
+	
+	if (lu_pop_free_list(cell_type, out) != 0)
+		return -1;
+	
+	if (*out == 0)
+	{
+		syslog(LOG_ERR, "We created a free record, but it wasn't in keyword.flat\n");
+		return -1;
+	}
 	
 	return 0;
 }
 
 /** This method locates the current offset in the flatfile which houses
- *  the specified keyword. If this is a new keyword, -1 is returned. If there
- *  was an error -2 is returned and the caller should abort.
+ *  the specified keyword. On success 0 is returned, else -1
+ *  If this is a new keyword out == 0.
  */
-static off_t lu_locate_keyword(const char* keyword)
+static int lu_locate_keyword(const char* keyword, off_t* out)
 {
 	DBT	key;
 	DBT	val;
-	off_t	out;
 	int	error;
 	
 	memset(&key, 0, sizeof(key));
@@ -278,13 +424,14 @@ static off_t lu_locate_keyword(const char* keyword)
 	key.data = (char*)keyword;	/* It's const still honest */
 	key.size = strlen(keyword);
 	
-	val.data = &out;
-	val.size = sizeof(out);
+	val.data = out;
+	val.size = sizeof(off_t);
 	
 	error = lu_keyword_db->get(lu_keyword_db, 0, &key, &val, 0);
 	if (error == DB_NOTFOUND)
 	{
-		return -1;
+		*out = 0;
+		return 0;
 	}
 	else if (error)
 	{
@@ -292,15 +439,144 @@ static off_t lu_locate_keyword(const char* keyword)
 		return -1;
 	}
 	
-	return out;
+	return 0;
 }
 
+/** This method updates the offset at which a keyword resides.
+ */
+static int lu_reset_keyword(const char* keyword, off_t in)
+{
+	DBT	key;
+	DBT	val;
+	int	error;
+	
+	memset(&key, 0, sizeof(key));
+	memset(&val, 0, sizeof(val));
+	
+	key.data = (char*)keyword;	/* It's const still honest */
+	key.size = strlen(keyword);
+	
+	val.data = &in;
+	val.size = sizeof(off_t);
+	
+	error = lu_keyword_db->get(lu_keyword_db, 0, &key, &val, 0);
+	if (error)
+	{
+		syslog(LOG_ERR, "Writing keyword %s: %s\n", keyword, db_strerror(error));
+		return -1;
+	}
+	
+	return 0;
+}
+
+/** Push some more keyword records onto an entry.
+ *  It is intended that this be called with several records at once that have
+ *  been queued up. Hence we may end up jumping to several orders of magnitude
+ *  larger storage size.
+ */
 static int lu_write_keyword_block(
 	const char*	keyword, 
 	message_id*	buf,
-	size_t		records)
+	message_id	count)
 {
-	return -1;
+	message_id	records;
+	off_t		where;
+	off_t		spot;
+	off_t		new_records;
+	off_t		ind;
+	int		need_resize;
+	
+	if (lu_locate_keyword(keyword, &where) != 0)
+		return -1;
+	
+	/* Is this an old record? */
+	if (where == 0)
+	{	/* Nope, hence no current size - make new record */
+		if (lu_allocate_cell(lu_cell_type(count), &spot) != 0)
+		{
+			return -1;
+		}
+		
+		records = 0;
+		new_records = records + count;
+		
+		if (lu_swrite(lu_keyword_fd, spot, &records, sizeof(message_id),
+			"preping space for new keyword") != sizeof(message_id))
+		{
+			if (lu_free_cell(spot, count) != 0)
+				syslog(LOG_ERR, "Permanently lost storage\n");
+			
+			return -1;
+		}
+		
+		if (lu_reset_keyword(keyword, spot) != 0)
+		{
+			if (lu_free_cell(spot, count) != 0)
+				syslog(LOG_ERR, "Permanently lost storage\n");
+			
+			return -1;
+		}
+		
+		where = spot;
+	}
+	else
+	{	/* Yep, get the old size */
+		if (lu_sread(lu_keyword_fd, where, &records, sizeof(message_id),
+			"reading old message count") != sizeof(message_id))
+		{
+			return -1;
+		}
+		
+		new_records = records + count;
+		
+		if (lu_cell_type(records) != lu_cell_type(new_records))
+		{
+			char buf[sizeof(message_id) * 2 + sizeof(off_t)];
+			
+			if (lu_allocate_cell(lu_cell_type(new_records), &spot) != 0)
+			{
+				return -1;
+			}
+			
+			memcpy(&buf[0], &new_records, sizeof(message_id));
+			memset(&buf[sizeof(message_id)], 0xFF, sizeof(message_id));
+			memcpy(&buf[sizeof(message_id)*2], &where, sizeof(off_t));
+			
+			if (lu_swrite(lu_keyword_fd, spot, &buf[0], sizeof(buf),
+				"backward reference") != sizeof(buf))
+			{
+				if (lu_free_cell(spot, new_records) != 0)
+					syslog(LOG_ERR, "Permanently lost storage\n");
+				
+				return -1;
+			}
+			
+			if (lu_reset_keyword(keyword, spot) != 0)
+			{
+				if (lu_free_cell(spot, count) != 0)
+					syslog(LOG_ERR, "Permanently lost storage\n");
+				
+				return -1;
+			}
+			
+			where = spot;
+		}
+	}
+	
+	ind = where + ((records + 1) * sizeof(off_t));
+	if (lu_swrite(lu_keyword_fd, where, buf, count * sizeof(message_id),
+		"writing new message_id records") != count * sizeof(message_id))
+	{
+		return -1;
+	}
+	
+	if (lu_swrite(lu_keyword_fd, where, &new_records, sizeof(message_id),
+		"writing new message_id counter") != sizeof(message_id))
+	{
+		return -1;
+	}
+	
+	return 0;
 }
 
 int lu_push_keyword(const char* keyword, message_id msg)
