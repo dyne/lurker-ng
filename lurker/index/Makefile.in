@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(lurker_index_SOURCES) $(lurker_list_SOURCES) $(lurker_params_SOURCES)
+SOURCES = $(lurker_index_SOURCES) $(lurker_list_SOURCES) $(lurker_params_SOURCES) $(lurker_search_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -37,7 +37,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = lurker-index$(EXEEXT) lurker-list$(EXEEXT) \
-	lurker-params$(EXEEXT)
+	lurker-params$(EXEEXT) lurker-search$(EXEEXT)
 subdir = index
 DIST_COMMON = $(dist_man_MANS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -68,12 +68,17 @@ lurker_params_OBJECTS = $(am_lurker_params_OBJECTS)
 lurker_params_LDADD = $(LDADD)
 lurker_params_DEPENDENCIES = ../common/libcommon.a \
 	../libesort/libesort.a
+am_lurker_search_OBJECTS = search.$(OBJEXT)
+lurker_search_OBJECTS = $(am_lurker_search_OBJECTS)
+lurker_search_LDADD = $(LDADD)
+lurker_search_DEPENDENCIES = ../common/libcommon.a \
+	../libesort/libesort.a
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Index.Po ./$(DEPDIR)/getdate.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/list.Po ./$(DEPDIR)/main.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/params.Po
+@AMDEP_TRUE@	./$(DEPDIR)/params.Po ./$(DEPDIR)/search.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -84,9 +89,9 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(lurker_index_SOURCES) $(lurker_list_SOURCES) \
-	$(lurker_params_SOURCES)
+	$(lurker_params_SOURCES) $(lurker_search_SOURCES)
 DIST_SOURCES = $(lurker_index_SOURCES) $(lurker_list_SOURCES) \
-	$(lurker_params_SOURCES)
+	$(lurker_params_SOURCES) $(lurker_search_SOURCES)
 man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(dist_man_MANS)
@@ -178,13 +183,17 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 vardir = @vardir@
 wwwdir = @wwwdir@
-EXTRA_DIST = lurker-drop-rlimit.cpp lurker-regenerate
+EXTRA_DIST = lurker-drop-rlimit.cpp lurker-regenerate \
+             lurker-index.sgml lurker-list.sgml \
+             lurker-params.sgml lurker-search.sgml
+
 AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/libesort
 LDADD = ../common/libcommon.a ../libesort/libesort.a
 lurker_index_SOURCES = Index.cpp main.cpp getdate.cpp Index.h getdate.h
 lurker_list_SOURCES = list.cpp
 lurker_params_SOURCES = params.cpp
-dist_man_MANS = lurker-index.1 lurker-list.1 lurker-params.1
+lurker_search_SOURCES = search.cpp
+dist_man_MANS = lurker-index.1 lurker-list.1 lurker-params.1 lurker-search.1
 all: all-am
 
 .SUFFIXES:
@@ -250,6 +259,9 @@ lurker-list$(EXEEXT): $(lurker_list_OBJECTS) $(lurker_list_DEPENDENCIES)
 lurker-params$(EXEEXT): $(lurker_params_OBJECTS) $(lurker_params_DEPENDENCIES) 
 	@rm -f lurker-params$(EXEEXT)
 	$(CXXLINK) $(lurker_params_LDFLAGS) $(lurker_params_OBJECTS) $(lurker_params_LDADD) $(LIBS)
+lurker-search$(EXEEXT): $(lurker_search_OBJECTS) $(lurker_search_DEPENDENCIES) 
+	@rm -f lurker-search$(EXEEXT)
+	$(CXXLINK) $(lurker_search_LDFLAGS) $(lurker_search_OBJECTS) $(lurker_search_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -262,6 +274,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/params.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -497,6 +510,15 @@ uninstall-man: uninstall-man1
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(vardir)
+
+lurker-index.1: lurker-index.sgml
+	docbook-to-man $< > $@
+lurker-list.1: lurker-list.sgml
+	docbook-to-man $< > $@
+lurker-params.1: lurker-params.sgml
+	docbook-to-man $< > $@
+lurker-search.1: lurker-search.sgml
+	docbook-to-man $< > $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
