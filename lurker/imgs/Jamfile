@@ -7,16 +7,13 @@ InstallFile $(VARDIR)/www/$(PACKAGE)/imgs :
 	d.png
 	e.png
 	f.png
-	first.png
 	g.png
 	h.png
 	i.png
 	j.png
 	k.png
-	last.png
 	next.png
 	prev.png
-	tree.png
 	bar.png
 	paperclip.png
 	;
