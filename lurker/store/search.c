@@ -1,6 +1,6 @@
-/*  $Id: search.c,v 1.10 2002-06-23 11:47:46 terpstra Exp $
+/*  $Id: search.c,v 1.11 2002-07-11 23:39:07 terpstra Exp $
  *  
- *  search.h - Uses the breader to execute a given search
+ *  search.c - Uses libkap to execute a given search
  *  
  *  Copyright (C) 2002 - Wesley W. Terpstra
  *  
@@ -31,7 +31,7 @@
 #include "common.h"
 #include "keyword.h"
 
-#include "breader.h"
+#include "config.h"
 #include "search.h"
 
 #include <st.h>
@@ -86,10 +86,10 @@
 
 /*------------------------------------------------ Private global vars */
 
-static Lu_Breader_Handle	my_search_handle[LU_MAX_TERMS];
-static message_id		my_search_id[LU_MAX_TERMS];
-static int			my_search_handles = 0;
-static st_mutex_t		my_search_mutex;
+static KRecord		my_search_handle[LU_MAX_TERMS];
+static message_id	my_search_id[LU_MAX_TERMS];
+static int		my_search_handles = 0;
+static st_mutex_t	my_search_mutex;
 
 static double		my_search_m00;	/* +xx */
 static double		my_search_m01;	/* +x */
@@ -99,28 +99,28 @@ static double		my_search_z1;	/* +y */
 
 /*------------------------------------------------- Public component methods */
 
-int lu_search_init()
+int lu_search_init(void)
 {
 	my_search_mutex = st_mutex_new();
 	return 0;
 }
 
-int lu_search_open()
+int lu_search_open(void)
 {
 	return 0;
 }
 
-int lu_search_sync()
+int lu_search_sync(void)
 {
 	return 0;
 }
 
-int lu_search_close()
+int lu_search_close(void)
 {
 	return 0;
 }
 
-int lu_search_quit()
+int lu_search_quit(void)
 {
 	st_mutex_destroy(my_search_mutex);
 	return 0;
@@ -136,6 +136,7 @@ int lu_search_start(
 	char		buf[LU_KEYWORD_LEN+1];
 	char*		w;
 	char*		e;
+	int		out;
 	
 	st_mutex_lock(my_search_mutex);
 	
@@ -177,18 +178,39 @@ int lu_search_start(
 				continue;
 			}
 			
-			my_search_handle[my_search_handles] = 
-				lu_breader_new(&buf[0]);
+			out = kap_kopen(
+				lu_config_keyword,
+				&my_search_handle[my_search_handles],
+				&buf[0]);
 			
-			if (my_search_handle[my_search_handles] == 0)
+			if (out != 0)
 			{
-				*error = _("Unable to obtain a breader");
+				*error = _("Unable to obtain a KRecord");
 				lu_search_end(&predict);
 				return -1;
 			}
 			
-			my_search_id[my_search_handles] = 
-				lu_breader_last(my_search_handle[my_search_handles]);
+			if (my_search_handle[my_search_handles].records == 0)
+			{
+				my_search_id[my_search_handles] = lu_common_minvalid;
+			}
+			else
+			{
+				out = kap_kread(
+					lu_config_keyword,
+					&my_search_handle[my_search_handles],
+					&buf[0],
+					my_search_handle[my_search_handles].records-1,
+					&my_search_id[my_search_handles],
+					1);
+				
+				if (out != 0)
+				{
+					*error = _("Unable to obtain last record");
+					lu_search_end(&predict);
+					return -1;
+				}
+			}
 			
 			my_search_handles++;
 		}
@@ -327,7 +349,10 @@ int lu_search_end(message_id* predict)
 	
 	for (i = 0; i < my_search_handles; i++)
 	{
-		lu_breader_free(my_search_handle[i]);
+		kap_kclose(
+			lu_config_keyword,
+			&my_search_handle[i],
+			""); /*!!!*/
 	}
 	my_search_handles = 0;
 	
