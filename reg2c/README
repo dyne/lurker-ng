@@ -1,0 +1,13 @@
+Supported regex operations:
+
+	characters, possibly escaped:	"f" or "\("
+	concatenation:			"ffgga"
+	alternation:			"gh|kj|ss"
+	paranthesis:			"(he|she) is (cool|neat)"
+	empty string:			"h#e"
+	match nothing:			"%"
+	asterisc:			"ba*c"
+	optional:			"Wesley(, the author,)? says"
+	more than one:			"a+"
+	matchall:			"he is .*\."
+	range:				"[a-zA-Z\-\]\\g.]
