@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.19 2002-07-12 21:28:33 terpstra Exp $
+/*  $Id: search.c,v 1.20 2002-07-12 21:43:07 terpstra Exp $
  *  
  *  search.c - redirect search postings
  *  
@@ -234,8 +234,8 @@ int main(int argc, char** argv)
 	tmp = extract_int(qs, "start-min");  tms.tm_min  = (tmp==-1)?0:tmp;
 	tmp = extract_int(qs, "start-hour"); tms.tm_hour = (tmp==-1)?0:tmp;
 	tmp = extract_int(qs, "start-mday"); tms.tm_mday = (tmp==-1)?1:tmp;
-	tmp = extract_int(qs, "start-mon");  tms.tm_mon  = (tmp==-1)?0:tmp-1;
-	tmp = extract_int(qs, "start-year"); if (tmp!=-1) tms.tm_year = tmp-1900;
+	tmp = extract_int(qs, "start-mon");  tms.tm_mon  = (tmp==-1)?0:(tmp-1);
+	tmp = extract_int(qs, "start-year"); tms.tm_year = (tmp==-1)?71:(tmp-1900);
 	start = mktime(&tms);
 	
 	end = time(0);
@@ -244,8 +244,8 @@ int main(int argc, char** argv)
 	tmp = extract_int(qs, "end-min");  tms.tm_min  = (tmp==-1)?0:tmp;
 	tmp = extract_int(qs, "end-hour"); tms.tm_hour = (tmp==-1)?0:tmp;
 	tmp = extract_int(qs, "end-mday"); tms.tm_mday = (tmp==-1)?1:tmp;
-	tmp = extract_int(qs, "end-mon");  tms.tm_mon  = (tmp==-1)?0:tmp-1;
-	tmp = extract_int(qs, "end-year"); if (tmp!=-1) tms.tm_year = tmp-1900;
+	tmp = extract_int(qs, "end-mon");  tms.tm_mon  = (tmp==-1)?0:(tmp-1);
+	tmp = extract_int(qs, "end-year"); tms.tm_year = (tmp==-1)?136:(tmp-1900);
 	end = mktime(&tms);
 	
 	/* Find the format */
