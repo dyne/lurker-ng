@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.58 2002-06-04 16:03:23 terpstra Exp $
+/*  $Id: service.c,v 1.59 2002-06-05 21:43:26 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -423,7 +423,7 @@ static int my_service_write_time(
 	char  buf[80];
 	time_t tm = t;
 	
-	strftime(&buf[0], sizeof(buf), "%H:%M %b %d/%C", localtime(&tm));
+	strftime(&buf[0], sizeof(buf), "%H:%M %b %d/%y", localtime(&tm));
 	return my_service_write_str(h, &buf[0]);
 }
 
