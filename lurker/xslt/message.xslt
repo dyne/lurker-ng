@@ -65,7 +65,7 @@
   </title>
  </head>
  <body>
-  <h1>Lurker@<xsl:value-of select="/message/server/hostname"/></h1>
+  <h1><a href="../splash/index.html">Lurker@<xsl:value-of select="/message/server/hostname"/></a></h1>
   <h2><xsl:apply-templates select="/message/list/email"/> - 
       <xsl:value-of select="/message/subject"/></h2>
 
@@ -76,16 +76,24 @@
            <xsl:when test="/message/from"><xsl:apply-templates select="/message/from"/></xsl:when>
            <xsl:when test="/message/sender"><xsl:apply-templates select="/message/sender"/></xsl:when>
          </xsl:choose></td>
-         <td><a href="../thread/{/message/thread}.html">thread view</a></td></tr>
-    <tr><th align="left">To:</th><td><xsl:apply-templates select="/message/to"/></td>
-         <td><a href="../mbox/{/message/id}.txt">
-             <xsl:if test="/message/mbox"><xsl:value-of select="/message/mbox"/></xsl:if>
-             <xsl:if test="not(/message/mbox)">mbox</xsl:if>
+         <td><a href="../mindex/{/message/list/id}@{floor(/message/offset div 20)*20}.html">
+             <xsl:value-of select="/message/list/email/@name"/>
              </a></td></tr>
+    <tr><th align="left">To:</th><td><xsl:apply-templates select="/message/to"/></td>
+         <td><a href="../thread/{/message/thread}.html">thread view</a></td></tr>
     <xsl:if test="/message/cc">
-     <tr><th align="left">CC:</th><td><xsl:apply-templates select="/message/cc"/></td></tr>
+     <tr><th align="left">CC:</th><td><xsl:apply-templates select="/message/cc"/></td>
+         <td><a href="../mbox/{/message/id}.txt">
+             raw mbox <xsl:if test="/message/mbox">(<xsl:value-of select="/message/mbox"/>)</xsl:if>
+             </a></td></tr>
+     <tr><th align="left">Date:</th><td><xsl:value-of select="/message/time"/></td></tr>
     </xsl:if>
-    <tr><th align="left">Date:</th><td><xsl:value-of select="/message/time"/></td></tr>
+    <xsl:if test="not(/message/cc)">
+     <tr><th align="left">Date:</th><td><xsl:value-of select="/message/time"/></td>
+         <td><a href="../mbox/{/message/id}.txt">
+             raw mbox <xsl:if test="/message/mbox">(<xsl:value-of select="/message/mbox"/>)</xsl:if>
+             </a></td></tr>
+    </xsl:if>
     <xsl:if test="/message/inreplyto">
       <tr><th aligh="left">In-Reply-To:</th><td><xsl:apply-templates select="/message/inreplyto/summary"/></td></tr>
     </xsl:if>
