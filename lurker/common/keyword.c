@@ -1,4 +1,4 @@
-/*  $Id: keyword.c,v 1.2 2002-06-21 18:19:03 terpstra Exp $
+/*  $Id: keyword.c,v 1.3 2002-06-21 21:39:10 terpstra Exp $
  *  
  *  prefix.c - Digest a hunk of string into keywords.
  *  
@@ -69,6 +69,11 @@ static int my_keyword_index_hunk(
 	char out[LU_KEYWORD_LEN+1];
 	char* w;
 	char* e;
+	
+	if (buf == eos)
+	{	/* Don't index nothing */
+		return 0;
+	}
 	
 	/* A quick check to avoid function calls */
 	if (prefix[0])
