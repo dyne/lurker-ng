@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.3 2002-06-14 11:16:59 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.4 2002-06-17 14:22:55 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that delays appends to the flatfile
  *  
@@ -66,7 +66,7 @@
  * 
  * Supposing you get an append of keyword x, the cost is only paid when the
  * record is flushed. If we have a buffer size of s(x), the flush will send
- * out 1+s(x) records (why flush unless we are over?).
+ * out s(x) records.
  * 
  * Now, what is the expected cost at each step?
  * X = I_{a flush is needed}
@@ -75,16 +75,64 @@
  *
  * Take expectations, and note that x needing a flush and the new record being
  * x are independent.
- * E(X) = sum { x: f(x)*1/(1+s(x)) } = sum { x: f(x)/(1+s(x)) }
+ * E(X) = sum { x: f(x)*1/(1+s(x)) } = sum { x: f(x)/s(x) }
  * 
  * We want to minimize the expected cost. However, we also have the constraint
  * that sum { x: s(x) } = N --- that is, we have finite RAM. So, use our old
  * friend Lagrange multipliers:
  * 
- * Z = sum { x: f(x)/(1+s(x)) } + L*(sum { x: s(x) } - N)
+ * Z = sum { x: f(x)/s(x) } + L*(sum { x: s(x) } - N)
  * differentiate:
- *   dZ/ds(x) = -f(x)/(1+s(x))^2 + L = 0   ->  sqrt(f(x)/L) = (1+s(x))^2
+ *   dZ/ds(x) = -f(x)/s(x)^2 + L = 0   ->  sqrt(f(x)/L) = s(x)  [1]
  *   dZ/dL    = sum { x: s(x) } - N  = 0
+ *
+ * Sum [1] across all keywords to get: sum{ y: sqrt(f(y)) } / sqrt(L) = N
+ *
+ * Now, divide [1] by this to get: 
+ *    N*sqrt(f(x)) / sum { y: sqrt(f(y)) } = s(x)
+ * Also, note that h(x)/A = f(x) <-- h is the number of hits we have seen
+ * Then N*sqrt(h(x)/A) / sum { y: sqrt(h(y)/A) } =
+ *      N*sqrt(h(x)) / sum { y: sqrt(h(y)) } = s(X)
+ * So, we can just use hit count instead of frequency.
+ *
+ * This is the basis for our algorithm.
+ * 
+ * Also, notice that E(X) is thus sum: { y: sqrt(f(y)) }^2 / N
+ * So, we have to double our buffer to get a 2* speed-up (not bad)
+ *
+ * Ok, back to reality. Sadly (and happily), we can't use s(x) = the
+ * equation above since we live in an integer world. However, we will do our
+ * best to approximate this solution. One nice thing about the real world is 
+ * that s(x) < 1 is impossible since we simply flush it immediately then.
+ * 
+ * How do we exploit this? Well, so we recognize that unless the cache size
+ * will round to 2 or more, there is no point in caching. Also, we may have
+ * a limit on the number of different keywords cacheable (due to storing
+ * their name). Anyways, the point is that less keywords than the whole data
+ * set will have storage. Now, how do we allocate storage to those who will
+ * get some?
+ *
+ * I propose that the above derivation can be repeated after first breaking
+ * the probability into cases for no cache and with cache. This will arrive
+ * at: s(x) = N*sqrt(h(x)) / sum { cached keywords: sqrt(h(y)) }
+ *       or = 1 if not cached
+ * This leads to E(X) = sum { cache kws: sqrt(f(y)) }^2/N + Pr(not cached)
+ * 
+ * Fair enough! Now, on to practical matters like how to manage the buffer.
+ * In terms of how to decide who to cache: Not a problem! We keep a counter
+ * for each cached record. If we have to flush an uncached record, it will
+ * tell us the new size. If the order is ever disrupted, we shuffle records.
+ * 
+ * In terms of divisions in the buffer, again simple: Just leave them fixed
+ * (initial even distribution), until we have imported say LU_WBUFFER_SYNC
+ * messages, then flush the whole thing and reassign space with correct
+ * weight.
+ * 
+ * The more ugly matter is, of course, the blasted keyword string names
+ * themselves. As i don't yet know what to do, I propose a bad solution:
+ * MALLOC()!!! That's right! We will malloc all of them.
+ * (and them collect stastics and decide what to do next)
+ *  
  */
 
 /*------------------------------------------------- Public component methods */
