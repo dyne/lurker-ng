@@ -1,4 +1,4 @@
-/*  $Id: jump.c,v 1.4 2002-06-21 18:19:03 terpstra Exp $
+/*  $Id: jump.c,v 1.5 2002-07-11 20:28:30 terpstra Exp $
  *  
  *  jump.c - redirect mindex jumps
  *  
@@ -71,7 +71,7 @@ int main(int argc, char** argv)
 	char* uri = getenv("REQUEST_URI");
 	char* qs  = getenv("QUERY_STRING");
 	char* w;
-	char* s;
+	const char* s;
 	int   list;
 	int   tmp;
 	
@@ -128,13 +128,13 @@ int main(int argc, char** argv)
 	tmt = mktime(&tms);
 	
 	/* Find the format */
-	s = qs-1;
-	do s = strstr(s+1, "format=");
-	while (s && s != qs && *(s-1) != '&');
-	if (s)
+	w = qs-1;
+	do w = strstr(w+1, "format=");
+	while (w && w != qs && *(w-1) != '&');
+	if (w)
 	{
-		s += strlen("format=");
-		for (w = s; *w && *w != '&'; w++);
+		w += strlen("format=");
+		for (s = w; *w && *w != '&'; w++);
 		*w = 0;
 	}
 	else	s = "xml";

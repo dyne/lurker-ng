@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.17 2002-06-21 18:19:03 terpstra Exp $
+/*  $Id: search.c,v 1.18 2002-07-11 20:28:30 terpstra Exp $
  *  
  *  search.c - redirect search postings
  *  
@@ -148,7 +148,7 @@ int main(int argc, char** argv)
 	char  buf[4096];
 	char* w;
 	char* e;
-	char* s;
+	const char* s;
 	char* scratch;
 	
 	setlocale(LC_ALL, "");
@@ -202,13 +202,13 @@ int main(int argc, char** argv)
 	extract_keyword(qs, &w, e, scratch, LU_KEYWORD_LIST,         "list");
 	
 	/* Find the format */
-	s = qs-1;
-	do s = strstr(s+1, "format=");
-	while (s && s != qs && *(s-1) != '&');
-	if (s)
+	w = qs-1;
+	do w = strstr(w+1, "format=");
+	while (w && w != qs && *(w-1) != '&');
+	if (w)
 	{
-		s += strlen("format=");
-		for (w = s; *w && *w != '&'; w++);
+		w += strlen("format=");
+		for (s = w; *w && *w != '&'; w++);
 		*w = 0;
 	}
 	else	s = "xml";
