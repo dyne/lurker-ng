@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.26 2002-07-12 12:57:14 terpstra Exp $
+/*  $Id: summary.c,v 1.27 2002-07-12 13:32:06 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -272,7 +272,7 @@ int my_summary_find_thread(
 	kap_encode_offset(&record[0], lasttime, 4);
 	kap_encode_offset(&record[4], head,     sizeof(message_id));
 	
-	error = kap_btree_write(
+	error = kap_btree_rewrite(
 		my_summary_merge_db, 
 		&thread_key[0],
 		&record[0],
