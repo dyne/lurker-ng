@@ -1,4 +1,4 @@
-/*  $Id: Config.h,v 1.4 2003-04-23 22:57:42 terpstra Exp $
+/*  $Id: Config.h,v 1.5 2003-04-24 12:56:46 terpstra Exp $
  *  
  *  Config.h - Knows how to load the config file
  *  
@@ -26,15 +26,19 @@
 #define CONFIG_H
 
 #include <string>
-#include <sstream>
 #include <map>
 #include <iostream>
+
+#if __GNUC__ == 2
+#include <strstream>
+#else
+#include <sstream>
+#endif
 
 #include "Version.h"
 
 using std::string;
 using std::map;
-using std::stringstream;
 using std::ostream;
 
 struct List
@@ -66,7 +70,11 @@ class Config
  	string	docUrl;
  	string	cgiUrl;
  	
- 	stringstream error;
+#if __GNUC__ == 2
+	strstream error;
+#else
+	std::stringstream error;
+#endif
  	
  	Config() : lists(), list(0) { }
  	
