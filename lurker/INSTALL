@@ -2,32 +2,30 @@ Quick start
 ===========
 
 0 Find and install development files for: 
-	libdb3		- http://www.sleepycat.com/
 	libxml2		- http://xmlsoft.org/
 	libxslt1	- http://xmlsoft.org/XSLT/
-	libc-client	-  ftp://ftp.cac.washington.edu/imap/
 	libst		- http://state-threads,sourceforge.net/
+	libc-client	-  ftp://ftp.cac.washington.edu/imap/
+	libiconv	-  ftp://ftp.gnu.org/pub/gnu/libiconv/
 	gettext		-  ftp://ftp.gnu.org/pub/gnu/gettext/
 
  Or, if you run debian:
-  apt-get install libdb3-dev libxslt1-dev libc-client2001-dev libst-dev gettext
+  apt-get install libxslt1-dev libc-client2001-dev libst-dev gettext
+ 
+ If you run glibc, then its libiconv and gettext are sufficient.
+ 
+ Often, your distribution will include packages for the development files
+ for everything but libst and libxslt1.
 
- Generally speaking, if you have gnome, you probably already have libdb3,
- libxml2, and gettext. If you have tools which interface with email, you
- probably have libc-client. The only exotic dependencies are libst and
- libxslt. Often, you distribution will include the development files for
- everything but libst.
 
 1 ./configure	--with-urldir="/relative-without-http/web/path/to/lurker" \
 		--with-wwwdir=/filesystem/path/to/above
 
   If you need to specify dependency locations these options might help:
-  --with-stdir            st installation directory (default: none)
-  --with-db3dir           db3 installation directory (default: none)
-  --with-db3name          db3 library name (default: db-3 or db3)
-  --with-cclientdir       c-client installation directory (default: none)
+  --with-stdir                st installation directory (default: none)
+  --with-cclientdir           c-client installation directory (default: none)
   --with-libiconv-prefix=DIR  search for libiconv in DIR/include and DIR/lib
-  --with-included-gettext use the GNU gettext library included here
+  --with-included-gettext     use the GNU gettext library included here
   XSLT_CONFIG=/path is also handy
    
   A few examples:
@@ -61,58 +59,56 @@ Quick start
   
   where ... matches the with-wwwdir configure directive.
 
-  eg:	/home/*/public_html or /home/youruser/public_html
+  eg:	/home/youruser/public_html
   or	/var/www/lurker
   for the first and second example configure lines given above.
 
 5 /.../sbin/lurkerd	where ... is your configured prefix
   
   The following discussion only applies if you are running a server which
-  has >50,000 emails (~ 150Mb). If you have less than this, lurker will
+  has >1,000,000 emails (~ 3Gb). If you have less than this, lurker will
   probably work just fine on budget hardware.
   
     a. lurkerd can take a fairly long time to shut down on a system this
        large as it gets quite deeply into cache. You should allow lurker up
-       to 10 minutes to shutdown after a SIGTERM before a SIGKILL. It
+       to 15 minutes to shutdown after a SIGTERM before a SIGKILL. It
        usually only takes a minute, but it is a good idea to play it safe
        since otherwise you will corrupt your database and have to reimport
        everything from scratch!
     
     b. Lurker benefits enormously from large amounts of RAM. The more RAM
-       you have, the more the kernel can help with disk buffering. Also, you
-       should probably increase the cache settings given to db3. This is set
-       in DB_CONFIG in the configured directory, with-dbdir. Giving db3 32Mb
-       or more is not unreasonable.
+       you have, the more the kernel can help with disk buffering. Lurker
+       does not need to use this RAM directly; only indirectly via the
+       kernel page cache.
     
-    c. You should consider a performance filesystem for holding lurker's
-       database. ext2 is alright, but does not work as well as say reiserfs.
-       Lurker writes to files in a manner that sometimes triggers sparse
-       file behaviour. This is not desirable as fragmentation of lurker's
-       files can result. Lurker makes the assumption that it's files are
-       contiguous and will suffer if they are not.
-    
-    d. The faster your hard disk, the faster lurker. SCSI/UDMA is a must. 
+    c. The faster your hard disk, the faster lurker. SCSI/UDMA is a must. 
+       On my system, enabling DMA mode makes my imports 2-3* faster.
        The shorter the seek time on the disk, the better. However, do not
        neglect CPU or RAM speeds too much; lurker does fairly sophisticated
        write buffering which can tax a weak processor.
     
-    e. The lurker database will consume space on the order of 70% of the
+    d. The lurker database will consume space on the order of 30% of the
        mailboxes it indexes.
     
-    f. Nearly all of the processing time lurker spends is on importing
+    e. Nearly all of the processing time lurker spends is on importing
        messages. Once you have pulled your archive off disk, lurker no
        longer needs as much resources (unless you have extreme list
        throughput---10 messages/second or more).
     
-    g. Don't even consider running lurker in auto-launch mode.
+    f. Don't even consider running lurker in auto-launch mode.
+    
+    g. You can run the keyword.append and keyword.btree files directly on
+       a block device (the same one) by symlinking these files to the device
+       prior to starting the import.
     
     h. If you take all of the above into consideration, then lurker should
-       be able to import at 50 messages/second consistently as it
-       approaches capacity. (Roughly 150Kb processed every second)
-       Initially (< 50,000) it will import much faster---up to 300/s, do
-       not use these numbers as an indicator that it will continue at this
-       rate or that your hardware is sufficient. Only after 50km does lurker
-       start to make use of good hardware.
+       be able to import at 50 messages/second consistently as it approaches
+       capacity. (Roughly 150Kb processed every second) 
+       
+       Initially (db size < 2* your RAM) it will import much faster---up
+       to 300/s, do not use these numbers as an indicator that it will
+       continue at this rate or that your hardware is sufficient. Only after
+       this point does lurker actually become I/O bound.
 
 6 point your browser at the specified url (with-urldir), eg:
 	http://yourhost.com/~youruser/	for the first example configure

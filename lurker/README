@@ -16,7 +16,7 @@ What is lurker?
     - Multi-lingual support
          Lurker uses utf-8 and can therefore support chinese characters in
          the same page as german. Further, it is easily localized with
-         translations already available for English, German, and Russian.
+         translations already available for English, German, and Japanese.
 
     - Chronological threading
          Every other package with threaded-view breaks the arrival order of
@@ -65,24 +65,34 @@ What were the design goals?
 
  Non-functional requirements:
 	Ability to handle up to 4 billion messages
+		-- only 20 million at present
 	Fast search times: < 0.001s even at capacity
+		-- met
 	Fast rendering: < 0.001s even at capacity
+		-- met
 	Pages should be created and cached in all cases
+		-- met
 
  Target feature set:
 	File attachment support
+		-- met
 	Multilingual support
+		-- met
 	Full boolean search with many fields
+		-- only "and" supported
 	Threading without breaking time of arrival order
+		-- met, but needs better packing of tree
 
  Convenience goals:
 	No need to use any script to input email; watch the mboxs
+		-- met
 	No apache mods or special configuration of any sort
+		-- met
 	Able to install in any location / permissions
+		-- presently needs a daemon, beta will have autolaunch
 
  Libraries used (should be minimal):
 	libst
-	libdb3
 	libxslt1
 	libc-client
 

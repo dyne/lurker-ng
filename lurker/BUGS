@@ -6,7 +6,6 @@ Unfulfilled requirements:
 
 BUGS:
 	We don't check for double append
-	Presently we have no keyword write buffer
 	
 	Attachments are never cached because we need to tell the browser
 	the content-type and we have no way to record this.
