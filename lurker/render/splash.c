@@ -1,4 +1,4 @@
-/*  $Id: splash.c,v 1.1 2002-02-12 05:47:29 terpstra Exp $
+/*  $Id: splash.c,v 1.2 2002-02-12 07:07:05 terpstra Exp $
  *  
  *  mindex.c - output results from a mindex/ lookup
  *  
@@ -33,6 +33,14 @@ int lu_splash_handler(
 {
 	if (t != LU_XML && t != LU_HTML)
 	{	/* Don't know how to deal with other types */
+		printf("Status: 404 Not Found\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&not_found[0], uri);
+		return -1;
+	}
+	
+	if (strcmp(parameter, "index"))
+	{
 		printf("Status: 404 Not Found\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&not_found[0], uri);
