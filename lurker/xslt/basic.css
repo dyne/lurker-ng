@@ -74,8 +74,9 @@ td { padding:0 2px 0px 2px; text-align:left; vertical-align:middle;
 #js { float:right; width:9em; margin-left:20px; margin-bottom:10px; padding:4px;
       text-align:center; font-size:85%; background-color:#EEE; color:#BBB }
 #js form { padding:0; margin:0 }
-#js div { margin:0; padding:0px; text-align:left }  /* contains radio buttons and descriptors */
-#js span { font-size:65%; color:#666 }  /* "javascript required" string */
+#js #radio { margin:0; padding:0px; font-weight:bold }  /* contains radio buttons */
+#js #label { margin:0; padding:0px; font-weight:bold }  /* contains descriptors */
+#js span { font-size:65%; color:#000 }  /* "javascript required" string */
 
 #navlet { padding-left:20px; vertical-align:top }   /* Navigation snippet in message */
 #smSearch { text-align:center }                     /* Seach tool for mindex/thread/search pages */

@@ -84,8 +84,10 @@
  <xsl:variable name="malt">M</xsl:variable>
 
  <xsl:variable name="headdet">Header Detail</xsl:variable>
- <xsl:variable name="min">Minimal</xsl:variable>
- <xsl:variable name="norm">Normal</xsl:variable>
- <xsl:variable name="full">Complete</xsl:variable>
+ <xsl:variable name="less">less</xsl:variable>
+ <xsl:variable name="more">more</xsl:variable>
  <xsl:variable name="javas">requires Javascript</xsl:variable>
+ <xsl:variable name="minimum">Show only minimum amounts of header information.</xsl:variable>
+ <xsl:variable name="normal">Show the standard amount of header information.</xsl:variable>
+ <xsl:variable name="maximum">Show all available header information.</xsl:variable>
 </xsl:stylesheet>

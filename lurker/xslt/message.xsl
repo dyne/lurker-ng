@@ -111,9 +111,18 @@
  <div id="js">
   <form>
    <u><xsl:value-of select="$headdet"/></u>
-   <div><input type="radio" disabled="1" name="min"/><label for="min"><xsl:value-of select="$min"/></label></div>
-   <div><input type="radio" disabled="1" name="norm"/><label for="norm"><xsl:value-of select="$norm"/></label></div>
-   <div><input type="radio" disabled="1" name="full"/><label for="full"><xsl:value-of select="$full"/></label></div>
+   <div id="radio">
+    <input type="radio" disabled="1" name="min" title="{$minimum}"/>
+    <xsl:text disable-output-escaping="yes"> &amp;#8211; </xsl:text>
+    <input type="radio" disabled="1" name="norm" title="{$normal}"/>
+    <xsl:text disable-output-escaping="yes"> &amp;#8211; </xsl:text>
+    <input type="radio" disabled="1" name="full" title="{$maximum}"/>
+   </div>
+   <div id="label">
+    <xsl:value-of select="$less"/>
+    <xsl:text disable-output-escaping="yes"> &amp;#8212;&amp;#8211 </xsl:text>
+    <xsl:value-of select="$more"/>
+   </div>
    <span>(<xsl:value-of select="$javas"/>)</span>
   </form>
  </div>
