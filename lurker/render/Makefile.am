@@ -1,6 +1,6 @@
-htmldir = ${wwwdir}
+cgidir = ${libdir}/cgi-bin
 
-html_PROGRAMS = lurker.cgi jump.cgi keyword.cgi
+cgi_PROGRAMS = lurker.cgi jump.cgi keyword.cgi
 
 AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/libesort
 LDADD = ../common/libcommon.a ../libesort/libesort.a

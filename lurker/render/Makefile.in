@@ -117,9 +117,9 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 wwwdir = @wwwdir@
-htmldir = ${wwwdir}
+cgidir = ${libdir}/cgi-bin
 
-html_PROGRAMS = lurker.cgi jump.cgi keyword.cgi
+cgi_PROGRAMS = lurker.cgi jump.cgi keyword.cgi
 
 AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/libesort
 LDADD = ../common/libcommon.a ../libesort/libesort.a
@@ -139,9 +139,9 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/tools/config.h
 CONFIG_CLEAN_FILES =
-html_PROGRAMS = lurker.cgi$(EXEEXT) jump.cgi$(EXEEXT) \
+cgi_PROGRAMS = lurker.cgi$(EXEEXT) jump.cgi$(EXEEXT) \
 	keyword.cgi$(EXEEXT)
-PROGRAMS = $(html_PROGRAMS)
+PROGRAMS = $(cgi_PROGRAMS)
 
 am_jump_cgi_OBJECTS = parse.$(OBJEXT) jump.$(OBJEXT)
 jump_cgi_OBJECTS = $(am_jump_cgi_OBJECTS)
@@ -200,30 +200,30 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configu
 	  $(AUTOMAKE) --gnu  render/Makefile
 Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)
-htmlPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
-install-htmlPROGRAMS: $(html_PROGRAMS)
+cgiPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
+install-cgiPROGRAMS: $(cgi_PROGRAMS)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(htmldir)
-	@list='$(html_PROGRAMS)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(cgidir)
+	@list='$(cgi_PROGRAMS)'; for p in $$list; do \
 	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
 	  if test -f $$p \
 	  ; then \
 	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
-	   echo " $(INSTALL_PROGRAM_ENV) $(htmlPROGRAMS_INSTALL) $$p $(DESTDIR)$(htmldir)/$$f"; \
-	   $(INSTALL_PROGRAM_ENV) $(htmlPROGRAMS_INSTALL) $$p $(DESTDIR)$(htmldir)/$$f || exit 1; \
+	   echo " $(INSTALL_PROGRAM_ENV) $(cgiPROGRAMS_INSTALL) $$p $(DESTDIR)$(cgidir)/$$f"; \
+	   $(INSTALL_PROGRAM_ENV) $(cgiPROGRAMS_INSTALL) $$p $(DESTDIR)$(cgidir)/$$f || exit 1; \
 	  else :; fi; \
 	done
 
-uninstall-htmlPROGRAMS:
+uninstall-cgiPROGRAMS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(html_PROGRAMS)'; for p in $$list; do \
+	@list='$(cgi_PROGRAMS)'; for p in $$list; do \
 	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-	  echo " rm -f $(DESTDIR)$(htmldir)/$$f"; \
-	  rm -f $(DESTDIR)$(htmldir)/$$f; \
+	  echo " rm -f $(DESTDIR)$(cgidir)/$$f"; \
+	  rm -f $(DESTDIR)$(cgidir)/$$f; \
 	done
 
-clean-htmlPROGRAMS:
-	-test -z "$(html_PROGRAMS)" || rm -f $(html_PROGRAMS)
+clean-cgiPROGRAMS:
+	-test -z "$(cgi_PROGRAMS)" || rm -f $(cgi_PROGRAMS)
 jump.cgi$(EXEEXT): $(jump_cgi_OBJECTS) $(jump_cgi_DEPENDENCIES) 
 	@rm -f jump.cgi$(EXEEXT)
 	$(CXXLINK) $(jump_cgi_LDFLAGS) $(jump_cgi_OBJECTS) $(jump_cgi_LDADD) $(LIBS)
@@ -377,7 +377,7 @@ check: check-am
 all-am: Makefile $(PROGRAMS)
 
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(htmldir)
+	$(mkinstalldirs) $(DESTDIR)$(cgidir)
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -404,7 +404,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-htmlPROGRAMS mostlyclean-am
+clean-am: clean-cgiPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
 
@@ -419,7 +419,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-htmlPROGRAMS
+install-data-am: install-cgiPROGRAMS
 
 install-exec-am:
 
@@ -445,19 +445,18 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-htmlPROGRAMS uninstall-info-am
+uninstall-am: uninstall-cgiPROGRAMS uninstall-info-am
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-htmlPROGRAMS ctags distclean distclean-compile \
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-cgiPROGRAMS \
+	clean-generic ctags distclean distclean-compile \
 	distclean-depend distclean-generic distclean-tags distdir dvi \
-	dvi-am info info-am install install-am install-data \
-	install-data-am install-exec install-exec-am \
-	install-htmlPROGRAMS install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-htmlPROGRAMS \
-	uninstall-info-am
+	dvi-am info info-am install install-am install-cgiPROGRAMS \
+	install-data install-data-am install-exec install-exec-am \
+	install-info install-info-am install-man install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am uninstall-cgiPROGRAMS uninstall-info-am
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -265,7 +265,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-dist_fmtDATA install-dist_htmlDATA
+install-data-am: install-data-local install-dist_fmtDATA \
+	install-dist_htmlDATA
 
 install-exec-am:
 
@@ -296,14 +297,20 @@ uninstall-am: uninstall-dist_fmtDATA uninstall-dist_htmlDATA \
 
 .PHONY: all all-am check check-am clean clean-generic distclean \
 	distclean-generic distdir dvi dvi-am info info-am install \
-	install-am install-data install-data-am install-dist_fmtDATA \
-	install-dist_htmlDATA install-exec install-exec-am install-info \
-	install-info-am install-man install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
-	pdf-am ps ps-am uninstall uninstall-am uninstall-dist_fmtDATA \
-	uninstall-dist_htmlDATA uninstall-info-am
+	install-am install-data install-data-am install-data-local \
+	install-dist_fmtDATA install-dist_htmlDATA install-exec \
+	install-exec-am install-info install-info-am install-man \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-generic pdf pdf-am ps ps-am uninstall uninstall-am \
+	uninstall-dist_fmtDATA uninstall-dist_htmlDATA \
+	uninstall-info-am
 
+
+install-data-local:
+	for i in list message mindex search splash thread; do \
+		$(mkinstalldirs) $(DESTDIR)$(htmldir)/$$i; \
+		done
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
