@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.25 2002-06-21 21:46:34 terpstra Exp $
+/*  $Id: indexer.c,v 1.26 2002-07-11 20:52:08 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -32,11 +32,12 @@
 #include "io.h"
 #include "keyword.h"
 
+#include "config.h"
 #include "mbox.h"
-#include "wbuffer.h"
 #include "indexer.h"
-#include "btree.h"
-#include "breader.h"
+
+#include "kap.h"
+#include "avl.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -90,7 +91,7 @@ static const char* my_indexer_dows[7] = {
 
 /*------------------------------------------------ Private helper methods */
 
-LU_BTREE_DEFINE(
+AVL_DEFINE(
 	indexer, 
 	my_indexer_ptr, 
 	MY_INDEXER_MAX,
@@ -122,7 +123,7 @@ static int my_indexer_push_keyword(
 	my_indexer_buf[my_indexer_avl_off].key = keyword;
 	
 	/* Use the avl insert method to insert the key balanced. */
-	tmp = my_btree_indexer_insert(my_indexer_avl_root, my_indexer_avl_off);
+	tmp = my_avl_indexer_insert(my_indexer_avl_root, my_indexer_avl_off);
 	
 	if (tmp == MY_INDEXER_MAX)
 	{	/* It was already indexed */
@@ -257,7 +258,11 @@ static int my_indexer_dump_words(
 #ifdef DEBUG
 	printf("%s ", my_indexer_buf[where].key);
 #else
-	lu_wbuffer_append(my_indexer_buf[where].key, id);
+	kap_append(
+		lu_config_keyword,
+		my_indexer_buf[where].key, 
+		&id,
+		sizeof(message_id));
 #endif
 	
 	if (my_indexer_dump_words(my_indexer_buf[where].right, id) != 0)
@@ -270,7 +275,7 @@ static int my_indexer_dump_words(
 
 /*------------------------------------------------- Public component methods */
 
-int lu_indexer_init()
+int lu_indexer_init(void)
 {
 	my_indexer_buf = malloc(LU_INDEXER_MAX_KEYS * sizeof(My_Indexer_Tree) +
 				LU_INDEXER_MAX_DYNAMIC);
@@ -284,22 +289,22 @@ int lu_indexer_init()
 	return 0;
 }
 
-int lu_indexer_open()
+int lu_indexer_open(void)
 {
 	return 0;
 }
 
-int lu_indexer_sync()
+int lu_indexer_sync(void)
 {
 	return 0;
 }
 
-int lu_indexer_close()
+int lu_indexer_close(void)
 {
 	return 0;
 }
 
-int lu_indexer_quit()
+int lu_indexer_quit(void)
 {
 	if (my_indexer_buf)
 	{
@@ -312,7 +317,7 @@ int lu_indexer_quit()
 
 /*------------------------------------------------- Indexing algorithm */
 
-void lu_indexer_prep()
+void lu_indexer_prep(void)
 {
 	/* We have imported no keywords in this pass yet. */
 	my_indexer_dyn_off = ((char*)my_indexer_buf) + 
@@ -328,12 +333,20 @@ void lu_indexer_location(
 	lu_word		mbox,
 	message_id*	offset)
 {
-	char			buf[LU_KEYWORD_LEN+1];
+	char	buf[LU_KEYWORD_LEN+1];
+	KRecord	kr;
+	int	error;
 	
 	/* Push the mailing list keyword. */
 	snprintf(&buf[0], sizeof(buf), "%s%d", 
 		LU_KEYWORD_LIST, list);
-	*offset = lu_breader_quick_records(&buf[0]);
+		
+	error = kap_kopen(lu_config_keyword, &kr, &buf[0]);
+	kap_kclose(lu_config_keyword, &kr, &buf[0]);
+	
+	if (!error)	*offset = kr.records;
+	else		*offset = 0;
+	
 	my_indexer_push_keyword(&buf[0], 0);
 	
 	/* Push the mail box keyword. */

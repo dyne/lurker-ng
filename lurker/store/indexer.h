@@ -1,4 +1,4 @@
-/*  $Id: indexer.h,v 1.10 2002-06-10 12:25:58 terpstra Exp $
+/*  $Id: indexer.h,v 1.11 2002-07-11 20:52:08 terpstra Exp $
  *  
  *  indexer.h - Handles indexing a message for keyword searching
  *  
@@ -36,7 +36,7 @@ struct Lu_Mbox_Message;
 
 /** This will prepare for a new bunch of keywords 
  */
-void lu_indexer_prep();
+void lu_indexer_prep(void);
 
 /** Call this to push all the keywords related to the location of the message
  */
