@@ -1,4 +1,4 @@
-/*  $Id: Config.h,v 1.10 2003-06-04 15:37:40 terpstra Exp $
+/*  $Id: Config.h,v 1.11 2003-06-04 16:24:07 terpstra Exp $
  *  
  *  Config.h - Knows how to load the config file
  *  
@@ -65,7 +65,14 @@ class Config
  public:
  	typedef map<string, List>    Lists;
  	typedef map<string, List*>   Members;
- 	typedef map<string, Members> Groups;
+ 	
+ 	struct GroupData
+ 	{
+ 		string  heading;
+ 		Members members;
+ 	};
+ 	
+ 	typedef map<string, GroupData> Groups;
  	
  	Lists  lists;
  	Groups groups;
@@ -91,11 +98,11 @@ class Config
 #endif
  	}
  	
- 	Config() : list(0), group("lists") { }
+ 	Config();
  	
  	// Open the config from this file.
- 	int load(const char* file);
- 	int process_command(const string& key, const string& val);
+ 	int load(const string& file);
+ 	int process_command(const string& key, const string& val, const string& dir);
 };
 
 ostream& operator << (ostream& o, const List& l);

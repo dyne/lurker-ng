@@ -11,6 +11,7 @@ v0.9:
 	Added lurker-list and lurker-params to facilitate script writing
 	Added a group option which can be used to categorize the splash
 	Searching by group is now supported
+	Support including files within configuration
 
 v0.8:
 	@ signs are legitimate inside urls

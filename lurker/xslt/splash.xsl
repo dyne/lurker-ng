@@ -15,8 +15,11 @@
 </xsl:template>
 
 <xsl:template match="group" mode="select">
- <option value="{title}">
-  <xsl:value-of select="title"/>
+ <option value="{id}">
+  <xsl:choose>
+   <xsl:when test="heading"><xsl:value-of select="heading"/></xsl:when>
+   <xsl:otherwise><xsl:value-of select="id"/></xsl:otherwise>
+  </xsl:choose>
  </option>
 </xsl:template>
 
@@ -84,7 +87,12 @@
 
 <xsl:template match="splash" mode="body">
  <xsl:for-each select="group">
-  <h2><xsl:value-of select="title"/></h2>
+  <h2>
+   <xsl:choose>
+    <xsl:when test="heading"><xsl:value-of select="heading"/></xsl:when>
+    <xsl:otherwise><xsl:value-of select="id"/></xsl:otherwise>
+   </xsl:choose>
+  </h2>
   <div id="listBlock">
   <table id="listTable" width="100%">
    <xsl:variable name="size1" select="floor((count(list)+3) div 4)"/>

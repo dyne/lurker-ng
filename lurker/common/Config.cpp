@@ -1,4 +1,4 @@
-/*  $Id: Config.cpp,v 1.8 2003-06-04 15:37:40 terpstra Exp $
+/*  $Id: Config.cpp,v 1.9 2003-06-04 16:24:07 terpstra Exp $
  *  
  *  Config.cpp - Knows how to load the config file
  *  
@@ -34,6 +34,16 @@
 
 using namespace std;
 
+Config::Config()
+ : list(0), group("lists"), error(), lists(), groups(),
+   dbdir(""), 
+   archive("Unconfigured Host"),
+   admin_name("Unset admin name"),
+   admin_address("Unset admin address"),
+   xslt("no xslt configured")
+{
+}
+
 void prune_back(string& line)
 {
 	// Trim off eol and whitespace
@@ -61,14 +71,18 @@ string::size_type skip_front(const string& line, string::size_type x = 0)
 	return x;
 }
 
-int Config::load(const char* file)
+int Config::load(const string& file)
 {
-	ifstream f(file);
+	ifstream f(file.c_str());
 	if (!f.is_open())
 	{
 		error << file << ":open: could not open!" << endl;
 		return -1;
 	}
+	
+	string dir;
+	string::size_type x = file.find('/');
+	if (x != string::npos) dir.assign(file, 0, x+1);
 	
 	string line;
 	bool ok = true;
@@ -108,7 +122,7 @@ int Config::load(const char* file)
 		}
 		else
 		{
-			if (key != "" && process_command(key, val) != 0) ok = false;
+			if (key != "" && process_command(key, val, dir) != 0) ok = false;
 			
 			string::size_type leadin = skip_front(line);
 			key.assign(line, leadin, eq-leadin);
@@ -119,11 +133,11 @@ int Config::load(const char* file)
 	
 	if (key == "")
 	{
-		error << "No values set by config file!" << endl;
+		error << "No values set by config file '" << file << "'!" << endl;
 		ok = false;
 	}
 	
-	if (key != "" && process_command(key, val) != 0) ok = false;
+	if (key != "" && process_command(key, val, dir) != 0) ok = false;
 	
 	if (!ok) return -1;
 	return 0;
@@ -144,7 +158,7 @@ bool isSimple(const string& s)
 	return true;
 }
 
-int Config::process_command(const string& key, const string& val)
+int Config::process_command(const string& key, const string& val, const string& dir)
 {
 //	cout << key << "-" << val << endl;
 	
@@ -161,6 +175,11 @@ int Config::process_command(const string& key, const string& val)
 		
 		group = val;
 	}
+	else if (key == "heading")
+	{
+		len = 40;
+		groups[group].heading = val;
+	}
 	else if (key == "list")
 	{
 		len = 32;
@@ -176,7 +195,7 @@ int Config::process_command(const string& key, const string& val)
 			return -1;
 		}
 		
-		groups[group][val] = list = &lists[val];
+		groups[group].members[val] = list = &lists[val];
 		list->mbox = val;
 		list->group = group;
 	}
@@ -241,6 +260,17 @@ int Config::process_command(const string& key, const string& val)
 	else if (key == "xslt")
 	{
 		xslt = val;
+	}
+	else if (key == "include")
+	{
+		string file;
+		
+		if (val[0] == '/')
+			file = val;
+		else	file = dir + val;
+		
+		if (load(file) != 0)
+			return -1;
 	}
 	else
 	{

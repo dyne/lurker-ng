@@ -16,6 +16,9 @@ xslt = xsltproc fmt/render-html.xsl -
 # The directory where lurker will keep it's database information.
 dbdir = @VARDIR@/lib/@PACKAGE_NAME@
 
+# Include another file for additional configuration
+# include = another.conf
+
 # Now comes configuration for the mailing lists lurker is host
 # 
 # Once lurker has been configured to use a list, you must never take it
@@ -26,7 +29,8 @@ dbdir = @VARDIR@/lib/@PACKAGE_NAME@
 #
 # Here is an example:
 #
-# group = Mailing Lists
+# group = lists
+#   heading = Mailing Lists
 #   list = devel
 #	title       = Debian-Devel
 #	address     = debian-devel@lists.debian.org
