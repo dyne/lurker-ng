@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.2 2003-04-21 18:25:33 terpstra Exp $
+/*  $Id: esort.h,v 1.3 2003-04-23 12:59:52 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -157,7 +157,7 @@ class Writer : public Reader
  	 */
  	static Writer* open(
  		const string& db, const Parameters& p = Parameters(), 
- 		int mode = 0644);
+ 		int mode = 0666);
 };
 
 }

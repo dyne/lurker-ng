@@ -4,6 +4,7 @@ v0.7:
 	Unfold folded email headers for http; broke some attachments
 	Don't include control chars in output xml; drop them
 	Added mejo's manpage for lurker-index
+	Open mode of 0666 instead of 0644; rely on the umask
 
 v0.6:
 	Jam replaces automake + overkill autoconf madness; hooray!

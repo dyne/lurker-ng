@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: main.cpp,v 1.3 2003-04-23 12:59:52 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -251,7 +251,7 @@ int main(int argc, char** argv)
 	}
 	
 	string mboxf = cfg.dbdir + "/" + listn;
-	mbox = open(mboxf.c_str(), O_RDWR|O_CREAT,0644);
+	mbox = open(mboxf.c_str(), O_RDWR|O_CREAT, 0666);
 	if (mbox == -1)
 	{
 		perror(mboxf.c_str());
