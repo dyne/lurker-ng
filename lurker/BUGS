@@ -8,7 +8,6 @@ Unfulfilled requirements:
 		stop/start request processing
 		dump cache files
 	Better packing of tree
-	Reply-to link
 
 	If we get an HTML only email, we don't do anything smart - just
 	escape all the tags. This is ok, but it would be nice if we stripped
