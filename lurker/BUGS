@@ -3,7 +3,6 @@ Ideas:
 
 Unfulfilled requirements:
 	Date goto in mindex
-	Hit prediction
 
 	lurkerctrl
 		show status of lurker
@@ -17,6 +16,7 @@ Unfulfilled requirements:
 	them and discarded contents of <head><style>... for instance.
 
 BUGS:
+	Really use common code for keywords -- ("j.t." breaks)
 	Honour indenting in email
 	We don't check for double append
 	Presently we have no keyword write buffer
