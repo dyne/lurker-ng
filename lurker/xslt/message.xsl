@@ -67,10 +67,10 @@
    <img src="../imgs/a.png"/>
   </xsl:if>
   <xsl:if test="reply">
-   <a href="mailto:{reply}">(reply)</a>
+   <a href="mailto:{reply}">(<xsl:value-of select="$reply"/>)</a>
   </xsl:if>
   <xsl:if test="not(reply)">
-   (<xsl:value-of select="reply"/>)
+   (<xsl:value-of select="$reply"/>)
   </xsl:if>
   <xsl:if test="threading/next">
    <xsl:apply-templates select="threading/next" mode="snippet"/>
