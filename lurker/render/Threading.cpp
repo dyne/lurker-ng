@@ -1,4 +1,4 @@
-/*  $Id: Threading.cpp,v 1.6 2003-06-08 16:56:50 terpstra Exp $
+/*  $Id: Threading.cpp,v 1.7 2003-06-08 17:07:32 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -354,17 +354,25 @@ int my_service_draw_snippet(
 	return col;
 }
 
-int my_service_pick_p(Threading::Node* tree, int root)
+int my_service_pick_p(Threading::Node* tree, int root, int num)
 {
-	int n = root;
-	int p;
+	int p = root;
 	
-	if (tree[n].replyor_first == -1 && tree[n].replyee != -1)
-		p = tree[n].replyee;
-	else	p = n;
+	// If we have nothing which is drawn below us move up an extra step
+	if (tree[p].replyor_first == -1 && 
+	    (p+1 >= num || tree[p+1].replyee != -1))
+	{	// we have no children and we have no dangling replyee
+		if (tree[p].replyee != -1)
+			p = tree[p].replyee;
+		else if (p != 0)
+			p = p - 1; // use the dangling replyee trick
+	}
 	
-	if (tree[p].replyee != -1) p = tree[p].replyee;
-	else if (p != 0) p = p - 1; // no in-reply-to, but not root? use prev
+	// always move up at least one row if we can
+	if (tree[p].replyee != -1)
+		p = tree[p].replyee;
+	else if (p != 0)
+		p = p - 1; // use dangling replyee trick
 	
 	return p;
 }
@@ -373,7 +381,9 @@ string Threading::draw_snippet(ESort::Reader* db, Key root)
 {
 	Threading::Node* tree = &nodes[0];
 	string out;
-	my_service_draw_snippet(db, tree, my_service_pick_p(tree, root), 0, out, nodes.size());
+	my_service_draw_snippet(db, tree, 
+		my_service_pick_p(tree, root, nodes.size()), 
+		0, out, nodes.size());
 	return out;
 }
 
@@ -434,6 +444,6 @@ void my_service_draw_snippet_row(
 void Threading::draw_snippet_row(ostream& o, int* h, Key row, Key root)
 {
 	Threading::Node* tree = &nodes[0];
-	if (*h == -2) *h = my_service_pick_p(tree, root);
+	if (*h == -2) *h = my_service_pick_p(tree, root, nodes.size());
 	my_service_draw_snippet_row(o, tree, h, row, root, nodes.size());
 }
