@@ -23,6 +23,7 @@ v0.9:
 	Current directory is now relative to generated content
 	Converted Wheat's html page to xslt and merged it in
 	Rewrote the entire UI to integrate the new topics page
+	Tidied up logic for author selection
 
 v0.8:
 	@ signs are legitimate inside urls

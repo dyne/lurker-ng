@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.17 2003-06-09 02:31:31 terpstra Exp $
+/*  $Id: Index.cpp,v 1.18 2003-06-10 19:02:11 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -75,7 +75,8 @@ void utf8Truncate(string& str, string::size_type len)
 	str.resize(len);
 }
 
-string pickFullName(DwAddress* a, const char* charset)
+// first = address, second = name
+pair<string, string> pickAddress(DwAddress* a, const char* charset)
 {
 	for (; a != 0; a = a->Next())
 	{
@@ -84,10 +85,11 @@ string pickFullName(DwAddress* a, const char* charset)
 			DwGroup* g = dynamic_cast<DwGroup*>(a);
 			if (g)
 			{
-				string out = pickFullName(
-					g->MailboxList().FirstMailbox(),
-					charset);
-				if (out != "") return out;
+				pair<string, string> out = 
+					pickAddress(
+						g->MailboxList().FirstMailbox(),
+						charset);
+				if (out.first != "") return out;
 			}
 		}
 		else
@@ -95,55 +97,32 @@ string pickFullName(DwAddress* a, const char* charset)
 			DwMailbox* m = dynamic_cast<DwMailbox*>(a);
 			if (m)
 			{
-				string out = m->FullName().c_str();
-				out = decode_header(out, charset);
+				string name = m->FullName().c_str();
+				name = decode_header(name, charset);
+				DwString addr = m->LocalPart() + "@" + m->Domain();
 				
-				if (out != "" && out.length() < 128) 
+				// fucked address? (one cannot safely cut this)
+				if (addr.length() > 128 || 
+				    m->LocalPart() == "" || m->Domain() == "")
 				{
-					if (out[0] == '"' && out.length() > 2)
-						out = out.substr(1, out.length()-2);
-					
-					return out;
+					addr = "";
+				}
+				
+				if (name != "") 
+				{	// prune any optional quotes
+					if (name[0] == '"' && name.length() > 2)
+						name = name.substr(1, name.length()-2);
+				}
+				
+				if (addr != "")
+				{
+					return pair<string, string>(addr.c_str(), name);
 				}
 			}
 		}
 	}
 	
-	return "";
-}
-
-string pickAddress(DwAddress* a)
-{
-	for (; a != 0; a = a->Next())
-	{
-		if (a->IsGroup())
-		{
-			DwGroup* g = dynamic_cast<DwGroup*>(a);
-			if (g)
-			{
-				string out = pickAddress(
-					g->MailboxList().FirstMailbox());
-				if (out != "") return out;
-			}
-		}
-		else
-		{
-			DwMailbox* m = dynamic_cast<DwMailbox*>(a);
-			if (m)
-			{
-				// we ditch the routing; I will not be party
-				// to the security problems they entail
-				DwString out =
-					m->LocalPart() +
-					"@" +
-					m->Domain();
-				if (out.length() < 128)
-					return out.c_str();
-			}
-		}
-	}
-	
-	return "";
+	return pair<string, string>("", "");
 }
 
 int Index::index_author()
@@ -164,13 +143,16 @@ int Index::index_author()
 		}
 	}
 	
+	// pickAddress only gives an author_name if it gave an author_email
+	
 	if (message.Headers().HasReplyTo())
 	{
-		author_name = pickFullName(
+		pair<string, string> addr = pickAddress(
 			message.Headers().ReplyTo().FirstAddress(),
 			charset.c_str());
-		author_email = pickAddress(
-			message.Headers().ReplyTo().FirstAddress());
+		
+		author_name = addr.first;
+		author_email = addr.second;
 		
 		// Some evil mailing lists set reply-to the list.
 		if (author_email == list.address)
@@ -180,26 +162,35 @@ int Index::index_author()
 		}
 	}
 	
+	// Given a reply-to that is not the list, we allow the from to
+	// provide a fullname under the assumption it is the same person.
+	
 	if (message.Headers().HasFrom())
 	{
-		if (!author_name.length()) author_name = pickFullName(
+		pair<string, string> addr = pickAddress(
 			message.Headers().From().FirstMailbox(),
 			charset.c_str());
-		if (!author_email.length()) author_email = pickAddress(
-			message.Headers().From().FirstMailbox());
+		
+		if (!author_email.length()) author_email = addr.first;
+		if (!author_name .length()) author_name  = addr.second;
 	}
+	
+	// ditto
 	
 	if (message.Headers().HasSender())
 	{
-		if (!author_name.length()) author_name = pickFullName(
+		pair<string, string> addr = pickAddress(
 			&message.Headers().Sender(),
 			charset.c_str());
-		if (!author_email.length()) author_email = pickAddress(
-			&message.Headers().Sender());
+		
+		if (!author_email.length()) author_email = addr.first;
+		if (!author_name .length()) author_name  = addr.second;
 	}
 	
 	utf8Truncate(author_name, 100);
-	utf8Truncate(author_email, 100);
+	//  - nothing longer than 128 could get here (from above)
+	//  - one can never safely truncate an email address
+	// utf8Truncate(author_email, 100);
 	
 	return 0;
 }
