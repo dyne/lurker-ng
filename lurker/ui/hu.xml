@@ -30,11 +30,12 @@
  missing-lang=" - hiányzik a lang.xml-bõl"
  offline=" (offline)"
  deleted-message="törölt üzenet"
- search="Keresés"
+ search-button="Keresés!"
+ search-heading="Keresés: "
 
  jump-to-date="Ugrás a következõ dátumhoz legközelebbi üzenethez ezen a levelezõlistán:"
  search-list="A következõ kulcsszavakat tartalmazó üzenetek keresése ezen a levelezõlistán:"
- jump="Ugrás"
+ jump-button="Ugrás!"
  use-special-word-list="A következõ kulcsszóval: "
  to-search-list=" a keresés ezen levelezõlistára szûkíthetõ."
  newest-messages="Legújabb üzenetek megtekintése"
@@ -55,6 +56,8 @@
  no-refine="Az eredmény változatlan marad. Csak a megjelenített dátumtartományú üzenetek érintettek."
  useful-prefixs="A keresési kifejezés tartalmazhatja az au: sb: ml: prefixeket, melyek rendre a szerzõt, tárgyat és levelezõlistát jelentik."
 
+ day-suffix=""
+ 
  jan="Január"
  feb="Február"
  mar="Március"
