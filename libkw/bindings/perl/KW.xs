@@ -40,6 +40,20 @@ ESort_Writer::commit()
 error_int
 ESort_Writer::insert(ESort_String key)
 
+ESort_Walker*
+ESort_Writer::seek(ESort_String key, ESort_Direction dir)
+	CODE:
+		RETVAL = THIS->seek(key, dir).release();
+	OUTPUT:
+		RETVAL
+
+ESort_Walker*
+ESort_Writer::seekp(ESort_String prefix, ESort_String key, ESort_Direction dir)
+	CODE:
+		RETVAL = THIS->seek(prefix, key, dir).release();
+	OUTPUT:
+		RETVAL
+
 void
 ESort_Writer::DESTROY()
 

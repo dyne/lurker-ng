@@ -19,6 +19,8 @@ T_ESORT_OBJPTR
 T_ESORT_ERROR_INT
 	if ($var != -1)
 		sv_setiv($arg, (IV)$var);
+	else if (errno == 0)
+		sv_setiv($arg, (IV)-1);
 	else
 		croak(\"${Package}::$func_name() -- $!\");
 

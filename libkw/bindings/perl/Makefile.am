@@ -12,5 +12,5 @@ nodist_KW_la_SOURCES = KW.cpp
 KW_la_LIBADD = @PERL_LIB@ $(top_builddir)/libesort/libesort.la
 KW_la_LDFLAGS = -module -avoid-version
 
-KW.cpp:	KW.xs
+KW.cpp:	KW.xs KW.map
 	@XSUBPP@ -typemap KW.map $< > $@.tmp && mv $@.tmp $@

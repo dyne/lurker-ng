@@ -21,12 +21,8 @@ our $VERSION = '0.02';
 require XSLoader;
 XSLoader::load('KW', $VERSION);
 
-package ESort;
-$FORWARD  = $Forward  = 1;
-$BACKWARD = $Backward = 2;
-
-package ESort::Writer;
-our @ISA = qw(ESort::Reader);
+$ESort::FORWARD  = $ESort::Forward  = 1;
+$ESort::BACKWARD = $ESort::Backward = 2;
 
 1;
 __END__
