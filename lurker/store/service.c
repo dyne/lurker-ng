@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.93 2002-08-30 10:58:42 terpstra Exp $
+/*  $Id: service.c,v 1.94 2003-04-12 14:36:42 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -829,9 +829,13 @@ static int my_service_traverse(
 	case TYPEMESSAGE:
 		/* This part contains an encapsulated message.
 		 */
-		count = my_service_traverse(h, in, 
-				body->nested.msg->body, count, 
-				draw);
+		if (body->nested.msg)
+		{
+			count = my_service_traverse(h, in, 
+					body->nested.msg->body, count, 
+					draw);
+		}
+		
 		break;
 	
 	case TYPETEXT:
