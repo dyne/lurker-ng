@@ -66,7 +66,7 @@ Quick start
 5 /.../sbin/lurkerd	where ... is your configured prefix
   
   The following discussion only applies if you are running a server which
-  has >1,000,000 emails (~ 3Gb). If you have less than this, lurker will
+  has >100,000 emails (~ 300Mb). If you have less than this, lurker will
   probably work just fine on budget hardware.
   
     a. lurkerd can take a fairly long time to shut down on a system this
@@ -87,7 +87,7 @@ Quick start
        neglect CPU or RAM speeds too much; lurker does fairly sophisticated
        write buffering which can tax a weak processor.
     
-    d. The lurker database will consume space on the order of 30% of the
+    d. The lurker database will consume space on the order of 40% of the
        mailboxes it indexes.
     
     e. Nearly all of the processing time lurker spends is on importing
@@ -102,14 +102,9 @@ Quick start
        prior to starting the import.
     
     h. If you take all of the above into consideration, then lurker should
-       be able to import at 50 messages/second consistently as it approaches
+       be able to import at >50 messages/second consistently as it approaches
        capacity. (Roughly 150Kb processed every second) 
-       
-       Initially (db size < 2* your RAM) it will import much faster---up
-       to 300/s, do not use these numbers as an indicator that it will
-       continue at this rate or that your hardware is sufficient. Only after
-       this point does lurker actually become I/O bound.
-
+    
 6 point your browser at the specified url (with-urldir), eg:
 	http://yourhost.com/~youruser/	for the first example configure
 	http://yourhost.com/lurker/	for the second example configure
