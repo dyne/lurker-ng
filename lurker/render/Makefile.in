@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(jump_cgi_SOURCES) $(keyword_cgi_SOURCES) $(lurker_cgi_SOURCES)
+SOURCES = $(bounce_cgi_SOURCES) $(jump_cgi_SOURCES) $(keyword_cgi_SOURCES) $(lurker_cgi_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -37,7 +37,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 cgi_PROGRAMS = lurker.cgi$(EXEEXT) jump.cgi$(EXEEXT) \
-	keyword.cgi$(EXEEXT)
+	keyword.cgi$(EXEEXT) bounce.cgi$(EXEEXT)
 subdir = render
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -51,6 +51,10 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(cgidir)"
 cgiPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(cgi_PROGRAMS)
+am_bounce_cgi_OBJECTS = parse.$(OBJEXT) bounce.$(OBJEXT)
+bounce_cgi_OBJECTS = $(am_bounce_cgi_OBJECTS)
+bounce_cgi_LDADD = $(LDADD)
+bounce_cgi_DEPENDENCIES = ../common/libcommon.a ../libesort/libesort.a
 am_jump_cgi_OBJECTS = parse.$(OBJEXT) jump.$(OBJEXT)
 jump_cgi_OBJECTS = $(am_jump_cgi_OBJECTS)
 jump_cgi_LDADD = $(LDADD)
@@ -75,13 +79,14 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Cache.Po ./$(DEPDIR)/KeyReader.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Summary.Po ./$(DEPDIR)/Threading.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/art.Po ./$(DEPDIR)/attach.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/jump.Po ./$(DEPDIR)/keyword.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/list.Po ./$(DEPDIR)/mailto.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main.Po ./$(DEPDIR)/mbox.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/message.Po ./$(DEPDIR)/mindex.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/parse.Po ./$(DEPDIR)/quote.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/search.Po ./$(DEPDIR)/splash.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/thread.Po ./$(DEPDIR)/url.Po
+@AMDEP_TRUE@	./$(DEPDIR)/bounce.Po ./$(DEPDIR)/jump.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/keyword.Po ./$(DEPDIR)/list.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/mailto.Po ./$(DEPDIR)/main.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/mbox.Po ./$(DEPDIR)/message.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/mindex.Po ./$(DEPDIR)/parse.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/quote.Po ./$(DEPDIR)/search.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/splash.Po ./$(DEPDIR)/thread.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/url.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -91,10 +96,10 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(jump_cgi_SOURCES) $(keyword_cgi_SOURCES) \
-	$(lurker_cgi_SOURCES)
-DIST_SOURCES = $(jump_cgi_SOURCES) $(keyword_cgi_SOURCES) \
-	$(lurker_cgi_SOURCES)
+SOURCES = $(bounce_cgi_SOURCES) $(jump_cgi_SOURCES) \
+	$(keyword_cgi_SOURCES) $(lurker_cgi_SOURCES)
+DIST_SOURCES = $(bounce_cgi_SOURCES) $(jump_cgi_SOURCES) \
+	$(keyword_cgi_SOURCES) $(lurker_cgi_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -252,6 +257,9 @@ uninstall-cgiPROGRAMS:
 
 clean-cgiPROGRAMS:
 	-test -z "$(cgi_PROGRAMS)" || rm -f $(cgi_PROGRAMS)
+bounce.cgi$(EXEEXT): $(bounce_cgi_OBJECTS) $(bounce_cgi_DEPENDENCIES) 
+	@rm -f bounce.cgi$(EXEEXT)
+	$(CXXLINK) $(bounce_cgi_LDFLAGS) $(bounce_cgi_OBJECTS) $(bounce_cgi_LDADD) $(LIBS)
 jump.cgi$(EXEEXT): $(jump_cgi_OBJECTS) $(jump_cgi_DEPENDENCIES) 
 	@rm -f jump.cgi$(EXEEXT)
 	$(CXXLINK) $(jump_cgi_LDFLAGS) $(jump_cgi_OBJECTS) $(jump_cgi_LDADD) $(LIBS)
@@ -274,6 +282,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Threading.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/art.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/attach.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bounce.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keyword.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list.Po@am__quote@
