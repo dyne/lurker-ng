@@ -1,4 +1,4 @@
-/*  $Id: Cache.cpp,v 1.2 2003-04-21 18:26:18 terpstra Exp $
+/*  $Id: Cache.cpp,v 1.3 2003-05-06 14:32:34 terpstra Exp $
  *  
  *  Cache.h - Helper which transforms xml -> html and caches files
  *  
@@ -73,7 +73,7 @@ int streambug::overflow(int c)
 	}
 	
 	// consume characters.
-	if (fwrite(pbase(), 1, w, target) == w)
+	if ((std::streamsize)fwrite(pbase(), 1, w, target) == w)
 	{	// Set up put area. Be sure that there
 		// is space at end for one extra character. 
 		

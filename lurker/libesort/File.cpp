@@ -1,4 +1,4 @@
-/*  $Id: File.cpp,v 1.7 2003-04-25 17:05:09 terpstra Exp $
+/*  $Id: File.cpp,v 1.8 2003-05-06 14:32:32 terpstra Exp $
  *  
  *  File.cpp - Disk segment for commit'd inserts
  *  
@@ -60,8 +60,8 @@ class FileSource : public Source
 };
 
 FileSource::FileSource(File* f_, long block_, bool forward_)
- : f(f_), block(block_), forward(forward_),
-   buf(new unsigned char[f->p->blockSize()]), off(0)
+ : f(f_), block(block_),
+   buf(new unsigned char[f->p->blockSize()]), off(0), forward(forward_)
 {
 }
 

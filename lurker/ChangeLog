@@ -12,6 +12,7 @@ v0.8:
 	Have better fallback behaviour for screwy charsets
 	Crop anything that even smells like a control char in xml
 	Include sys/types.h for off_t on BSD
+	Fixed some minor -Wall warnings
 
 v0.7:
 	Made VERSION controlled by one place: configure.ac

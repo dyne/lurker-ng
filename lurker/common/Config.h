@@ -1,4 +1,4 @@
-/*  $Id: Config.h,v 1.6 2003-04-25 23:39:19 terpstra Exp $
+/*  $Id: Config.h,v 1.7 2003-05-06 14:32:32 terpstra Exp $
  *  
  *  Config.h - Knows how to load the config file
  *  
@@ -86,7 +86,7 @@ class Config
 #endif
  	}
  	
- 	Config() : lists(), list(0) { }
+ 	Config() : list(0) { }
  	
  	// Open the config from this file.
  	int load(const char* file);

@@ -1,4 +1,4 @@
-/*  $Id: CharsetEscape.cpp,v 1.6 2003-05-03 19:29:16 terpstra Exp $
+/*  $Id: CharsetEscape.cpp,v 1.7 2003-05-06 14:32:29 terpstra Exp $
  *  
  *  CharsetEscape.h - A stream manipulator-like thing for charset conversion
  *  
@@ -97,8 +97,6 @@ void CharsetEscape::write(ostream& o, const char* ib, size_t is)
 	char*		ob = &buf[0];
 	size_t		os = sizeof(buf);
 	
-	size_t		ret;
-	
 	// We forcibly type-cast iconv b/c it has different types on some
 	// platforms, but the difference is only in the const.
 	while (((size_t (*)(iconv_t, const char **, size_t*, char**, size_t*))&iconv)
@@ -151,8 +149,7 @@ string decode_header(
 	
 	CharsetEscape code(default_coding);
 	
-	string::size_type len = str.length();
-	string::size_type b = 0, c, e, s, w;
+	string::size_type b = 0, c, e, s;
 	while ((c = str.find("=?", b)) != string::npos)
 	{
 		code.write(out, str.c_str() + b, c - b);

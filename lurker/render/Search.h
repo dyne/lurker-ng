@@ -1,4 +1,4 @@
-/*  $Id: Search.h,v 1.4 2003-04-25 16:38:18 terpstra Exp $
+/*  $Id: Search.h,v 1.5 2003-05-06 14:32:34 terpstra Exp $
  *  
  *  Search.h - Helper which can intersect keywords
  *  
@@ -35,8 +35,8 @@ class Search
  protected:
  	struct KEntry
  	{
- 		Walker*	walker;
- 		long	skip;
+ 		Walker*			walker;
+ 		string::size_type	skip;
  	};
  	
 	typedef std::list<KEntry> Entries;
