@@ -134,16 +134,15 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 lib_LTLIBRARIES = libesort.la
-include_HEADERS = \
-	DbMan.h Failer.h File.h Master.h Memory.h Merger.h Source.h \
-	Transaction.h View.h esort.h io.h
-
-
-libesort_la_SOURCES = \
-	Parameters.cpp Memory.cpp File.cpp Source.cpp Transaction.cpp \
-	Merger.cpp Failer.cpp View.cpp Master.cpp DbMan.cpp
+include_HEADERS = esort.h
 
 libesort_la_LDFLAGS = -version-info @LTVERSION@
+libesort_la_SOURCES = \
+	Parameters.cpp Memory.cpp File.cpp Source.cpp Transaction.cpp \
+	Merger.cpp Failer.cpp View.cpp Master.cpp DbMan.cpp \
+	DbMan.h Failer.h File.h Master.h Memory.h Merger.h Source.h \
+	Transaction.h View.h io.h
+
 subdir = libesort
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
@@ -170,6 +169,13 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
 	$(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
+	$(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libesort_la_SOURCES)
 HEADERS = $(include_HEADERS)
