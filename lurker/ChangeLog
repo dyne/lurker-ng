@@ -27,6 +27,7 @@ v0.9:
 	Reject any email address with control or non-ascii chars
 	Retrieve attachment filename
 	Fixed a bug with databases over 6Gb
+	Ascii art is now either a signature or a whitespace indented line
 
 v0.8:
 	@ signs are legitimate inside urls
