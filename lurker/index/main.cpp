@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.40 2004-08-19 14:52:29 terpstra Exp $
+/*  $Id: main.cpp,v 1.41 2004-08-24 16:09:01 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -40,8 +40,10 @@
 #include <cstdlib>
 
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #include <zlib.h>
 
@@ -58,6 +60,16 @@ string         append;
 List*          list = 0;
 int            mbox = -1;
 off_t          length = 0;
+
+time_t start;
+long messagecount = 0;
+off_t processedbytes = 0;
+
+long batch = 0;
+bool verbose = false;
+bool dropdup = false;
+bool synced = true;
+bool compressmail = true;
 
 void help(const char* name)
 {
@@ -191,13 +203,11 @@ void recursively_kill_from(DwEntity& e)
 	}
 }
 
-int index(DwString& msg, long batch, bool check, bool compress)
+int index(DwString& msg, time_t arrival)
 {
 //	cout << msg.c_str() << endl;
-	static int count = 0;
-	if (++count == batch)
+	if (++messagecount % batch == 0)
 	{
-		count = 0;
 		if (commit() != 0) return -1;
 	}
 	
@@ -212,10 +222,10 @@ int index(DwString& msg, long batch, bool check, bool compress)
 	string::size_type unwind = append.length();
 	
 	time_t import = time(0);
-	time_t arrival;
 	
 	char prefix[100];
 	const char* d = msg.c_str();
+	/* Prefer 'From ' line even for maildir */
 	if (d[0] == 'F' && d[1] == 'r' && d[2] == 'o' && d[3] == 'm' && d[4] == ' ')
 	{
 		while (*d && *d != ' ' && *d != '\t') ++d;
@@ -233,7 +243,10 @@ int index(DwString& msg, long batch, bool check, bool compress)
 	}
 	else
 	{
-		arrival = import;
+		/* We may have an arrival timestamp from maildir mtime
+		 * otherwise, just use the current time (assume delivery)
+		 */
+		if (arrival == 0) arrival = import;
 		
 		/** Make a local-timezone timestamp for the message envelope.
 		 */
@@ -245,7 +258,7 @@ int index(DwString& msg, long batch, bool check, bool compress)
 	// Err, messages from the future? I don't think so.
 	if (arrival > import) arrival = import;
 	
-	if (compress)
+	if (compressmail)
 	{
 		// Write out a gzip header field
 		append.append(string(
@@ -329,7 +342,7 @@ int index(DwString& msg, long batch, bool check, bool compress)
 	Index i(message, db.get(), *list, start, msg.length() + strlen(prefix));
 	
 	bool exist;
-	if (i.index(arrival, import, check, exist) != 0)
+	if (i.index(arrival, import, dropdup, exist) != 0)
 	{
 		cerr << "Import failed; aborting..." << endl;
 		return -1;
@@ -343,12 +356,12 @@ int index(DwString& msg, long batch, bool check, bool compress)
 	return 0;
 }
 
-void status(off_t did, long messages, time_t start)
+void status()
 {
 	time_t amt = time(0) - start;
 	if (amt == 0) amt = 1;
-	cout << "Imported " << messages << " messages (" << (did/(1024*1024)) << "MB)"
-	     << " at " << (messages / amt) << " messages (" << (did/(1024*amt)) << "KB) / second" << endl;
+	cout << "Imported " << messagecount << " messages (" << (processedbytes/(1024*1024)) << "MB)"
+	     << " at " << (messagecount / amt) << " messages (" << (processedbytes/(1024*amt)) << "KB) / second" << endl;
 }
 
 string::size_type find_message_boundary(const string& str, string::size_type o)
@@ -420,6 +433,98 @@ string::size_type find_message_boundary(const string& str, string::size_type o)
 	return o;
 }
 
+/* If a maildir, arrival is != 0 and is the delivery time for one message.
+ */
+int process_mail(FILE* file, time_t arrival)
+{
+	string buf;
+	char sect[8192];
+	
+	while (1)
+	{
+		int got = fread(sect, 1, sizeof(sect), file);
+		processedbytes += got;
+		
+		string::size_type was = buf.length();
+		buf.append(sect, got);
+		
+		if (was >= 6)
+			was -= 6;
+		else	was = 0;
+		
+		string::size_type eos;
+		/* Look for message boundaries only if:
+		 *  We are importing a batch of messsages
+		 *  We are NOT importing a file from a maildir
+		 */
+		while (batch != -1 && arrival == 0 &&
+		       (eos = find_message_boundary(buf, was)) != string::npos)
+		{
+			DwString msg(buf.c_str(), eos);
+			buf = buf.substr(eos, string::npos);
+			
+			if (msg[0] == 'F') // strlen > 1 b/c of linefeed prior to From
+			{	// ignore potential leading blanks
+				if (index(msg, arrival) != 0) return 1;
+				was = 0; 
+			
+				if (verbose && messagecount % 1000 == 0)
+					status();
+			}
+		}
+		
+		if (got == 0)
+		{
+			/* Don't index the empty string!
+			 * If single maildir file or raw delivery or message.
+			 */
+			if (buf.length() && 
+			    (batch == -1 || arrival != 0 || buf[0] == 'F'))
+			{
+				DwString msg(buf.c_str(), buf.length());
+				buf = "";
+				if (index(msg, arrival) != 0) return 1;
+			}
+			
+			break;
+		}
+	}
+	
+	return 0;
+}
+
+int maildir(DIR* d, const string& source, const string& target)
+{
+	struct dirent* e;
+	struct stat s;
+	while ((e = readdir(d)) != 0)
+	{
+		if (e->d_name[0] == '.') continue;
+		string iname = source + '/' + e->d_name;
+		string oname = target + '/' + e->d_name + ":OS";
+		
+		if (stat(iname.c_str(), &s) != 0) continue;
+		if (!S_ISREG(s.st_mode)) continue;
+		
+		FILE* f = fopen(iname.c_str(), "rb");
+		if (!f) continue;
+		
+		/* according to maildir(5), the mtime is the delivery time */ 
+		if (process_mail(f, s.st_mtime) != 0)
+			return 1;
+		fclose(f);
+		
+		if (rename(iname.c_str(), oname.c_str()) != 0)
+		{
+			perror("rename");
+			cerr << iname << " not moved to output" << endl;
+			return 1;
+		}
+	}
+	
+	return 0;
+}
+	
 int main(int argc, char** argv)
 {
 	int c;
@@ -427,11 +532,6 @@ int main(int argc, char** argv)
 	const char* config  = 0;
 	const char* listn   = 0;
 	const char* input   = 0;
-	long        batch   = 0;
-	int         verbose = 0;
-	int         dropdup = 0;
-	bool        synced  = true;
-	bool        compress= true;
 	
 	srandom(time(0));
 	
@@ -455,16 +555,16 @@ int main(int argc, char** argv)
 			batch = -1;
 			break;
 		case 'v':
-			verbose = 1;
+			verbose = true;
 			break;
 		case 'd':
-			dropdup = 1;
+			dropdup = true;
 			break;
 		case 'f':
 			synced = false;
 			break;
 		case 'n':
-			compress = false;
+			compressmail = false;
 			break;
 		default:
 			help(argv[0]);
@@ -493,6 +593,12 @@ int main(int argc, char** argv)
 	}
 	list = &i->second;
 	
+	if (list->offline)
+	{
+		cerr << "The list '" << listn << "' is marked as offline; cannot import to it." << endl;
+		return 1;
+	}
+	
 	ESort::Parameters params(synced);
 	// work around g++ 2.95 borkage
 	auto_ptr<ESort::Writer> dbt(
@@ -516,81 +622,40 @@ int main(int argc, char** argv)
 	
 	/** Begin processing input.
 	 */
-	string buf;
-	char sect[8192];
 	
-	off_t did = 0;
-	time_t start = time(0);
-	long messages = 0;
-	FILE* inputf = stdin;
-	
+	start = time(0);
 	if (input)
 	{
-		inputf = fopen(input, "rb");
-		if (!inputf)
+		DIR* d = opendir((string(input) + "/new").c_str());
+		if (d)
 		{
-			perror(input);
-			cerr << "Opening input file failed!" << endl;
-			return 1;
+			if (maildir(d, 
+				string(input) + "/new",
+				string(input) + "/cur") != 0)
+				return 1;
+			closedir(d);
+		}
+		else
+		{
+			FILE* f = fopen(input, "rb");
+			if (!f)
+			{
+				perror(input);
+				cerr << "Opening input file failed!" << endl;
+				return 1;
+			}
+			if (process_mail(f, 0) != 0)
+				return 1;
+			fclose(f);
 		}
 	}
-	
-	while (1)
+	else
 	{
-		int got = fread(sect, 1, sizeof(sect), inputf);
-		if (got == -1)
-		{
-			perror("read");
-			cerr << "Standard input failed!" << endl;
-			return 1;
-		}
-		did += got;
-		
-		string::size_type was = buf.length();
-		buf.append(sect, got);
-		
-		if (was >= 6)
-			was -= 6;
-		else	was = 0;
-		
-		string::size_type eos;
-		while (batch != -1 && 
-		       (eos = find_message_boundary(buf, was)) != string::npos)
-		{
-			DwString msg(buf.c_str(), eos);
-			buf = buf.substr(eos, string::npos);
-			
-			if (msg[0] == 'F') // strlen > 1 b/c of linefeed prior to From
-			{	// ignore potential leading blanks
-				if (index(msg, batch, dropdup, compress) != 0) return 1;
-				++messages;
-				was = 0; 
-			
-				if (verbose && messages % 1000 == 0)
-					status(did, messages, start);
-			}
-		}
-		
-		if (got == 0)
-		{
-			// Don't index the empty string!
-			if (buf.length() && (batch == -1 || buf[0] == 'F'))
-			{
-				DwString msg(buf.c_str(), buf.length());
-				buf = "";
-				if (index(msg, batch, dropdup, compress) != 0) return 1;
-				++messages;
-			}
-			
-			break;
-		}
+		if (process_mail(stdin, 0) != 0) return 1;
 	}
 	
 	if (commit() != 0) return 1;
-	
-	if (verbose) status(did, messages, start);
-	
-	if (input) fclose(inputf);
+	if (verbose) status();
 	
 	return 0;
 }
