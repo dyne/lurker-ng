@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.80 2002-07-12 19:02:00 terpstra Exp $
+/*  $Id: service.c,v 1.81 2002-07-12 21:51:39 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -2422,19 +2422,24 @@ static int my_service_search(
 	const char*	delim;
 	const char*	detail;
 	char*		demux;
+	long		off, start, end;
+	int		pull;
 	
-	delim = strchr(request, ' ');
+	start = end = -1;
+	pull = 0;
+	sscanf(request, "%ld %ld %ld %n", &off, &start, &end, &pull);
+	delim = request+pull;
 	
-	if (delim == 0)
+	if (end == -1 || pull == 0)
 	{
 		my_service_error(h,
 			_("Invalid request"),
-			_("Lurkerd received a search request with no offset"),
+			_("Lurkerd received a search request with wrong args"),
 			request);
 		goto my_service_search_error0;
 	}
 	
-	offset = atol(request);
+	offset = off;
 	if ((offset % LU_PROTO_INDEX) != 0)
 	{	/* Must be a multiple of the index */
 		my_service_error(h,
@@ -2454,12 +2459,10 @@ static int my_service_search(
 		goto my_service_search_error0;
 	}
 	
-	delim++;
-	
 	for (demux = (char*)delim; *demux; demux++)
 		if (*demux == 1) *demux = '/';
 	
-	if (lu_search_start(delim, &detail, 0, 2147483647) != 0)
+	if (lu_search_start(delim, &detail, start, end) != 0)
 	{
 		my_service_error(h,
 			_("Search failed"),
@@ -2500,6 +2503,10 @@ static int my_service_search(
 	if (my_service_buffer_write(h, "</offset>\n <query>")  != 0) goto my_service_search_error1;
 	if (my_service_write_str(h, delim)                     != 0) goto my_service_search_error1;
 	if (my_service_buffer_write(h, "</query>\n <queryurl>")!= 0) goto my_service_search_error1;
+	if (my_service_write_int(h, start)                     != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(h, "%20")                  != 0) goto my_service_search_error1;
+	if (my_service_write_int(h, end)                       != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(h, "%20")                  != 0) goto my_service_search_error1;
 	
  	for (demux = (char*)delim; *demux; demux++)
 		if (*demux == '/') *demux = 1;
