@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.3 2002-02-03 08:25:32 terpstra Exp $
+/*  $Id: indexer.c,v 1.4 2002-02-10 03:41:53 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -32,6 +32,7 @@
 
 #include "wbuffer.h"
 #include "indexer.h"
+#include "btree.h"
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -49,19 +50,25 @@
  */
 #define LU_INDEXER_MAX_DYNAMIC	10240
 
+/* Max size of my_indexer_ptr */
+#define MY_INDEXER_MAX		0xFFFFUL
+
 /*------------------------------------------------ Private data types */
 
-typedef struct Lu_Indexer_Tree_T
+typedef lu_word my_indexer_ptr;
+
+typedef struct My_Indexer_Tree_T
 {
-	struct Lu_Indexer_Tree_T*	left;
-	struct Lu_Indexer_Tree_T*	right;
-	const char*			keyword;
-	int				weight;
-} Lu_Indexer_Tree;
+	const char*	key;
+	
+	lu_byte		skew;
+	my_indexer_ptr	left;
+	my_indexer_ptr	right;
+} My_Indexer_Tree;
 
 /*------------------------------------------------ Private global vars */
 
-static Lu_Indexer_Tree*	my_indexer_buf = 0;
+static My_Indexer_Tree*	my_indexer_buf = 0;
 static char*		my_indexer_dyn = 0;
 
 /* These tell us how much of the dynamic vars above have been used by the
@@ -69,9 +76,6 @@ static char*		my_indexer_dyn = 0;
  */
 static int		my_indexer_buf_off = 0;
 static int 		my_indexer_dyn_off = 0;
-
-/* The root of the tree for a given import */
-static Lu_Indexer_Tree*	my_indexer_root = 0;
 
 static const char* lu_indexer_mons[12] = { 
 	"jan", "feb", "mar", "apr", "may", "jun", 
@@ -81,6 +85,14 @@ static const char* lu_indexer_dows[7] = {
 	"sun", "mon", "tue", "wed", "thu", "fri", "sat" };
 
 /*------------------------------------------------ Private helper methods */
+
+LU_BTREE_DEFINE(
+	indexer, 
+	my_indexer_ptr, 
+	MY_INDEXER_MAX,
+	My_Indexer_Tree,
+	my_indexer_buf,
+	strcmp)
 
 /* Test the strings for equality - ignoring case */
 static int my_indexer_strcasecmp(
@@ -105,9 +117,7 @@ static int my_indexer_strcasecmp(
 static int my_indexer_push_keyword(
 	const char* keyword)
 {
-	int			len = strlen(keyword);
-	int			dir;
-	Lu_Indexer_Tree**	scan;
+	int len = strlen(keyword);
 	
 	/* Do we have a record we could fit this keyword in? */
 	if (my_indexer_buf_off >= LU_INDEXER_MAX_KEYS)
@@ -121,36 +131,22 @@ static int my_indexer_push_keyword(
 		return -1;
 	}
 	
-	/* Traverse the tree to see if we already have this word.
-	 * Record where to place it if we don't.
-	 */
-	scan = &my_indexer_root;
-	while (*scan)
-	{
-		dir = strcmp(keyword, (*scan)->keyword);
-		
-		if      (dir < 0) scan = &((*scan)->left);
-		else if (dir > 0) scan = &((*scan)->right);
-		else
-		{	/* The word has already been indexed. */
-			return 0;
-		}
+	my_indexer_buf[my_indexer_buf_off].key = keyword;
+	
+	/* Use the avl insert method to insert the key balanced. */
+	if (my_btree_indexer_insert(my_indexer_buf_off) != 0)
+	{	/* It was already indexed */
+		return 0;
 	}
 	
-	/* Ok, the word is not in the tree and we have where to put it. */
-	*scan = &my_indexer_buf[my_indexer_buf_off];
-	(*scan)->left    = 0;
-	(*scan)->right   = 0;
-	(*scan)->keyword = my_indexer_dyn + my_indexer_dyn_off;
+	/* The record was not there and has been added. Finalize it. */
 	
+	my_indexer_buf[my_indexer_buf_off].key = 
+		my_indexer_dyn + my_indexer_dyn_off;
 	memcpy(my_indexer_dyn+my_indexer_dyn_off, keyword, len+1);
 	
 	my_indexer_dyn_off += len + 1;
 	my_indexer_buf_off++;
-	
-	/*!!! I need to implement balancing -> a carefully crafted email
-	 * could make us chew up a ton of stack when we dump.
-	 */
 	
 	return 0;
 }
@@ -363,26 +359,26 @@ static int my_indexer_push_address(
 }
 
 static int my_indexer_dump_words(
-	Lu_Indexer_Tree* where, 
+	my_indexer_ptr where,
 	message_id id)
 {
-	if (!where)
+	if (where == MY_INDEXER_MAX)
 	{
 		return 0;
 	}
 	
-	if (my_indexer_dump_words(where->left, id) != 0)
+	if (my_indexer_dump_words(my_indexer_buf[where].left, id) != 0)
 	{
 		return -1;
 	}
 
 #ifdef DEBUG
-	printf("%s ", where->keyword);
+	printf("%s ", my_indexer_buf[where].key);
 #else
-	lu_wbuffer_append(where->keyword, id);
+	lu_wbuffer_append(my_indexer_buf[where].key, id);
 #endif
 	
-	if (my_indexer_dump_words(where->right, id) != 0)
+	if (my_indexer_dump_words(my_indexer_buf[where].right, id) != 0)
 	{
 		return -1;
 	}
@@ -394,7 +390,7 @@ static int my_indexer_dump_words(
 
 int lu_indexer_init()
 {
-	my_indexer_buf = malloc(sizeof(Lu_Indexer_Tree) * LU_INDEXER_MAX_KEYS);
+	my_indexer_buf = malloc(sizeof(My_Indexer_Tree) * LU_INDEXER_MAX_KEYS);
 	if (!my_indexer_buf)
 	{
 		fprintf(stderr, "Failed to allocate storage for keyword import tree\n");
@@ -456,7 +452,6 @@ int lu_indexer_import(
 	struct tm* when;
 	
 	/* We have imported no keywords in this pass yet. */
-	my_indexer_root    = 0;
 	my_indexer_buf_off = 0;
 	my_indexer_dyn_off = 0;
 	
@@ -546,10 +541,10 @@ int lu_indexer_import(
 	/* Ok, we have all the keyword - dump them. */
 #ifdef DEBUG
 	printf("%d: [ ", id);
-	my_indexer_dump_words(my_indexer_root, id);
+	my_indexer_dump_words(0, id);
 	printf("]\n");
 	return 0;
 #else
-	return my_indexer_dump_words(my_indexer_root, id);
+	return my_indexer_dump_words(0, id);
 #endif
 }
