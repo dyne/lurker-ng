@@ -13,7 +13,7 @@ Layer btree:
 	compression.
 	
 	This interface provides a simple keyword (char* null-terminated) to
-	fixed record size lookup tree. This tree is generally held entirely
+	small record size lookup tree. This tree is generally held entirely
 	in a mmap. The intention is that with a branch factor >2000 you can
 	find the target key out of 4 billion records in one seek or less
 	(since your kernel will likely cache the 2000 level-1 nodes). More
