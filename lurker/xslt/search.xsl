@@ -5,7 +5,7 @@
     version="1.0">
 
 <xsl:template match="search" mode="title">
- Search: <xsl:value-of select="query"/>
+ <xsl:value-of select="$search"/>: <xsl:value-of select="query"/>
 </xsl:template>
 
 <xsl:template match="search" mode="body">
@@ -26,7 +26,8 @@
 
   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;&amp;nbsp;</xsl:text>
   
-  Search - Messages
+  <xsl:value-of select="$search"/> - <xsl:value-of select="$mess"/>
+  <xsl:text> </xsl:text>
   <xsl:value-of select="offset"/>-<xsl:value-of select="string(number(offset)+count(summary)-1)"/>
   / ~<xsl:value-of select="hits"/>
  </h2>
@@ -35,14 +36,14 @@
  <form action="../lurker-search.cgi">
   <input type="hidden" name="format" value="{$ext}"/>
   <input type="text"   name="query"  value="{query}" size="50"/>
-  <input type="submit" name="submit" value="Search!"/>
+  <input type="submit" name="submit" value="{$search}!"/>
  </form> 
 
  <p/>
  <table border="1" width="100%">
-  <tr><th align="left">Subject</th>
-      <th align="left">Author</th>
-      <th align="left">Timestamp</th></tr>
+  <tr><th align="left"><xsl:value-of select="$subject"/></th>
+      <th align="left"><xsl:value-of select="$author"/></th>
+      <th align="left"><xsl:value-of select="$date"/></th></tr>
   <xsl:apply-templates select="summary"/>
  </table>
 </xsl:template>

@@ -6,7 +6,9 @@
 
 <xsl:template match="mindex" mode="title">
  <xsl:value-of select="list/email/@name"/> -
- Messages <xsl:value-of select="offset"/>-<xsl:value-of select="string(number(offset)+count(summary)-1)"/>
+ <xsl:value-of select="$mess"/>
+ <xsl:text> </xsl:text>
+ <xsl:value-of select="offset"/>-<xsl:value-of select="string(number(offset)+count(summary)-1)"/>
 </xsl:template>
 
 <xsl:template match="mindex" mode="body">
@@ -31,15 +33,16 @@
 
   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;&amp;nbsp;</xsl:text>
 
-  <xsl:apply-templates select="list/email"/> - Messages
+  <xsl:apply-templates select="list/email"/> - <xsl:value-of select="$mess"/>
+  <xsl:text> </xsl:text>
   <xsl:value-of select="offset"/>-<xsl:value-of select="string(number(offset)+count(summary)-1)"/>
  </h2>
  
  <p/>
  <table width="100%">
-    <tr><th align="left">Subject</th>
-        <th align="left">Author</th>
-        <th align="left">Timestamp</th></tr>
+    <tr><th align="left"><xsl:value-of select="$subject"/></th>
+        <th align="left"><xsl:value-of select="$author"/></th>
+        <th align="left"><xsl:value-of select="$date"/></th></tr>
     <xsl:apply-templates select="summary"/>
  </table>
 </xsl:template>

@@ -28,7 +28,7 @@
  <xsl:choose>
   <xsl:when test="@name"><xsl:value-of select="@name"/></xsl:when>
   <xsl:when test="@address"><xsl:value-of select="@address"/></xsl:when>
-  <xsl:otherwise>Someone</xsl:otherwise>
+  <xsl:otherwise><xsl:value-of select="$someone"/></xsl:otherwise>
  </xsl:choose>
 </xsl:template>
 
@@ -137,7 +137,8 @@
 
 <xsl:template name="summary-post">
  <xsl:apply-templates select="email" mode="simple"/>
- <xsl:text>'s post on </xsl:text>
+ <xsl:value-of select="$post"/>
+ <xsl:text> </xsl:text>
  <xsl:value-of select="time"/>
 </xsl:template>
 

@@ -16,10 +16,12 @@
  
  <p/>
  <table border="0" cellspacing="0" cellpadding="0" class="thread">
-    <tr class="row1"><th align="left">Threading</th>
-        <th align="left">Author</th>
-        <th align="left">Timestamp</th></tr>
-    <xsl:apply-templates select="summary"/>
+  <tr class="row1">
+   <th align="left"><xsl:value-of select="$threading"/></th>
+   <th align="left"><xsl:value-of select="$author"/></th>
+   <th align="left"><xsl:value-of select="$date"/></th>
+  </tr>
+  <xsl:apply-templates select="summary"/>
  </table>
 
  <hr/>
@@ -28,7 +30,7 @@
  <form action="../lurker-search.cgi">
   <input type="hidden" name="format" value="{$ext}"/>
   <input type="text"   name="query"  value="th:{id} " size="50"/>
-  <input type="submit" name="submit" value="Search!"/>
+  <input type="submit" name="submit" value="{$search}!"/>
  </form> 
 </xsl:template>
 

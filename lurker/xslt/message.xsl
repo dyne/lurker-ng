@@ -88,7 +88,8 @@
 
 <xsl:template name="list-offset">
  <a href="../mindex/{id}@{string(floor(number(offset) div 20)*20)}.{$ext}#{../id}">
-  <xsl:value-of select="email/@name"/> - message 
+  <xsl:value-of select="email/@name"/> - 
+  <xsl:value-of select="$message"/>
   #<xsl:value-of select="offset"/>
  </a>
 </xsl:template>
@@ -109,19 +110,19 @@
   <col width="1*"/>
   <col width="100%"/>
   <tr>
-   <th valign="top" align="left">Author:</th>
+   <th valign="top" align="left"><xsl:value-of select="$author"/>:</th>
    <td><xsl:apply-templates select="email" mode="list"/></td>
   </tr>
-  <tr><th valign="top" align="left">Date:</th><td><xsl:value-of select="time"/></td></tr>
-  <tr><th valign="top" align="left">To:</th><td><xsl:apply-templates mode="list" select="to"/></td></tr>
+  <tr><th valign="top" align="left"><xsl:value-of select="$date"/>:</th><td><xsl:value-of select="time"/></td></tr>
+  <tr><th valign="top" align="left"><xsl:value-of select="$to"/>:</th><td><xsl:apply-templates mode="list" select="to"/></td></tr>
   <xsl:if test="/message/cc">
-   <tr><th valign="top" align="left">CC:</th><td><xsl:apply-templates mode="list" select="cc"/></td></tr>
+   <tr><th valign="top" align="left"><xsl:value-of select="$cc"/>:</th><td><xsl:apply-templates mode="list" select="cc"/></td></tr>
   </xsl:if>
   <xsl:if test="threading/inreplyto">
-   <tr><th valign="top" align="left">In-Reply-To:</th><td><xsl:apply-templates mode="list" select="threading/inreplyto/summary"/></td></tr>
+   <tr><th valign="top" align="left"><xsl:value-of select="$irt"/>:</th><td><xsl:apply-templates mode="list" select="threading/inreplyto/summary"/></td></tr>
   </xsl:if>
   <xsl:if test="threading/replies">
-   <tr><th valign="top" align="left">Follow-Ups:</th><td><xsl:apply-templates mode="list" select="threading/replies/summary"/></td></tr>
+   <tr><th valign="top" align="left"><xsl:value-of select="$fus"/>:</th><td><xsl:apply-templates mode="list" select="threading/replies/summary"/></td></tr>
   </xsl:if>
  </table>
 </xsl:template>
@@ -195,7 +196,12 @@
  </xsl:if>
 
  <xsl:if test="count(list) != 1"><p/></xsl:if>
- Appears in the <a href="../mbox/{mid}.txt">mailbox</a> of
+ <xsl:value-of select="$appearin"/>
+ <xsl:text> </xsl:text>
+ <a href="../mbox/{mid}.txt"><xsl:value-of select="$mailbox"/></a>
+ <xsl:text> </xsl:text>
+ <xsl:value-of select="$of"/>
+ <xsl:text> </xsl:text>
  
  <xsl:if test="count(list) = 1">
   <xsl:apply-templates select="list" mode="offset"/>

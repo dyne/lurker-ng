@@ -5,12 +5,12 @@
     version="1.0">
 
 <xsl:template match="redirect" mode="title">
-  Redirect
+  <xsl:value-of select="$redirect"/>
 </xsl:template>
 
 <xsl:template match="redirect" mode="body">
- <p/><h2>Lurker redirect</h2>
- <p/>Your browser should load this location: 
+ <p/><h2>Lurker <xsl:value-of select="$redirect"/></h2>
+ <p/><xsl:value-of select="$redirect"/>
  <a href="../{url}.{$ext}">
    ../<xsl:value-of select="url"/>.<xsl:value-of select="$ext"/>
  </a>

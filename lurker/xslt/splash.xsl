@@ -12,7 +12,7 @@
  <tr>
   <td class="center">
    <xsl:if test="number(messages) > 0">
-    <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
+    <a href="../mindex/{id}@{offset}.{$ext}">
      <xsl:value-of select="email/@name"/>
     </a>
    </xsl:if>
@@ -54,7 +54,7 @@
       <xsl:if test="not(position()=ceiling(last() div 2))">
        <tr class="list">
         <td class="center">
-          <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
+          <a href="../mindex/{id}@{offset}.{$ext}">
           <xsl:value-of select="email/@name"/></a></td>
         <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
         <xsl:if test="not(description)"><td>--</td></xsl:if>
@@ -63,7 +63,7 @@
       <xsl:if test="position()=ceiling(last() div 2)">
        <tr class="list">
         <td class="center">
-         <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
+         <a href="../mindex/{id}@{offset}.{$ext}">
          <xsl:value-of select="email/@name"/></a></td>
         <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
         <xsl:if test="not(description)"><td>--</td></xsl:if>
@@ -80,9 +80,9 @@
     <xsl:for-each select="list">
      <xsl:if test="position()>ceiling(last() div 2)">
       <xsl:if test="not(position()=last())">
-       <tr class="list">
+       <tr class="list"> 
         <td class="center">
-         <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
+         <a href="../mindex/{id}@{offset}.{$ext}">
          <xsl:value-of select="email/@name"/></a></td>
         <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
         <xsl:if test="not(description)"><td>--</td></xsl:if>
@@ -91,7 +91,7 @@
       <xsl:if test="position()=last()">
        <tr>
         <td class="center">
-         <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
+         <a href="../mindex/{id}@{offset}.{$ext}">
          <xsl:value-of select="email/@name"/></a></td>
         <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
         <xsl:if test="not(description)"><td>--</td></xsl:if>
@@ -119,8 +119,7 @@
    <tr><td><xsl:copy-of select="$subject"/></td>
        <td class="center"><input type="text" name="subject" size="53" value=""/></td></tr>
    <tr><td><xsl:copy-of select="$date"/></td>
-    <td class="center">
-     <select name="weekday">
+    <td class="center"><select name="weekday">
        <option value=""><xsl:value-of select="$all-da"/></option>
        <option value="sun"><xsl:value-of select="$sun"/></option>
        <option value="mon"><xsl:value-of select="$mon"/></option>
@@ -130,7 +129,9 @@
        <option value="fri"><xsl:value-of select="$fri"/></option>
        <option value="sat"><xsl:value-of select="$sat"/></option>
      </select>
-   <xsl:value-of select="$join1"/>
+     <xsl:text>, </xsl:text>
+     <xsl:value-of select="$the"/>
+     <xsl:text> </xsl:text>
      <select name="dom">
        <option value="">1-31</option>
        <option value="1">1</option>
@@ -165,7 +166,9 @@
        <option value="30">30</option>
        <option value="31">31</option>
      </select>
-   <xsl:value-of select="$join2"/>
+     <xsl:text> </xsl:text>
+     <xsl:value-of select="$of"/>
+     <xsl:text> </xsl:text>
      <select name="month">
        <option value=""><xsl:value-of select="$all-mo"/></option>
        <option value="jan"><xsl:value-of select="$jan"/></option>
@@ -181,7 +184,7 @@
        <option value="nov"><xsl:value-of select="$nov"/></option>
        <option value="dec"><xsl:value-of select="$dec"/></option>
      </select>
-   /
+     /
      <select name="year">
        <option value=""><xsl:value-of select="$all-ye"/></option>
        <option value="2002">2002</option>
