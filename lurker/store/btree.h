@@ -1,4 +1,4 @@
-/*  $Id: btree.h,v 1.8 2002-06-21 13:15:37 terpstra Exp $
+/*  $Id: btree.h,v 1.9 2002-06-21 18:10:31 terpstra Exp $
  *  
  *  btree.h - Knows how manage a binary search tree
  *  
@@ -483,10 +483,10 @@ static int my_btree_##PREFIX##_rmv(RECTYPE* n, RECTYPE victim) \
 		int tmp = my_btree_##PREFIX##_kill_largest( \
 			&TABLE[*n].left, &tn); \
 		\
-		*n = tn; \
 		TABLE[tn].left  = TABLE[*n].left; \
 		TABLE[tn].right = TABLE[*n].right; \
 		TABLE[tn].skew  = TABLE[*n].skew; \
+		*n = tn; \
 		\
 		if (tmp == LU_BTREE_BALANCE) \
 			return my_btree_##PREFIX##_left_shrunk(n); \
@@ -499,10 +499,10 @@ static int my_btree_##PREFIX##_rmv(RECTYPE* n, RECTYPE victim) \
 		int tmp = my_btree_##PREFIX##_kill_smallest( \
 			&TABLE[*n].right, &tn); \
 		\
-		*n = tn; \
 		TABLE[tn].left  = TABLE[*n].left; \
 		TABLE[tn].right = TABLE[*n].right; \
 		TABLE[tn].skew  = TABLE[*n].skew; \
+		*n = tn; \
 		\
 		if (tmp == LU_BTREE_BALANCE) \
 			return my_btree_##PREFIX##_right_shrunk(n); \
