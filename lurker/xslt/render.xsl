@@ -32,7 +32,7 @@
       <xsl:text>0;URL=../</xsl:text>
       <xsl:value-of select="/redirect/url"/>
       <xsl:text>.</xsl:text>
-      <xsl:value-of select="{$ext}"/>
+      <xsl:value-of select="$ext"/>
      </xsl:attribute>
      <xsl:attribute name="http-equiv">
       <xsl:text>Refresh</xsl:text>
