@@ -73,7 +73,7 @@ dbdir = @dbdir@
 install_sh = @install_sh@
 wwwdir = @wwwdir@
 
-SUBDIRS = common store render
+SUBDIRS = common store xslt render
 
 sysconf_DATA = lurker.conf
 subdir = .

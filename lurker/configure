@@ -6545,7 +6545,7 @@ EOF
 
   DBDIR_expand="$ac_define_dir_result"
 
-ac_config_files="$ac_config_files Makefile common/Makefile store/Makefile render/Makefile lurker.conf"
+ac_config_files="$ac_config_files Makefile common/Makefile store/Makefile render/Makefile xslt/Makefile lurker.conf"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -6869,10 +6869,11 @@ do
   "common/Makefile" ) CONFIG_FILES="$CONFIG_FILES common/Makefile" ;;
   "store/Makefile" ) CONFIG_FILES="$CONFIG_FILES store/Makefile" ;;
   "render/Makefile" ) CONFIG_FILES="$CONFIG_FILES render/Makefile" ;;
+  "xslt/Makefile" ) CONFIG_FILES="$CONFIG_FILES xslt/Makefile" ;;
   "lurker.conf" ) CONFIG_FILES="$CONFIG_FILES lurker.conf" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
   "common/config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS common/config.h" ;;
-  *) { { echo "$as_me:6875: error: invalid argument: $ac_config_target" >&5
+  *) { { echo "$as_me:6876: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
   esac
@@ -7113,7 +7114,7 @@ done; }
   esac
 
   if test x"$ac_file" != x-; then
-    { echo "$as_me:7116: creating $ac_file" >&5
+    { echo "$as_me:7117: creating $ac_file" >&5
 echo "$as_me: creating $ac_file" >&6;}
     rm -f "$ac_file"
   fi
@@ -7131,7 +7132,7 @@ echo "$as_me: creating $ac_file" >&6;}
       -) echo $tmp/stdin ;;
       [\\/$]*)
          # Absolute (can't be DOS-style, as IFS=:)
-         test -f "$f" || { { echo "$as_me:7134: error: cannot find input file: $f" >&5
+         test -f "$f" || { { echo "$as_me:7135: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          echo $f;;
@@ -7144,7 +7145,7 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
            echo $srcdir/$f
          else
            # /dev/null tree
-           { { echo "$as_me:7147: error: cannot find input file: $f" >&5
+           { { echo "$as_me:7148: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          fi;;
@@ -7205,7 +7206,7 @@ for ac_file in : $CONFIG_HEADERS; do test "x$ac_file" = x: && continue
   * )   ac_file_in=$ac_file.in ;;
   esac
 
-  test x"$ac_file" != x- && { echo "$as_me:7208: creating $ac_file" >&5
+  test x"$ac_file" != x- && { echo "$as_me:7209: creating $ac_file" >&5
 echo "$as_me: creating $ac_file" >&6;}
 
   # First look for the input files in the build tree, otherwise in the
@@ -7216,7 +7217,7 @@ echo "$as_me: creating $ac_file" >&6;}
       -) echo $tmp/stdin ;;
       [\\/$]*)
          # Absolute (can't be DOS-style, as IFS=:)
-         test -f "$f" || { { echo "$as_me:7219: error: cannot find input file: $f" >&5
+         test -f "$f" || { { echo "$as_me:7220: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          echo $f;;
@@ -7229,7 +7230,7 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
            echo $srcdir/$f
          else
            # /dev/null tree
-           { { echo "$as_me:7232: error: cannot find input file: $f" >&5
+           { { echo "$as_me:7233: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          fi;;
@@ -7346,7 +7347,7 @@ cat >>$CONFIG_STATUS <<\EOF
   rm -f $tmp/in
   if test x"$ac_file" != x-; then
     if cmp -s $ac_file $tmp/config.h 2>/dev/null; then
-      { echo "$as_me:7349: $ac_file is unchanged" >&5
+      { echo "$as_me:7350: $ac_file is unchanged" >&5
 echo "$as_me: $ac_file is unchanged" >&6;}
     else
       ac_dir=`$as_expr X"$ac_file" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
