@@ -4,14 +4,22 @@ Quick start
 0 Find and install development files for: 
 	g++ >= 3.2            - http://gcc.gnu.org/
 	jam                   - http://www.perforce.com/jam/jam.html
-	xsltproc (libxslt1)   - http://xmlsoft.org/XSLT/
 	mimelib  (kdenetwork) - ftp://download.uk.kde.org/pub/kde/stable/latest/src
+	xsltproc (libxslt1)   - http://xmlsoft.org/XSLT/
 
- Or, if you run debian:
-  apt-get install xsltproc libmimelib1-dev jam g++
+ If you need to, lurker can be built using only g++ 2.95, however 3.2 is
+ recommended as the resulting binaries are much smaller and faster.
  
- Often, your distribution will already include packages for these.
-
+ If you do not want kdenetwork, you can also download mimelib separately
+ from https://sourceforge.net/project/showfiles.php?group_id=8168 and tell
+ lurker to compile it and statically link to it.
+ 
+ xsltproc is not strictly required for lurker. It is not used during compile
+ and is only used if your lurker.conf references it. However, it is the
+ preferred method for rendering html, so we recommend installing it.
+ 
+ For debian: apt-get install xsltproc libmimelib1-dev jam g++
+ 
 1 ./configure
 
   If you need to specify dependency locations these options might help:
@@ -27,7 +35,6 @@ Quick start
 4 Setup delivery of new mail to lurker-index
   
   For procmail, 
-	PATH=$PATH:/path/to/lurker-index-directory
 	:0 w
 	* ^X-Mailing-List: <debian-japanese@lists.debian.org>.*
 	| lurker-index -c /etc/lurker.conf -l japanese -m
@@ -62,15 +69,35 @@ Quick start
   You must make certain that .xsl and .xml files have type text/xml.
   You must set the default charset to utf-8 for these files.
   You must make lurker your 404 error handler.
-  You must pass the config file and document root to lurker.cgi as ?
-      delimited arguments in QUERY_STRING 'cfgfile?docdir'
+  You must pass the config file and lurker's document root to lurker.cgi 
+      as ? delimited arguments in QUERY_STRING 'cfgfile?docdir'. The docdir
+      is relative to the location of lurker.cgi and cfgfile is relative to
+      the docdir.
   
-  For apache, put:
+  If you run apache with a directory structure like:
+
+	www/
+		lurker.conf
+		cgi-bin/
+			lurker.cgi
+			keyword.cgi
+			jump.cgi
+		htdocs/
+			.htaccess
+			index.html
+			browserdetect.js
+			splash/
+			search/
+			mindex/
+			...
+
+   then .htaccess should contain:
+
 	AddType text/xml .xsl
 	AddType text/xml .xml
 	AddDefaultCharset utf-8
-	ErrorDocument 404 /cgi-bin/lurker.cgi?/path/to/lurker.conf?../htdocs
-  ... in an .htaccess file beside index.html.
+	ErrorDocument 404 /cgi-bin/lurker.cgi?../lurker.conf?../htdocs
+
 
 8 point your browser at the url where lurker is installed
 
