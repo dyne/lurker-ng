@@ -16,8 +16,9 @@ dt a { font-weight:normal }
 img { border:0; margin:0; padding:0 }
 h2 img { vertical-align:middle; padding-top:1px }
 td img { vertical-align:middle }
-.selected { background-color:#77F }  /* Mark the image as selected */
-.drift    { background-color:#DDD }  /* Mark the image as drifted */
+.selected { background-color:#77F }  /* Mark the thread segment as selected */
+.drift    { background-color:#BBB }  /* Mark the thread segment as drifted */
+.normal   { }                        /* Mark the thread segment as normal */
 
 dl { }                                    /* Definition list used for splash page list info */
 dt { font-weight:bold }                   /* includes list name and email address */
