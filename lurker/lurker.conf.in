@@ -149,3 +149,4 @@ dbdir = @vardir@
 # 	description = Debian Developer Discussion Forum. Here you can find
 #	              why your favourite package broke. Also, general
 #	              direction is discussed.
+#       #offline    = false # no archived messages here; only link

@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.6 2004-08-20 14:09:20 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.7 2004-08-24 16:04:33 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -53,6 +53,7 @@ struct List
 	string link;
 	string group;
 	string language;
+	bool   offline;
 };
 
 class Config

@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.7 2004-08-20 14:09:20 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.8 2004-08-24 16:04:33 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -219,6 +219,7 @@ int Config::process_command(const string& key, const string& val, const string& 
 		list->mbox = val;
 		list->group = group;
 		list->language = "en";
+		list->offline = false;
 	}
 	else if (key == "title")
 	{
@@ -267,6 +268,24 @@ int Config::process_command(const string& key, const string& val, const string& 
 		}
 		
 		list->language = val;
+	}
+	else if (key == "offline")
+	{
+		if (!list)
+		{
+			error << "No list has been defined for offline setting '" << val << "'!" << endl;
+			return -1;
+		}
+		
+		if (val == "off" || val == "false")
+			list->offline = false;
+		else if (val == "on" || val == "true")
+			list->offline = true;
+		else
+		{
+			error << "offline must be set to on/off or true/false!" << endl;
+			return -1;
+		}
 	}
 	else if (key == "description")
 	{
@@ -374,6 +393,9 @@ ostream& operator << (ostream& o, const List& l)
 	  << "<id>" << l.mbox << "</id>"
 	  << "<group>" << l.group << "</group>"
 	  << "<language>" << l.language << "</language>";
+	
+	if (l.offline)
+		o << "<offline/>";
 	
 	if (l.link.length() > 0)
 		o << "<link>" << xmlEscape << l.link << "</link>";
