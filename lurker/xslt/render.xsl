@@ -27,7 +27,17 @@
  <html xmlns="http://www.w3.org/1999/xhtml" lang="{$lang}">
   <head>
    <xsl:if test="/redirect/url">
-    <meta content="0;URL=../{/redirect/url}.{$ext}" http-equiv="Refresh"/>
+    <xsl:element name="meta">
+     <xsl:attribute name="content">
+      <xsl:text>0;URL=../</xsl:text>
+      <xsl:value-of select="/redirect/url"/>
+      <xsl:text>.</xsl:text>
+      <xsl:value-of select="{$ext}"/>
+     </xsl:attribute>
+     <xsl:attribute name="http-equiv">
+      <xsl:text>Refresh</xsl:text>
+     </xsl:attribute>
+    </xsl:element>
    </xsl:if>
    <xsl:if test="/*/server/expires">
     <meta content="{/*/server/expires}" http-equiv="Expires"/>
