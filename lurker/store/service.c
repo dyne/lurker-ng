@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.40 2002-05-06 22:19:38 terpstra Exp $
+/*  $Id: service.c,v 1.41 2002-05-07 00:21:45 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1241,9 +1241,9 @@ static int my_service_message(
 	
 	if (mmsg.env->message_id)
 	{
-		if (my_service_buffer_write(h, " <mid>"            ) != 0) goto my_service_message_error3;
-		if (my_service_write_str   (h, mmsg.env->message_id) != 0) goto my_service_message_error3;
-		if (my_service_buffer_write(h, "</mid>\n"          ) != 0) goto my_service_message_error3;
+		if (my_service_buffer_write(h, " <mid>"  ) != 0) goto my_service_message_error3;
+		if (my_service_write_str   (h, request   ) != 0) goto my_service_message_error3;
+		if (my_service_buffer_write(h, "</mid>\n") != 0) goto my_service_message_error3;
 	}
 	
 	if (my_service_buffer_write(h, " <subject>") != 0) goto my_service_message_error3;
