@@ -5,16 +5,18 @@ Quick start
 	libdb3		- http://www.sleepycat.com/
 	libxml2		- http://xmlsoft.org/
 	libxslt1	- http://xmlsoft.org/XSLT/
-	libc-client	- ftp://ftp.cac.washington.edu/imap/
+	libc-client	-  ftp://ftp.cac.washington.edu/imap/
 	libst		- http://state-threads,sourceforge.net/
+	gettext		-  ftp://ftp.gnu.org/pub/gnu/gettext/
 
  Or, if you run debian:
-	apt-get install libdb3-dev libxslt1-dev libc-client2001-dev libst-dev
+  apt-get install libdb3-dev libxslt1-dev libc-client2001-dev libst-dev gettext
 
- Generally speaking, if you have gnome, you probably already have libdb3 and
- libxml2. If you have tools which interface with email, you probably have
- libc-client. Our only exotic dependencies are libst and libxslt. Often, you
- distribution will include the development files for everything but libst.
+ Generally speaking, if you have gnome, you probably already have libdb3,
+ libxml2, and gettext. If you have tools which interface with email, you
+ probably have libc-client. The only exotic dependencies are libst and
+ libxslt. Often, you distribution will include the development files for
+ everything but libst.
 
 1 ./configure	--with-urldir="/relative-without-http/web/path/to/lurker" \
 		--with-wwwdir=/filesystem/path/to/above
