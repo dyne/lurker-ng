@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.4 2002-07-04 11:24:17 terpstra Exp $
+/*  $Id: kap.h,v 1.5 2002-07-04 18:35:35 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -229,23 +229,31 @@ int	kap_btree_read_next(Kap k, char* key,
 
 
 
-/** Write a block of records to an append record.
- *  len is the number of records, not bytes.
+/** Write a block of records to a keyword.
+ *  len and offset are in records, not bytes.
  *  Errors: all read(), write(), KAP_UNALIGNED_DATA, KAP_NO_APPEND,
  *  and KAP_NOT_OPEN
+ */
+int	kap_append_write(Kap k, KRecord* kr, 
+	size_t where, void* buf, size_t amt);
+
+/** Read a krecord.
+ *  amt and where are in number of records; not bytes.
+ *  Errors: read()
+ */
+int	kap_append_read(Kap k, const KRecord* kr, 
+	size_t where, void* buf, size_t amt);
+
+/** Write a block of records to an append record.
+ *  len is the number of records, not bytes.
+ *  Errors: all kap_append_write(...)
  */
 int	kap_append_append(Kap k, KRecord* kr, 
 	void* data, size_t len);
 
-/** Read a krecord.
- *  amt is the number of records to read; not bytes.
- *  Errors: read()
+/** Return how many bytes of the KRecord need to be stored.
  */
-int	kap_append_read(Kap k, const KRecord* kr, 
-	off_t where, void* buf, size_t amt);
-
-/*!!! add a kap_append_write for non-lurker users */
-
+int	kap_append_keyspace(const KRecord* kr);
 
 
 /****************************************** Combined KAP calls */
@@ -268,6 +276,13 @@ int	kap_kclose(Kap k, KRecord* kr);
  *  may change. So a stub function is provided.
  */
 int	kap_kread(Kap k, const KRecord* kr, 
+	off_t where, void* buf, size_t amt);
+
+/** Write to a KRecord.
+ *  This is simply an alias for kap_append_write. However, at some point this
+ *  may change. So a stub function is provided.
+ */
+int	kap_kwrite(Kap k, KRecord* kr, 
 	off_t where, void* buf, size_t amt);
 
 /** Do a full-fledged kap append operation possibly using the write buffer.
