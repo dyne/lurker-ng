@@ -974,18 +974,18 @@ plural_lookup (domain, n, translation, translation_len)
      size_t translation_len;
 {
   struct loaded_domain *domaindata = (struct loaded_domain *) domain->data;
-  unsigned long int index;
+  unsigned long int mindex;
   const char *p;
 
-  index = plural_eval (domaindata->plural, n);
-  if (index >= domaindata->nplurals)
+  mindex = plural_eval (domaindata->plural, n);
+  if (mindex >= domaindata->nplurals)
     /* This should never happen.  It means the plural expression and the
        given maximum value do not match.  */
-    index = 0;
+    mindex = 0;
 
   /* Skip INDEX strings at TRANSLATION.  */
   p = translation;
-  while (index-- > 0)
+  while (mindex-- > 0)
     {
 #ifdef _LIBC
       p = __rawmemchr (p, '\0');
