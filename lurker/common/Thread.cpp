@@ -1,4 +1,4 @@
-/*  $Id: Thread.cpp,v 1.6 2003-06-27 11:06:53 terpstra Exp $
+/*  $Id: Thread.cpp,v 1.7 2003-07-03 15:59:15 terpstra Exp $
  *  
  *  Thread.h - Helper class for calculating threading
  *  
@@ -57,35 +57,15 @@ inline char lu_tolower(char x)
 	return x;
 }
 
-// Stolen from lurker 0.1g:
-int my_summary_squishy_subject(
-	const char* subject, 
-	char* target)
+const char* skipSubjectStart(const char* subject)
 {
-	/* Alright, we want to drop 're:', 'fwd:', etc.
-	 * Also drop [...] chunks
-	 * Anything after a 'was:' should be cut.
-	 * Changes in case shouldn't be confusing.
-	 * Punctuation is disregarded.
-	 * We want a maximum length. (LU_SQUISHY_MAX)
-	 */
-	
-	const char* r;
-	const char* s;
-	char* e;
-	char* w;
-	int state, ws;
-	
-	if (!subject)
-	{
-		*target = 0;
-		return 0;
-	}
-	
 	/* Skip past any number of: ' *[^ :]{0, 8}:' sequences
 	 * Also, any number of '\[[^\]]{0,16}\]' sequences
 	 */
-	state = 1;
+	int state = 1;
+	
+	const char* r;
+	const char* s;
 	
 	r = s = subject;
 	while (*s)
@@ -133,6 +113,35 @@ int my_summary_squishy_subject(
 			s++;
 		}
 	}
+	
+	return r;
+}
+
+// Stolen from lurker 0.1g:
+int my_summary_squishy_subject(
+	const char* subject, 
+	char* target)
+{
+	/* Alright, we want to drop 're:', 'fwd:', etc.
+	 * Also drop [...] chunks
+	 * Anything after a 'was:' should be cut.
+	 * Changes in case shouldn't be confusing.
+	 * Punctuation is disregarded.
+	 * We want a maximum length. (LU_SQUISHY_MAX)
+	 */
+	
+	const char* r;
+	char* e;
+	char* w;
+	int ws;
+	
+	if (!subject)
+	{
+		*target = 0;
+		return 0;
+	}
+	
+	r = skipSubjectStart(subject);
 	
 	/* Ok, begin writing the string out to target.
 	 * We compress whitespace to a single space.

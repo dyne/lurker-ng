@@ -28,6 +28,7 @@ v0.10:
 	Fixed rendering in konqueror
 	Got subject/author clipping working in IE+Konqueror
 	Double-click in list overview goes directly to the message
+	Prune off list related cruft from subjects
 
 v0.9:
 	Don't segfault in rare cases if using '-d' on import (zero restart)

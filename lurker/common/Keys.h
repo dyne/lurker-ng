@@ -1,4 +1,4 @@
-/*  $Id: Keys.h,v 1.9 2003-06-09 02:31:31 terpstra Exp $
+/*  $Id: Keys.h,v 1.10 2003-07-03 15:59:14 terpstra Exp $
  *  
  *  Keys.h - What prefixs various database keys
  *  
@@ -70,6 +70,7 @@ extern int my_keyword_digest_string(
 	void*       arg,
 	int         do_div);
 
+const char* skipSubjectStart(const char* subject);
 string subject_hash(const char* subject);
 vector<string> extract_message_ids(const char* str);
 

@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.4 2003-06-23 14:38:43 terpstra Exp $
+/*  $Id: list.cpp,v 1.5 2003-07-03 15:59:15 terpstra Exp $
  *  
  *  list.cpp - Handle a list/ command
  *  
@@ -34,6 +34,7 @@
 #include <vector>
 
 #include <MessageId.h>
+#include <XmlEscape.h>
 #include <Keys.h>
 #include <esort.h>
 
@@ -170,7 +171,8 @@ int handle_list(const Config& cfg, ESort::Reader* db, const string& param)
 		
 		NewTopic& t = topics[*i];
 		vector<int>::iterator j;
-		cache.o << "  ";
+		cache.o << "  <title>" << xmlEscape << skipSubjectStart(t.newest.subject().c_str()) << "</title>\n"
+		        << "  ";
 		for (j = t.days.begin(); j != t.days.end(); ++j)
 			cache.o << "<day>" << *j << "</day>";
 		cache.o << "\n";

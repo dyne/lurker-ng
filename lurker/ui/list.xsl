@@ -57,7 +57,7 @@
   <td nowrap="NOWRAP">
    <div class="squash" onclick="this.firstChild.removeAttribute('href');">
     <a href="../thread/{summary/id}.{$ext}">
-     <xsl:value-of select="summary/subject"/>
+     <xsl:value-of select="title"/>
     </a>
    </div>
   </td>
