@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.12 2003-05-26 15:22:02 terpstra Exp $
+/*  $Id: Index.cpp,v 1.13 2003-05-28 13:16:29 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -244,6 +244,11 @@ int Index::index_id(time_t server)
 		 */
 		if (user <= server+60*60 && server < user+3*60*60*24)
 			stamp = user;
+	}
+	
+	if (stamp <= 0)
+	{	// this is crazy; I don't care if they agree: it's wrong
+		stamp = 1; // liers all have timestamp 1970-01-01 00:00:01
 	}
 	
 	if (message.Headers().HasMessageId())
