@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.90 2002-08-18 18:24:10 terpstra Exp $
+/*  $Id: service.c,v 1.91 2002-08-18 21:11:54 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -903,15 +903,105 @@ static struct mail_bodystruct* my_service_attach_id(
 	return 0;
 }
 
+static int my_service_summary_body(
+	My_Service_Handle	h,
+	message_id		id,
+	Lu_Summary_Message*	msg)
+{
+	if (my_service_buffer_write(h, "   <id>")                 != 0) return -1;
+	if (my_service_write_int(h, id)                           != 0) return -1;
+	if (my_service_buffer_write(h, "</id>\n   <timestamp>")   != 0) return -1;
+	if (my_service_write_int(h, msg->timestamp)               != 0) return -1;
+	if (my_service_buffer_write(h, "</timestamp>\n   <time>") != 0) return -1;
+	if (my_service_write_time(h, msg->timestamp)              != 0) return -1;
+	if (my_service_buffer_write(h, "</time>\n   <thread>")    != 0) return -1;
+	if (my_service_write_int(h, msg->thread)                  != 0) return -1;
+	if (my_service_buffer_write(h, "</thread>\n")             != 0) return -1;
+	
+	if (lu_summary_write_variable(
+		(int(*)(void*, const char*))        &my_service_buffer_write,
+		(int(*)(void*, const char*, size_t))&my_service_write_strl,
+		(int(*)(void*, const char*, size_t))&my_service_write_strl,
+		h,
+		msg->flat_offset) != 0) return -1;
+	
+	return 0;
+}
+
+static int my_service_summary(
+	My_Service_Handle	h,
+	message_id		id)
+{
+	Lu_Summary_Message	msg;
+	
+	if (lu_summary_read_msummary(id, &msg) != 0)
+		return -1;
+	
+	if (my_service_buffer_write(h, "  <summary>\n")  != 0) return -1;
+	if (my_service_summary_body(h, id, &msg)         != 0) return -1;
+	if (my_service_buffer_write(h, "  </summary>\n") != 0) return -1;
+	
+	return 0;
+}
+
 static int my_service_list(
 	My_Service_Handle h,
 	Lu_Config_List* l,
 	message_id msgs,
-	message_id offset)
+	message_id offset,
+	int next_prev)
 {
+	message_id	go, get;
+	message_id	where[3];
+	char		keyword[80];
+	int		out;
+	KRecord		kr;
+	
 	if (my_service_buffer_write(h, " <list>\n  <id>")       != 0) return -1;
 	if (my_service_write_str(h, l->name)                    != 0) return -1;
 	if (my_service_buffer_write(h, "</id>\n")               != 0) return -1;
+	
+	if (next_prev)
+	{
+		snprintf(&keyword[0], sizeof(keyword), "%s%s", LU_KEYWORD_LIST, l->name);
+		out = kap_kopen(lu_config_keyword, &kr, &keyword[0]);
+		if (out != 0)
+		{
+			return -1;
+		}
+		
+		if (offset != 0)	go = offset - 1;
+		else			go = offset;
+		
+		if (go + 3 > kr.records)get = kr.records - go;
+		else			get = 3;
+		
+		out = kap_kread(lu_config_keyword, &kr, &keyword[0],
+			go, &where[0], get);
+		kap_kclose(lu_config_keyword, &kr, &keyword[0]);
+		if (out != 0)
+		{
+			return -1;
+		}
+		
+		if (offset != 0)
+		{
+			if (my_service_buffer_write(h, "  <prev>\n")  != 0) return -1;
+			if (my_service_summary(h, where[0])           != 0) return -1;
+			if (my_service_buffer_write(h, "  </prev>\n") != 0) return -1;
+		}
+		
+		if (offset + 1 < kr.records)
+		{
+			if (my_service_buffer_write(h, "  <next>\n")  != 0) return -1;
+			if (my_service_summary(h, where[offset?2:1])  != 0) return -1;
+			if (my_service_buffer_write(h, "  </next>\n") != 0) return -1;
+		}
+		else
+		{
+			/*!!! depend on import to thread */
+		}
+	}
 	
 	if (msgs != lu_common_minvalid)
 	{
@@ -967,49 +1057,8 @@ static int my_service_list_cb(
 	if (l)
 	{
 		return my_service_list((My_Service_Handle)arg, l,
-		                lu_common_minvalid, offset);
+		                lu_common_minvalid, offset, 1);
 	}
-	
-	return 0;
-}
-
-static int my_service_summary_body(
-	My_Service_Handle	h,
-	message_id		id,
-	Lu_Summary_Message*	msg)
-{
-	if (my_service_buffer_write(h, "   <id>")                 != 0) return -1;
-	if (my_service_write_int(h, id)                           != 0) return -1;
-	if (my_service_buffer_write(h, "</id>\n   <timestamp>")   != 0) return -1;
-	if (my_service_write_int(h, msg->timestamp)               != 0) return -1;
-	if (my_service_buffer_write(h, "</timestamp>\n   <time>") != 0) return -1;
-	if (my_service_write_time(h, msg->timestamp)              != 0) return -1;
-	if (my_service_buffer_write(h, "</time>\n   <thread>")    != 0) return -1;
-	if (my_service_write_int(h, msg->thread)                  != 0) return -1;
-	if (my_service_buffer_write(h, "</thread>\n")             != 0) return -1;
-	
-	if (lu_summary_write_variable(
-		(int(*)(void*, const char*))        &my_service_buffer_write,
-		(int(*)(void*, const char*, size_t))&my_service_write_strl,
-		(int(*)(void*, const char*, size_t))&my_service_write_strl,
-		h,
-		msg->flat_offset) != 0) return -1;
-	
-	return 0;
-}
-
-static int my_service_summary(
-	My_Service_Handle	h,
-	message_id		id)
-{
-	Lu_Summary_Message	msg;
-	
-	if (lu_summary_read_msummary(id, &msg) != 0)
-		return -1;
-	
-	if (my_service_buffer_write(h, "  <summary>\n")  != 0) return -1;
-	if (my_service_summary_body(h, id, &msg)         != 0) return -1;
-	if (my_service_buffer_write(h, "  </summary>\n") != 0) return -1;
 	
 	return 0;
 }
@@ -1938,7 +1987,7 @@ static int my_service_mindex(
 	int			list;
 	Lu_Config_List*		l;
 	message_id		offset;
-	char			keyword[40];
+	char			keyword[80];
 	message_id		ids[LU_PROTO_INDEX];
 	int			i, out;
 	message_id		count;
@@ -2062,7 +2111,7 @@ static int my_service_mindex(
 	
 	if (my_service_server(h, ttl) != 0) goto my_service_mindex_error1;
 	
-	if (my_service_list(h, l, kr.records, offset) != 0) goto my_service_mindex_error1;
+	if (my_service_list(h, l, kr.records, offset, 0) != 0) goto my_service_mindex_error1;
 	kap_kclose(lu_config_keyword, &kr, &keyword[0]);
 	
 	tt = msg.timestamp;
@@ -2444,6 +2493,7 @@ static int my_service_splash(
 	const char* ext)
 {
 	time_t			ttl = 2592000; /* why hard-coded 30 days? */
+	time_t			ttlc = 300; /* why hard-coded 5 minutes? */
 	
 	Lu_Config_List*		scan;
 	char			key[40];
@@ -2471,7 +2521,7 @@ static int my_service_splash(
 	if (my_service_buffer_init(h, "text/xml\n", 1, ttl, LU_EXPIRY_ANY_LIST) != 0) return -1;
 	if (my_service_xml_head(h)                   != 0) return -1;
 	if (my_service_buffer_write(h, "<splash>\n") != 0) return -1;
-	if (my_service_server(h, ttl)                != 0) return -1;
+	if (my_service_server(h, ttlc)               != 0) return -1;
 
 	for (	scan = lu_config_file->list; 
 		scan != lu_config_file->list + lu_config_file->lists; 
@@ -2488,7 +2538,8 @@ static int my_service_splash(
 			records, 
 			records
 			?((records - 1) / LU_PROTO_INDEX * LU_PROTO_INDEX)
-			:0) != 0)
+			:0,
+			0) != 0)
 		{
 			return -1;
 		}
