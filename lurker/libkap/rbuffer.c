@@ -1,4 +1,4 @@
-/*  $Id: rbuffer.c,v 1.5 2002-07-19 14:40:34 terpstra Exp $
+/*  $Id: rbuffer.c,v 1.6 2002-07-19 14:58:12 terpstra Exp $
  *  
  *  rbuffer.c - Implements a buffering system that read combines
  *  
@@ -35,6 +35,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #ifdef HAVE_ERRNO_H
 # include <errno.h>
@@ -220,9 +221,10 @@ static int fetch_sector(
 		amount = LU_PULL_AT_ONCE/k->rbuffer->recsize;
 	
 	record->cache[which].offset = off;
+	record->cache[which].age    = 0;
 	
 #ifdef DEBUG
-	printf("****** DISK HIT ****** (%d %d)\n", off, amount);
+	printf("****** DISK HIT ****** (%ld %ld)\n", (long)off, (long)amount);
 #endif
 	
 	out = kap_append_read(k, kr,
@@ -378,8 +380,7 @@ static int find(
 	while (ptr != BPTR_MAX)
 	{
 #ifdef DEBUG
-		printf("--> %d %d\n", record->boundary[ptr].key,
-					record->boundary[ptr].index);
+		printf("--> %d\n", record->boundary[ptr].key);
 #endif
 		/* We are seeking the largest object which passes */
 		
@@ -520,12 +521,13 @@ static int find(
 }
 
 static void purify_record(
-	Record* record)
+	Record* record, off_t id)
 {
 	int i;
 	
 	record->boundary_root  = BPTR_MAX;
 	record->boundary_usage = 0;
+	record->id             = id;
 	
 	for (i = 0; i < LU_CACHE_RECORDS; i++)
 	{
@@ -597,7 +599,7 @@ int kap_rbuffer_kopen(Kap k, const KRecord* kr)
 	int	best;
 	
 	/* Don't cache anything this small - it would be a waste */
-	if (kr->records < LU_PULL_AT_ONCE/k->rbuffer->recsize)
+	if (kr->records < 2)
 		return 0;
 	
 	/* Firstly, see if we already have this handle open.
@@ -630,7 +632,7 @@ int kap_rbuffer_kopen(Kap k, const KRecord* kr)
 			return 0;
 		}
 		
-		purify_record(&k->rbuffer->records[best]);
+		purify_record(&k->rbuffer->records[best], kr->jumps[0]);
 	}
 	else
 	{
@@ -683,6 +685,9 @@ int kap_rbuffer_read(Kap k, const KRecord* kr, size_t offset, void* out, size_t 
 		}
 	}
 	
+#ifdef DEBUG
+	printf("xxxxx READ CAHCE MISS %ld xxxxx\n", (long)kr->records);
+#endif	
 	/* uncached */
 	return kap_append_read(k, kr, offset, out, amount);
 }
@@ -701,7 +706,10 @@ int kap_rbuffer_find(Kap k, KRecord* kr,
 				testfn, arg, offset, rec);
 		}
 	}
-	
+
+#ifdef DEBUG
+	printf("xxxxx FIND CAHCE MISS %ld xxxxx\n", (long)kr->records);
+#endif	
 	/* uncached */
 	return kap_append_find(k, kr, testfn, arg, offset, rec);
 }
