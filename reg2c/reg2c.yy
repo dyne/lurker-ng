@@ -433,7 +433,8 @@ Transition transition(const NFA& nfa, const DFA_State& what)
 		expand_epsilon(nfa, where);
 		DFA_State dest = flatten(where);
 		
-		out[*i] = dest;
+		if (dest.length())
+			out[*i] = dest;
 	}
 	
 	return out;
@@ -449,6 +450,7 @@ DFA dedeterministic_it(const NFA& nfa, DFA_State& start)
 	expand_epsilon(nfa, where);
 	
 	todo.insert(start = flatten(where));
+	todo.insert(DFA_State());
 	while (!todo.empty())
 	{
 		DFA_State what = *todo.begin();
