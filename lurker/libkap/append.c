@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.11 2002-07-12 11:27:32 terpstra Exp $
+/*  $Id: append.c,v 1.12 2002-07-12 11:42:48 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -414,8 +414,8 @@ int kap_append_append(Kap k, KRecord* kr, void* data, size_t len)
 int kap_append_find(
 	Kap		k, 
 	KRecord*	kr,
-	int		(*test)(void* arg, unsigned char* rec),
-	void*		arg,
+	int		(*testfn)(const void* arg, const unsigned char* rec),
+	const void*	arg,
 	ssize_t*	offset,
 	unsigned char*	rec)
 {
@@ -438,7 +438,7 @@ int kap_append_find(
 		out = kap_append_read(k, kr, m, rec, 1);
 		if (out) return out;
 		
-		if (test(arg, rec))
+		if (testfn(arg, rec))
 		{	/* This object passes, so the largest with the
 			 * property is >= m: [m, inf)
 			 * Intersect with invariant [l, r) to get:
@@ -477,7 +477,7 @@ int kap_append_find(
 	out = kap_append_read(k, kr, l, rec, 1);
 	if (out) return out;
 	
-	if (test(arg, rec))
+	if (testfn(arg, rec))
 	{	/* Positive match */
 		*offset = l;
 	}
