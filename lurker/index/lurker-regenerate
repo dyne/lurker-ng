@@ -2,7 +2,7 @@
 # Expects: <lurker-index> <config file>
 
 idx=`which $1`
-if echo "$idx" | grep -q '^\.'; then idx=`pwd`"/$idx"; fi
+if echo "$idx" | grep -q '^\.'; then idx="$PWD/$idx"; fi
 cfg="$2"
 
 if ! test -x $idx; then echo Cannot execute indexer; exit 1; fi

@@ -18,6 +18,7 @@ v0.7:
 	Removed debugging some that was left in 0.6
 	A search for no keywords now returns everything
 	Added a '-d' option to save space on reimport
+	Added 'lurker-regenerate' to port databases
 
 v0.6:
 	Jam replaces automake + overkill autoconf madness; hooray!
