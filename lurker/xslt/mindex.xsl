@@ -13,16 +13,20 @@
  <p/>
  <h2>
   <xsl:if test="prev">
-   <a href="{list/id}@{prev}.{$ext}"><img border="0" src="../imgs/prev.png"/></a>
+   <a href="{list/id}@0.{$ext}"><img border="0" alt="&lt;&lt;=" src="../imgs/first.png"/></a>
+   <a href="{list/id}@{prev}.{$ext}"><img border="0" alt="&lt;-" src="../imgs/prev.png"/></a>
   </xsl:if>
   <xsl:if test="not(prev)">
-   <img src="../imgs/a.png"/>
+   <img alt=" " src="../imgs/a.png"/>
+   <img alt=" " src="../imgs/a.png"/>
   </xsl:if>
   <xsl:if test="next">
-   <a href="{list/id}@{next}.{$ext}"><img border="0" src="../imgs/next.png"/></a>
+   <a href="{list/id}@{next}.{$ext}"><img border="0" alt="-&gt;" src="../imgs/next.png"/></a>
+   <a href="../lurker-jump.cgi?list={list/id}&amp;year=2038&amp;format={$ext}"><img border="0" alt="=&gt;&gt;" src="../imgs/last.png"/></a>
   </xsl:if>
   <xsl:if test="not(next)">
-   <img src="../imgs/a.png"/>
+   <img alt=" " src="../imgs/a.png"/>
+   <img alt=" " src="../imgs/a.png"/>
   </xsl:if>
 
   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;&amp;nbsp;</xsl:text>
