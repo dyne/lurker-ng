@@ -1,7 +1,7 @@
 v0.7:
 	Made VERSION controlled by one place: configure.ac
 	Fixed a bug where mailing list names were kept from Reply-To
-	Unfold folder email headers for http; broke some attachments
+	Unfold folded email headers for http; broke some attachments
 	Don't include control chars in output xml; drop them
 	Added mejo's manpage for lurker-index
 
