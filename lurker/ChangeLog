@@ -3,7 +3,7 @@ v0.9:
 	Ignore leading non-email cruft in broken mailboxes
 	Include the last message in statistics for '-v' output
 	Truncating long utf-8 fields fixed; spam is again viewable!
-	Truncate long personal names; fixes assertion failure
+	Truncate long personal names and message ids; fixes assertion failure
 
 v0.8:
 	@ signs are legitimate inside urls

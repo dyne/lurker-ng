@@ -1,4 +1,4 @@
-/*  $Id: Thread.cpp,v 1.2 2003-04-21 18:25:31 terpstra Exp $
+/*  $Id: Thread.cpp,v 1.3 2003-05-27 16:20:42 terpstra Exp $
  *  
  *  Thread.h - Helper class for calculating threading
  *  
@@ -230,7 +230,12 @@ vector<string> extract_message_ids(const char* str)
 		
 		// this is a valid msg-id?
 		string maybe(start, str - start);
-		if (maybe.find('@')) out.push_back(maybe);
+		if (maybe.find('@'))
+		{	// cut stupid message-ids off AFTER we know it's an id
+			// (this can remove the @ sign)
+			if (maybe.length() > 100) maybe.resize(100);
+			out.push_back(maybe);
+		}
 	}
 	
 	return out;
