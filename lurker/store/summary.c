@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.24 2002-07-11 20:35:08 terpstra Exp $
+/*  $Id: summary.c,v 1.25 2002-07-11 23:42:07 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -692,7 +692,7 @@ int lu_summary_import_message(
 	if (error)
 	{
 			syslog(LOG_ERR, _("Could not write occurance db: %s\n"),
-				db_strerror(error));
+				kap_strerror(error));
 			goto lu_summary_import_message_error0;
 	}
 	
@@ -987,8 +987,8 @@ int lu_summary_open()
 	
 	if ((offset = lseek(my_summary_message_fd, 0, SEEK_END)) == -1)
 	{
-		fprintf(stderr, _("Determining last message id: merge.btree: %s\n"),
-			db_strerror(error));
+		fprintf(stderr, _("Determining last message id: summary.flat: %s\n"),
+			strerror(errno));
 		return -1;
 	}
 	
