@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.13 2002-07-12 19:02:00 terpstra Exp $
+/*  $Id: search.c,v 1.14 2002-07-13 12:20:55 terpstra Exp $
  *  
  *  search.c - Uses libkap to execute a given search
  *  
@@ -63,7 +63,7 @@
  * ...
  *
  * So, we want to find the best fit line 'ax + b = y' and then predict at 
- * which value of x the line crosses zero (no more hits).
+ * which value of x the line crosses minhit (no more hits).
  * 
  * Let A = [ x 1 ], c = [ a b ]^T, M = A^T*A, z = A^T*y
  * Then, we want to solve Mc = z to get our coefficients.
@@ -75,8 +75,7 @@
  *             [ -M10  M00 ]
  * 
  * Then [ a b ]^T = [ M11*z0-M01*z1  -M10*z0+M00*z1 ] / (M00*M11-M10*M01)
- * Solve ax + b = 0 -> x = -b / a = (M01*z0-M00*z1)/(M11*z0-M01*z1)
- *                    Symmetric -------^
+ * Solve ax + b = minhit
  *
  * Strictly speaking, we should sum from smallest to largest... But...
  * Well, that would take effort! We only do at most 1000 terms... double
@@ -347,15 +346,15 @@ int lu_search_result(
 	}
 	else
 	{	/* We have seen all the hits -- give exact answer:
-		 * x 0         y 1
-		 * x <answer>  y 0
+		 * x 0         y minhit+100
+		 * x <answer>  y minhit
 		 */
+		my_search_z0  = my_search_min_ok*my_search_m11;
+		my_search_z1  = my_search_min_ok+my_search_min_ok+100;
 		my_search_m00 =  my_search_m11;
 		my_search_m00 *= my_search_m11;
 		my_search_m01 = my_search_m11;
 		my_search_m11 = 2;
-		my_search_z0  = 0;
-		my_search_z1  = 1;
 	}
 	
 	return 0;
@@ -363,7 +362,7 @@ int lu_search_result(
 
 int lu_search_end(message_id* predict)
 {
-	double div, x;
+	double a, b, det, x;
 	int i;
 	
 	for (i = 0; i < my_search_handles; i++)
@@ -375,22 +374,22 @@ int lu_search_end(message_id* predict)
 	}
 	my_search_handles = 0;
 	
+	det = my_search_m00*my_search_m11-my_search_m01*my_search_m01;
+	if (det < 0.001 && det > -0.001) det = 0.001;
+	
+	a   = (my_search_m11*my_search_z0 - my_search_m01*my_search_z1) / det;
+	b   = (my_search_m00*my_search_z1 - my_search_m01*my_search_z0) / det;
+	
 #ifdef DEBUG
 	printf("M = [ %e %e ], z = [ %e ]\n", my_search_m00, my_search_m01, my_search_z0);
 	printf("    [ %e %e ]      [ %e ]\n", my_search_m01, (double)my_search_m11, my_search_z1);
 	
-	printf("a = %e\n",
-		(my_search_m11*my_search_z0 -my_search_m01*my_search_z1) /
-		(my_search_m00*my_search_m11-my_search_m01*my_search_m01));
-	printf("b = %e\n",
-		(my_search_m00*my_search_z1 -my_search_m01*my_search_z0) /
-		(my_search_m00*my_search_m11-my_search_m01*my_search_m01));
+	printf("a = %e\nb = %e\n", a, b);
 #endif
 	
-	div = my_search_m11*my_search_z0-my_search_m01*my_search_z1;
-	if (div >= 1 || div <= -1)
+	if (b >= 0.001 || b <= -0.001)
 	{
-		x = (my_search_m01*my_search_z0-my_search_m00*my_search_z1) / div;
+		x = (my_search_min_ok - b) / a;
 		*predict = x;
 #ifdef DEBUG
 		printf("I predict: %e\n", x);
