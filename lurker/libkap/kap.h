@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.17 2002-07-19 14:25:08 terpstra Exp $
+/*  $Id: kap.h,v 1.18 2002-07-21 22:54:23 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -89,7 +89,7 @@ typedef struct KRecord_T
 
 
 
-/* turn a kap error code into a human readable string */
+/** Turn a kap error code into a human readable string */
 const char* kap_strerror(int error);
 
 /** Create a new kap subsystem.

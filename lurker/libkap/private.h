@@ -1,4 +1,4 @@
-/*  $Id: private.h,v 1.9 2002-07-19 14:25:08 terpstra Exp $
+/*  $Id: private.h,v 1.10 2002-07-21 22:54:23 terpstra Exp $
  *  
  *  private.h - Private internal interfaces for libkap
  *  
@@ -73,6 +73,7 @@ int kap_wbuffer_flush(Kap k, const char* key);
 int kap_rbuffer_kopen (Kap k, const KRecord* kr);
 int kap_rbuffer_kclose(Kap k, const KRecord* kr);
 
+void kap_rbuffer_write(Kap k, const KRecord* kr, size_t offset, const void* out, size_t amount);
 int kap_rbuffer_read(Kap k, const KRecord* kr, size_t offset, void* out, size_t amount);
 int kap_rbuffer_find(Kap k, KRecord* kr,
 	int (*testfn)(const void* arg, const void* rec), const void* arg,

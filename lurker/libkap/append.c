@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.16 2002-07-19 16:11:04 terpstra Exp $
+/*  $Id: append.c,v 1.17 2002-07-21 22:54:23 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -500,6 +500,9 @@ int kap_append_write(Kap k, KRecord* kr,
 			return errno;
 		}
 	}
+	
+	if (k->rbuffer)
+		kap_rbuffer_write(k, kr, off, data, len);
 	
 	return 0;
 }

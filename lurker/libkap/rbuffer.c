@@ -1,4 +1,4 @@
-/*  $Id: rbuffer.c,v 1.6 2002-07-19 14:58:12 terpstra Exp $
+/*  $Id: rbuffer.c,v 1.7 2002-07-21 22:54:23 terpstra Exp $
  *  
  *  rbuffer.c - Implements a buffering system that read combines
  *  
@@ -292,7 +292,8 @@ static int find_which(
 	
 	for (i = 0; i < LU_CACHE_RECORDS; i++)
 	{
-		if (offset >= record->cache[i].offset &&
+		if (record->cache[i].age != MAX_AGE &&
+		    offset >= record->cache[i].offset &&
 		    offset < record->cache[i].offset + 
 		    		LU_PULL_AT_ONCE/k->rbuffer->recsize)
 		{
@@ -339,6 +340,49 @@ static int read(
 	}
 	
 	return 0;
+}
+
+static void write(
+	Kap		k,
+	const KRecord*	kr,
+	Record*		record, 
+	size_t		offset, 
+	const void*	out,
+	size_t		count)
+{
+	int i;
+	size_t amt = LU_PULL_AT_ONCE/k->rbuffer->recsize;
+	
+	size_t	start, end;
+	
+	for (i = 0; i < LU_CACHE_RECORDS; i++)
+	{
+		/* Only update non-expired cache */
+		if (record->cache[i].age == MAX_AGE)
+			continue;
+		
+		/* Only update if the ranges overlap */
+		if (offset + count < record->cache[i].offset ||
+		    record->cache[i].offset + amt < offset)
+			continue;
+		
+		/* Compute the left-side */
+		if (record->cache[i].offset < offset)
+			start = offset;
+		else	start = record->cache[i].offset;
+		
+		/* Compute the right-side */
+		if (record->cache[i].offset + amt < offset + count)
+			end = record->cache[i].offset + amt;
+		else	end = offset + count;
+		
+		/* Copy the write to cache */
+		memcpy(	&record->cache[i].buffer[k->rbuffer->recsize*
+				(start - record->cache[i].offset)],
+			((unsigned char*)out) + k->rbuffer->recsize*
+				(start - offset),
+			(end - start) * k->rbuffer->recsize);
+	}
 }
 
 static int find(
@@ -690,6 +734,25 @@ int kap_rbuffer_read(Kap k, const KRecord* kr, size_t offset, void* out, size_t 
 #endif	
 	/* uncached */
 	return kap_append_read(k, kr, offset, out, amount);
+}
+
+void kap_rbuffer_write(Kap k, const KRecord* kr, 
+	size_t offset, const void* out, size_t amount)
+{
+	int i;	
+	
+	for (i = 0; i < LU_MAX_HANDLES; i++)
+	{
+		if (k->rbuffer->records[i].id == kr->jumps[0])
+		{
+			return write(k, kr, &k->rbuffer->records[i],
+				offset, out, amount);
+		}
+	}
+	
+#ifdef DEBUG
+	printf("xxxxx WRITE CAHCE MISS %ld xxxxx\n", (long)kr->records);
+#endif	
 }
 
 int kap_rbuffer_find(Kap k, KRecord* kr,
