@@ -1,21 +1,20 @@
 Ideas:
 	Timezones suck. Need to localize times to the browser?
+	In-message forward/backward for search results?
 	Allow control of ascending/descending sort?
 	Maybe make an effort to mangle emails?
-	Re-add optional lurkerd to match wboxs?
+	Re-add optional lurkerd to watch mboxs?
 	Deleted message keyword?
+	Pack the threading tree more densely somehow?
 
 Unfulfilled requirements:
 	Compressed mboxes
 	New UI
 	New topics
-	in-message forward/backward for search results
 	Multi-level btree style files
 	Message count estimates
 	Boolean "or" in search
 	Phrase searching
-	Better packing of tree
-	German pot
 
 BUGS:
 	There is a slight bug in advance() pre-commit post-insert.
