@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.39 2002-07-19 12:24:17 terpstra Exp $
+/*  $Id: mbox.c,v 1.40 2002-07-21 19:26:08 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -457,7 +457,7 @@ static int my_mbox_process_mbox(
 	}
 	
 	/* Notify the cache about an import */
-	if (lu_expiry_notice_import(list->id) != 0)
+	if (lu_expiry_notice_import(list->key) != 0)
 	{
 		lu_mbox_destroy_message(&m);
 		return -1;
@@ -475,11 +475,11 @@ static int my_mbox_process_mbox(
 	/* Store the summary information for this message and link the thread 
 	 */
 	error = lu_summary_import_message(
-		list->id, 
-		mbox->id, 
+		list->key, 
+		mbox->key, 
 		mbox->length, 
 		stamp,
-		&mmessage_id  [0],
+		&mmessage_id [0],
 		&decode_subj [0], 
 		&author_name [0],
 		&author_email[0],
@@ -723,8 +723,8 @@ static time_t my_mbox_find_lowest(
 	
 	lowest_timestamp = 0;
 	
-	for (	scan_list = lu_config_list; 
-		scan_list != lu_config_list + lu_config_lists; 
+	for (	scan_list = lu_config_file->list; 
+		scan_list != lu_config_file->list + lu_config_file->lists; 
 		scan_list++)
 	{
 		for (	scan_mbox = scan_list->mbox;
@@ -782,8 +782,8 @@ static int my_mbox_unlock_all(void)
 	Lu_Config_List*	scan_list;
 	Lu_Config_Mbox*	scan_mbox;
 	
-	for (	scan_list = lu_config_list; 
-		scan_list != lu_config_list + lu_config_lists; 
+	for (	scan_list = lu_config_file->list; 
+		scan_list != lu_config_file->list + lu_config_file->lists; 
 		scan_list++)
 	{
 		for (	scan_mbox = scan_list->mbox;

@@ -95,7 +95,7 @@
 <!-- Format mailing list information -->
 
 <xsl:template name="list-format">
- <a href="../mindex/{id}@{string(floor(number(offset) div 20)*20)}.{$ext}#{../id}">
+ <a href="../mindex/{string(floor(number(offset) div 20)*20)}@{id}.{$ext}#{../id}">
   <xsl:value-of select="email/@name"/><xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;#8722;&amp;nbsp;</xsl:text><xsl:value-of select="$message"/><xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>#<xsl:value-of select="offset"/>
  </a>
 </xsl:template>

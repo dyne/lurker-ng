@@ -19,11 +19,11 @@ echo "Done"
 
 echo -n "Rebuilding kap databases..... "
 echo -n "merge "
-$BINDIR/kapmake -b -k 80 -l 8 -s 2048 merge < merge.raw
+$BINDIR/kapmake -b -k 80 -l  8 -s 2048 merge < merge.raw
 echo -n "mid "
-$BINDIR/kapmake -b -k 80 -l 4 -s 2048 mid   < mid.raw
+$BINDIR/kapmake -b -k 80 -l  4 -s 2048 mid   < mid.raw
 echo -n "mbox "
-$BINDIR/kapmake -b -k 24 -l 8 -s 1024 mbox  < mbox.raw
+$BINDIR/kapmake -b -k 80 -l 10 -s 1024 mbox  < mbox.raw
 echo -n "offset "
 $BINDIR/kapmake -k 12 -r 8 offset < offset.raw
 echo -n "keyword "

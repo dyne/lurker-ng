@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.84 2002-07-19 14:25:08 terpstra Exp $
+/*  $Id: service.c,v 1.85 2002-07-21 19:26:08 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -490,11 +490,11 @@ static int my_service_server(
 	My_Service_Handle h)
 {
 	if (my_service_buffer_write(h, " <server>\n  <hostname>")       != 0) return -1;
-	if (my_service_write_str(h, lu_config_list_host)                != 0) return -1;
+	if (my_service_write_str(h, lu_config_file->list_host)          != 0) return -1;
 	if (my_service_buffer_write(h, "</hostname>\n  <email name=\"") != 0) return -1;
-	if (my_service_write_str(h, lu_config_admin_name)               != 0) return -1;
+	if (my_service_write_str(h, lu_config_file->admin_name)         != 0) return -1;
 	if (my_service_buffer_write(h, "\" address=\"")                 != 0) return -1;
-	if (my_service_write_str(h, lu_config_admin_address)            != 0) return -1;
+	if (my_service_write_str(h, lu_config_file->admin_address)      != 0) return -1;
 	if (my_service_buffer_write(h, "\"/>\n </server>\n")            != 0) return -1;
 	
 	return 0;
@@ -961,7 +961,7 @@ static int my_service_list(
 	message_id offset)
 {
 	if (my_service_buffer_write(h, " <list>\n  <id>")       != 0) return -1;
-	if (my_service_write_int(h, l->id)                      != 0) return -1;
+	if (my_service_write_str(h, l->name)                    != 0) return -1;
 	if (my_service_buffer_write(h, "</id>\n")               != 0) return -1;
 	
 	if (msgs != lu_common_minvalid)
@@ -1013,7 +1013,7 @@ static int my_service_list_cb(
 	lu_word		list,
 	message_id	offset)
 {
-	Lu_Config_List* l = lu_config_find_list(list);
+	Lu_Config_List* l = lu_config_find_listi(lu_config_file, list);
 	
 	if (l)
 	{
@@ -1030,7 +1030,7 @@ static int my_service_list_email_cb(
 	message_id	offset)
 {
 	My_Service_Email_Dat*	d = arg;
-	Lu_Config_List*		l = lu_config_find_list(list);
+	Lu_Config_List*		l = lu_config_find_listi(lu_config_file, list);
 	
 	if (l && l->address)
 	{
@@ -1425,7 +1425,7 @@ static int my_service_mbox(
 	bits <<= (sizeof(lu_addr)*8) - 16;
 	offset = msg.mbox_offset & ~bits;
 	
-	list = lu_config_find_list(list_id);
+	list = lu_config_find_listi(lu_config_file, list_id);
 	if (!list)
 	{
 		my_service_error(h,
@@ -1435,7 +1435,7 @@ static int my_service_mbox(
 		goto my_service_mbox_error0;
 	}
 	
-	mbox = lu_config_find_mbox(list, mbox_id);
+	mbox = lu_config_find_mboxi(list, mbox_id);
 	if (!mbox)
 	{
 		my_service_error(h,
@@ -1459,7 +1459,7 @@ static int my_service_mbox(
 	len = cmsg.end - cmsg.headers;
 	
 	if (my_service_buffer_init(h, "text/plain\n", 1, 
-			lu_config_cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
+			lu_config_file->cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
 		goto my_service_mbox_error1;
 	if (my_service_buffer_writel(h, base, len) != 0)
 		goto my_service_mbox_error1;
@@ -1545,7 +1545,7 @@ static int my_service_attach(
 	bits <<= (sizeof(lu_addr)*8) - 16;
 	offset = msg.mbox_offset & ~bits;
 	
-	list = lu_config_find_list(list_id);
+	list = lu_config_find_listi(lu_config_file, list_id);
 	if (!list)
 	{
 		my_service_error(h,
@@ -1555,7 +1555,7 @@ static int my_service_attach(
 		goto my_service_attach_error0;
 	}
 	
-	mbox = lu_config_find_mbox(list, mbox_id);
+	mbox = lu_config_find_mboxi(list, mbox_id);
 	if (!mbox)
 	{
 		my_service_error(h,
@@ -1765,7 +1765,7 @@ static int my_service_message(
 	bits <<= (sizeof(lu_addr)*8) - 16;
 	offset = msg.mbox_offset & ~bits;
 	
-	list = lu_config_find_list(list_id);
+	list = lu_config_find_listi(lu_config_file, list_id);
 	if (!list)
 	{
 		my_service_error(h,
@@ -1775,7 +1775,7 @@ static int my_service_message(
 		goto my_service_message_error0;
 	}
 	
-	mbox = lu_config_find_mbox(list, mbox_id);
+	mbox = lu_config_find_mboxi(list, mbox_id);
 	if (!mbox)
 	{
 		my_service_error(h,
@@ -1852,7 +1852,7 @@ static int my_service_message(
 	cols = my_service_draw_snippet(tree, p, 0);
 	
 	if (my_service_buffer_init(h, "text/xml\n", 1, 
-			lu_config_cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
+			lu_config_file->cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
 		goto my_service_message_error3;
 	
 	if (my_service_xml_head(h)                       != 0) goto my_service_message_error3;
@@ -1964,7 +1964,8 @@ static int my_service_jump(
 	const char* ext)
 {
 	lu_quad			tm;
-	int			list;
+	int			ln;
+	Lu_Config_List*		list;
 	
 	char			keyword[40];
 	KRecord			kr;
@@ -1974,7 +1975,7 @@ static int my_service_jump(
 	ssize_t			off;
 	message_id		ljump;
 	
-	if (sscanf(request, "%d@%d", &list, &tm) != 2)
+	if (sscanf(request, "%d@%n", &tm, &ln) < 1)
 	{	/* They did something funny. */
 		my_service_error(h,
 			_("Malformed request"),
@@ -1994,11 +1995,22 @@ static int my_service_jump(
 		goto my_service_jump_error0;
 	}
 	
+	list = lu_config_find_listn(lu_config_file, request+ln);
+	if (!list)
+	{
+		my_service_error(h,
+			_("Internal error"),
+			_("The specified mailing list does not exist"),
+			request+ln);
+		
+		goto my_service_jump_error0;
+	}
+	
 	/* Ok, every prior to here is prior to tm. */
 	jump = lu_summary_find_timestamp(tm);
 	
 	/* Open a krecord */
-	sprintf(&keyword[0], "%s%d", LU_KEYWORD_LIST, list);
+	sprintf(&keyword[0], "%s%s", LU_KEYWORD_LIST, list->name);
 	out = kap_kopen(lu_config_keyword, &kr, &keyword[0]);
 	if (out != 0)
 	{
@@ -2035,8 +2047,8 @@ static int my_service_jump(
 	off -= (off % LU_PROTO_INDEX);
 	
 	if (my_service_buffer_init(h, "text/xml\n", 1, 
-		lu_config_cache_index_ttl, 
-		(off+LU_PROTO_INDEX >= kr.records)?list:LU_EXPIRY_NO_LIST) != 0)
+		lu_config_file->cache_index_ttl, 
+		(off+LU_PROTO_INDEX >= kr.records)?list->key:LU_EXPIRY_NO_LIST) != 0)
 	{
 		goto my_service_jump_error1;
 	}
@@ -2045,9 +2057,9 @@ static int my_service_jump(
 	if (my_service_buffer_write(h, "<redirect>\n") != 0) goto my_service_jump_error1;
 	if (my_service_server      (h)                 != 0) goto my_service_jump_error1;
 	if (my_service_buffer_write(h, " <url>mindex/")!= 0) goto my_service_jump_error1;
-	if (my_service_write_int   (h, list)           != 0) goto my_service_jump_error1;
-	if (my_service_buffer_write(h, "@")            != 0) goto my_service_jump_error1;
 	if (my_service_write_int   (h, off)            != 0) goto my_service_jump_error1;
+	if (my_service_buffer_write(h, "@")            != 0) goto my_service_jump_error1;
+	if (my_service_write_str   (h, list->name)     != 0) goto my_service_jump_error1;
 	if (my_service_buffer_write(h, "</url>\n")     != 0) goto my_service_jump_error1;
 	if (my_service_buffer_write(h, "</redirect>\n")!= 0) goto my_service_jump_error1;
 	
@@ -2067,9 +2079,9 @@ static int my_service_mindex(
 	const char* ext)
 {
 	KRecord			kr;
+	int			list;
 	Lu_Config_List*		l;
 	message_id		offset;
-	int			list;
 	char			keyword[40];
 	message_id		ids[LU_PROTO_INDEX];
 	int			i, out;
@@ -2078,7 +2090,7 @@ static int my_service_mindex(
 	time_t			tt;
 	struct tm*		tm;
 	
-	if (sscanf(request, "%d@%d", &list, &offset) != 2)
+	if (sscanf(request, "%d@%n", &offset, &list) < 1)
 	{	/* They did something funny. */
 		my_service_error(h,
 			_("Malformed request"),
@@ -2108,7 +2120,7 @@ static int my_service_mindex(
 		goto my_service_mindex_error0;
 	}
 	
-	l = lu_config_find_list(list);
+	l = lu_config_find_listn(lu_config_file, request+list);
 	if (l == 0)
 	{
 		my_service_error(h,
@@ -2119,7 +2131,7 @@ static int my_service_mindex(
 		goto my_service_mindex_error0;
 	}
 	
-	sprintf(&keyword[0], "%s%d", LU_KEYWORD_LIST, list);
+	sprintf(&keyword[0], "%s%s", LU_KEYWORD_LIST, l->name);
 	out = kap_kopen(lu_config_keyword, &kr, &keyword[0]);
 	if (out != 0)
 	{
@@ -2168,8 +2180,8 @@ static int my_service_mindex(
 
 	/* We shouldn't change if we already have next link */
 	if (my_service_buffer_init(h, "text/xml\n", 1, 
-		lu_config_cache_index_ttl,
-		(offset+count<kr.records)?LU_EXPIRY_NO_LIST:list) != 0)
+		lu_config_file->cache_index_ttl,
+		(offset+count<kr.records)?LU_EXPIRY_NO_LIST:l->key) != 0)
 	{
 		goto my_service_mindex_error1;
 	}
@@ -2381,7 +2393,7 @@ static int my_service_thread(
 	}
 	
 	if (my_service_buffer_init(h, "text/xml\n", 1, 
-			lu_config_cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
+			lu_config_file->cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
 		goto my_service_thread_error1;
 	
 	if (my_service_xml_head(h)                        != 0) goto my_service_thread_error1;
@@ -2495,7 +2507,7 @@ static int my_service_search(
 	}
 	
 	if (my_service_buffer_init(h, "text/xml\n", 1, 
-			lu_config_cache_search_ttl, LU_EXPIRY_NO_LIST) != 0)
+			lu_config_file->cache_search_ttl, LU_EXPIRY_NO_LIST) != 0)
 		goto my_service_search_error1;
 	
 	/* Ok! Now, lets start putting out the data */
@@ -2603,11 +2615,11 @@ static int my_service_splash(
 	if (my_service_buffer_write(h, "<splash>\n") != 0) return -1;
 	if (my_service_server(h)                     != 0) return -1;
 
-	for (	scan = lu_config_list; 
-		scan != lu_config_list + lu_config_lists; 
+	for (	scan = lu_config_file->list; 
+		scan != lu_config_file->list + lu_config_file->lists; 
 		scan++)
 	{
-		snprintf(&key[0], sizeof(key), "%s%d", LU_KEYWORD_LIST, scan->id);
+		snprintf(&key[0], sizeof(key), "%s%s", LU_KEYWORD_LIST, scan->name);
 		
 		out = kap_krecords(lu_config_keyword, &records, &key[0]);
 		if (out != 0) return -1;
@@ -2673,8 +2685,8 @@ extern int lu_service_connection(st_netfd_t fd)
 	struct My_Service_Handle_T h;
 	h.fd = fd;
 	
-	h.buffer  = malloc(lu_config_cache_cutoff);
-	h.bufsize = lu_config_cache_cutoff;
+	h.buffer  = malloc(lu_config_file->cache_cutoff);
+	h.bufsize = lu_config_file->cache_cutoff;
 	h.init = 0;
 	
 	if (!h.buffer)

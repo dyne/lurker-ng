@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.33 2002-07-19 20:36:45 terpstra Exp $
+/*  $Id: summary.c,v 1.34 2002-07-21 19:26:08 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -674,8 +674,8 @@ time_t lu_summary_timestamp_heuristic(
 /*------------------------------------------------- Import message methods */
 
 int lu_summary_import_message(
-	lu_word		list, 
-	lu_word		mbox, 
+	lu_word		list_id, 
+	lu_word		mbox_id, 
 	lu_addr		mbox_offset,
 	time_t		timestamp, 
 	const char*	mmessage_id,
@@ -712,6 +712,14 @@ int lu_summary_import_message(
 	unsigned char		occurance[4+sizeof(message_id)];
 	unsigned char		idrec[sizeof(message_id)];
 	
+	Lu_Config_List*		list;
+	Lu_Config_Mbox*		mbox;
+	
+	list = lu_config_find_listi(lu_config_file, list_id);
+	mbox = lu_config_find_mboxi(list, mbox_id);
+	
+	assert (list && mbox);
+	
 	if (!subject) subject = "";
 	
 	id = my_summary_msg_free;
@@ -743,11 +751,11 @@ int lu_summary_import_message(
 	
 	/* Write out location keywords.
 	 */
-	lu_indexer_location(list, mbox, &loff);
+	lu_indexer_location(list->name, mbox->name, &loff);
 	
 	/* Write out the list occurance info */
 	sprintf(&key[0], "%ld", (long)id);
-	kap_encode_offset(&occurance[0], list, 4);
+	kap_encode_offset(&occurance[0], list->key, 4);
 	kap_encode_offset(&occurance[4], loff, sizeof(message_id));
 	
 	error = kap_append(
@@ -775,7 +783,7 @@ int lu_summary_import_message(
 	}
 	
 	lu_indexer_threading(
-		list,
+		list->name,
 		thread_id,
 		thread_id == id);
 	
@@ -827,11 +835,11 @@ int lu_summary_import_message(
 	sum.in_reply_to   = lu_common_minvalid;	/* nothing yet */
 	sum.thread        = thread_id;		/* what thread are we? */
 	
-	high_bits = mbox;
+	high_bits = mbox->key;
 	high_bits <<= (sizeof(lu_addr)-2)*8;
 	sum.mbox_offset |= high_bits;
 	
-	high_bits = list;
+	high_bits = list->key;
 	high_bits <<= (sizeof(lu_addr)-2)*8;
 	sum.flat_offset |= high_bits;
 	

@@ -125,15 +125,15 @@
 <xsl:template match="mindex" mode="body">
  <h2>
   <xsl:if test="prev">
-   <a href="{list/id}@0.{$ext}"><img alt="&lt;&lt;=" src="../imgs/first.png"/></a>
-   <a href="{list/id}@{prev}.{$ext}"><img alt="&lt;-" src="../imgs/prev.png"/></a>
+   <a href="0@{list/id}.{$ext}"><img alt="&lt;&lt;=" src="../imgs/first.png"/></a>
+   <a href="{prev}@{list/id}.{$ext}"><img alt="&lt;-" src="../imgs/prev.png"/></a>
   </xsl:if>
   <xsl:if test="not(prev)">
    <img src="../imgs/a.png"/>
    <img src="../imgs/a.png"/>
   </xsl:if>
   <xsl:if test="next">
-   <a href="{list/id}@{next}.{$ext}"><img alt="-&gt;" src="../imgs/next.png"/></a>
+   <a href="{next}@{list/id}.{$ext}"><img alt="-&gt;" src="../imgs/next.png"/></a>
    <a href="../lurker-jump.cgi?list={list/id}&amp;year=2038&amp;format={$ext}"><img alt="=&gt;&gt;" src="../imgs/last.png"/></a>
   </xsl:if>
   <xsl:if test="not(next)">

@@ -1,4 +1,4 @@
-/*  $Id: config.h,v 1.15 2002-07-12 15:15:05 terpstra Exp $
+/*  $Id: config.h,v 1.16 2002-07-21 19:26:08 terpstra Exp $
  *  
  *  config.h - Knows how to load the config file
  *  
@@ -50,9 +50,9 @@ struct Lu_Config_Message
 
 typedef struct Lu_Config_Mbox_T
 {
-	lu_word	id;
-	char*	path;
-	int	fd;
+	const char*	name;
+	const char*	path;
+	int		fd;
 	
 	/* What is the state of the mailbox? If we have next_message 0 it
 	 * that we need to check if the mailbox is longer than mbox_length.
@@ -63,52 +63,66 @@ typedef struct Lu_Config_Mbox_T
 	
 	int	locked;
 	
-	struct Lu_Config_Message msg;
+	lu_word	key;
+	lu_word	left;
+	lu_word	right;
+	lu_byte skew;
 	
-	/* only used during load of config */
-	struct Lu_Config_Mbox_T*	next;
+	struct Lu_Config_Message msg;
 } Lu_Config_Mbox;
 
 typedef struct Lu_Config_List_T
 {
-	lu_word	id;
+	const char*	name;
+	const char*	address;
+	const char*	description;
 	
-	char*	name;
-	char*	address;
-	char*	description;
+	lu_word	key;
+	lu_word	left;
+	lu_word	right;
+	lu_byte skew;
 	
 	Lu_Config_Mbox*	mbox;
 	int		mboxs;
+	lu_word		mbox_root;
 	
 	/* Used in the expiry module for fast lookups */
 	lu_word		cache_head;
-	
-	/* only used during load of config */
-	Lu_Config_Mbox*			mbox_head;
-	struct Lu_Config_List_T*	next;
 } Lu_Config_List;
+
+typedef struct Lu_Config_File_T
+{
+	Lu_Config_List*	list;
+	int		lists;
+	lu_word		list_root;
+	
+	char*		string;
+	int		strings;
+	
+	Lu_Config_Mbox*	mbox;
+	int		mboxs;
+
+	const char*		dbdir;
+	const char*		maildir;
+	const char*		pidfile;
+
+	const char*		list_host;
+	const char*		admin_name;
+	const char*		admin_address;
+	
+	long		cache_cutoff;
+	long		cache_files;
+	long		cache_size;
+	
+	time_t		cache_search_ttl;
+	time_t		cache_message_ttl;
+	time_t		cache_index_ttl;
+} Lu_Config_File;
 
 /*------------------------------------------------ Public global vars */
 
-extern Lu_Config_List*	lu_config_list;
-extern int		lu_config_lists;
-
-extern char* lu_config_dbdir;
-extern char* lu_config_pidfile;
-
-extern char* lu_config_list_host;
-extern char* lu_config_admin_name;
-extern char* lu_config_admin_address;
-
-extern Kap	lu_config_keyword;
-
-extern long	lu_config_cache_cutoff;
-extern long	lu_config_cache_files;
-extern long	lu_config_cache_size;
-
-extern time_t	lu_config_cache_search_ttl;
-extern time_t	lu_config_cache_message_ttl;
-extern time_t	lu_config_cache_index_ttl;
+extern Lu_Config_File*	lu_config_file;
+extern Kap		lu_config_keyword;
 
 /*------------------------------------------------- Public component methods */
 
@@ -122,14 +136,13 @@ extern int lu_config_quit (void);
 
 /** Search the configuration for the mailing list which has the specified id
  */
-extern Lu_Config_List* lu_config_find_list(
-	lu_word id);
+extern Lu_Config_List* lu_config_find_listi(Lu_Config_File* file, lu_word id);
+extern Lu_Config_List* lu_config_find_listn(Lu_Config_File* file, const char* name);
 
 /** Search the configuration for the mbox which has the specified id.
  */
-extern Lu_Config_Mbox* lu_config_find_mbox(
-	Lu_Config_List* list, 
-	lu_word id);
+extern Lu_Config_Mbox* lu_config_find_mboxi(Lu_Config_List* list, lu_word id);
+extern Lu_Config_Mbox* lu_config_find_mboxn(Lu_Config_List* list, const char* name);
 
 /** Move the end marker for a mailbox.
  */

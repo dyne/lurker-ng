@@ -13,11 +13,11 @@ cd $DBDIR
 
 echo -n "Dumping all kap databases... "
 echo -n "merge "
-$BINDIR/kapdump -b -k 80 -l 8 -s 2048 merge > merge.raw
+$BINDIR/kapdump -b -k 80 -l  8 -s 2048 merge > merge.raw
 echo -n "mid "
-$BINDIR/kapdump -b -k 80 -l 4 -s 2048 mid   > mid.raw
+$BINDIR/kapdump -b -k 80 -l  4 -s 2048 mid   > mid.raw
 echo -n "mbox "
-$BINDIR/kapdump -b -k 24 -l 8 -s 1024 mbox  > mbox.raw
+$BINDIR/kapdump -b -k 80 -l 10 -s 1024 mbox  > mbox.raw
 echo -n "offset "
 $BINDIR/kapdump -k 12 -r 8 offset > offset.raw
 echo -n "keyword "

@@ -12,6 +12,11 @@ v0.1d:
 	mmap is used for .append files to allow async writes
 	We preallocate storage for append to prevent wasted writes
 	Threads can span 3 months instead of 1
+	No longer require numeric id tags for lists
+	Mboxs can be given arbitrary strings for tags
+	Automatically detect unconfigured mboxs
+	Load config files more cleanly -- will facilitate config reloading
+	Mailing lists are refered to by name in the UI instead of ID
 
 v0.1c:
 	Added libkap which completely replaces all of libdb3 and flatfile

@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.31 2002-07-19 14:40:34 terpstra Exp $
+/*  $Id: indexer.c,v 1.32 2002-07-21 19:26:08 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -332,8 +332,8 @@ void lu_indexer_prep(void)
 }
 
 void lu_indexer_location(
-	lu_word		list,
-	lu_word		mbox,
+	const char*	list,
+	const char*	mbox,
 	message_id*	offset)
 {
 	char	buf[LU_KEYWORD_LEN+1];
@@ -341,7 +341,7 @@ void lu_indexer_location(
 	int	error;
 	
 	/* Push the mailing list keyword. */
-	snprintf(&buf[0], sizeof(buf), "%s%d", 
+	snprintf(&buf[0], sizeof(buf), "%s%s", 
 		LU_KEYWORD_LIST, list);
 	
 	/*!!! don't blow cache away */
@@ -354,13 +354,13 @@ void lu_indexer_location(
 	my_indexer_push_keyword(&buf[0], 0);
 	
 	/* Push the mail box keyword. */
-	snprintf(&buf[0], sizeof(buf), "%s%d:%d", 
+	snprintf(&buf[0], sizeof(buf), "%s%s:%s", 
 		LU_KEYWORD_MBOX, list, mbox);
 	my_indexer_push_keyword(&buf[0], 0);
 }
 
 void lu_indexer_threading(
-	lu_word		list,
+	const char*	list,
 	message_id	thread,
 	int		is_head)
 {
@@ -374,7 +374,7 @@ void lu_indexer_threading(
 	if (is_head)
 	{
 		/* Push the head keyword */
-		snprintf(&buf[0], sizeof(buf), "%s%d",
+		snprintf(&buf[0], sizeof(buf), "%s%s",
 			LU_KEYWORD_LIST_THREADS, list);
 		my_indexer_push_keyword(&buf[0], 0);
 	}

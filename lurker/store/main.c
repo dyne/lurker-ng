@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.37 2002-07-19 12:24:17 terpstra Exp $
+/*  $Id: main.c,v 1.38 2002-07-21 19:26:08 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -335,9 +335,9 @@ int main(int argc, char** argv)
 	
 	if (detach)
 	{
-		if ((pid = fopen(lu_config_pidfile, "w")) == 0)
+		if ((pid = fopen(lu_config_file->pidfile, "w")) == 0)
 		{
-			perror(lu_config_pidfile);
+			perror(lu_config_file->pidfile);
 			return 1;
 		}
 		

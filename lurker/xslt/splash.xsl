@@ -15,7 +15,7 @@
 
 <xsl:template match="list">
  <xsl:if test="number(messages) > 0">
-  <a href="../mindex/{id}@{offset}.{$ext}">
+  <a href="../mindex/{offset}@{id}.{$ext}">
    <xsl:value-of select="email/@name"/>
   </a>
  </xsl:if>
@@ -191,7 +191,7 @@
  </dt>
  <dd>
   <xsl:if test="number(messages) &gt; 0">
-   [ <a href="../mindex/{id}@{offset}.{$ext}">
+   [ <a href="../mindex/{offset}@{id}.{$ext}">
       <xsl:value-of select="messages"/>
       <xsl:text> </xsl:text>
       <xsl:value-of select="$mess"/>

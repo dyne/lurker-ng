@@ -1,4 +1,4 @@
-/*  $Id: indexer.h,v 1.11 2002-07-11 20:52:08 terpstra Exp $
+/*  $Id: indexer.h,v 1.12 2002-07-21 19:26:08 terpstra Exp $
  *  
  *  indexer.h - Handles indexing a message for keyword searching
  *  
@@ -41,14 +41,14 @@ void lu_indexer_prep(void);
 /** Call this to push all the keywords related to the location of the message
  */
 void lu_indexer_location(
-	lu_word		list,
-	lu_word		mbox,
+	const char*	list,
+	const char*	mbox,
 	message_id*	list_off);
 
 /* Push information about threading wih this method.
  */
 void lu_indexer_threading(
-	lu_word			list,
+	const char*		list,
 	message_id		thread,
 	int			is_head);
 

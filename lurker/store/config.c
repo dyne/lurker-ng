@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.20 2002-07-12 19:02:00 terpstra Exp $
+/*  $Id: config.c,v 1.21 2002-07-21 19:26:08 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -31,6 +31,7 @@
 #include "common.h"
 #include "io.h"
 #include "md5.h"
+#include "avl.h"
 
 #include "config.h"
 
@@ -49,28 +50,12 @@ static const char*	my_config_file;
 
 /*------------------------------------------------ Public global vars */
 
-char*	lu_config_dbdir   = 0;
-char*	lu_config_pidfile = 0;
-char*	lu_config_maildir = 0;
-
-char*	lu_config_list_host	= 0;
-char*	lu_config_admin_name	= 0;
-char*	lu_config_admin_address	= 0;
-
+Lu_Config_File*	lu_config_file    = 0;
 Kap		lu_config_keyword = 0;
 
-Lu_Config_List*	lu_config_list  = 0;
-int		lu_config_lists = 0;
-
-long	lu_config_cache_cutoff	= 0;
-long	lu_config_cache_files	= 0;
-long	lu_config_cache_size	= 0;
-
-time_t	lu_config_cache_search_ttl	= 0;
-time_t	lu_config_cache_message_ttl	= 0;
-time_t	lu_config_cache_index_ttl	= 0;
-
 /*------------------------------------------------ Private helper methods */
+
+#define	LU_INVALID	0xFFFFU
 
 static int my_config_compare_lists(
 	const void* pa, 
@@ -79,10 +64,7 @@ static int my_config_compare_lists(
 	const Lu_Config_List* a = pa;
 	const Lu_Config_List* b = pb;
 	
-	/* not using subtraction b/c it's unsigned */
-	if (a->id < b->id) return -1;
-	if (a->id > b->id) return 1;
-	return 0;
+	return strcmp(a->name, b->name);
 }
 
 static int my_config_compare_mboxs(
@@ -93,48 +75,27 @@ static int my_config_compare_mboxs(
 	const Lu_Config_Mbox* b = pb;
 	
 	/* not using subtraction b/c it's unsigned */
-	if (a->id < b->id) return -1;
-	if (a->id > b->id) return 1;
+	return strcmp(a->name, b->name);
+}
+
+inline int my_config_compare_id(
+	lu_word a,
+	lu_word b)
+{
+	if (a < b) return -1;
+	if (a > b) return 1;
 	return 0;
 }
+
+AVL_DEFINE_INSERT(list, lu_word, LU_INVALID, Lu_Config_List, my_config_compare_id)
+AVL_DEFINE_INSERT(mbox, lu_word, LU_INVALID, Lu_Config_Mbox, my_config_compare_id)
 
 static int my_config_sort_mboxs(
 	Lu_Config_List* list, 
 	const char* cfg)
 {
-	int		ok = 0;
-	Lu_Config_Mbox*	scan;
-	Lu_Config_Mbox*	out;
-	
-	list->mboxs = 0;
-	for (scan = list->mbox_head; scan; scan = scan->next)
-		list->mboxs++;
-	
-	if (list->mboxs == 0)
-	{
-		list->mbox = 0;
-		return 0;
-	}
-	
-	/* Get consolidated memory */
-	list->mbox = malloc(sizeof(Lu_Config_Mbox) * list->mboxs);
-	if (!list->mbox)
-	{
-		fprintf(stderr, _("%s: error: out of memory\n"), cfg);
-		return -1;
-	}
-	
-	/* Move them into place */
-	for (out = list->mbox, scan = list->mbox_head; scan; scan = scan->next, out++)
-		memcpy(out, scan, sizeof(Lu_Config_Mbox));
-	
-	/* Free the excess */
-	while (list->mbox_head)
-	{
-		out = list->mbox_head->next;
-		free (list->mbox_head);
-		list->mbox_head = out;
-	}
+	Lu_Config_Mbox* scan;
+	int ok = 0;
 	
 	/* Now, sort them */
 	qsort(list->mbox, list->mboxs, sizeof(Lu_Config_Mbox), 
@@ -145,11 +106,11 @@ static int my_config_sort_mboxs(
 	{
 		if (scan != list->mbox)
 		{
-			if (scan->id == (scan-1)->id)
+			if (!strcmp(scan->name, (scan-1)->name))
 			{
 				fprintf(stderr, 
-					_("%s: error: duplicated mbox id: %d (%s)\n"), 
-					cfg, scan->id, list->name);
+					_("%s: error: duplicated mbox id: %s (%s)\n"), 
+					cfg, scan->name, list->name);
 				ok = -1;
 			}
 		}
@@ -159,55 +120,33 @@ static int my_config_sort_mboxs(
 }
 
 static int my_config_sort_configuration(
-	Lu_Config_List* top, 
+	Lu_Config_File* file, 
 	const char* cfg)
 {
-	int	ok = 0;
+	Lu_Config_List* scan;
+	int ok = 0;
 	
-	Lu_Config_List*	scan;
-	Lu_Config_List*	out;
-	
-	lu_config_lists = 0;
-	for (scan = top; scan; scan = scan->next)
-	{
-		if (my_config_sort_mboxs(scan, cfg) != 0)
-			ok = -1;
-		
-		lu_config_lists++;
-	}
-	
-	if (lu_config_lists == 0)
+	if (file->lists == 0)
 	{
 		fprintf(stderr, _("%s: error: no lists defined\n"), cfg);
 		return -1;
 	}
 	
-	/* Consolidate them in memory */
-	lu_config_list = malloc(sizeof(Lu_Config_List) * lu_config_lists);
-	if (!lu_config_list)
-	{
-		fprintf(stderr, _("%s: error: out of memory\n"), cfg);
-		return -1;
-	}
-	
-	/* Move them into place */
-	for (out = lu_config_list, scan = top; scan; scan = scan->next, out++)
-		memcpy(out, scan, sizeof(Lu_Config_List));
-	
 	/* Now, sort them */
-	qsort(lu_config_list, lu_config_lists, sizeof(Lu_Config_List), 
+	qsort(file->list, file->lists, sizeof(Lu_Config_List), 
 		&my_config_compare_lists);
 	
 	/* Make sure we have no clones */
-	for (scan = lu_config_list; scan != lu_config_list + lu_config_lists; scan++)
+	for (scan = file->list; scan != file->list + file->lists; scan++)
 	{
-		if (scan != lu_config_list)
+		my_config_sort_mboxs(scan, cfg);
+		if (scan != file->list)
 		{
-			if (scan->id == (scan-1)->id)
+			if (!strcmp(scan->name, (scan-1)->name))
 			{
 				fprintf(stderr, 
-					_("%s: error: duplicated list id: %d\n"), 
-					cfg, scan->id);
+					_("%s: error: duplicated list id: %s\n"), 
+					cfg, scan->name);
 				ok = -1;
 			}
 		}
@@ -217,11 +156,10 @@ static int my_config_sort_configuration(
 }
 
 static char* my_config_find_after(
-	const char* str, 
+	char* str, 
 	const char* cfg, 
 	int lines)
 {
-	char* out;
 	char* k;
 	
 	while (*str)
@@ -249,37 +187,28 @@ static char* my_config_find_after(
 		return 0;
 	}
 	
-	out = strdup(str);
-	if (!out)
-	{
-		fprintf(stderr, _("%s:%d: error: out of memory\n"), cfg, lines);
-		return 0;
-	}
-	
-	if (strlen(out) == 0)
+	if (strlen(str) == 0)
 	{
 		fprintf(stderr, _("%s:%d: error: empty value\n"), cfg, lines);
-		free(out);
 		return 0;
 	}
 	
-	for (k = out + strlen(out) - 1; k != out; k--)
+	for (k = str + strlen(str) - 1; k != str; k--)
 		if (!isspace(*k))
 			break;
 	*++k = 0;
 	
-	if (strlen(out) == 0)
+	if (strlen(str) == 0)
 	{
 		fprintf(stderr, _("%s:%d: error: empty value\n"), cfg, lines);
-		free(out);
 		return 0;
 	}
 	
-	return out;
+	return str;
 }
 
 static long my_config_number_after(
-	const char* str,
+	char* str,
 	const char* cfg,
 	int lines)
 {
@@ -295,26 +224,255 @@ static long my_config_number_after(
 				_("%s:%d: error: invalid value - must be positive integer\n"), 
 				cfg, lines);
 		}
-		free(num);
 	}
 	
 	return out;
 }
 
-static int my_config_open_mboxs(void)
+static int my_config_sync_mbox(Lu_Config_File* file)
+{
+	char		key[80];
+	char		key2[80];
+	unsigned char	buf[sizeof(lu_word) + sizeof(off_t)];
+	int		error, dir;
+	off_t		tmp;
+	ssize_t		len;
+	lu_word		maxid;
+	
+	Lu_Config_List*	list;
+	Lu_Config_Mbox*	mbox;
+	
+	strcpy(key, "");
+	maxid = 0;
+	
+	/* Ok, here follows an ugly routine which will read in the mbox state.
+	 * The database has two types of records:
+	 * 	'list'      -> list id
+	 *	'list:mbox' -> mbox id, mbox offset
+	 * 
+	 * The intention is to walk the database, record the information into
+	 * our config block, note new config file entries, and abort if we
+	 * ever see an mbox that has no configured entry.
+	 * 
+	 * Note: both the in memory data, and disk data are sorted.
+	 */
+	
+	for (list = file->list; list != file->list + file->lists; list++)
+	{
+		dir = -1;
+		
+		/* Find the record which tells us about this list id
+		 */
+		while (dir < 0)
+		{
+			error = kap_btree_read_next(
+				my_config_mbox_db, key, buf, &len);
+			if (error && error != KAP_NOT_FOUND)
+			{
+				fprintf(stderr, _("Database failure mbox.btree: %s\n"),
+					kap_strerror(error));
+				return error;
+			}
+			
+			if (error != KAP_NOT_FOUND)
+				dir = strcmp(key, list->name);
+			else
+				dir = 1;
+			
+			/* Handle the case that there is stuff we have seen
+			 * that is no longer configured. Only complain if an
+			 * mbox went missing.
+			 */
+			if (dir < 0)
+			{	/* skip past a list with no mboxs */
+				if (strchr(key, ':'))
+				{	/* is an mbox */
+					fprintf(stderr, _("Lurker database references an unconfigured mbox: %s\n"),
+						key);
+					return -1;
+				}
+			}
+		}
+		
+		if (dir > 0)
+		{	/* new list */
+			list->key = 0;
+			strcpy(key, list->name); /* reseek to this point */
+		}
+		else if (dir == 0)
+		{	/* This tells us the id of the key */
+			assert (len == sizeof(lu_word));
+	 		kap_decode_offset(&buf[0], &tmp, sizeof(lu_word));
+			list->key = tmp;
+			
+			if (list->key > maxid) maxid = list->key;
+		}
+		
+		/* Start reading mbox configuration */
+		for (mbox = list->mbox; mbox != list->mbox + list->mboxs; mbox++)
+		{
+			error = kap_btree_read_next(
+				my_config_mbox_db, key, buf, &len);
+			if (error && error != KAP_NOT_FOUND)
+			{
+				fprintf(stderr, _("Database failure mbox.btree: %s\n"),
+					kap_strerror(error));
+				return error;
+			}
+			
+			snprintf(&key2[0], sizeof(key2), "%s:%s", 
+				list->name, mbox->name);
+			
+			if (error != KAP_NOT_FOUND)
+				dir = strcmp(key, key2);
+			else
+				dir = 1;
+			
+			if (dir < 0)
+			{
+				fprintf(stderr, _("Lurker database references an unconfigured mbox: %s\n"),
+					&key[0]);
+			}
+			else if (dir > 0)
+			{	/* new mbox */
+				mbox->key = 0;
+				strcpy(key, key2); /* reseek to this point */
+			}
+			else
+			{
+				assert (len == sizeof(buf));
+				
+				kap_decode_offset(&buf[0], &tmp, sizeof(lu_word));
+				mbox->key = tmp;
+				
+				kap_decode_offset(&buf[sizeof(lu_word)], &tmp, sizeof(off_t));
+				mbox->length = tmp;
+			}
+		}
+	}
+	
+	/* Everything we know about is now marked new or configured.
+	 * However, check to see if there are yet more lists with possibly
+	 * unreferenced mboxs
+	 */
+	while (1)
+	{
+		error = kap_btree_read_next(
+			my_config_mbox_db, key, buf, &len);
+		if (error && error != KAP_NOT_FOUND)
+		{
+			fprintf(stderr, _("Database failure mbox.btree: %s\n"),
+				kap_strerror(error));
+			return error;
+		}
+		
+		if (error == KAP_NOT_FOUND) break;
+		
+		/* skip past a list with no mboxs */
+		if (strchr(key, ':'))
+		{	/* is an mbox */
+			fprintf(stderr, _("Lurker database references an unconfigured mbox: %s\n"),
+				key);
+			return -1;
+		}
+	}
+	
+	/* Now, assign ids to all the new things */
+	
+	/** NOTE: We do _not_ write out information about mboxs.
+	 *  This is done so that if they don't import anything, they can
+	 *  be removed from the config file.
+	 *  However, we must still assign them an id at this time.
+	 */
+	
+	for (list = file->list; list != file->list + file->lists; list++)
+	{
+		if (list->key != 0) continue;
+		
+		list->key = ++maxid;
+		kap_encode_offset(&buf[0], list->key, sizeof(lu_word));
+		
+		error = kap_btree_write(
+			my_config_mbox_db, list->name, buf, sizeof(lu_word));
+		
+		if (error)
+		{
+			fprintf(stderr, _("Database failure mbox.btree: %s\n"),
+				kap_strerror(error));
+			return error;
+		}
+	}
+	
+	for (list = file->list; list != file->list + file->lists; list++)
+	{
+		maxid = 0;
+		for (mbox = list->mbox; mbox != list->mbox + list->mboxs; mbox++)
+			if (mbox->key > maxid) maxid = mbox->key;
+		
+		for (mbox = list->mbox; mbox != list->mbox + list->mboxs; mbox++)
+		{
+			if (mbox->key != 0) continue;
+			mbox->key = ++maxid;
+		}
+	}
+	
+	return 0;
+}
+
+static int my_config_build_trees(Lu_Config_File* file)
+{
+	lu_word	list, mbox;
+	int ok = 0;
+	
+	file->list_root = LU_INVALID;
+	
+	for (list = 0; list < file->lists; list++)
+	{
+		file->list_root = my_avl_list_insert(
+			file->list, file->list_root, list);
+			
+		if (file->list_root == LU_INVALID)
+		{
+			fprintf(stderr, _("Duplicate list identifier: %d"),
+				file->list[list].key);
+			ok = -1;
+		}
+		
+		file->list[list].mbox_root = LU_INVALID;
+		for (mbox = 0; mbox < file->list[list].mboxs; mbox++)
+		{
+			file->list[list].mbox_root = my_avl_mbox_insert(
+				file->list[list].mbox,
+				file->list[list].mbox_root,
+				mbox);
+			
+			if (file->list[list].mbox_root == LU_INVALID)
+			{
+				fprintf(stderr, _("Duplicate mbox identifier: %d"),
+					file->list[list].mbox[mbox].key);
+				ok = -1;
+			}
+		}
+	}
+	
+	return ok;
+}
+
+static int my_config_open_mboxs(
+	Lu_Config_File*	file)
 {
 	Lu_Config_List* list;
 	Lu_Config_Mbox* mbox;
 	
 	int ok = 0;
 	
-	if (chdir(lu_config_maildir) != 0)
+	if (chdir(file->maildir) != 0)
 	{
-		perror(lu_config_maildir);
+		perror(file->maildir);
 		return -1;
 	}
 	
-	for (list = lu_config_list; list != lu_config_list + lu_config_lists; list++)
+	for (list = file->list; list != file->list + file->lists; list++)
 	{
 		for (mbox = list->mbox; mbox != list->mbox + list->mboxs; mbox++)
 		{
@@ -334,13 +492,32 @@ static int my_config_open_mboxs(void)
 		}
 	}
 	
+	if (chdir(file->dbdir) != 0)
+	{
+		perror(file->dbdir);
+		return -1;
+	}
+	
 	return ok;
+}
+
+#define STR_LEN(key) \
+if (!strcmp(&keyword[0], key)) \
+{ \
+	tmp = my_config_find_after(&line[0], my_config_file, lines); \
+	file->strings += strlen(tmp) + 1; \
+}
+
+#define NUM_NOOP(key) \
+if (!strcmp(&keyword[0], key)) \
+{ \
+	/* noop */ \
 }
 
 #define PRE_LIST_STR(key, var) \
 if (!strcmp(&keyword[0], key)) \
 { \
-	if (what) \
+	if (list != file->list) \
 	{ \
 		fprintf(stderr, _("%s:%d: error: %s in list scope\n"), \
 			my_config_file, lines, key); \
@@ -348,21 +525,26 @@ if (!strcmp(&keyword[0], key)) \
 		continue; \
 	} \
 	\
-	if (var) \
+	if (file->var) \
 	{ \
 		fprintf(stderr, _("%s:%d: warning: %s reset\n"), \
 			my_config_file, lines, key); \
-		free(var); \
 	} \
 	\
-	var = my_config_find_after(&line[0], my_config_file, lines); \
-	if (!var) ok = -1; \
+	tmp = my_config_find_after(&line[0], my_config_file, lines); \
+	if (tmp) \
+	{ \
+		file->var = string; \
+		strcpy(string, tmp); \
+		string += strlen(tmp) + 1; \
+	} \
+	else ok = -1; \
 }
 
 #define PRE_LIST_NUM(key, var) \
 if (!strcmp(&keyword[0], key)) \
 { \
-	if (what) \
+	if (list != file->list) \
 	{ \
 		fprintf(stderr, _("%s:%d: error: %s in list scope\n"), \
 			my_config_file, lines, key); \
@@ -370,20 +552,20 @@ if (!strcmp(&keyword[0], key)) \
 		continue; \
 	} \
 	\
-	if (var) \
+	if (file->var) \
 	{ \
 		fprintf(stderr, _("%s:%d: warning: %s reset\n"), \
 			my_config_file, lines, key); \
 	} \
 	\
-	var = my_config_number_after(&line[0], my_config_file, lines); \
-	if (!var) ok = -1; \
+	file->var = my_config_number_after(&line[0], my_config_file, lines); \
+	if (!file->var) ok = -1; \
 }
 
 #define AFT_LIST_STR(key, var) \
 if (!strcmp(&keyword[0], key)) \
 { \
-	if (!what) \
+	if (list == file->list) \
 	{ \
 		fprintf(stderr, _("%s:%d: error: %s outside list scope\n"), \
 			my_config_file, lines, key); \
@@ -391,15 +573,20 @@ if (!strcmp(&keyword[0], key)) \
 		continue; \
 	} \
 	\
-	if (what->var) \
+	if ((list-1)->var) \
 	{ \
 		fprintf(stderr, _("%s:%d: warning: %s reset\n"), \
 			my_config_file, lines, key); \
-		free(what->var); \
 	} \
 	\
-	what->var = my_config_find_after(&line[0], my_config_file, lines); \
-	if (!what->var) ok = -1; \
+	tmp = my_config_find_after(&line[0], my_config_file, lines); \
+	if (tmp) \
+	{ \
+		(list-1)->var = string; \
+		strcpy(string, tmp); \
+		string += strlen(tmp) + 1; \
+	} \
+	else ok = -1; \
 }
 
 #define DEF_STR(key, var, val) \
@@ -407,7 +594,7 @@ if (!var) \
 { \
 	fprintf(stderr, _("%s: warning: %s not declared - using: %s\n"), \
 		my_config_file, key, val); \
-	var = strdup(val); \
+	var = val; \
 }
 
 #define DEF_NUM(key, var, val) \
@@ -418,32 +605,55 @@ if (!var) \
 	var = val; \
 }
 
-static int my_config_load_config(void)
+static void my_config_free_config(Lu_Config_File* file)
 {
-	Lu_Config_List** target_list;
-	Lu_Config_Mbox** target_mbox;
-	Lu_Config_List*  what;
-	Lu_Config_List*  top;
+	Lu_Config_Mbox* scan;
+	
+	if (file->mbox)
+	{
+		for (scan =  file->mbox; 
+		     scan != file->mbox + file->mboxs; 
+		     scan++)
+		{
+			if (scan->fd != -1) close(scan->fd);
+		}
+	}
+	
+	if (file->list)   free(file->list);
+	if (file->mbox)   free(file->mbox);
+	if (file->string) free(file->string);
+	free(file);
+}
+
+static Lu_Config_File* my_config_load_config(void)
+{
+	Lu_Config_File* file;
+	Lu_Config_List*	list;
+	Lu_Config_Mbox* mbox;
+	char*		string;
 	
 	int	ok = 0;
 	int	lines = 0;
 	char	line[1000];
 	char	keyword[20];
+	char	id[20];
 	char*	s;
 	char*	tmp;
-	int	i;
 	FILE*	c;
 	
-	top  = 0;
-	what = 0;
-	
-	target_list = &top;
-	target_mbox = 0;
+	file = calloc(1, sizeof(Lu_Config_File));
+	if (!file)
+	{
+		fputs(_("Out of RAM loading config file\n"), stderr);
+		return 0;
+	}
+	/* all zerod */
 	
 	if ((c = fopen(my_config_file, "r")) == 0)
 	{
 		perror(my_config_file);
-		return -1;
+		my_config_free_config(file);
+		return 0;
 	}
 	
 	while (!feof(c))
@@ -468,24 +678,6 @@ static int my_config_load_config(void)
 		
 		if (!strcmp(&keyword[0], "list"))
 		{
-			if (sscanf(&line[0], "%19s %d = ", &keyword[0], &i) != 2)
-			{
-				fprintf(stderr, 
-					_("%s:%d: error: missing numeric tag for list\n"),
-					my_config_file, lines);
-				ok = -1;
-				continue;
-			}
-			
-			if (i < 0 || i >= 0xFFFEUL)
-			{
-				fprintf(stderr, 
-					_("%s:%d: error: id is not within bounds\n"),
-					my_config_file, lines);
-				ok = -1;
-				continue;
-			}
-			
 			tmp = my_config_find_after(&line[0], my_config_file, lines);
 			if (!tmp)
 			{
@@ -493,53 +685,15 @@ static int my_config_load_config(void)
 				continue;
 			}
 			
-			what = *target_list = malloc(sizeof(Lu_Config_List));
-			if (!*target_list)
-			{
-				fprintf(stderr, 
-					_("%s:%d: error: out of memory\n"),
-					my_config_file, lines);
-				free(tmp);
-				ok = -1;
-				continue;
-			}
-			
-			what->name = tmp;
-			what->id   = i;
-			
-			what->address     = 0;
-			what->description = 0;
-			what->mbox_head   = 0;
-			what->next        = 0;
-			what->cache_head  = 0;
-			
-			target_mbox = &what->mbox_head;
-			target_list = &what->next;
+			file->lists++;
+			file->strings += strlen(tmp) + 1;
 		}
 		else if (!strcmp(&keyword[0], "mbox"))
 		{
-			if (!what)
+			if (sscanf(&line[0], "%19s %s = ", &keyword[0], &id[0]) != 2)
 			{
 				fprintf(stderr, 
-					_("%s:%d: error: mbox outside list scope\n"),
-					my_config_file, lines);
-				ok = -1;
-				continue;
-			}
-			
-			if (i < 0 || i >= 0xFFFFUL)
-			{
-				fprintf(stderr, 
-					_("%s:%d: error: id is not within bounds\n"),
-					my_config_file, lines);
-				ok = -1;
-				continue;
-			}
-			
-			if (sscanf(&line[0], "%19s %d = ", &keyword[0], &i) != 2)
-			{
-				fprintf(stderr, 
-					_("%s:%d: error: missing numeric tag for mbox\n"),
+					_("%s:%d: error: missing indentity tag for mbox\n"),
 					my_config_file, lines);
 				ok = -1;
 				continue;
@@ -553,36 +707,151 @@ static int my_config_load_config(void)
 				continue;
 			}
 			
-			*target_mbox = malloc(sizeof(Lu_Config_Mbox));
-			if (!*target_mbox)
+			file->mboxs++;
+			file->strings += strlen(&id[0]) + 1;
+			file->strings += strlen(tmp) + 1;
+		}
+		else STR_LEN ("dbdir")
+		else STR_LEN ("maildir")
+		else STR_LEN ("pidfile")
+		else STR_LEN ("list_host")
+		else STR_LEN ("admin_name")
+		else STR_LEN ("admin_address")
+		else NUM_NOOP("cache_cutoff")
+		else NUM_NOOP("cache_files")
+		else NUM_NOOP("cache_size")
+		else NUM_NOOP("cache_search_ttl")
+		else NUM_NOOP("cache_message_ttl")
+		else NUM_NOOP("cache_index_ttl")
+		else STR_LEN ("description")
+		else STR_LEN ("address")
+	}
+	
+	if (fseek(c, 0, SEEK_SET) != 0)
+	{
+		fprintf(stderr, _("%s:%d: error: can't reseek config file: %s\n"),
+			my_config_file, lines, strerror(errno));
+		my_config_free_config(file);
+		return 0;
+	}
+	
+	lines = 0;
+	list   = file->list   = calloc(file->lists,   sizeof(Lu_Config_List));
+	mbox   = file->mbox   = calloc(file->mboxs,   sizeof(Lu_Config_Mbox));
+	string = file->string = calloc(file->strings, 1);
+	
+	if (!file->list || !file->mbox || !file->string)
+	{
+		fputs(_("%s: out of memory loading config\n"), stderr);
+		my_config_free_config(file);
+		return 0;
+	}
+	
+	for (mbox =  file->mbox;
+	     mbox != file->mbox + file->mboxs;
+	     mbox++)
+	{
+		mbox->fd = -1;
+	}
+	
+	mbox = file->mbox;
+	
+	while (!feof(c))
+	{
+		lines++;
+		if (fgets(&line[0], sizeof(line), c) == 0)
+			break;
+		
+		for (s = &line[0]; *s; s++)
+		{
+			if (*s == '#')
 			{
-				fprintf(stderr, 
-					_("%s:%d: error: out of memory\n"),
-					my_config_file, lines);
-				free(tmp);
+				*s = 0;
+				break;
+			}
+		}
+		
+		if (sscanf(&line[0], "%19s", &keyword[0]) != 1)
+		{
+			continue;
+		}
+		
+		if (!strcmp(&keyword[0], "list"))
+		{
+			tmp = my_config_find_after(&line[0], my_config_file, lines);
+			if (!tmp)
+			{
 				ok = -1;
 				continue;
 			}
 			
-			(*target_mbox)->id   = i;
-			(*target_mbox)->path = tmp;
-			(*target_mbox)->fd   = -1;
-			(*target_mbox)->next = 0;
+			list->name = string;
+			list->mbox = mbox;
+			strcpy(string, tmp);
 			
-			target_mbox = &(*target_mbox)->next;
+			while (*string)
+			{
+				if (*string >= 'A' && *string <= 'Z')
+					*string += 'a' - 'A';
+				string++;
+			}
+			++string;
+			
+			list++;
 		}
-		else PRE_LIST_STR("dbdir",             lu_config_dbdir)
-		else PRE_LIST_STR("maildir",           lu_config_maildir)
-		else PRE_LIST_STR("pidfile",           lu_config_pidfile)
-		else PRE_LIST_STR("list_host",         lu_config_list_host)
-		else PRE_LIST_STR("admin_name",        lu_config_admin_name)
-		else PRE_LIST_STR("admin_address",     lu_config_admin_address)
-		else PRE_LIST_NUM("cache_cutoff",      lu_config_cache_cutoff)
-		else PRE_LIST_NUM("cache_files",       lu_config_cache_files)
-		else PRE_LIST_NUM("cache_size",        lu_config_cache_size)
-		else PRE_LIST_NUM("cache_search_ttl",  lu_config_cache_search_ttl)
-		else PRE_LIST_NUM("cache_message_ttl", lu_config_cache_message_ttl)
-		else PRE_LIST_NUM("cache_index_ttl",   lu_config_cache_index_ttl)
+		else if (!strcmp(&keyword[0], "mbox"))
+		{
+			if (!list)
+			{
+				fprintf(stderr, 
+					_("%s:%d: error: mbox outside list scope\n"),
+					my_config_file, lines);
+				ok = -1;
+				continue;
+			}
+			
+			if (sscanf(&line[0], "%19s %s = ", &keyword[0], &id[0]) != 2)
+			{
+				fprintf(stderr, 
+					_("%s:%d: error: missing id tag for mbox\n"),
+					my_config_file, lines);
+				ok = -1;
+				continue;
+			}
+			
+			tmp = my_config_find_after(
+				&line[0], my_config_file, lines);
+			if (!tmp)
+			{
+				ok = -1;
+				continue;
+			}
+			
+			mbox->name = string;
+			strcpy(string, &id[0]);
+			string += strlen(&id[0]) +1;
+			
+			mbox->path = string;
+			strcpy(string, tmp);
+			string += strlen(tmp) + 1;
+			
+			mbox->fd = -1;
+			
+			mbox++;
+			(list-1)->mboxs++;
+		}
+		else PRE_LIST_STR("dbdir",             dbdir)
+		else PRE_LIST_STR("maildir",           maildir)
+		else PRE_LIST_STR("pidfile",           pidfile)
+		else PRE_LIST_STR("list_host",         list_host)
+		else PRE_LIST_STR("admin_name",        admin_name)
+		else PRE_LIST_STR("admin_address",     admin_address)
+		else PRE_LIST_NUM("cache_cutoff",      cache_cutoff)
+		else PRE_LIST_NUM("cache_files",       cache_files)
+		else PRE_LIST_NUM("cache_size",        cache_size)
+		else PRE_LIST_NUM("cache_search_ttl",  cache_search_ttl)
+		else PRE_LIST_NUM("cache_message_ttl", cache_message_ttl)
+		else PRE_LIST_NUM("cache_index_ttl",   cache_index_ttl)
 		else AFT_LIST_STR("description",       description)
 		else AFT_LIST_STR("address",           address)
 		else
@@ -595,96 +864,57 @@ static int my_config_load_config(void)
 	
 	fclose(c);
 	
-	DEF_STR("dbdir",         lu_config_dbdir,         DBDIR)
-	DEF_STR("maildir",       lu_config_maildir,       lu_config_dbdir)
-	DEF_STR("pidfile",       lu_config_pidfile,       DEFAULT_PID_FILE)
+	assert (string <= file->string + file->strings);
+	assert (mbox   <= file->mbox   + file->mboxs);
+	assert (list   <= file->list   + file->lists);
 	
-	DEF_STR("list_host",     lu_config_list_host,     "somewhere.org")
-	DEF_STR("admin_name",    lu_config_admin_name,    "unconfigured")
-	DEF_STR("admin_address", lu_config_admin_address, "nill@unconfigured.org")
+	DEF_STR("dbdir",         file->dbdir,         DBDIR)
+	DEF_STR("maildir",       file->maildir,       file->dbdir)
+	DEF_STR("pidfile",       file->pidfile,       DEFAULT_PID_FILE)
 	
-	DEF_NUM("cache_cutoff",      lu_config_cache_cutoff,      65536)
-	DEF_NUM("cache_files",       lu_config_cache_files,       4096)
-	DEF_NUM("cache_size",        lu_config_cache_size,        8388608)
-	DEF_NUM("cache_search_ttl",  lu_config_cache_search_ttl,  600)
-	DEF_NUM("cache_message_ttl", lu_config_cache_message_ttl, 600)
-	DEF_NUM("cache_index_ttl",   lu_config_cache_index_ttl,   604800)
+	DEF_STR("list_host",     file->list_host,     "somewhere.org")
+	DEF_STR("admin_name",    file->admin_name,    "unconfigured")
+	DEF_STR("admin_address", file->admin_address, "nill@unconfigured.org")
+	
+	DEF_NUM("cache_cutoff",      file->cache_cutoff,      65536)
+	DEF_NUM("cache_files",       file->cache_files,       4096)
+	DEF_NUM("cache_size",        file->cache_size,        8388608)
+	DEF_NUM("cache_search_ttl",  file->cache_search_ttl,  600)
+	DEF_NUM("cache_message_ttl", file->cache_message_ttl, 600)
+	DEF_NUM("cache_index_ttl",   file->cache_index_ttl,   604800)
 	
 	if (ok != 0)
 	{
-		return ok;
+		my_config_free_config(file);
+		return 0;
 	}
 	
-	if (my_config_sort_configuration(top, my_config_file) != 0)
+	if (my_config_sort_configuration(file, my_config_file) != 0)
 	{
-		return -1;
+		my_config_free_config(file);
+		return 0;
 	}
 	
-	if (my_config_open_mboxs() != 0)
-	{
-		return -1;
-	}
-	
-	return 0;
+	return file;
 }
 
-int my_config_sync_mbox(void)
-{
-	char		key[30];
-	unsigned char	buf[sizeof(off_t)];
-	int		error;
-	ssize_t		len;
-	
-	Lu_Config_List*	list;
-	Lu_Config_Mbox*	mbox;
-	
-	for (list = lu_config_list; list != lu_config_list + lu_config_lists; list++)
-	{
-		for (mbox = list->mbox; mbox != list->mbox + list->mboxs; mbox++)
-		{
-			sprintf(&key[0], "%d:%d", list->id, mbox->id);
-			
-			error = kap_btree_read(
-				my_config_mbox_db,
-				&key[0],
-				&buf[0],
-				&len);
-			
-			if (error && error != KAP_NOT_FOUND)
-			{
-				fprintf(stderr, _("Database failure mbox.btree: %s\n"),
-					kap_strerror(error));
-				return error;
-			}
-			
-			if (error == KAP_NOT_FOUND)
-			{
-				mbox->length = 0;
-			}
-			else
-			{
-				assert (len == sizeof(off_t));
-				kap_decode_offset(&buf[0], &mbox->length, sizeof(off_t));
-			}
-		}
-	}
-	
-	return 0;
-}
 /*------------------------------------------------ Public component methods */
 
 int lu_config_init(const char* cfg)
 {
+	Lu_Config_File* file;
 	my_config_file = cfg;
 	
-	if (my_config_load_config() != 0)
+	if ((file = my_config_load_config()) == 0)
 	{
 		return -1;
 	}
 	
-	if (chdir(lu_config_dbdir) != 0)
+	lu_config_file = file;
+	
+	if (chdir(file->dbdir) != 0)
 	{
-		perror(lu_config_dbdir);
+		perror(file->dbdir);
 		return -1;
 	}
 	
@@ -696,9 +926,9 @@ int lu_config_open(void)
 	int error;
 	
 	if ((error = kap_create(&my_config_mbox_db, KAP_BTREE)) != 0 ||
-	    (error = kap_btree_set_maxkeysize(my_config_mbox_db, 24)) != 0 ||
-	    (error = kap_btree_set_leafsize  (my_config_mbox_db, sizeof(off_t))) != 0 ||
-	    (error = kap_btree_set_sectorsize(my_config_mbox_db, 1024)) != 0)
+	    (error = kap_btree_set_maxkeysize(my_config_mbox_db, 80)) != 0 ||
+	    (error = kap_btree_set_leafsize  (my_config_mbox_db, sizeof(lu_word)+sizeof(off_t))) != 0 ||
+	    (error = kap_btree_set_sectorsize(my_config_mbox_db, 4096)) != 0)
 	{
 		fprintf(stderr, _("Creating a kap database: %s\n"),
 			kap_strerror(error));
@@ -726,10 +956,14 @@ int lu_config_open(void)
 		return -1;
 	}
 	
-	if (my_config_sync_mbox() != 0)
-	{
+	if (my_config_sync_mbox(lu_config_file) != 0)
 		return -1;
-	}
+	
+	if (my_config_build_trees(lu_config_file) != 0)
+		return -1;
+	
+	if (my_config_open_mboxs(lu_config_file) != 0)
+		return -1;
 	
 	return 0;
 }
@@ -785,24 +1019,44 @@ int lu_config_quit(void)
 
 /*------------------------------------------------- Public accessor methods */
 
-Lu_Config_List* lu_config_find_list(
-	lu_word id)
+Lu_Config_List* lu_config_find_listn(
+	Lu_Config_File*	file,
+	const char*	name)
 {
 	Lu_Config_List search;
-	search.id = id;
+	search.name = name;
 	
 	return bsearch(
 		&search, 
-		lu_config_list, lu_config_lists, sizeof(Lu_Config_List), 
+		file->list, file->lists, sizeof(Lu_Config_List), 
 		&my_config_compare_lists);
 }
 
-Lu_Config_Mbox* lu_config_find_mbox(
+Lu_Config_List* lu_config_find_listi(
+	Lu_Config_File*	file, 
+	lu_word		id)
+{
+	int	tmp;
+	lu_word	ptr = file->list_root;
+	
+	while (ptr != LU_INVALID)
+	{
+		tmp = my_config_compare_id(id, file->list[ptr].key);
+		if      (tmp < 0) ptr = file->list[ptr].left;
+		else if (tmp > 0) ptr = file->list[ptr].right;
+		else break;
+	}
+	
+	if (ptr == LU_INVALID) return 0;
+	return &file->list[ptr];
+}
+
+Lu_Config_Mbox* lu_config_find_mboxn(
 	Lu_Config_List* list, 
-	lu_word id)
+	const char* name)
 {
 	Lu_Config_Mbox search;
-	search.id = id;
+	search.name = name;
 	
 	return bsearch(
 		&search, 
@@ -810,23 +1064,43 @@ Lu_Config_Mbox* lu_config_find_mbox(
 		&my_config_compare_mboxs);
 }
 
+Lu_Config_Mbox* lu_config_find_mboxi(
+	Lu_Config_List*	list, 
+	lu_word		id)
+{
+	int	tmp;
+	lu_word	ptr = list->mbox_root;
+	
+	while (ptr != LU_INVALID)
+	{
+		tmp = my_config_compare_id(id, list->mbox[ptr].key);
+		if      (tmp < 0) ptr = list->mbox[ptr].left;
+		else if (tmp > 0) ptr = list->mbox[ptr].right;
+		else break;
+	}
+	
+	if (ptr == LU_INVALID) return 0;
+	return &list->mbox[ptr];
+}
+
 int lu_config_move_mbox_end(
 	Lu_Config_Mbox* mbox, 
 	Lu_Config_List* list, 
 	off_t now)
 {
-	char		key[30];
-	unsigned char	buf[sizeof(off_t)];
+	char		key[80];
+	unsigned char	buf[sizeof(lu_word) + sizeof(off_t)];
 	int		error;
 	
-	sprintf(&key[0], "%d:%d", list->id, mbox->id);
-	kap_encode_offset(&buf[0], now, sizeof(off_t));
+	snprintf(&key[0], sizeof(key), "%s:%s", list->name, mbox->name);
+	kap_encode_offset(&buf[0],               mbox->key, sizeof(lu_word));
+	kap_encode_offset(&buf[sizeof(lu_word)], now,       sizeof(off_t));
 	
 	error = kap_btree_rewrite(
 		my_config_mbox_db,
 		&key[0],
 		&buf[0],
-		sizeof(off_t));
+		sizeof(lu_word)+sizeof(off_t));
 	
 	if (error != 0)
 	{
