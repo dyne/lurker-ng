@@ -1,8 +1,8 @@
 /* Copyright: Public domain
  * Produced with reg2c for wesley@terpstra.ca
- * cvs id tag: $Id: url.c,v 1.3 2002-07-11 22:36:48 terpstra Exp $
+ * cvs id tag: $Id: url.c,v 1.4 2002-07-12 17:54:20 terpstra Exp $
  *
- * Regular expression: (((([a-zA-Z]+)://((([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])\.)*([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])))|(www\.((([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])\.)*([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9]))\.([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])))(((/([A-Za-z%~0-9:.,_\-]*[A-Za-z0-9]))+))?(\#([A-Za-z%~0-9:.,_\-]*[A-Za-z0-9]))?(\?([A-Za-z%~0-9.,_=/:;+\&\-]+))?)
+ * Regular expression: (((([a-zA-Z]+)://((([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])\.)*([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])))|(www\.((([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])\.)*([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9]))\.([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])))(((/([A-Za-z%~0-9:.,_\-]*[A-Za-z0-9]|#|\.\.))+))?(\#([A-Za-z%~0-9:.,_\-]*[A-Za-z0-9]|#|\.\.))?(\?([A-Za-z%~0-9.,_=/:;+\&\-]+))?)
  */
 
 const unsigned char* url_scan_pass1(const unsigned char* s, const unsigned char* e)
@@ -169,7 +169,7 @@ url_scan_pass114:
 const unsigned char* url_scan_pass2(const unsigned char* s, const unsigned char* e)
 {
 	const unsigned char* last = 0;
-	goto url_scan_pass27;
+	goto url_scan_pass210;
 	
 url_scan_pass20:
 	return last;
@@ -180,16 +180,16 @@ url_scan_pass21:
 	{
 	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
 		goto url_scan_pass21;
-	case 46: 
-		goto url_scan_pass214;
-	case 45: 
-		goto url_scan_pass215;
 	case 47: 
-		goto url_scan_pass221;
+		goto url_scan_pass23;
 	case 35: 
-		goto url_scan_pass223;
+		goto url_scan_pass27;
+	case 46: 
+		goto url_scan_pass217;
+	case 45: 
+		goto url_scan_pass218;
 	case 63: 
-		goto url_scan_pass224;
+		goto url_scan_pass230;
 	default: goto url_scan_pass20;
 	}
 url_scan_pass23:
@@ -197,68 +197,72 @@ url_scan_pass23:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
+	case 47: 
 		goto url_scan_pass23;
-	case 37: case 44: case 45: case 46: case 47: case 58: case 95: case 126: 
-		goto url_scan_pass221;
+	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
+		goto url_scan_pass24;
 	case 35: 
-		goto url_scan_pass223;
-	case 63: 
+		goto url_scan_pass27;
+	case 37: case 44: case 45: case 58: case 95: case 126: 
 		goto url_scan_pass224;
+	case 46: 
+		goto url_scan_pass225;
+	case 63: 
+		goto url_scan_pass230;
 	default: goto url_scan_pass20;
 	}
-url_scan_pass25:
+url_scan_pass24:
+	last = s;
+	if (s == e) return last;
+	switch (*s++)
+	{
+	case 47: 
+		goto url_scan_pass23;
+	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
+		goto url_scan_pass24;
+	case 35: 
+		goto url_scan_pass27;
+	case 37: case 44: case 45: case 46: case 58: case 95: case 126: 
+		goto url_scan_pass224;
+	case 63: 
+		goto url_scan_pass230;
+	default: goto url_scan_pass20;
+	}
+url_scan_pass27:
 	last = s;
 	if (s == e) return last;
 	switch (*s++)
 	{
 	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
-		goto url_scan_pass25;
-	case 37: case 44: case 45: case 46: case 58: case 95: case 126: 
-		goto url_scan_pass223;
+		goto url_scan_pass28;
+	case 37: case 44: case 45: case 58: case 95: case 126: 
+		goto url_scan_pass228;
+	case 46: 
+		goto url_scan_pass229;
 	case 63: 
-		goto url_scan_pass224;
+		goto url_scan_pass230;
 	default: goto url_scan_pass20;
 	}
-url_scan_pass26:
+url_scan_pass28:
+	last = s;
+	if (s == e) return last;
+	switch (*s++)
+	{
+	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
+		goto url_scan_pass28;
+	case 37: case 44: case 45: case 46: case 58: case 95: case 126: 
+		goto url_scan_pass228;
+	case 63: 
+		goto url_scan_pass230;
+	default: goto url_scan_pass20;
+	}
+url_scan_pass29:
 	last = s;
 	if (s == e) return last;
 	switch (*s++)
 	{
 	case 37: case 38: case 43: case 44: case 45: case 46: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 58: case 59: case 61: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 95: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: case 126: 
-		goto url_scan_pass26;
-	default: goto url_scan_pass20;
-	}
-url_scan_pass27:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 120: case 121: case 122: 
-		goto url_scan_pass28;
-	case 119: 
 		goto url_scan_pass29;
-	default: goto url_scan_pass20;
-	}
-url_scan_pass28:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
-		goto url_scan_pass28;
-	case 58: 
-		goto url_scan_pass212;
-	default: goto url_scan_pass20;
-	}
-url_scan_pass29:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 120: case 121: case 122: 
-		goto url_scan_pass28;
-	case 119: 
-		goto url_scan_pass210;
-	case 58: 
-		goto url_scan_pass212;
 	default: goto url_scan_pass20;
 	}
 url_scan_pass210:
@@ -266,10 +270,8 @@ url_scan_pass210:
 	switch (*s++)
 	{
 	case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 120: case 121: case 122: 
-		goto url_scan_pass28;
-	case 119: 
 		goto url_scan_pass211;
-	case 58: 
+	case 119: 
 		goto url_scan_pass212;
 	default: goto url_scan_pass20;
 	}
@@ -278,65 +280,79 @@ url_scan_pass211:
 	switch (*s++)
 	{
 	case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
-		goto url_scan_pass28;
+		goto url_scan_pass211;
 	case 58: 
-		goto url_scan_pass212;
-	case 46: 
-		goto url_scan_pass216;
+		goto url_scan_pass215;
 	default: goto url_scan_pass20;
 	}
 url_scan_pass212:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case 47: 
+	case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 120: case 121: case 122: 
+		goto url_scan_pass211;
+	case 119: 
 		goto url_scan_pass213;
+	case 58: 
+		goto url_scan_pass215;
 	default: goto url_scan_pass20;
 	}
 url_scan_pass213:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case 47: 
+	case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 120: case 121: case 122: 
+		goto url_scan_pass211;
+	case 119: 
 		goto url_scan_pass214;
+	case 58: 
+		goto url_scan_pass215;
 	default: goto url_scan_pass20;
 	}
 url_scan_pass214:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
-		goto url_scan_pass21;
+	case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
+		goto url_scan_pass211;
+	case 58: 
+		goto url_scan_pass215;
+	case 46: 
+		goto url_scan_pass219;
 	default: goto url_scan_pass20;
 	}
 url_scan_pass215:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
-		goto url_scan_pass21;
-	case 45: 
-		goto url_scan_pass215;
+	case 47: 
+		goto url_scan_pass216;
 	default: goto url_scan_pass20;
 	}
 url_scan_pass216:
 	if (s == e) return last;
 	switch (*s++)
 	{
+	case 47: 
+		goto url_scan_pass217;
+	default: goto url_scan_pass20;
+	}
+url_scan_pass217:
+	if (s == e) return last;
+	switch (*s++)
+	{
 	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
-		goto url_scan_pass218;
+		goto url_scan_pass21;
 	default: goto url_scan_pass20;
 	}
 url_scan_pass218:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case 46: 
-		goto url_scan_pass214;
 	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
-		goto url_scan_pass218;
+		goto url_scan_pass21;
 	case 45: 
-		goto url_scan_pass219;
+		goto url_scan_pass218;
 	default: goto url_scan_pass20;
 	}
 url_scan_pass219:
@@ -344,37 +360,77 @@ url_scan_pass219:
 	switch (*s++)
 	{
 	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
-		goto url_scan_pass218;
-	case 45: 
-		goto url_scan_pass219;
+		goto url_scan_pass221;
 	default: goto url_scan_pass20;
 	}
 url_scan_pass221:
 	if (s == e) return last;
 	switch (*s++)
 	{
+	case 46: 
+		goto url_scan_pass217;
 	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
-		goto url_scan_pass23;
-	case 37: case 44: case 45: case 46: case 58: case 95: case 126: 
 		goto url_scan_pass221;
+	case 45: 
+		goto url_scan_pass222;
 	default: goto url_scan_pass20;
 	}
-url_scan_pass223:
+url_scan_pass222:
 	if (s == e) return last;
 	switch (*s++)
 	{
 	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
-		goto url_scan_pass25;
-	case 37: case 44: case 45: case 46: case 58: case 95: case 126: 
-		goto url_scan_pass223;
+		goto url_scan_pass221;
+	case 45: 
+		goto url_scan_pass222;
 	default: goto url_scan_pass20;
 	}
 url_scan_pass224:
 	if (s == e) return last;
 	switch (*s++)
 	{
+	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
+		goto url_scan_pass24;
+	case 37: case 44: case 45: case 46: case 58: case 95: case 126: 
+		goto url_scan_pass224;
+	default: goto url_scan_pass20;
+	}
+url_scan_pass225:
+	if (s == e) return last;
+	switch (*s++)
+	{
+	case 46: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
+		goto url_scan_pass24;
+	case 37: case 44: case 45: case 58: case 95: case 126: 
+		goto url_scan_pass224;
+	default: goto url_scan_pass20;
+	}
+url_scan_pass228:
+	if (s == e) return last;
+	switch (*s++)
+	{
+	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
+		goto url_scan_pass28;
+	case 37: case 44: case 45: case 46: case 58: case 95: case 126: 
+		goto url_scan_pass228;
+	default: goto url_scan_pass20;
+	}
+url_scan_pass229:
+	if (s == e) return last;
+	switch (*s++)
+	{
+	case 46: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
+		goto url_scan_pass28;
+	case 37: case 44: case 45: case 58: case 95: case 126: 
+		goto url_scan_pass228;
+	default: goto url_scan_pass20;
+	}
+url_scan_pass230:
+	if (s == e) return last;
+	switch (*s++)
+	{
 	case 37: case 38: case 43: case 44: case 45: case 46: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 58: case 59: case 61: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 95: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: case 126: 
-		goto url_scan_pass26;
+		goto url_scan_pass29;
 	default: goto url_scan_pass20;
 	}
 }
