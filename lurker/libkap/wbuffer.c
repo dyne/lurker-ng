@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.3 2002-07-09 22:42:45 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.4 2002-07-11 16:23:16 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -203,7 +203,7 @@ struct Kap_Wbuffer
 	size_t		count_down;
 	size_t		next_sync;
 	
-	size_t		record_size; /* taken from append */
+	ssize_t		record_size; /* taken from append */
 };
 
 #ifdef PROFILE
