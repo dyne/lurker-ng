@@ -1,5 +1,7 @@
 Ideas:
 	errordocument failthrough configable
+	maybe use: message/YYYYMM,email,20chars of subject,goop
+		-- human recognizable
 
 Unfulfilled requirements:
 	Better packing of tree
