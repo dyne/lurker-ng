@@ -73,20 +73,15 @@ dbdir = @dbdir@
 install_sh = @install_sh@
 wwwdir = @wwwdir@
 
-fmtdir = @wwwdir@/fmt
+imgsdir = @wwwdir@/imgs
 
-fmt_DATA = \
-	render.xsl render-html.xsl common.xsl \
-	error.xsl splash.xsl message.xsl mindex.xsl search.xsl thread.xsl \
-	english.xsl \
-	basic.css
-
-subdir = xslt
+imgs_DATA = a.png b.png c.png d.png e.png f.png g.png h.png
+subdir = imgs
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/system.h
 CONFIG_CLEAN_FILES =
 DIST_SOURCES =
-DATA = $(fmt_DATA)
+DATA = $(imgs_DATA)
 
 DIST_COMMON = Makefile.am Makefile.in
 all: all-am
@@ -94,28 +89,28 @@ all: all-am
 .SUFFIXES:
 $(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  xslt/Makefile
+	  $(AUTOMAKE) --gnu  imgs/Makefile
 Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && \
 	  CONFIG_HEADERS= CONFIG_LINKS= \
 	  CONFIG_FILES=$(subdir)/$@ $(SHELL) ./config.status
 uninstall-info-am:
-install-fmtDATA: $(fmt_DATA)
+install-imgsDATA: $(imgs_DATA)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(fmtdir)
-	@list='$(fmt_DATA)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(imgsdir)
+	@list='$(imgs_DATA)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(fmtdir)/$$f"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(fmtdir)/$$f; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(imgsdir)/$$f"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(imgsdir)/$$f; \
 	done
 
-uninstall-fmtDATA:
+uninstall-imgsDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(fmt_DATA)'; for p in $$list; do \
+	@list='$(imgs_DATA)'; for p in $$list; do \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(fmtdir)/$$f"; \
-	  rm -f $(DESTDIR)$(fmtdir)/$$f; \
+	  echo " rm -f $(DESTDIR)$(imgsdir)/$$f"; \
+	  rm -f $(DESTDIR)$(imgsdir)/$$f; \
 	done
 tags: TAGS
 TAGS:
@@ -147,7 +142,7 @@ check: check-am
 all-am: Makefile $(DATA)
 
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(fmtdir)
+	$(mkinstalldirs) $(DESTDIR)$(imgsdir)
 
 install: install-am
 install-exec: install-exec-am
@@ -188,7 +183,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-data-local install-fmtDATA
+install-data-am: install-data-local install-imgsDATA
 
 install-exec-am:
 
@@ -206,27 +201,25 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-generic
 
-uninstall-am: uninstall-fmtDATA uninstall-info-am uninstall-local
+uninstall-am: uninstall-imgsDATA uninstall-info-am uninstall-local
 
 .PHONY: all all-am check check-am clean clean-generic distclean \
 	distclean-generic distdir dvi dvi-am info info-am install \
 	install-am install-data install-data-am install-data-local \
-	install-exec install-exec-am install-fmtDATA install-info \
+	install-exec install-exec-am install-imgsDATA install-info \
 	install-info-am install-man install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	uninstall uninstall-am uninstall-fmtDATA uninstall-info-am \
+	uninstall uninstall-am uninstall-imgsDATA uninstall-info-am \
 	uninstall-local
 
 
 install-data-local:
-	$(mkinstalldirs) ${fmtdir}
-	ln -fs basic.css   ${fmtdir}/default.css
-	ln -fs english.xsl ${fmtdir}/lang.xsl
+	$(mkinstalldirs) ${imgsdir}
+	ln -fs ../imgs   ${wwwdir}/i
 
 uninstall-local:
-	rm -f ${fmtdir}/default.css
-	rm -f ${fmtdir}/lang.xsl
+	rm -f ${wwwdir}/i
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

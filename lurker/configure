@@ -8139,7 +8139,7 @@ _ACEOF
 
 
 
-ac_config_files="$ac_config_files Makefile common/Makefile store/Makefile render/Makefile xslt/Makefile lurker.conf"
+ac_config_files="$ac_config_files Makefile common/Makefile store/Makefile render/Makefile xslt/Makefile imgs/Makefile lurker.conf"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -8627,6 +8627,7 @@ do
   "store/Makefile" ) CONFIG_FILES="$CONFIG_FILES store/Makefile" ;;
   "render/Makefile" ) CONFIG_FILES="$CONFIG_FILES render/Makefile" ;;
   "xslt/Makefile" ) CONFIG_FILES="$CONFIG_FILES xslt/Makefile" ;;
+  "imgs/Makefile" ) CONFIG_FILES="$CONFIG_FILES imgs/Makefile" ;;
   "lurker.conf" ) CONFIG_FILES="$CONFIG_FILES lurker.conf" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
   "common/system.h" ) CONFIG_HEADERS="$CONFIG_HEADERS common/system.h" ;;

@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.15 2002-05-09 06:28:58 terpstra Exp $
+/*  $Id: summary.c,v 1.16 2002-05-09 23:11:55 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -96,7 +96,6 @@ static int my_summary_squishy_subject(
 	char* target)
 {
 	/* Alright, we want to drop 're:', 'fwd:', etc.
-	 * Also, we don't want to be confused by fluctuations in whitespace.
 	 * Anything after a 'was:' should be cut.
 	 * Changes in case shouldn't be confusing.
 	 * Punctuation is disregarded.

@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.42 2002-05-09 06:28:58 terpstra Exp $
+/*  $Id: service.c,v 1.43 2002-05-09 23:11:55 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -44,6 +44,15 @@
 
 #define LU_PROTO_INDEX	20
 
+#define	EMPTY_CELL	"<a/>"
+#define BAR_NS		"<b/>"
+#define BAR_EW		"<c/>"
+#define CORNER_SW	"<d/>"
+#define TEE_WSE		"<e/>"
+#define MESSAGE_END	"<f/>"
+#define MESSAGE_DOWN	"<g/>"
+#define MESSAGE_BOTH	"<h/>"
+
 /*------------------------------------------------- Private types */
 
 /* We need one of these for each connection - a global will cause much
@@ -66,6 +75,23 @@ typedef struct My_Service_Handle_T
 	int		bufsize;
 	char* 		buffer;
 }* My_Service_Handle;
+
+typedef struct My_Service_Reply_Tree_T
+{
+	message_id		id;
+	Lu_Summary_Message	summary;
+	
+	int			borked_link;
+	int			replies;
+	int			replyee;
+	int			replyor_first;
+	int			replyor_next;
+	
+	int			depth;
+	int			consumed;
+	int			column;
+	int			draw_next;
+} My_Service_Reply_Tree;
 
 /*------------------------------------------------- Private globals */
 
@@ -748,6 +774,30 @@ static int my_service_list(
 	return 0;
 }
 
+static int my_service_summary_body(
+	My_Service_Handle	h,
+	message_id		id,
+	Lu_Summary_Message*	msg)
+{
+	if (my_service_buffer_write(h, "   <id>")                 != 0) return -1;
+	if (my_service_write_int(h, id)                           != 0) return -1;
+	if (my_service_buffer_write(h, "</id>\n   <timestamp>")   != 0) return -1;
+	if (my_service_write_int(h, msg->timestamp)               != 0) return -1;
+	if (my_service_buffer_write(h, "</timestamp>\n   <time>") != 0) return -1;
+	if (my_service_write_time(h, msg->timestamp)              != 0) return -1;
+	if (my_service_buffer_write(h, "</time>\n   <thread>")    != 0) return -1;
+	if (my_service_write_int(h, msg->thread)                  != 0) return -1;
+	if (my_service_buffer_write(h, "</thread>\n")             != 0) return -1;
+	
+	if (lu_summary_write_variable(
+		(int(*)(void*, const char*))        &my_service_buffer_write,
+		(int(*)(void*, const char*, size_t))&my_service_write_strl,
+		h,
+		msg->flat_offset) != 0) return -1;
+	
+	return 0;
+}
+
 static int my_service_summary(
 	My_Service_Handle	h,
 	message_id		id)
@@ -756,22 +806,8 @@ static int my_service_summary(
 	
 	msg = lu_summary_read_msummary(id);
 	
-	if (my_service_buffer_write(h, "  <summary>\n   <id>")    != 0) return -1;
-	if (my_service_write_int(h, id)                           != 0) return -1;
-	if (my_service_buffer_write(h, "</id>\n   <timestamp>")   != 0) return -1;
-	if (my_service_write_int(h, msg.timestamp)                != 0) return -1;
-	if (my_service_buffer_write(h, "</timestamp>\n   <time>") != 0) return -1;
-	if (my_service_write_time(h, msg.timestamp)               != 0) return -1;
-	if (my_service_buffer_write(h, "</time>\n   <thread>")    != 0) return -1;
-	if (my_service_write_int(h, msg.thread)                   != 0) return -1;
-	if (my_service_buffer_write(h, "</thread>\n")             != 0) return -1;
-	
-	if (lu_summary_write_variable(
-		(int(*)(void*, const char*))        &my_service_buffer_write,
-		(int(*)(void*, const char*, size_t))&my_service_write_strl,
-		h,
-		msg.flat_offset) != 0) return -1;
-	
+	if (my_service_buffer_write(h, "  <summary>\n")  != 0) return -1;
+	if (my_service_summary_body(h, id, &msg)         != 0) return -1;
 	if (my_service_buffer_write(h, "  </summary>\n") != 0) return -1;
 	
 	return 0;
@@ -1410,13 +1446,171 @@ my_service_mindex_error0:
 	return -1;
 }
 
+static int my_service_tree_compare(const void* a, const void* b)
+{
+	message_id key = *(message_id*)a;
+	message_id val = ((const My_Service_Reply_Tree*)b)->id;
+	
+	if (key < val)	return -1;
+	if (key > val)	return 1;
+	return 0;
+}
+
+static void my_service_init_tree(
+	My_Service_Reply_Tree* tree, 
+	int tree_size)
+{
+	My_Service_Reply_Tree*	bs;
+	int	i, p;
+	int*	w;
+	
+	for (i = 0; i < tree_size; i++)
+	{
+		tree[i].borked_link = (tree[i].summary.in_reply_to == lu_common_minvalid);
+		tree[i].replyee = i-1;
+		if (!tree[i].borked_link)
+		{
+			bs = bsearch(
+				&tree[i].summary.in_reply_to,
+				tree,
+				tree_size,
+				sizeof(My_Service_Reply_Tree),
+				&my_service_tree_compare);
+			
+			if (bs)
+				tree[i].replyee = (bs - tree);
+			
+			if (tree[i].replyee >= i)
+				tree[i].replyee = i-1;
+		}
+		
+		if (tree[i].replyee >= 0) tree[tree[i].replyee].replies++;
+		
+		tree[i].replies       = 0;
+		tree[i].replyor_first = -1;
+		tree[i].replyor_next  = -1;
+		tree[i].depth         = i;
+		tree[i].consumed      = 0;
+	}
+	
+	for (i = tree_size-1; i > 0; i--)
+	{
+		p = tree[i].replyee;
+		
+		if (tree[p].depth < tree[i].depth)
+			tree[p].depth = tree[i].depth;
+		
+		/* Insertion sort is not that fast...
+		 * But compared to the drawing algo, this n^2 is negligable.
+		 */
+		w = &tree[p].replyor_first;
+		while (*w != -1 && tree[*w].depth > tree[i].depth)
+			w = &tree[*w].replyor_next;
+		
+		tree[i].replyor_next = *w;
+		*w                   = i;
+	}
+}
+
+/* return what we use up to */
+static int my_service_draw_tree(
+	My_Service_Reply_Tree* tree, 
+	int n, int col)
+{
+	int i;
+	int c;
+	
+	/* Find the column we can use. */
+	for (i = n; i <= tree[n].depth; i++)
+		if (col < tree[i].consumed)
+			col = tree[i].consumed;
+	
+	tree[n].column = col;
+	for (c = tree[n].replyor_first; c != -1; c = tree[c].replyor_next)
+	{
+		col = my_service_draw_tree(tree, c, col); 
+		for (i = n; i <= c; i++)
+			tree[i].consumed = col;
+	}
+	
+	return tree[n].column + 1;
+}
+
+static void my_service_draw_row(
+	My_Service_Handle	h,
+	My_Service_Reply_Tree*	tree, 
+	int* head, 
+	int i)
+{
+	int	col, p;
+	int*	w;
+
+#ifdef DEBUG
+	printf("\nOffset: %d", tree[i].column);
+#endif
+	
+	col = 0;
+	w = head;
+	while (1)
+	{
+		for (; col < tree[*w].column; col++)
+			my_service_buffer_write(h, EMPTY_CELL);
+		col++;
+		
+		if (*w == i) break;
+		my_service_buffer_write(h, BAR_NS);
+		w = &tree[*w].draw_next;
+	}
+	
+	switch (tree[i].replies)
+	{
+	case 0:  my_service_buffer_write(h, MESSAGE_END);  break;
+	case 1:  my_service_buffer_write(h, MESSAGE_DOWN); break;
+	default: my_service_buffer_write(h, MESSAGE_BOTH); break;
+	}
+	
+	/* Cut ourselves out of the list and graft on our
+	 * children. While we're at it, draw the links.
+	 */
+	for (p = tree[i].replyor_first; p != -1; p = tree[p].replyor_next)
+	{
+		*w = p;
+		w = &tree[p].draw_next;
+		
+		if (col > tree[p].column) continue;
+		
+		for (; col < tree[p].column; col++)
+			my_service_buffer_write(h, BAR_EW);
+		col++;
+		if (tree[p].replyor_next == -1)
+			my_service_buffer_write(h, CORNER_SW);
+		else
+			my_service_buffer_write(h, TEE_WSE);
+	}
+	*w = tree[i].draw_next;
+	
+	/* Continue drawing the other children */
+	for (p = *w; p != -1; p = tree[p].draw_next)
+	{
+		for (; col < tree[p].column; col++)
+			my_service_buffer_write(h, EMPTY_CELL);
+		col++;
+		my_service_buffer_write(h, BAR_NS);
+	}
+}
+
 static int my_service_thread(
 	My_Service_Handle h, 
 	const char* request,
 	const char* ext)
 {
-	char*			eptr;
+	My_Service_Reply_Tree*	tree;
+	int			tree_size;
+	int			draw_head;
+	int			i;
 	message_id		id;
+	char			key[20];
+	Lu_Breader_Handle	b;
 	
 	if (strcmp(ext, "xml") && strcmp(ext, "html"))
 	{
@@ -1428,38 +1622,109 @@ static int my_service_thread(
 		goto my_service_thread_error0;
 	}
 	
-	id = strtoul(request, &eptr, 0);
-	if (eptr == request || (*eptr && !isspace(*eptr)))
-	{	/* There was nothing valid, or it did not end in whitespace
-		 * or a null.
-		 */
+	if (sscanf(request, "%d", &id) != 1)
+	{	/* They did something funny. */
 		my_service_error(h,
 			"Malformed request",
-			"Lurkerd received a request for a non-numeric thread",
+			"Lurkerd received an improperly formatted thread request",
 			request);
+		
 		goto my_service_thread_error0;
 	}
 	
-	/*!!! Load reply linkages */
-	/*!!! Invoke drawing algorithm */
+	snprintf(&key[0], sizeof(key), "%s%d", LU_KEYWORD_THREAD, id);
+	b = lu_breader_new(&key[0]);
+	if (b == 0)
+	{
+		my_service_error(h,
+			"Internal Server Error",
+			"Lurkerd failed to open a breader for thread",
+			request);
+		
+		goto my_service_thread_error0;
+	}
+	
+	if (lu_breader_records(b) == 0)
+	{
+		my_service_error(h,
+			"Thread Not Found",
+			"Lurkerd received a request for a non-existant thread",
+			request);
+		
+		goto my_service_thread_error1;
+	}
+	
+	tree_size = lu_breader_records(b);
+	tree = malloc(tree_size * sizeof(My_Service_Reply_Tree));
+	if (!tree)
+	{
+		my_service_error(h,
+			"Out of Memory",
+			"Lurkerd ran out of memory processing this thread",
+			request);
+		
+		goto my_service_thread_error1;
+	}
+	
+	for (i = 0; i < tree_size; i++)
+	{
+		if (lu_breader_read(b, i, 1, &tree[i].id) != 0)
+		{
+			my_service_error(h,
+				"Internal Server Error",
+				"Lurkerd was unable to read a breader",
+				request);
+		
+			goto my_service_thread_error2;
+		}
+		
+		tree[i].summary = lu_summary_read_msummary(tree[i].id);
+		if (tree[i].summary.timestamp == 0)
+		{
+			my_service_error(h,
+				"Internal Server Error",
+				"Lurkerd was unable to read a summary record",
+				request);
+		
+			goto my_service_thread_error2;
+		}
+	}
+	
+	my_service_init_tree(tree, tree_size);
+	my_service_draw_tree(tree, 0, 0);
 	
 	if (my_service_buffer_init(h, "text/xml\n", 1, 
 			lu_config_cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
-		goto my_service_thread_error1;
+		goto my_service_thread_error2;
 	
-	if (my_service_xml_head(h)                        != 0) goto my_service_thread_error1;
-	if (my_service_buffer_write(h, "<thread>\n <id>") != 0) goto my_service_thread_error1;
-	if (my_service_write_int(h, id)                   != 0) goto my_service_thread_error1;
-	if (my_service_buffer_write(h, "</id>\n")         != 0) goto my_service_thread_error1;
+	if (my_service_xml_head(h)                        != 0) goto my_service_thread_error2;
+	if (my_service_buffer_write(h, "<thread>\n <id>") != 0) goto my_service_thread_error2;
+	if (my_service_write_int(h, id)                   != 0) goto my_service_thread_error2;
+	if (my_service_buffer_write(h, "</id>\n")         != 0) goto my_service_thread_error2;
+	if (my_service_server(h)                          != 0) goto my_service_thread_error2;
 	
-	/*!!! render contents */
+	draw_head = 0;
+	tree[0].draw_next = -1;
 	
-	if (my_service_buffer_write(h, "</thread>\n") != 0) goto my_service_thread_error1;
+	for (i = 0; i < tree_size; i++)
+	{
+		my_service_buffer_write(h, " <summary>\n") ;
+		my_service_summary_body(h, tree[i].id, &tree[i].summary);
+		my_service_buffer_write(h, "   <draw>") ;
+		my_service_draw_row(h, tree, &draw_head, i);
+		my_service_buffer_write(h, "</draw>\n </summary>\n") ;
+	}
 	
+	if (my_service_buffer_write(h, "</thread>\n") != 0) goto my_service_thread_error2;
+	
+	free(tree);
+	lu_breader_free(b);
 	return 0;
 	
+my_service_thread_error2:
+	free(tree);
 my_service_thread_error1:
-	/* noop */	
+	lu_breader_free(b);
 my_service_thread_error0:
 	return -1;
 }

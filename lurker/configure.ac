@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.18 2002-05-04 03:53:09 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.19 2002-05-09 23:11:55 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -100,4 +100,4 @@ AC_DEFINE_DIR(SYSCONFDIR,    "${sysconfdir}",    [Where do we find our configura
 AC_DEFINE_DIR(LOCALSTATEDIR, "${localstatedir}", [Where do we keep our pid?])
 AC_DEFINE_DIR(DBDIR,         "${dbdir}",         [Where do we put our database files?])
 
-AC_OUTPUT(Makefile common/Makefile store/Makefile render/Makefile xslt/Makefile lurker.conf)
+AC_OUTPUT(Makefile common/Makefile store/Makefile render/Makefile xslt/Makefile imgs/Makefile lurker.conf)
