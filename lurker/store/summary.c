@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.5 2002-02-10 20:47:42 terpstra Exp $
+/*  $Id: summary.c,v 1.6 2002-02-10 21:57:39 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -27,6 +27,7 @@
 
 #include "common.h"
 #include "io.h"
+#include "prefix.h"
 
 #include "config.h"
 #include "breader.h"
@@ -610,6 +611,33 @@ static int my_summary_find_thread(
 	
 	/* New thread for this record */
 	*out = lu_common_minvalid;
+	return 0;
+}
+
+static int my_summary_reply_link(
+	message_id src, 
+	message_id dest)
+{
+	off_t			offset = src;
+	Lu_Summary_Message	sum = lu_summary_read_msummary(src);
+	
+	if (sum.timestamp == 0)
+	{
+		return -1;
+	}
+	
+	sum.in_reply_to = dest;
+	
+	offset *= sizeof(Lu_Summary_Message);
+	if (lseek(my_summary_message_fd, offset, SEEK_SET) != offset ||
+	    write(my_summary_message_fd, &sum, sizeof(Lu_Summary_Message)) !=
+	    	sizeof(Lu_Summary_Message))
+	{
+		syslog(LOG_WARNING, 
+			"Could not store in-reply-to link: %d -> %d\n",
+			src, dest);
+	}
+	
 	return 0;
 }
 
@@ -1230,6 +1258,87 @@ int lu_summary_reply_to_resolution(
 	 * reply-to. Then we so a query to see if it exists. If it does,
 	 * we update our reply-to summary informationn.
 	 */
+	 
+	 char			key[LU_KEYWORD_LEN+1];
+	 message_id		buf[1024];
+	 message_id		count, ind, get;
+	 int			i;
+	 Lu_Breader_Handle	h;
+	 
+	 if (msg_id)
+	 { 	/* Does anything already imported reply to us? */
+	 	snprintf(&key[0], sizeof(key), "%s%s",
+	 		LU_KEYWORD_REPLY_TO,
+	 		lu_common_cleanup_id(msg_id));
+	 	
+	 	h = lu_breader_new(&key[0]);
+	 	if (h != 0)
+	 	{
+	 		count = lu_breader_records(h);
+	 		ind = 0;
+	 		
+	 		while (count)
+	 		{
+	 			get = count;
+	 			if (get > sizeof(buf)/sizeof(message_id))
+	 				get = sizeof(buf)/sizeof(message_id);
+	 			
+	 			if (lu_breader_read(h, ind, get, &buf[0]) != 0)
+	 			{
+	 				lu_breader_free(h);
+	 				return -1;
+	 			}
+	 			
+	 			for (i = 0; i < get; i++)
+	 				my_summary_reply_link(buf[i], id);
+	 			
+	 			ind   += get;
+	 			count -= get;
+	 		}
+	 		
+	 		lu_breader_free(h);
+	 	}
+	 }
+	 
+	 if (reply_to_msg_id)
+	 {	/* Do we reply to anything? */
+	 	snprintf(&key[0], sizeof(key), "%s%s",
+	 		LU_KEYWORD_MESSAGE_ID,
+	 		lu_common_cleanup_id(reply_to_msg_id));
+	 	
+	 	h = lu_breader_new(&key[0]);
+	 	if (h != 0)
+	 	{
+	 		count = lu_breader_records(h);
+	 		ind = 0;
+	 		
+	 		while (count)
+	 		{
+	 			get = count;
+	 			if (get > sizeof(buf)/sizeof(message_id))
+	 				get = sizeof(buf)/sizeof(message_id);
+	 			
+	 			if (lu_breader_read(h, ind, get, &buf[0]) != 0)
+	 			{
+	 				lu_breader_free(h);
+	 				return -1;
+	 			}
+	 			
+	 			for (i = 0; i < get; i++)
+	 				my_summary_reply_link(id, buf[i]);
+	 			
+	 			ind   += get;
+	 			count -= get;
+	 		}
+	 		
+	 		lu_breader_free(h);
+	 	}
+	 }
+	 
+	 /*!!! If we have the same squishy subject as the target, then
+	  * all threads with that squishy subject and ourselves should
+	  * be merged. Same for stuff targetting us.
+	  */
 	 
 	 return -1;
 }

@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.7 2002-02-10 20:38:38 terpstra Exp $
+/*  $Id: mbox.c,v 1.8 2002-02-10 21:57:39 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -207,6 +207,7 @@ static void my_mbox_process_mbox(
 			return;
 		}
 		
+		/*!!! Unwind the indexer pushes if reply_to fails */
 		lu_summary_reply_to_resolution(
 			id,
 			m->env->message_id,
