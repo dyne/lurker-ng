@@ -19,10 +19,10 @@ Convenience goals:
 
 Libraries used:
 	We wish to keep this to a minimum, right now we use:
+		libst
 		libdb3
 		libxslt1
-		libpopt
-		libc
+		libc-client
 
 Portability:
 	At present, only linux is supported. However, the code should be

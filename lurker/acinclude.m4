@@ -23,21 +23,24 @@ AC_DEFUN(XSLT_CHECK, [
      echo "*** The xslt-config script could not be found. Make sure it is"
      echo "*** in your path, or set the XSLT_CONFIG environment variable"
      echo "*** to the full path to xslt-config."
+     AC_MSG_ERROR(Need xslt to compile)
   else
-     AC_MSG_CHECKING($1_CFLAGS)
-     $1_CFLAGS=`$XSLT_CONFIG --cflags || echo no`
-     AC_MSG_RESULT($$1_CFLAGS)
+     AC_MSG_CHECKING(for libxslt)
+     xslt_CFLAGS=`$XSLT_CONFIG --cflags || echo no`
      if test "x$$1_CFLAGS" = "xno"; then
        AC_MSG_ERROR(Need xslt to compile)
      fi
      
-     AC_MSG_CHECKING($1_LIBS)
-     $1_LIBS=`$XSLT_CONFIG --libs || echo no`
-     AC_MSG_RESULT($$1_LIBS)
+     xslt_LIBS=`$XSLT_CONFIG --libs || echo no`
      if test "x$$1_LIBS" = "xno"; then
        AC_MSG_ERROR(Need xslt to compile)
      fi
-
+     
+     AC_MSG_RESULT(have it)
+     
+     $1_CFLAGS="$$1_CFLAGS $xslt_CFLAGS"
+     $1_LIBS="$$1_LIBS $xslt_LIBS"
+     
      AC_SUBST($1_CFLAGS)
      AC_SUBST($1_LIBS)
   fi

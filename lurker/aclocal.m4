@@ -36,21 +36,24 @@ AC_DEFUN(XSLT_CHECK, [
      echo "*** The xslt-config script could not be found. Make sure it is"
      echo "*** in your path, or set the XSLT_CONFIG environment variable"
      echo "*** to the full path to xslt-config."
+     AC_MSG_ERROR(Need xslt to compile)
   else
-     AC_MSG_CHECKING($1_CFLAGS)
-     $1_CFLAGS=`$XSLT_CONFIG --cflags || echo no`
-     AC_MSG_RESULT($$1_CFLAGS)
+     AC_MSG_CHECKING(for libxslt)
+     xslt_CFLAGS=`$XSLT_CONFIG --cflags || echo no`
      if test "x$$1_CFLAGS" = "xno"; then
        AC_MSG_ERROR(Need xslt to compile)
      fi
      
-     AC_MSG_CHECKING($1_LIBS)
-     $1_LIBS=`$XSLT_CONFIG --libs || echo no`
-     AC_MSG_RESULT($$1_LIBS)
+     xslt_LIBS=`$XSLT_CONFIG --libs || echo no`
      if test "x$$1_LIBS" = "xno"; then
        AC_MSG_ERROR(Need xslt to compile)
      fi
-
+     
+     AC_MSG_RESULT(have it)
+     
+     $1_CFLAGS="$$1_CFLAGS $xslt_CFLAGS"
+     $1_LIBS="$$1_LIBS $xslt_LIBS"
+     
      AC_SUBST($1_CFLAGS)
      AC_SUBST($1_LIBS)
   fi
@@ -761,4 +764,61 @@ case "x$am_cv_prog_cc_stdc" in
   *) CC="$CC $am_cv_prog_cc_stdc" ;;
 esac
 ])
+
+
+dnl PKG_CHECK_MODULES(GSTUFF, gtk+-2.0 >= 1.3 glib = 1.3.4, action-if, action-not)
+dnl defines GSTUFF_LIBS, GSTUFF_CFLAGS, see pkg-config man page
+dnl also defines GSTUFF_PKG_ERRORS on error
+AC_DEFUN(PKG_CHECK_MODULES, [
+  succeeded=no
+
+  if test -z "$PKG_CONFIG"; then
+    AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+  fi
+
+  if test "$PKG_CONFIG" = "no" ; then
+     echo "*** The pkg-config script could not be found. Make sure it is"
+     echo "*** in your path, or set the PKG_CONFIG environment variable"
+     echo "*** to the full path to pkg-config."
+     echo "*** Or see http://www.freedesktop.org/software/pkgconfig to get pkg-config."
+  else
+     if ! $PKG_CONFIG --atleast-pkgconfig-version 0.7.0; then
+        echo "*** Your version of pkg-config is too old. You need version 0.7.0 or newer."
+        echo "*** See http://www.freedesktop.org/software/pkgconfig"
+     else
+        AC_MSG_CHECKING(for $2)
+
+        if $PKG_CONFIG --exists "$2" ; then
+            AC_MSG_RESULT(yes)
+            succeeded=yes
+
+            AC_MSG_CHECKING($1_CFLAGS)
+            $1_CFLAGS=`$PKG_CONFIG --cflags "$2"`
+            AC_MSG_RESULT($$1_CFLAGS)
+
+            AC_MSG_CHECKING($1_LIBS)
+            $1_LIBS=`$PKG_CONFIG --libs "$2"`
+            AC_MSG_RESULT($$1_LIBS)
+        else
+            $1_CFLAGS=""
+            $1_LIBS=""
+            ## If we have a custom action on failure, don't print errors, but 
+            ## do set a variable so people can do so.
+            $1_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "$2"`
+            ifelse([$4], ,echo $$1_PKG_ERRORS,)
+        fi
+
+        AC_SUBST($1_CFLAGS)
+        AC_SUBST($1_LIBS)
+     fi
+  fi
+
+  if test $succeeded = yes; then
+     ifelse([$3], , :, [$3])
+  else
+     ifelse([$4], , AC_MSG_ERROR([Library requirements ($2) not met; consider adjusting the PKG_CONFIG_PATH environment variable if your libraries are in a nonstandard prefix so pkg-config can find them.]), [$4])
+  fi
+])
+
+
 
