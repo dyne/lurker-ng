@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.8 2002-07-09 22:42:45 terpstra Exp $
+/*  $Id: kap.c,v 1.9 2002-07-11 16:14:49 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -339,7 +339,6 @@ int kap_kopen(Kap k, KRecord* kr, const char* key)
 	
 	if (k->wbuffer)
 	{
-		int out;
 		out = kap_wbuffer_flush(k, key);
 		if (out) return out;
 	}
@@ -380,10 +379,10 @@ int kap_kwrite(Kap k, KRecord* kr, const char* key,
 	if (out) return out;
 	if (kr->records != records)
 	{
-		unsigned char buf[256];
-		size_t len = kap_encode_krecord(&buf[0], kr);
+		unsigned char krb[256];
+		size_t len = kap_encode_krecord(&krb[0], kr);
 		
-		out = kap_btree_write(k, key, &buf[0], len);
+		out = kap_btree_write(k, key, &krb[0], len);
 	}
 	
 	return out;
