@@ -260,12 +260,12 @@
     if (thisItem.style.background)
     {
      old = thisItem.style.background; 
-     thisItem.style.background="5555ff"; 
+     thisItem.style.background="CCAACC"; 
     }
     else
     {
      old = thisItem.style.backgroundColor;
-     thisItem.style.backgroundColor="5555ff";
+     thisItem.style.backgroundColor="CCAACC";
     }
    }
   //</xsl:comment>
