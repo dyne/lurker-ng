@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.1 2002-07-04 18:32:38 terpstra Exp $
+/*  $Id: append.c,v 1.2 2002-07-08 15:15:32 terpstra Exp $
  *  
  * append.c - Implementation of the append access methods.
  *  
@@ -199,7 +199,7 @@ static off_t allocate_cell(Kap k, int jump)
 		return 0;
 	
 	/* Write a whole whack of zeros to the file */
-	memset(&buf[0], 9, sizeof(buf));
+	memset(&buf[0], 0, sizeof(buf));
 	
 	remain = amt;
 	while (remain > sizeof(buf))
@@ -227,7 +227,8 @@ static off_t allocate_cell(Kap k, int jump)
 	kap_encode_offset(&out[0], eof, sizeof(off_t));
 	if (kap_write_full(k->append->fd, &out[0], sizeof(off_t)) != 0)
 		return 0;
-	
+		
+	k->append->eof = eof;
 	return where;
 }
 
@@ -306,8 +307,15 @@ int kap_append_write(Kap k, KRecord* kr,
 	if (!k->append) return KAP_NO_APPEND;
 	if (k->append->fd == -1) return KAP_NOT_OPEN;
 	
+	/* We assume below that this is >= 1 */
+	if (len == 0) return 0;
+	
 	recs = offset_to_jump(off+len-1); /* we need this cell */
-	for (i = offset_to_jump(kr->records-1)+1; i <= recs; i++)
+	
+	if (kr->records == 0)	i = 0;
+	else			i = offset_to_jump(kr->records-1)+1;
+	
+	for (; i <= recs; i++)
 	{	/* for each cell we don't have */
 		kr->jumps[i] = allocate_cell(k, i);
 		if (kr->jumps[i] == 0)
