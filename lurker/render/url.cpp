@@ -1,8 +1,8 @@
 /* Copyright: Public domain
- * Produced with reg2c for (null)
- * cvs id tag: $Id: url.cpp,v 1.2 2003-04-21 18:26:21 terpstra Exp $
+ * Produced with reg2c for wesley@terpstra.ca
+ * cvs id tag: $Id: url.cpp,v 1.3 2003-04-28 19:09:52 terpstra Exp $
  *
- * Regular expression: ((((([a-zA-Z]-?)*[a-zA-Z])://((([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])\.)*([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])))|(www\.((([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])\.)*([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9]))\.([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])))(:([0-9]+))?(((/([A-Za-z%~0-9:.,_\-]*[A-Za-z0-9]|#|\.\.))+))?(\#([A-Za-z%~0-9:.,_\-]*[A-Za-z0-9]|#|\.\.))?(\?([A-Za-z%~0-9.,_=/:;+\&\-]+))?)
+ * Regular expression: ((((([a-zA-Z]-?)*[a-zA-Z])://((([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])\.)*([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])))|(www\.((([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])\.)*([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9]))\.([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])))(:([0-9]+))?(((/([A-Za-z@!%~0-9:.,_\-]*[A-Za-z0-9]|#|\.\.))+))?(\#([A-Za-z@!%~0-9:.,_\-]*[A-Za-z0-9]|#|\.\.))?(\?([A-Za-z%~0-9.,_=/:;+\&\-]+))?)
  */
 
 const unsigned char* url_scan_pass1(const unsigned char* s, const unsigned char* e)
@@ -222,7 +222,7 @@ url_scan_pass24:
 		goto url_scan_pass25;
 	case 35: 
 		goto url_scan_pass28;
-	case 37: case 44: case 45: case 58: case 95: case 126: 
+	case 33: case 37: case 44: case 45: case 58: case 64: case 95: case 126: 
 		goto url_scan_pass227;
 	case 46: 
 		goto url_scan_pass228;
@@ -241,7 +241,7 @@ url_scan_pass25:
 		goto url_scan_pass25;
 	case 35: 
 		goto url_scan_pass28;
-	case 37: case 44: case 45: case 46: case 58: case 95: case 126: 
+	case 33: case 37: case 44: case 45: case 46: case 58: case 64: case 95: case 126: 
 		goto url_scan_pass227;
 	case 63: 
 		goto url_scan_pass233;
@@ -254,7 +254,7 @@ url_scan_pass28:
 	{
 	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
 		goto url_scan_pass29;
-	case 37: case 44: case 45: case 58: case 95: case 126: 
+	case 33: case 37: case 44: case 45: case 58: case 64: case 95: case 126: 
 		goto url_scan_pass231;
 	case 46: 
 		goto url_scan_pass232;
@@ -269,7 +269,7 @@ url_scan_pass29:
 	{
 	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
 		goto url_scan_pass29;
-	case 37: case 44: case 45: case 46: case 58: case 95: case 126: 
+	case 33: case 37: case 44: case 45: case 46: case 58: case 64: case 95: case 126: 
 		goto url_scan_pass231;
 	case 63: 
 		goto url_scan_pass233;
@@ -434,7 +434,7 @@ url_scan_pass227:
 	{
 	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
 		goto url_scan_pass25;
-	case 37: case 44: case 45: case 46: case 58: case 95: case 126: 
+	case 33: case 37: case 44: case 45: case 46: case 58: case 64: case 95: case 126: 
 		goto url_scan_pass227;
 	default: goto url_scan_pass20;
 	}
@@ -444,7 +444,7 @@ url_scan_pass228:
 	{
 	case 46: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
 		goto url_scan_pass25;
-	case 37: case 44: case 45: case 58: case 95: case 126: 
+	case 33: case 37: case 44: case 45: case 58: case 64: case 95: case 126: 
 		goto url_scan_pass227;
 	default: goto url_scan_pass20;
 	}
@@ -454,7 +454,7 @@ url_scan_pass231:
 	{
 	case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
 		goto url_scan_pass29;
-	case 37: case 44: case 45: case 46: case 58: case 95: case 126: 
+	case 33: case 37: case 44: case 45: case 46: case 58: case 64: case 95: case 126: 
 		goto url_scan_pass231;
 	default: goto url_scan_pass20;
 	}
@@ -464,7 +464,7 @@ url_scan_pass232:
 	{
 	case 46: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 65: case 66: case 67: case 68: case 69: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79: case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89: case 90: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107: case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 122: 
 		goto url_scan_pass29;
-	case 37: case 44: case 45: case 58: case 95: case 126: 
+	case 33: case 37: case 44: case 45: case 58: case 64: case 95: case 126: 
 		goto url_scan_pass231;
 	default: goto url_scan_pass20;
 	}
