@@ -4,7 +4,7 @@ Non-functional requirements:
 	Ability to handle up to 4 billion messages
 	Fast search times: < 0.001s even at capacity
 	Fast rendering: < 0.001s even at capacity
-	Use the web server without cgi/mods for most pages
+	Pages should be created and cached in all cases
 
 Target feature set:
 	File attachment support
@@ -20,7 +20,7 @@ Convenience goals:
 Libraries used:
 	We wish to keep this to a minimum, right now we use:
 		libdb3
-		libst
+		libxslt1
 		libpopt
 		libc
 
