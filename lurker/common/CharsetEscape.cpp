@@ -1,4 +1,4 @@
-/*  $Id: CharsetEscape.cpp,v 1.3 2003-04-24 12:50:41 terpstra Exp $
+/*  $Id: CharsetEscape.cpp,v 1.4 2003-04-25 23:31:43 terpstra Exp $
  *  
  *  CharsetEscape.h - A stream manipulator-like thing for charset conversion
  *  
@@ -169,5 +169,11 @@ string decode_header(
 	}
 	
 	code.write(out, str.c_str() + b, str.length() - b);
+	
+#if __GNUC__ == 2
+	string done(out.str(), out.rdbuf()->pcount());
+	return done;
+#else
 	return out.str();
+#endif
 }
