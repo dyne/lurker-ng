@@ -1,4 +1,4 @@
-/*  $Id: prune.cpp,v 1.1 2003-05-10 19:28:09 terpstra Exp $
+/*  $Id: prune.cpp,v 1.2 2003-05-12 00:55:24 terpstra Exp $
  *  
  *  prune.cpp - Prune obsolete / stale cache files
  *  
@@ -29,7 +29,19 @@
 #include <Config.h>
 #include <esort.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/file.h>
+
 #include <unistd.h>
+#include <fcntl.h>
+#include <utime.h>
+
+#include <cstring>
+#include <cerrno>
+#include <ctime>
+
+#include "PTable.h"
 
 void help(const char* name)
 {
@@ -85,6 +97,120 @@ int main(int argc, char** argv)
 	if (cfg.load(config) != 0)
 	{
 		cerr << cfg.getError() << flush;
+		return 1;
+	}
+	
+	struct stat cbuf, dbuf;
+	if (stat(config, &cbuf) < 0)
+	{
+		cerr << "stat()ing " << config << ": " << strerror(errno) << endl;
+		return 1;
+	}
+	
+	string docfile = string(docroot) + "/lurker.docroot";
+	int fd = open(docfile.c_str(), O_RDWR | O_CREAT, 0666);
+	if (fd == -1)
+	{
+		cerr << "open()ing " << docfile << ": " << strerror(errno) << endl;
+		return 1;
+	}
+	
+	if (fstat(fd, &dbuf) < 0)
+	{
+		cerr << "stat()ing " << docfile << ": " << strerror(errno) << endl;
+		return 1;
+	}
+	
+	enum LockState { GOT, FAIL, USED } state = GOT;
+	
+#ifdef	LOCK_EX
+	if (flock(fd, LOCK_EX|LOCK_NB) != 0)
+	{
+		if (errno == EWOULDBLOCK)
+			state = USED;
+		else	state = FAIL;
+	}
+#else
+#ifdef F_SETLK
+	struct flock lock;
+	memset(&lock, 0, sizeof(lock));
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_SET;
+	if (fcntl(fd, F_SETLK, &lock) != 0)
+	{
+		if (errno == ACCES || errno == EAGAIN)
+			state = USED;
+		else	state = FAIL;
+	}
+#endif
+#endif
+	
+	if (state == USED)
+	{
+		if (verbose) cout << "Already pruning this docroot" << endl;
+		return 0;
+	}
+	
+	if (state == FAIL)
+	{
+		cerr << "Locking " << docfile << " failed: " << strerror(errno) << endl;
+		return 1;
+	}
+	
+	std::auto_ptr<ESort::Reader> db(ESort::Reader::open(cfg.dbdir + "/db"));
+	if (!db.get())
+	{
+		cerr << "Opening database: " << strerror(errno) << endl;
+		return 1;
+	}
+	
+	time_t beginfix = time(0);
+	
+	if (chdir(docroot) != 0)
+	{
+		cerr << "chdir: " << docroot << ": " << strerror(errno) << endl;
+		return 1;
+	}
+	
+	PTable ptable(db.get(), cbuf.st_mtime, dbuf.st_mtime, verbose);
+	string ok;
+	
+	if ((ok = ptable.pull()) != "")
+	{
+		cerr << "pull: " << ok << endl;
+		return 1;
+	}
+	
+	if ((ok = ptable.prep()) != "")
+	{
+		cerr << "prep: " << ok << endl;
+		return 1;
+	}
+	
+	if ((ok = ptable.load()) != "")
+	{
+		cerr << "load: " << ok << endl;
+		return 1;
+	}
+	
+	if ((ok = ptable.calc()) != "")
+	{
+		cerr << "calc: " << ok << endl;
+		return 1;
+	}
+	
+	if ((ok = ptable.kill()) != "")
+	{
+		cerr << "kill: " << ok << endl;
+		return 1;
+	}
+	
+	// set the mtime stamp to beginfix
+	struct utimbuf touch;
+	touch.actime = touch.modtime = beginfix;
+	if (utime("lurker.docroot", &touch) < 0)
+	{
+		cerr << "touching " << docfile << ": " << strerror(errno) << endl;
 		return 1;
 	}
 	

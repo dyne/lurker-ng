@@ -4,6 +4,7 @@ SubDirHdrs $(TOP) common ;
 
 Main lurker-prune :
 	prune.cpp
+	PTable.cpp
 	;
 
 LinkLibraries lurker-prune : libesort libcommon ;
