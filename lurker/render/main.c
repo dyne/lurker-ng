@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.13 2002-05-03 19:34:59 terpstra Exp $
+/*  $Id: main.c,v 1.14 2002-05-03 19:47:15 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -208,7 +208,6 @@ int main(int argc, char* argv[])
 	}
 	mod++;
 	
-	*qs++ = 0;
 	/* Decode the query string */
 	for (w = r = qs; *r; )
 	{
