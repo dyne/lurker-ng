@@ -49,7 +49,7 @@ AC_DEFUN(XSLT_CHECK, [
 dnl Since db3 comes with no real way to determine its location,
 dnl we'll make an attempt at finding it ourselves.  (This is
 dnl especially lame since some linkers don't look in the proper
-dnl places, a la FreeBSD.  Not to mention the library seems to
+dnl places, e.g. FreeBSD.  Not to mention the library seems to
 dnl be called variously `db3' and `db-3.')
 AC_DEFUN(DB3_CHECK, [
   AC_MSG_CHECKING(for the db3 library)
