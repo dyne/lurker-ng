@@ -15,8 +15,9 @@ img.selected { background-color:#BBF; }
 
 .listtable { border:2px solid black }
 
+html { font-family:Arial, sans-serif }
 th { text-align:left; font-weight:bold; font-family:Times New Roman, serif }
-table { text-align:left; vertical-align:top; padding:2px 8px; font-family:Arial, sans-serif }
+table { text-align:left; vertical-align:top; padding:2px 8px;  }
 
 tr.row1 { background-color:#DDD; text-align:left; vertical-align:top; padding:0px 0px; font-family:Arial, sans-serif }
 tr.row2 { background-color:#EEE; text-align:left; vertical-align:top; padding:0px 0px; font-family:Arial, sans-serif }

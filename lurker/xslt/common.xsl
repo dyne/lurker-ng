@@ -96,6 +96,7 @@
    <xsl:attribute name="class">row2</xsl:attribute>
   </xsl:if>
   <td nowrap="1">
+   <a name="{id}"/>
    <xsl:if test="draw"><xsl:apply-templates select="draw"/></xsl:if>
    <xsl:if test="not(draw)">
     <a href="../message/{mid}.{$ext}"><xsl:value-of select="subject"/></a>
