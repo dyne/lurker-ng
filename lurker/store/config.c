@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.21 2002-07-21 19:26:08 terpstra Exp $
+/*  $Id: config.c,v 1.22 2002-07-21 20:29:27 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -332,6 +332,7 @@ static int my_config_sync_mbox(Lu_Config_File* file)
 			{
 				fprintf(stderr, _("Lurker database references an unconfigured mbox: %s\n"),
 					&key[0]);
+				return -1;
 			}
 			else if (dir > 0)
 			{	/* new mbox */
@@ -433,7 +434,7 @@ static int my_config_build_trees(Lu_Config_File* file)
 			
 		if (file->list_root == LU_INVALID)
 		{
-			fprintf(stderr, _("Duplicate list identifier: %d"),
+			fprintf(stderr, _("Duplicate list identifier: %d\n"),
 				file->list[list].key);
 			ok = -1;
 		}
@@ -448,7 +449,7 @@ static int my_config_build_trees(Lu_Config_File* file)
 			
 			if (file->list[list].mbox_root == LU_INVALID)
 			{
-				fprintf(stderr, _("Duplicate mbox identifier: %d"),
+				fprintf(stderr, _("Duplicate mbox identifier: %d\n"),
 					file->list[list].mbox[mbox].key);
 				ok = -1;
 			}
