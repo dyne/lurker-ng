@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.1.1.1 2002-01-21 00:03:07 terpstra Exp $
+/*  $Id: main.c,v 1.2 2002-01-21 07:27:35 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -76,6 +76,9 @@ int main(int argc, const char* argv[])
 	if (lu_open_db() != 0)
 		return 1;
 	
+	if (lu_sync_mbox() != 0)
+		return 1;
+	
 	if (detach)
 	{
 		if ((pid = fopen(lu_pidfile, "w")) == 0)
@@ -108,6 +111,10 @@ int main(int argc, const char* argv[])
 		close(1);
 		close(2);
 	}
+	
+	/* Here is the main loop, we watch the files for more input and the 
+	 * domain socket for incoming requests.
+	 */
 	
 	return 0;
 }

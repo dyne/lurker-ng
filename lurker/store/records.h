@@ -1,4 +1,4 @@
-/*  $Id: records.h,v 1.2 2002-01-21 02:35:26 terpstra Exp $
+/*  $Id: records.h,v 1.3 2002-01-21 07:27:35 terpstra Exp $
  *  
  *  records.h - the format of the databases
  *  
@@ -127,4 +127,19 @@ typedef struct ThreadMergeKey_T
 	 */
 } ThreadMergeKey;
 
-extern int lu_open_db();
+/** Tracking how much of an mbox is eaten - mbox.btree
+ */
+typedef struct MboxEatKey_T
+{
+	lu_word		list;
+	lu_word		mbox;
+} MboxEatKey;
+
+typedef struct MboxEatValue_T
+{
+	lu_addr		offset;
+	
+	/* The first 1k of the mbox to detect them being switched on us */
+	char		front[1024];
+} MboxEatValue;
+

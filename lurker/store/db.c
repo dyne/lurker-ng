@@ -1,4 +1,4 @@
-/*  $Id: db.c,v 1.3 2002-01-21 02:35:26 terpstra Exp $
+/*  $Id: db.c,v 1.4 2002-01-21 07:27:35 terpstra Exp $
  *  
  *  db.c - manage the databases
  *  
@@ -28,6 +28,10 @@
 
 #include <string.h>
 
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
+
 #ifdef HAVE_SYSLOG_H
 #include <syslog.h>
 #else
@@ -39,6 +43,7 @@ int	lu_variable_fd;
 DB_ENV*	lu_db_env;
 DB*	lu_thread_db;
 DB*	lu_merge_db;
+DB*	lu_mbox_db;
 
 static message_id	lu_msg_free;
 static time_t		lu_last_time;
@@ -232,6 +237,8 @@ message_id lu_import_message(
 	 * 
 	 * Finally, we push keywords for the list, author, and subject.
 	 */
+	 
+	 return 0;
 }
 
 int lu_reply_to_resolution(
@@ -250,6 +257,8 @@ int lu_reply_to_resolution(
 	 * reply-to. Then we so a query to see if it exists. If it does,
 	 * we update our reply-to summary informationn.
 	 */
+	 
+	 return -1;
 }
 
 int lu_open_db()
@@ -318,6 +327,13 @@ int lu_open_db()
 		return -1;
 	}
 	
+	if ((error = db_create(&lu_mbox_db, lu_db_env, 0)) != 0)
+	{
+		fprintf(stderr, "Creating a db3 database: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+	
 	if ((error = lu_thread_db->open(lu_thread_db, "thread.hash", 0,
 		DB_HASH, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
 	{
@@ -326,10 +342,18 @@ int lu_open_db()
 		return -1;
 	}
 	
-	if ((error = lu_thread_db->open(lu_merge_db, "merge.btree", 0,
+	if ((error = lu_merge_db->open(lu_merge_db, "merge.btree", 0,
 		DB_BTREE, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
 	{
 		fprintf(stderr, "Opening db3 database: merge.btree: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+	
+	if ((error = lu_mbox_db->open(lu_mbox_db, "mbox.btree", 0,
+		DB_BTREE, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
+	{
+		fprintf(stderr, "Opening db3 database: mbox.btree: %s\n",
 			db_strerror(error));
 		return -1;
 	}
@@ -356,6 +380,90 @@ int lu_open_db()
 		{
 			perror("Grabbing last summary block");
 			return -1;
+		}
+	}
+	
+	return 0;
+}
+
+int lu_sync_mbox()
+{
+	List*	list;
+	Mbox*	mbox;
+	
+	MboxEatKey	key;
+	MboxEatValue	val;
+	
+	DBT	dkey;
+	DBT	dval;
+	
+	int error;
+	int got;
+	
+	char buf[1024];
+	off_t offset;
+	
+	for (list = lu_list; list != lu_list + lu_lists; list++)
+	{
+		for (mbox = list->mbox; mbox != list->mbox + list->mboxs; mbox++)
+		{
+			memset(&dkey, 0, sizeof(DBT));
+			memset(&dval, 0, sizeof(DBT));
+			
+			dkey.data = &key;
+			dkey.size = sizeof(key);
+			
+			dval.data = &val;
+			dval.size = sizeof(val);
+			
+			key.list = list->id;
+			key.mbox = mbox->id;
+			
+			error = lu_mbox_db->get(lu_mbox_db, 0, &dkey, &dval, 0);
+			
+			got = read(mbox->fd, &buf[0], sizeof(buf));
+			if (got < 0)
+			{
+				fprintf(stderr, "Couldn't read mbox %s: %s\n",
+					mbox->path, strerror(errno));
+				return -1;
+			}
+			
+			if (error == 0)
+			{
+				if (got < sizeof(buf) && got < val.offset)
+				{	/* They switched mboxs on us -- too small */
+					fprintf(stderr, "Mbox id does not match prior version %s\n",
+						mbox->path);
+					return -1;
+				}
+				
+				if (val.offset < got)
+				{	/* Don't compare more than there was */
+					got = val.offset;
+				}
+				
+				if (memcmp(&val.front[0], &buf[0], got))
+				{	/* The contents are changed */
+					fprintf(stderr, "Mbox id does not match prior version %s\n",
+						mbox->path);
+					return -1;
+				}
+				
+				offset = val.offset;
+				if (lseek(mbox->fd, offset, SEEK_SET) 
+					!= offset)
+				{
+					fprintf(stderr, "Could not seek %s: %s\n",
+						mbox->path, strerror(errno));
+					return -1;
+				}
+			}
+			else if (error != DB_NOTFOUND)
+			{
+				fprintf(stderr, "Database failure mbox.btree: %s\n",
+					db_strerror(error));
+			}
 		}
 	}
 	

@@ -1,4 +1,4 @@
-/*  $Id: globals.h,v 1.2 2002-01-21 02:35:26 terpstra Exp $
+/*  $Id: globals.h,v 1.3 2002-01-21 07:27:35 terpstra Exp $
  *  
  *  globals.h - the global variables and methods for the daemon
  *  
@@ -62,11 +62,21 @@ extern int	lu_variable_fd;
 extern DB_ENV*	lu_db_env;
 extern DB*	lu_thread_db;
 extern DB*	lu_merge_db;
+extern DB*	lu_mbox_db;
 
 /** This loads the configuration file into the appropriate globals.
  *  It also opens all the mboxs for the tail functionality.
  */
 extern int lu_load_config(const char* cfg);
+
+/** This opens all the databases that we track data with.
+ */
+extern int lu_open_db();
+
+/** Double check that the mboxs haven't been switched. Then move the read
+ *  heads to the right locations.
+ */
+extern int lu_sync_mbox();
 
 /** Grab the summary information record for the specified mid
  */
