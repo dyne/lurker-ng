@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.30 2002-07-12 15:15:05 terpstra Exp $
+/*  $Id: summary.c,v 1.31 2002-07-12 15:18:33 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -1125,7 +1125,7 @@ int lu_summary_close()
 	
 	if ((error = kap_close(my_summary_offset_db)) != 0)
 	{
-		syslog(LOG_ERR, _("Closing db3 database: offset.*: %s\n"),
+		syslog(LOG_ERR, _("Closing kap database: offset.*: %s\n"),
 			kap_strerror(error));
 		fail = -1;
 	}
