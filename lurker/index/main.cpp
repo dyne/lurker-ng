@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.33 2003-06-26 21:32:32 terpstra Exp $
+/*  $Id: main.cpp,v 1.34 2003-06-26 21:35:01 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -126,22 +126,22 @@ void look_for_from(DwEntity& e)
 		// we will try to minimize the changes
 		DwString newbody;
 		
-		size_t s, e;
+		size_t s, x;
 		if (body.substr(0, 5) == "From ")
 		{
 			newbody = "=46rom ";
-			s = 5
+			s = 5;
 		}
 		else
 		{
 			s = 0;
 		}
 		
-		while ((e = body.find("\nFrom ", s)) != string::npos)
+		while ((x = body.find("\nFrom ", s)) != string::npos)
 		{
-			newbody.append(body, s, e-s);
+			newbody.append(body, s, x-s);
 			newbody += "\n=46";
-			s = e + 2;
+			s = x + 2;
 		}
 		
 		newbody.append(body, s, body.length() - s);
