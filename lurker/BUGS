@@ -3,7 +3,6 @@ BUGS:
 		-> If we implement insertion earlier in the id list, we
 		   screw ourselves for index caching.
 3	Need a link back to the index from messages for each list.
-4	xml browsable with remote stylesheets
 5	Attachments should be cacheable - fix it somehow.
 6	Make threading work somehow.
 
@@ -25,12 +24,6 @@ BUGS:
 	#3 *** Link back to each list:
 		a: Finish #4
 		b: Simply use the new list offset field in the database.
-	
-	#4 *** xml browsing:
-		a: need smarter stylesheets with control vars
-		b: make common stylesheet included
-		c: fix error message formatting
-		d: figure why mozilla crashes on splash and eats search
 	
 	#5 *** Cachable attachments:
 		Hrm. Not sure what to do here; maybe modify .htaccess to
