@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.17 2002-07-11 20:20:49 terpstra Exp $
+/*  $Id: config.c,v 1.18 2002-07-12 14:54:44 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -38,27 +38,9 @@
 #include <ctype.h>
 #include <string.h>
 
-/*------------------------------------------------ Private types */
-
-/** Tracking how much of an mbox is eaten - mbox.btree
- */
-typedef struct My_Config_Mbox_Eat_Key_T
-{
-	lu_word		list;
-	lu_word		mbox;
-} My_Config_Mbox_Eat_Key;
-
-typedef struct My_Config_Mbox_Eat_Value_T
-{
-	lu_addr		offset;
-	
-	/* The first 1k of the mbox to detect them being switched on us */
-	char		front[1024];
-} My_Config_Mbox_Eat_Value;
-
 /*------------------------------------------------ Private global vars */
 
-static DB*		my_config_mbox_db;
+static Kap		my_config_mbox_db;
 static const char*	my_config_file;
 
 /*------------------------------------------------ Public global vars */
@@ -645,77 +627,41 @@ static int my_config_load_config(void)
 
 int my_config_sync_mbox(void)
 {
+	char		key[30];
+	unsigned char	buf[sizeof(off_t)];
+	int		error;
+	ssize_t		len;
+	
 	Lu_Config_List*	list;
 	Lu_Config_Mbox*	mbox;
-	
-	My_Config_Mbox_Eat_Key	key;
-	My_Config_Mbox_Eat_Value	val;
-	
-	DBT	dkey;
-	DBT	dval;
-	
-	int error;
-	int got;
-	
-	char buf[1024];
 	
 	for (list = lu_config_list; list != lu_config_list + lu_config_lists; list++)
 	{
 		for (mbox = list->mbox; mbox != list->mbox + list->mboxs; mbox++)
 		{
-			memset(&dkey, 0, sizeof(DBT));
-			memset(&dval, 0, sizeof(DBT));
+			sprintf(&key[0], "%d:%d", list->id, mbox->id);
 			
-			dkey.data = &key;
-			dkey.size = sizeof(key);
+			error = kap_btree_read(
+				my_config_mbox_db,
+				&key[0],
+				&buf[0],
+				&len);
 			
-			dval.data = &val;
-			dval.ulen = sizeof(val);
-			dval.flags = DB_DBT_USERMEM;
-			
-			key.list = list->id;
-			key.mbox = mbox->id;
-			
-			error = my_config_mbox_db->get(
-				my_config_mbox_db, 0, &dkey, &dval, 0);
-			
-			mbox->length = 0;
-			
-			if (error == 0)
-			{
-				got = read(mbox->fd, &buf[0], sizeof(buf));
-				if (got < 0)
-				{
-					fprintf(stderr, _("Couldn't read mbox %s: %s\n"),
-							mbox->path, strerror(errno));
-					return -1;
-				}
-				
-				if (got < sizeof(buf) && got < val.offset)
-				{	/* They switched mboxs on us -- too small */
-					fprintf(stderr, _("Mbox id does not match prior version %s\n"),
-						mbox->path);
-					return -1;
-				}
-				
-				if (val.offset < got)
-				{	/* Don't compare more than there was */
-					got = val.offset;
-				}
-				
-				if (memcmp(&val.front[0], &buf[0], got))
-				{	/* The contents are changed */
-					fprintf(stderr, _("Mbox id does not match prior version %s\n"),
-						mbox->path);
-					return -1;
-				}
-				
-				mbox->length = val.offset;
-			}
-			else if (error != DB_NOTFOUND)
+			if (error && error != KAP_NOT_FOUND)
 			{
 				fprintf(stderr, _("Database failure mbox.btree: %s\n"),
-					db_strerror(error));
+					kap_strerror(error));
+				return error;
+			}
+			
+			if (error == KAP_NOT_FOUND)
+			{
+				mbox->length = 0;
+			}
+			else
+			{
+				assert (len == sizeof(off_t));
+				kap_decode_offset(&buf[0], &mbox->length, sizeof(off_t));
 			}
 		}
 	}
@@ -783,24 +729,26 @@ int lu_config_open(void)
 		return -1;
 	}
 	
-	if ((error = db_create(&my_config_mbox_db, lu_config_env, 0)) != 0)
+	if ((error = kap_create(&my_config_mbox_db, KAP_BTREE)) != 0 ||
+	    (error = kap_btree_set_maxkeysize(my_config_mbox_db, 24)) != 0 ||
+	    (error = kap_btree_set_leafsize  (my_config_mbox_db, sizeof(off_t))) != 0 ||
+	    (error = kap_btree_set_sectorsize(my_config_mbox_db, 1024)) != 0)
 	{
-		fprintf(stderr, _("Creating a db3 database: %s\n"),
-			db_strerror(error));
-		return -1;
-	}
-	
-	if ((error = my_config_mbox_db->open(my_config_mbox_db, "mbox.btree", 0,
-		DB_BTREE, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
-	{
-		fprintf(stderr, _("Opening db3 database: mbox.btree: %s\n"),
-			db_strerror(error));
+		fprintf(stderr, _("Creating a kap database: %s\n"),
+			kap_strerror(error));
 		return -1;
 	}
 	
 	if ((error = kap_create(&lu_config_keyword, KAP_FAST)) != 0)
 	{
 		fprintf(stderr, _("Creating kap database: %s\n"),
+			kap_strerror(error));
+		return -1;
+	}
+	
+	if ((error = kap_open(my_config_mbox_db, ".", "mbox")) != 0)
+	{
+		fprintf(stderr, _("Opening kap database: mbox.btree: %s\n"),
 			kap_strerror(error));
 		return -1;
 	}
@@ -825,17 +773,17 @@ int lu_config_sync(void)
 	int error;
 	int fail = 0;
 	
-	if ((error = my_config_mbox_db->sync(my_config_mbox_db, 0)) != 0)
+	if ((error = kap_sync(my_config_mbox_db)) != 0)
 	{
-		syslog(LOG_ERR, _("Syncing db3 database: mbox.btree: %s\n"),
-			db_strerror(error));
+		syslog(LOG_ERR, _("Syncing kap database: mbox.btree: %s\n"),
+			kap_strerror(error));
 		fail = -1;
 	}
 	
 	if ((error = kap_sync(lu_config_keyword)) != 0)
 	{
 		syslog(LOG_ERR, _("Syncing kap database: keyword: %s\n"),
-			db_strerror(error));
+			kap_strerror(error));
 		fail = -1;
 	}
 	
@@ -847,17 +795,17 @@ int lu_config_close(void)
 	int error;
 	int fail = 0;
 	
-	if ((error = my_config_mbox_db->close(my_config_mbox_db, 0)) != 0)
-	{
-		syslog(LOG_ERR, _("Closing db3 database: mbox.btree: %s\n"),
-			db_strerror(error));
-		fail = -1;
-	}
-	
 	if ((error = lu_config_env->close(lu_config_env, 0)) != 0)
 	{
 		syslog(LOG_ERR, _("Closing db3 environment: %s\n"),
 			db_strerror(error));
+		fail = -1;
+	}
+	
+	if ((error = kap_destroy(my_config_mbox_db)) != 0)
+	{
+		syslog(LOG_ERR, _("Closing kap database: mbox.btree: %s\n"),
+			kap_strerror(error));
 		fail = -1;
 	}
 	
@@ -908,34 +856,25 @@ int lu_config_move_mbox_end(
 	Lu_Config_List* list, 
 	off_t now)
 {
-	My_Config_Mbox_Eat_Key		key;
-	My_Config_Mbox_Eat_Value	val;
+	char		key[30];
+	unsigned char	buf[sizeof(off_t)];
+	int		error;
 	
-	DBT	dkey;
-	DBT	dval;
+	sprintf(&key[0], "%d:%d", list->id, mbox->id);
+	kap_encode_offset(&buf[0], now, sizeof(off_t));
 	
-	int error;
+	error = kap_btree_rewrite(
+		my_config_mbox_db,
+		&key[0],
+		&buf[0],
+		sizeof(off_t));
 	
-	memset(&dkey, 0, sizeof(DBT));
-	memset(&dval, 0, sizeof(DBT));
-	
-	dkey.data = &key;
-	dkey.size = sizeof(key);
-	
-	dval.data = &val;
-	dval.size = sizeof(val);
-	
-	key.list = list->id;
-	key.mbox = mbox->id;
-	
-	if (lseek(mbox->fd, 0, SEEK_SET) != 0) return -1;
-	if (read(mbox->fd, &val.front[0], sizeof(val.front)) <= 0) return -1;
-	
-	val.offset = now;
-	
-	error = my_config_mbox_db->put(my_config_mbox_db, 0, &dkey, &dval, 0);
 	if (error != 0)
+	{
+		syslog(LOG_ERR, _("Could not record mbox eof: %s\n"),
+			kap_strerror(error));
 		return -1;
+	}
 	
 	mbox->length = now;
 	
