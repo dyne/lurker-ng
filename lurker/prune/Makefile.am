@@ -1,3 +1,4 @@
+EXTRA_DIST = lurker-prune.sgml
 bin_PROGRAMS = lurker-prune
 
 AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/libesort
@@ -8,3 +9,6 @@ lurker_prune_SOURCES = \
 	mindex.cpp search.cpp splash.cpp thread.cpp PTable.h
 
 dist_man_MANS = lurker-prune.1
+
+lurker-prune.1: lurker-prune.sgml     
+	docbook-to-man $< > $@

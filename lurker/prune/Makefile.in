@@ -169,6 +169,7 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 vardir = @vardir@
 wwwdir = @wwwdir@
+EXTRA_DIST = lurker-prune.sgml
 AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/libesort
 LDADD = ../common/libcommon.a ../libesort/libesort.a
 lurker_prune_SOURCES = \
@@ -484,6 +485,9 @@ uninstall-man: uninstall-man1
 	tags uninstall uninstall-am uninstall-binPROGRAMS \
 	uninstall-info-am uninstall-man uninstall-man1
 
+
+lurker-prune.1: lurker-prune.sgml     
+	docbook-to-man $< > $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
