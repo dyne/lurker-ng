@@ -2,16 +2,17 @@ Quick start
 ===========
 
 0 Find and install development files for: 
-	g++ >= 3.2            - http://gcc.gnu.org/
-	jam                   - http://www.perforce.com/jam/jam.html
-	mimelib  (kdenetwork) - ftp://download.uk.kde.org/pub/kde/stable/latest/src
-	xsltproc (libxslt1)   - http://xmlsoft.org/XSLT/
+
+   g++ >= 3.2            - http://gcc.gnu.org/
+   jam                   - http://www.perforce.com/jam/jam.html
+   mimelib  (kdenetwork) - ftp://download.uk.kde.org/pub/kde/stable/latest/src
+   xsltproc (libxslt1)   - http://xmlsoft.org/XSLT/
 
  If you need to, lurker can be built using only g++ 2.95, however 3.2 is
  recommended as the resulting binaries are much smaller and faster.
  
  If you do not want kdenetwork, you can also download mimelib separately
- from https://sourceforge.net/project/showfiles.php?group_id=8168 and tell
+ from http://sourceforge.net/project/showfiles.php?group_id=8168 and tell
  lurker to compile it and statically link to it.
  
  xsltproc is not strictly required for lurker. It is not used during compile
