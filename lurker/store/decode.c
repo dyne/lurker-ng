@@ -1,4 +1,4 @@
-/*  $Id: decode.c,v 1.1 2002-06-10 12:25:58 terpstra Exp $
+/*  $Id: decode.c,v 1.2 2002-06-12 22:50:47 terpstra Exp $
  *  
  *  decode.c - decode definitions and types for all tools
  *  
@@ -132,7 +132,7 @@ static char* my_decode_quoted(
 		bl = sizeof(buf) - (be - b);
 		
 		b = &buf[0];
-		tmp = iconv(ic, (ICONV_CAST)&b, &bl, &w, &wl);
+		tmp = iconv(ic, (ICONV_CONST char**)&b, &bl, &w, &wl);
 		
 		/* Shift any remaining partial bytes in the buffer over */
 		memmove(&buf[0], b, bl);
@@ -237,7 +237,7 @@ static char* my_decode_base64(
 		bl = sizeof(buf) - (be - b);
 		
 		b = &buf[0];
-		tmp = iconv(ic, (ICONV_CAST)&b, &bl, &w, &wl);
+		tmp = iconv(ic, (ICONV_CONST char**)&b, &bl, &w, &wl);
 		
 		/* Shift any remaining partial bytes in the buffer over */
 		memmove(&buf[0], b, bl);
@@ -320,7 +320,7 @@ void lu_decode_header(
 		
 		rlen = r - start;
 		wlen = e - w;
-		iconv(dc, (ICONV_CAST)&start, &rlen, &w, &wlen);
+		iconv(dc, (ICONV_CONST char**)&start, &rlen, &w, &wlen);
 		
 		if (!*r || w == e) break;
 		

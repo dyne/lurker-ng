@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.66 2002-06-11 13:50:14 terpstra Exp $
+/*  $Id: service.c,v 1.67 2002-06-12 22:50:47 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -737,7 +737,7 @@ static int my_service_dump(
 	{
 		fill = sizeof(buf);
 		b = &buf[0];
-		tmp = iconv(ic, (ICONV_CAST)&dat, &len, &b, &fill);
+		tmp = iconv(ic, (ICONV_CONST char**)&dat, &len, &b, &fill);
 		
 		/*!!! can miss stuff on 10k boundaries. oh well. */
 		if (my_service_quote(h, &buf[0], sizeof(buf) - fill) != 0)
