@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.14 2002-06-14 11:16:58 terpstra Exp $
+/*  $Id: common.h,v 1.15 2002-07-11 20:39:23 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -106,6 +106,8 @@ typedef long time_t;
 #else
 #include "../intl/libgnuintl.h"
 #endif
+
+#include <locale.h>
 
 #define _(String) gettext (String)
 #define gettext_noop(String) (String)

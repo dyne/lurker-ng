@@ -1,4 +1,4 @@
-/*  $Id: keyword.h,v 1.1 2002-06-10 12:23:14 terpstra Exp $
+/*  $Id: keyword.h,v 1.2 2002-07-11 20:39:23 terpstra Exp $
  *  
  *  prefix.h - What to place in front of keywords we search for
  *  
@@ -51,6 +51,6 @@ extern int my_keyword_digest_string(
 	const char* buf,
 	int         len,
 	const char* prefix,
-	int       (*write)(const char* keyword, void* arg),
+	int       (*writefn)(const char* keyword, void* arg),
 	void*       arg,
 	int         do_div);

@@ -1,4 +1,4 @@
-/*  $Id: keyword.c,v 1.4 2002-06-21 21:45:58 terpstra Exp $
+/*  $Id: keyword.c,v 1.5 2002-07-11 20:39:23 terpstra Exp $
  *  
  *  prefix.c - Digest a hunk of string into keywords.
  *  
@@ -63,7 +63,7 @@ static int my_keyword_index_hunk(
 	const char* buf,
 	const char* eos,
 	const char* prefix,
-	int (*write)(const char* keyword, void* arg),
+	int (*writefn)(const char* keyword, void* arg),
 	void* arg)
 {
 	char out[LU_KEYWORD_LEN+1];
@@ -101,7 +101,7 @@ static int my_keyword_index_hunk(
 		return 0;
 	}
 	
-	return write(&out[0], arg);
+	return writefn(&out[0], arg);
 }
 
 /* Look at a section of non-whitespace chars and decide what to do with it. */
@@ -109,7 +109,7 @@ static int my_keyword_digest_hunk(
 	const char* buf, 
 	const char* eos, 
 	const char* prefix,
-	int       (*write)(const char* keyword, void* arg),
+	int       (*writefn)(const char* keyword, void* arg),
 	void*       arg,
 	int         do_div)
 {
@@ -134,7 +134,7 @@ static int my_keyword_digest_hunk(
 	while (my_keyword_is_split[((int)*(eos-1))]) eos--;
 	
 	/* Index the entire hunk. */
-	if (my_keyword_index_hunk(buf, eos, prefix, write, arg) != 0)
+	if (my_keyword_index_hunk(buf, eos, prefix, writefn, arg) != 0)
 		return -1;
 	
 	if (!do_div) return 0;
@@ -148,7 +148,7 @@ static int my_keyword_digest_hunk(
 			if (start != scan)
 			{
 				if (my_keyword_index_hunk(start, scan, 
-					prefix, write, arg) != 0)
+					prefix, writefn, arg) != 0)
 					return -1;
 			}
 			
@@ -158,14 +158,14 @@ static int my_keyword_digest_hunk(
 	
 	if (start != eos)
 	{
-		if (my_keyword_index_hunk(start, eos, prefix, write, arg) != 0)
+		if (my_keyword_index_hunk(start, eos, prefix, writefn, arg) != 0)
 			return -1;
 	}
 	
 	return 0;
 }
 
-static void my_keyword_init()
+static void my_keyword_init(void)
 {
 	int i;
 	
@@ -203,7 +203,7 @@ int my_keyword_digest_string(
 	const char* buf, 
 	int         len, 
 	const char* prefix,
-	int       (*write)(const char* keyword, void* arg),
+	int       (*writefn)(const char* keyword, void* arg),
 	void*       arg,
 	int         do_div)
 {
@@ -222,7 +222,7 @@ int my_keyword_digest_string(
 			if (start)
 			{
 				my_keyword_digest_hunk(start, scan, 
-					prefix, write, arg, do_div);
+					prefix, writefn, arg, do_div);
 				start = 0;
 			}
 		}
@@ -237,7 +237,7 @@ int my_keyword_digest_string(
 	
 	if (start)
 	{
-		my_keyword_digest_hunk(start, eos, prefix, write, arg, do_div);
+		my_keyword_digest_hunk(start, eos, prefix, writefn, arg, do_div);
 	}
 	
 	return 0;
