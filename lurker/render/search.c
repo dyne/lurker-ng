@@ -14,7 +14,7 @@ const char redirect_error[] =
 "<title>301 Moved Permanently</title>\r\n"
 "</head><body>\r\n"
 "<h1>Moved Permanently</h1>\r\n"
-"The document has moved <a href=\"%s/search/%s.%s\">here</a>.\r\n"
+"The document has moved <a href=\"%s/search/0%%20%s.%s\">here</a>.\r\n"
 "<p><hr>\r\n"
 "</body></html>\r\n";
 
@@ -189,7 +189,7 @@ int main(int argc, char** argv)
 	else	s = "xml";
 	
 	printf("Status: 303 Moved Permanently\r\n");
-	printf("Location: %s/search/%s.%s\r\n", uri, &buf[3], s);
+	printf("Location: %s/search/0%%20%s.%s\r\n", uri, &buf[3], s);
 	printf("Content-type: text/%s\r\n\r\n", s);
 	printf(&redirect_error[0], uri, &buf[3], s);
 	

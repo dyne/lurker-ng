@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.37 2002-05-03 21:09:49 terpstra Exp $
+/*  $Id: service.c,v 1.38 2002-05-04 03:36:09 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1538,6 +1538,10 @@ static int my_service_search(
 			goto my_service_search_error1;
 		}
 	}
+	
+	if (my_service_buffer_init(h, "text/xml\n", 1, 
+			lu_config_cache_search_ttl, LU_EXPIRY_NO_LIST) != 0)
+		goto my_service_search_error1;
 	
 	/* Ok! Now, lets start putting out the data */
 	if (my_service_xml_head(h)                             != 0) goto my_service_search_error1;

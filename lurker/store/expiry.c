@@ -1,4 +1,4 @@
-/*  $Id: expiry.c,v 1.2 2002-05-03 05:44:34 terpstra Exp $
+/*  $Id: expiry.c,v 1.3 2002-05-04 03:36:09 terpstra Exp $
  *  
  *  expiry.c - Record when pages should be destroyed
  *  
@@ -23,7 +23,7 @@
  */
 
 #define _GNU_SOURCE
-// #define DEBUG 1
+#define DEBUG 1
 
 #include "common.h"
 #include "io.h"
@@ -35,6 +35,8 @@
 #include <sys/mman.h>
 #include <string.h>
 #include <stdlib.h>
+
+#include <st.h>
 
 /*------------------------------------------------ Constant parameters */
 
@@ -62,12 +64,14 @@ typedef struct My_Expiry_List_T
 	lu_word	tail;
 } My_Expiry_List;
 
+static int	my_expiry_stop_watch	= 0;
+static int	my_expiry_skip_watch	= 0;
+
 static int	my_expiry_heap_fd	= -1;
 static int	my_expiry_list_fd	= -1;
 
 static DB*	my_expiry_names_db	= 0;
 
-static long	my_expiry_files_used	= 0;
 static long	my_expiry_space_used	= 0;
 
 My_Expiry_Heap*	my_expiry_heap = 0;	/* Stored as -1 of mmap */
@@ -155,6 +159,9 @@ static int my_expiry_pop(lu_word x)
 			strerror(errno));
 		return -1;
 	}
+#ifdef DEBUG
+	printf("Killing expired file: %s\n", &file[0]);
+#endif
 	/* Ignore the case that it's already been killed */
 	if (unlink(&file[0]) && errno != ENOENT)
 	{
@@ -163,8 +170,7 @@ static int my_expiry_pop(lu_word x)
 			strerror(errno));
 	}
 	
-	/* Decrease the space trackers */
-	my_expiry_files_used--;
+	/* Decrease the space tracker */
 	my_expiry_space_used -= my_expiry_heap[x].size;
 	
 	/* Pull it out of the list of things in watching a mailinglist */
@@ -246,7 +252,7 @@ int lu_expiry_record_file(
 	if (size >= lu_config_cache_cutoff)
 		return 1;
 	
-	while (my_expiry_files_used >= lu_config_cache_files ||
+	while (my_expiry_heaps >= lu_config_cache_files ||
 	       my_expiry_space_used + size >= lu_config_cache_size)
 	{	/* As long as we are over-weight, reduce the oldest */
 		if (my_expiry_pop(my_expiry_list[0].list) != 0)
@@ -342,10 +348,32 @@ int lu_expiry_notice_import(
 	return 0;
 }
 
+static void* my_expiry_watch(void* arg)
+{
+	while (!my_expiry_stop_watch)
+	{
+		st_sleep(1);
+		
+		if (my_expiry_skip_watch)
+			continue;
+		
+		while (my_expiry_heaps > 1 && my_expiry_heap[1].expiry < time(0))
+		{
+			if (my_expiry_pop(1) != 0)
+				break;
+		}
+	}
+	
+	return 0;
+}
+
 /*------------------------------------------------ Public component methods */
 
 int lu_expiry_init()
 {
+	my_expiry_stop_watch = 0;
+	my_expiry_skip_watch = 1;
+	st_thread_create(&my_expiry_watch, 0, 0, 0);
 	return 0;
 }
 
@@ -354,6 +382,8 @@ int lu_expiry_open()
 	int		error;
 	My_Expiry_List	list;
 	Lu_Config_List* clist;
+	
+	my_expiry_skip_watch = 0;
 	
 	my_expiry_heap_fd = open("expiry.heap", 
 		O_RDWR | O_BINARY | O_CREAT,
@@ -499,6 +529,8 @@ int lu_expiry_close()
 	int error;
 	int fail = 0;
 	
+	my_expiry_skip_watch = 1;
+	
 	if ((error = my_expiry_names_db->close(
 		my_expiry_names_db, 0)) != 0)
 	{
@@ -529,5 +561,6 @@ int lu_expiry_close()
 
 int lu_expiry_quit()
 {
+	my_expiry_stop_watch = 1;
 	return 0;
 }

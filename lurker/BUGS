@@ -1,52 +1,13 @@
 BUGS:
-1	Pages should expire.
-2	Messages should use message-id for identification.
-3	Search should use the same list of keyword seperators.
-4	Seperate lists can receive the same message.
+1	Messages should use message-id for identification.
+2	Seperate lists can receive the same message.
 		-> If we implement insertion earlier in the id list, we
 		   screw ourselves for index caching.
-5	Need a link back to the index from messages for each list.
-6	Attachments should be cacheable - fix it somehow.
-7	Make threading work somehow.
+3	Need a link back to the index from messages for each list.
+4	Attachments should be cacheable - fix it somehow.
+5	Make threading work somehow.
 
-Alright, time to get organized; we've not put in enough work lately, TODO:
-
-	#1 *** Page expiry. It's time lurker cleaned up after itself
-		a: record generated pages, size, creation time, and ttl
-		b: Delete the oldest pages when space / file count exhausted
-		c: Delete pages after ttl expiry
-		d: Don't create files over a certain size
-		e: Somehow implement dependent cache expiry:
-		
-	General plan atm: 
-		Use a priority queue for ttl expiry.
-
-		Mmap a disk backed buffer to track the files so we don't
-		forget about any on crash.
-		
-		Keep a queue structure for what to delete when size/count
-		is exceeded.
-		
-		Keep a queue for each list dependents.
-		Keep a queue for any list dependency.
-	
-	Gotchas to watch for:
-		The disk gets full with a single page generation.
-
-	Dependent cache expiry, fuzzy ideas:
-		The only thing that can change lurker's state is the import
-		of new messages. How does that affect the different xml:
-			index page: last index could need regeneration
-				-> depends on 'a given list import'
-			main page: needs regeneration on import to any list
-			search pages: may or may not be effected by an
-				import. Just cache these for a short period
-				of time, and hope for the best.
-			message pages: Only changed if the threading
-				structure near it changes; cache and hope
-				for the best.
-
-	#2 *** Message ID instead of docid should be URL
+	#1 *** Message ID instead of docid should be URL
 		a: find a good md5 implementation.
 		b: decide what fields to use to generate id if missing
 		c: build a message-id generating function.
@@ -56,11 +17,7 @@ Alright, time to get organized; we've not put in enough work lately, TODO:
 		f: Change all message links to print message-id instead of
 		   docid.
 
-	#3 *** Search uses same keyword seperator:
-		a: Move special character list to common header.
-		b: Rewrite search url parser.
-
-	#4 *** Same message in multiple lists:
+	#2 *** Same message in multiple lists:
 		a: finish #2 since this depends on it
 		b: Add another database which stores what lists a message
 		   appears in. It should contain:
@@ -75,14 +32,14 @@ Alright, time to get organized; we've not put in enough work lately, TODO:
 		g: If docid > last in list, push it.
 		h: Else, push an indirect docid.
 	
-	#5 *** Link back to each list:
+	#3 *** Link back to each list:
 		a: Finish #4
 		b: Simply use the new list offset field in the database.
 	
-	#6 *** Cachable attachments:
+	#4 *** Cachable attachments:
 		Hrm. Not sure what to do here; maybe modify .htaccess to
 		tell apache the content-type?
 	
-	#7 *** Threading:
+	#5 *** Threading:
 		??? Not sure what to do; old scheme is not good enough.
 		Maybe we want some sort of breath-first search?
