@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT CXXCPP EGREP JAM BINDIR LIBDIR INCDIR VARDIR ETCDIR DATADIR MANDIR LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT CXXCPP EGREP LOCAL_MIMELIB JAM BINDIR LIBDIR INCDIR VARDIR ETCDIR DATADIR MANDIR LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -843,8 +843,11 @@ if test -n "$ac_init_help"; then
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-mimelib-include  Location of mimelib/message.h
-  --with-mimelib-libname  Try an alternative library name
+  --with-mimelib-local    Use internal lurker/mimelib/*
+  --with-mimelib-include=DIR
+                          Location of mimelib/message.h
+  --with-mimelib-libname=LIB
+                          Try an alternative library name
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -2472,6 +2475,13 @@ fi
 
 
 
+# Check whether --with-mimelib-local or --without-mimelib-local was given.
+if test "${with_mimelib_local+set}" = set; then
+  withval="$with_mimelib_local"
+  with_mimelib_local=""
+fi;
+
+
 # Check whether --with-mimelib-include or --without-mimelib-include was given.
 if test "${with_mimelib_include+set}" = set; then
   withval="$with_mimelib_include"
@@ -2480,7 +2490,17 @@ else
   with_mimelib_include=""
 fi;
 
-echo "$as_me:$LINENO: checking for mimelib/message.h" >&5
+if test "x$with_mimelib_local" != "xno"; then
+ echo "$as_me:$LINENO: checking for mimelib" >&5
+echo $ECHO_N "checking for mimelib... $ECHO_C" >&6
+ echo "$as_me:$LINENO: result: local" >&5
+echo "${ECHO_T}local" >&6
+ LOCAL_MIMELIB=yes
+ CPPFLAGS="$CPPFLAGS -I\$(TOP)/mimelib"
+ LIBS="-L\$(TOP)/mimelib -lmimelib $LIBS"
+else
+ LOCAL_MIMELIB=no
+ echo "$as_me:$LINENO: checking for mimelib/message.h" >&5
 echo $ECHO_N "checking for mimelib/message.h... $ECHO_C" >&6
 if test "${ac_cv_header_mimelib_message_h+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -2574,7 +2594,7 @@ else
   with_mimelib_libname=""
 fi;
 
-echo "$as_me:$LINENO: checking for library containing class DwMessage" >&5
+ echo "$as_me:$LINENO: checking for library containing class DwMessage" >&5
 echo $ECHO_N "checking for library containing class DwMessage... $ECHO_C" >&6
 if test "${ac_cv_class_DwMessage+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -2669,6 +2689,9 @@ else
 echo "$as_me: error: Need mimelib to link" >&2;}
    { (exit 1); exit 1; }; }
 fi
+
+fi
+LOCAL_MIMELIB=${LOCAL_MIMELIB}
 
 
 # Extract the first word of "jam", so it can be a program name with args.
@@ -3454,6 +3477,7 @@ s,@EXEEXT@,$EXEEXT,;t t
 s,@OBJEXT@,$OBJEXT,;t t
 s,@CXXCPP@,$CXXCPP,;t t
 s,@EGREP@,$EGREP,;t t
+s,@LOCAL_MIMELIB@,$LOCAL_MIMELIB,;t t
 s,@JAM@,$JAM,;t t
 s,@BINDIR@,$BINDIR,;t t
 s,@LIBDIR@,$LIBDIR,;t t

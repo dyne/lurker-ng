@@ -64,4 +64,3 @@ AC_DEFUN([AC_DEFINE_DIR],
   $1="$ac_define_dir_result"
   AC_SUBST($1)
  ])
-

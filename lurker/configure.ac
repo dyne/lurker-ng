@@ -13,22 +13,36 @@ AC_SEARCH_LIBS(iconv,
   [iconv],,
   [AC_MSG_ERROR(Need iconv to link)])
 
-AC_ARG_WITH([mimelib-include], AC_HELP_STRING([--with-mimelib-include],
+AC_ARG_WITH([mimelib-local],   AC_HELP_STRING([--with-mimelib-local],
+                                              [Use internal lurker/mimelib/*]),
+            [with_mimelib_local=""])
+
+AC_ARG_WITH([mimelib-include], AC_HELP_STRING([--with-mimelib-include=DIR],
                                               [Location of mimelib/message.h]),,
             [with_mimelib_include=""])
 
-AC_SEARCH_HEADER_DIRS(
-  [mimelib/message.h], 
-  [$with_mimelib_include /usr/include/kde /usr/local/include /usr/local/include/kde],, 
-  [AC_MSG_ERROR(Need mimelib/*.h to compile)])
-
-AC_ARG_WITH([mimelib-libname], AC_HELP_STRING([--with-mimelib-libname],
-                                              [Try an alternative library name]),,
-            [with_mimelib_libname=""])
-
-AC_SEARCH_CLASS_LIBS(DwMessage, 
-  [$with_mimelib_libname mimelib mimepp], [#include <mimelib/message.h>],,
-  [AC_MSG_ERROR(Need mimelib to link)])
+if test "x$with_mimelib_local" != "xno"; then
+ AC_MSG_CHECKING(for mimelib)
+ AC_MSG_RESULT(local)
+ LOCAL_MIMELIB=yes
+ CPPFLAGS="$CPPFLAGS -I\$(TOP)/mimelib"
+ LIBS="-L\$(TOP)/mimelib -lmimelib $LIBS"
+else
+ LOCAL_MIMELIB=no
+ AC_SEARCH_HEADER_DIRS(
+   [mimelib/message.h], 
+   [$with_mimelib_include /usr/include/kde /usr/local/include /usr/local/include/kde],, 
+   [AC_MSG_ERROR(Need mimelib/*.h to compile)])
+ 
+ AC_ARG_WITH([mimelib-libname], AC_HELP_STRING([--with-mimelib-libname=LIB],
+                                               [Try an alternative library name]),,
+             [with_mimelib_libname=""])
+ 
+ AC_SEARCH_CLASS_LIBS(DwMessage, 
+   [$with_mimelib_libname mimelib mimepp], [#include <mimelib/message.h>],,
+   [AC_MSG_ERROR(Need mimelib to link)])
+fi
+AC_SUBST(LOCAL_MIMELIB, ${LOCAL_MIMELIB})
 
 AC_PATH_PROG(JAM, jam)
 if test "x${JAM}" = "x"; then
