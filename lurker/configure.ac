@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1c)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.31 2002-07-12 00:31:13 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.32 2002-07-12 13:17:42 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -114,6 +114,7 @@ AC_CHECK_SIZEOF(short)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(long long)
+AC_CHECK_SIZEOF(off_t)
 
 AC_CHECK_TYPE(time_t,
  [AC_DEFINE(HAVE_TIME_T,1,[Do we have time_t?])],[],
