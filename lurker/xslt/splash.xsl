@@ -119,6 +119,9 @@
        <td class="center"><input type="text" name="subject" size="53" value=""/></td></tr>
    <tr><th><xsl:copy-of select="$startdate"/></th>
     <td>
+     <input type="hidden" name="start-sec" value="0"/>
+     <input type="hidden" name="start-min" value="0"/>
+     <input type="hidden" name="start-hour" value="0"/>
      <xsl:value-of select="$thedate"/>
      <xsl:text> </xsl:text>
      <select name="start-mday">
@@ -159,6 +162,9 @@
    </tr>
    <tr><th><xsl:copy-of select="$enddate"/></th>
     <td>
+     <input type="hidden" name="end-sec" value="59"/>
+     <input type="hidden" name="end-min" value="59"/>
+     <input type="hidden" name="end-hour" value="23"/>
      <xsl:value-of select="$thedate"/>
      <xsl:text> </xsl:text>
      <select name="end-mday">
