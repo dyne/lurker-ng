@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.32 2002-07-21 19:26:08 terpstra Exp $
+/*  $Id: indexer.c,v 1.33 2003-03-30 14:13:53 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -41,6 +41,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifdef DMALLOC
 # include <dmalloc.h>
