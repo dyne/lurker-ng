@@ -1,4 +1,4 @@
-/*  $Id: expiry.c,v 1.14 2002-07-21 19:26:08 terpstra Exp $
+/*  $Id: expiry.c,v 1.15 2002-08-12 13:02:52 terpstra Exp $
  *  
  *  expiry.c - Record when pages should be destroyed
  *  
@@ -102,37 +102,41 @@ static lu_word my_expiry_find_head(lu_word list)
 	return ls->cache_head;
 }
 
-inline void my_expiry_update_pos(lu_word x)
+inline void my_expiry_update_pos(lu_word x, lu_word y)
 {
-	lu_word nl, pl, nt, pt, ls;
+	lu_word nl = my_expiry_heap[x].next_list;
+	lu_word pl = my_expiry_heap[x].prev_list;
+	lu_word nt = my_expiry_heap[x].next_time;
+	lu_word pt = my_expiry_heap[x].prev_time;
+	lu_word ls = my_expiry_heap[x].list;
 	
-	if ((pl = my_expiry_heap[x].prev_list) != 0)
-		my_expiry_heap[pl].next_list = x;
-	if ((nl = my_expiry_heap[x].next_list) != 0)
-		my_expiry_heap[nl].prev_list = x;
-	else if ((ls = my_expiry_heap[x].list) != LU_EXPIRY_NO_LIST)
-	{
-		my_expiry_list[my_expiry_find_head(ls)].tail = x;
-	}
+	if      (pl == y)	my_expiry_heap[ x].prev_list = x;
+	else if (pl != 0)	my_expiry_heap[pl].next_list = y;
 	
-	if ((pt = my_expiry_heap[x].prev_time) != 0)
-		my_expiry_heap[pt].next_time = x;
-	else	my_expiry_list[0].list = x;
-	if ((nt = my_expiry_heap[x].next_time) != 0)
-		my_expiry_heap[nt].prev_time = x;
-	else	my_expiry_list[0].tail = x;
+	if      (nl == y)	my_expiry_heap[ x].next_list = x;
+	else if (nl != 0)	my_expiry_heap[nl].prev_list = y;
+	else if (ls != LU_EXPIRY_NO_LIST)
+			my_expiry_list[my_expiry_find_head(ls)].tail = y;
+	
+	if      (pt == y)	my_expiry_heap[ x].prev_time = x;
+	else if (pt != 0)	my_expiry_heap[pt].next_time = y;
+	else			my_expiry_list[ 0].list = y;
+	
+	if	(nt == y)	my_expiry_heap[ x].next_time = x;
+	else if (nt != 0)	my_expiry_heap[nt].prev_time = y;
+	else			my_expiry_list[ 0].tail = y;
 }
 
 static void my_expiry_swap_pos(lu_word a, lu_word b)
 {
 	My_Expiry_Heap tmp;
 	
+	my_expiry_update_pos(a, b);
+	my_expiry_update_pos(b, a);
+	
 	memcpy(&tmp,               &my_expiry_heap[a], sizeof(My_Expiry_Heap));
 	memcpy(&my_expiry_heap[a], &my_expiry_heap[b], sizeof(My_Expiry_Heap));
 	memcpy(&my_expiry_heap[b], &tmp,               sizeof(My_Expiry_Heap));
-	
-	my_expiry_update_pos(a);
-	my_expiry_update_pos(b);
 }
 
 static int my_expiry_pop(lu_word x)
@@ -179,7 +183,7 @@ static int my_expiry_pop(lu_word x)
 	if (x != my_expiry_heaps)
 	{
 		memcpy(&my_expiry_heap[x], &my_expiry_heap[my_expiry_heaps], sizeof(My_Expiry_Heap));
-		my_expiry_update_pos(x);
+		my_expiry_update_pos(x, x);
 	}
 	
 	my_expiry_heaps--;
@@ -256,7 +260,7 @@ int lu_expiry_record_file(
 		memcpy(&my_expiry_heap[where], 
 		       &my_expiry_heap[PARENT(where)],
 		       sizeof(My_Expiry_Heap));
-		my_expiry_update_pos(where);
+		my_expiry_update_pos(where, where);
 		where = PARENT(where);
 	}
 	
