@@ -36,7 +36,7 @@ breaking the 1 million message barrier (3GB mail)
 	There are two ways to break the 1 million message barrier.
 	
 	Technique #1 (recommended):
-		Het a 64-bit processor. This will allow you to mmap more
+		Get a 64-bit processor. This will allow you to mmap more
 		than 2GB which will solve the problem. 
 		This will not require any changes to the code, or 
 		any performance degredation.
@@ -46,5 +46,5 @@ breaking the 1 million message barrier (3GB mail)
 
 	Technique #2 (hated):
 		configure with --disable-mmap
-		This is insane! Doing this will reduce your import
-		performance by about 10*
+		This is insane! 
+		Doing this will reduce your import performance by about 10*
