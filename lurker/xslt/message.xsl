@@ -4,65 +4,17 @@
     xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
 
-
-<!-- Format messages in the snippet view -->
-
-<xsl:template name="msg-snippet">
- <a href="../message/{summary/mid}.{$ext}">
-  <xsl:element name="img">
-   <xsl:attribute name="alt"><xsl:value-of select="$malt"/></xsl:attribute>
-   
-   <xsl:attribute name="title">
-    <xsl:apply-templates select="summary" mode="post"/>
-   </xsl:attribute>
-   
-   <xsl:attribute name="src">
-    <xsl:text>../imgs/</xsl:text>
-    <xsl:value-of select="local-name(.)"/>
-    <xsl:text>.png</xsl:text>
-   </xsl:attribute>
-   
-   <xsl:attribute name="class">
-    <xsl:choose>
-     <xsl:when test="@selected">selected</xsl:when>
-     <xsl:when test="@drift">drift</xsl:when>
-     <xsl:otherwise>normal</xsl:otherwise>
-    </xsl:choose>
-   </xsl:attribute>
-  </xsl:element>
- </a>
-</xsl:template>
-
-
-<!-- Format the drawing elements of a snippet -->
-
-<xsl:template match="a" mode="snippet"><img alt="." src="../imgs/a.png"/></xsl:template>
-<xsl:template match="b" mode="snippet"><img alt="|" src="../imgs/b.png"/></xsl:template>
-<xsl:template match="c" mode="snippet"><img alt="-" src="../imgs/c.png"/></xsl:template>
-<xsl:template match="d" mode="snippet"><img alt="\" src="../imgs/d.png"/></xsl:template>
-<xsl:template match="e" mode="snippet"><img alt="+" src="../imgs/e.png"/></xsl:template>
-
-<xsl:template match="f" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
-<xsl:template match="g" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
-<xsl:template match="h" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
-<xsl:template match="i" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
-<xsl:template match="j" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
-<xsl:template match="k" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
-
-<xsl:template match="prev" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
-<xsl:template match="next" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
-
-<xsl:template match="br" mode="snippet"><br/></xsl:template>
-
-
 <!-- Format the navigation graphics -->
+
+<xsl:template match="prev"><xsl:call-template name="msg-thread"/></xsl:template>
+<xsl:template match="next"><xsl:call-template name="msg-thread"/></xsl:template>
 
 <xsl:template name="navigate-fields">
  <div align="right">
 
   <!-- Draw the prev link - otherwise, draw an image with the same size -->
   <xsl:if test="threading/prev">
-   <xsl:apply-templates select="threading/prev" mode="snippet"/>
+   <xsl:apply-templates select="threading/prev"/>
   </xsl:if>
   <xsl:if test="not(threading/prev)">
    <img src="../imgs/a.png" alt="."/>
@@ -81,14 +33,14 @@
 
   <!-- Draw the next link - otherwise, draw an image with the same size -->
   <xsl:if test="threading/next">
-   <xsl:apply-templates select="threading/next" mode="snippet"/>
+   <xsl:apply-templates select="threading/next"/>
   </xsl:if>
   <xsl:if test="not(threading/next)">
    <img src="../imgs/a.png" alt="."/>
   </xsl:if>
  </div>
  <hr id="snippit"/>
- <xsl:apply-templates select="threading/snippet" mode="snippet"/>
+ <xsl:apply-templates select="threading/snippet"/>
 </xsl:template>
 
 
@@ -177,10 +129,6 @@
 
 <xsl:template match="art">
  <pre class="art"><xsl:apply-templates/></pre>
-</xsl:template>
-
-<xsl:template match="br">
- <xsl:if test="not(ancestor::art)"><br/></xsl:if>
 </xsl:template>
 
 

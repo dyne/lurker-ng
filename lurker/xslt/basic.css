@@ -16,9 +16,20 @@ dt a { font-weight:normal }
 img { border:0; margin:0; padding:0 }
 h2 img { vertical-align:middle; padding-top:1px }
 td img { vertical-align:middle }
-.selected { background-color:#77F }  /* Mark the thread segment as selected */
-.drift    { background-color:#BBB }  /* Mark the thread segment as drifted */
+.selected { background-color:#AAF }  /* Mark the thread segment as selected */
+.drift    { background-color:#EEA }  /* Mark the thread segment as drifted */
 .normal   { }                        /* Mark the thread segment as normal */
+
+/* The following are used to induce highlighting effects on thread message icons */
+a.thm:hover { background-color:#77F }
+a.thm:visited img.drift:hover { background-color:#7BF !important }
+a.thm:visited img.drift { background-color:#DDB }
+a.thm:hover img.drift:hover { background-color:#7DF }
+a.thm:hover img.drift { background-color:#77F }
+a.thm:visited img.normal:hover { background-color:#77D }
+a.thm:visited img.normal { background-color:#BBB }
+a.thm:hover img.normal { background-color:#77F }
+a.thm:hover img.selected { background-color:#77F }
 
 dl { }                                    /* Definition list used for splash page list info */
 dt { font-weight:bold }                   /* includes list name and email address */
@@ -26,7 +37,7 @@ dd { margin-left:2em; margin-right:3em }  /* includes message count, "new topics
 .desc { font-style:oblique }              /* list description texts in splash */
 
 hr { color:black; background-color:black; clear:both; width:100% }
-#searchHr { width:500px; color:#66B; height:3px }  /* search component seperator */
+#searchHr { width:500px; color:#66B; height:3px; background-color:#66B }  /* search component seperator */
 #snippit { }  /* horizontal rule in message navigation snippit */
 
 
@@ -87,3 +98,9 @@ td { padding:0 2px 0px 2px; text-align:left; vertical-align:middle;
 .na { color:#BBB }  /* used to fade text when link not available, but still has placeholder text */
 .mime-label { text-align:right; padding:4px }  /* Mime labels in message contents */
 .longtext  { width:400px }  /* sets width of text entry fields */
+
+.mime { }    /* block containing one part of message's mime contents */
+.mailto { }  /* "mailto" elements used inside of message's mime contents */
+.url { }     /* "url" elements used inside of message's mime contents */
+.quote { }   /* "quote" elements used inside of message's mime contents */
+.art { }     /* "art" elements used inside of message's mime contents */

@@ -90,12 +90,28 @@
 <!-- Format summary lists -->
 
 <xsl:template name="msg-thread">
- <a href="../message/{../../mid}.{$ext}">
+ <a href="../message/{../../mid}.{$ext}" class="thm">
   <xsl:element name="img">
    <xsl:attribute name="alt"><xsl:value-of select="$malt"/></xsl:attribute>
    
+   <xsl:if test="ancestor::snippet">
+    <xsl:attribute name="title">
+     <xsl:apply-templates select="summary" mode="post"/>
+    </xsl:attribute>
+   </xsl:if>
+   <xsl:if test="ancestor::summary">
+    <xsl:attribute name="title">
+     <xsl:apply-templates select="ancestor::summary" mode="post"/>
+    </xsl:attribute>
+   </xsl:if>
+   <xsl:if test="descendant::summary">
+    <xsl:attribute name="title">
+     <xsl:apply-templates select="descendant::summary" mode="post"/>
+    </xsl:attribute>
+   </xsl:if>
+   
    <xsl:attribute name="src">
-    <xsl:text>i/</xsl:text>
+    <xsl:text>../imgs/</xsl:text>
     <xsl:value-of select="local-name(.)"/>
     <xsl:text>.png</xsl:text>
    </xsl:attribute>
@@ -111,17 +127,18 @@
  </a>
 </xsl:template>
 
-<xsl:template match="a"><img alt="." src="i/a.png"/></xsl:template>
-<xsl:template match="b"><img alt="|" src="i/b.png"/></xsl:template>
-<xsl:template match="c"><img alt="-" src="i/c.png"/></xsl:template>
-<xsl:template match="d"><img alt="\" src="i/d.png"/></xsl:template>
-<xsl:template match="e"><img alt="+" src="i/e.png"/></xsl:template>
+<xsl:template match="a"><img alt="." src="../imgs/a.png"/></xsl:template>
+<xsl:template match="b"><img alt="|" src="../imgs/b.png"/></xsl:template>
+<xsl:template match="c"><img alt="-" src="../imgs/c.png"/></xsl:template>
+<xsl:template match="d"><img alt="\" src="../imgs/d.png"/></xsl:template>
+<xsl:template match="e"><img alt="+" src="../imgs/e.png"/></xsl:template>
 <xsl:template match="f"><xsl:call-template name="msg-thread"/></xsl:template>
 <xsl:template match="g"><xsl:call-template name="msg-thread"/></xsl:template>
 <xsl:template match="h"><xsl:call-template name="msg-thread"/></xsl:template>
 <xsl:template match="i"><xsl:call-template name="msg-thread"/></xsl:template>
 <xsl:template match="j"><xsl:call-template name="msg-thread"/></xsl:template>
 <xsl:template match="k"><xsl:call-template name="msg-thread"/></xsl:template>
+<xsl:template match="br"><xsl:if test="not(ancestor::art)"><br/></xsl:if></xsl:template>
 
 <xsl:template match="summary">
  <xsl:element name="tr">
