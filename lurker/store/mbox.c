@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.8 2002-02-10 21:57:39 terpstra Exp $
+/*  $Id: mbox.c,v 1.9 2002-02-12 05:38:36 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -23,7 +23,9 @@
  */
 
 #define _GNU_SOURCE
-// #define DEBUG 1
+
+/*!!! Don't forget to turn off in final release */
+#define DEBUG 1
 
 #include "common.h"
 #include "io.h"
@@ -64,6 +66,9 @@ static int my_mbox_lock_mbox(
 	
 	if (mbox->locked)
 		return 0;
+#ifdef DEBUG
+	printf("l"); fflush(stdout);
+#endif
 
 #ifdef USE_LOCK_FCNTL	
 	memset (&lck, 0, sizeof (struct flock));
@@ -96,6 +101,9 @@ static int my_mbox_unlock_mbox(
 	
 	if (!mbox->locked)
 		return 0;
+#ifdef DEBUG
+	printf("u"); fflush(stdout);
+#endif
 	
 #ifdef USE_LOCK_FCNTL
 	lck.l_type = F_UNLCK;
@@ -123,6 +131,8 @@ static void my_mbox_process_mbox(
 	char*		author_name;
 	char		author_email[200];
 	int		error;
+	
+	assert(mbox->locked);
 	
 	old = lseek(mbox->fd, 0, SEEK_CUR);
 	if (old == -1)
@@ -213,8 +223,9 @@ static void my_mbox_process_mbox(
 			m->env->message_id,
 			m->env->in_reply_to);
 		
-		/*!!! don't forget to remove this in release */
+#ifdef DEBUG
 		printf("."); fflush(stdout);
+#endif
 		
 		mail_free(m);
 	}
@@ -293,6 +304,8 @@ static time_t my_mbox_extract_timestamp(
 	char*	t2;
 	off_t	old;
 	ssize_t	got;
+	
+	assert(mbox->locked);
 	
 	old = lseek(mbox->fd, 0, SEEK_CUR);
 	if (old == -1)
