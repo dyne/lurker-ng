@@ -56,7 +56,7 @@
  <xsl:apply-templates mode="date" select="."/>
 </xsl:template>
 <xsl:template match="summary" mode="post-description-link">
- <a href="../message/{id}">
+ <a href="../message/{id}.{$ext}">
   <xsl:apply-templates mode="post-description" select="."/>
  </a>
 </xsl:template>
