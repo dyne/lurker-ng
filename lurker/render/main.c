@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.15 2002-05-03 19:57:33 terpstra Exp $
+/*  $Id: main.c,v 1.16 2002-05-03 20:42:43 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -321,6 +321,13 @@ int main(int argc, char* argv[])
 	/* Output the data if we cached it */	
 	if (fd != -1)
 	{
+		/* Decide if we should delete it anyways */
+		fgets(&cache[0], sizeof(cache), lu_server_link);
+		if (cache[0] == '0') 
+		{
+			unlink(&buf[0]);
+		}
+		
 		/* Reclaim out stdout */
 		fflush(stdout);
 		close(1);

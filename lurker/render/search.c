@@ -8,6 +8,16 @@
 
 static char is_div[256];
 
+const char redirect_error[] = 
+"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
+"<html><head>\r\n"
+"<title>301 Moved Permanently</title>\r\n"
+"</head><body>\r\n"
+"<h1>Moved Permanently</h1>\r\n"
+"The document has moved <a href=\"%s/search/%s.%s\">here</a>.\r\n"
+"<p><hr>\r\n"
+"</body></html>\r\n";
+
 static void extract_keyword(
 	const char* parameter, 
 	char** w,
