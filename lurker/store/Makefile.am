@@ -1,6 +1,6 @@
 dbdir = @dbdir@
 
-INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common
+INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common -I${top_srcdir}/libkap
 
 REQUESTS = message mindex search splash mbox attach thread jump
 
@@ -13,20 +13,17 @@ lurkerd_SOURCES = \
 	config.h   config.c   \
 	decode.h   decode.c   \
 	md5.h      md5.c      \
-	flatfile.h flatfile.c \
-	wbuffer.h  wbuffer.c  \
 	indexer.h  indexer.c  \
 	summary.h  summary.c  \
 	mbox.h     mbox.c     \
-	breader.h  breader.c  \
 	search.h   search.c   \
 	service.h  service.c  \
-	main.c     btree.h    \
 	expiry.c   expiry.h   \
+	main.c     \
 	url.c mailto.c quote.c art.c
 
 
-lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV} @INTLLIBS@ -lm
+lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ../libkap/libkap.a ${LIBICONV} @INTLLIBS@ -lm
 
 install-data-local:
 	@list='$(REQUESTS)'; for p in $$list; do \

@@ -77,6 +77,7 @@ INTLLIBS = @INTLLIBS@
 INTLOBJS = @INTLOBJS@
 INTL_LIBTOOL_SUFFIX_PREFIX = @INTL_LIBTOOL_SUFFIX_PREFIX@
 LIBICONV = @LIBICONV@
+MAINT = @MAINT@
 MKINSTALLDIRS = @MKINSTALLDIRS@
 MSGFMT = @MSGFMT@
 OBJEXT = @OBJEXT@
@@ -97,7 +98,7 @@ wwwdir = @wwwdir@
 
 dbdir = @dbdir@
 
-INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common
+INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common -I${top_srcdir}/libkap
 
 REQUESTS = message mindex search splash mbox attach thread jump
 
@@ -110,20 +111,17 @@ lurkerd_SOURCES = \
 	config.h   config.c   \
 	decode.h   decode.c   \
 	md5.h      md5.c      \
-	flatfile.h flatfile.c \
-	wbuffer.h  wbuffer.c  \
 	indexer.h  indexer.c  \
 	summary.h  summary.c  \
 	mbox.h     mbox.c     \
-	breader.h  breader.c  \
 	search.h   search.c   \
 	service.h  service.c  \
-	main.c     btree.h    \
 	expiry.c   expiry.h   \
+	main.c     \
 	url.c mailto.c quote.c art.c
 
 
-lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV} @INTLLIBS@ -lm
+lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ../libkap/libkap.a ${LIBICONV} @INTLLIBS@ -lm
 subdir = store
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
@@ -132,13 +130,12 @@ sbin_PROGRAMS = lurkerd$(EXEEXT)
 PROGRAMS = $(sbin_PROGRAMS)
 
 am_lurkerd_OBJECTS = config.$(OBJEXT) decode.$(OBJEXT) md5.$(OBJEXT) \
-	flatfile.$(OBJEXT) wbuffer.$(OBJEXT) indexer.$(OBJEXT) \
-	summary.$(OBJEXT) mbox.$(OBJEXT) breader.$(OBJEXT) \
-	search.$(OBJEXT) service.$(OBJEXT) main.$(OBJEXT) \
-	expiry.$(OBJEXT) url.$(OBJEXT) mailto.$(OBJEXT) quote.$(OBJEXT) \
+	indexer.$(OBJEXT) summary.$(OBJEXT) mbox.$(OBJEXT) \
+	search.$(OBJEXT) service.$(OBJEXT) expiry.$(OBJEXT) \
+	main.$(OBJEXT) url.$(OBJEXT) mailto.$(OBJEXT) quote.$(OBJEXT) \
 	art.$(OBJEXT)
 lurkerd_OBJECTS = $(am_lurkerd_OBJECTS)
-lurkerd_DEPENDENCIES = ../common/libcommon.a
+lurkerd_DEPENDENCIES = ../common/libcommon.a ../libkap/libkap.a
 lurkerd_LDFLAGS =
 
 DEFS = @DEFS@
@@ -147,15 +144,13 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/art.Po $(DEPDIR)/breader.Po \
-@AMDEP_TRUE@	$(DEPDIR)/config.Po $(DEPDIR)/decode.Po \
-@AMDEP_TRUE@	$(DEPDIR)/expiry.Po $(DEPDIR)/flatfile.Po \
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/art.Po $(DEPDIR)/config.Po \
+@AMDEP_TRUE@	$(DEPDIR)/decode.Po $(DEPDIR)/expiry.Po \
 @AMDEP_TRUE@	$(DEPDIR)/indexer.Po $(DEPDIR)/mailto.Po \
 @AMDEP_TRUE@	$(DEPDIR)/main.Po $(DEPDIR)/mbox.Po \
 @AMDEP_TRUE@	$(DEPDIR)/md5.Po $(DEPDIR)/quote.Po \
 @AMDEP_TRUE@	$(DEPDIR)/search.Po $(DEPDIR)/service.Po \
-@AMDEP_TRUE@	$(DEPDIR)/summary.Po $(DEPDIR)/url.Po \
-@AMDEP_TRUE@	$(DEPDIR)/wbuffer.Po
+@AMDEP_TRUE@	$(DEPDIR)/summary.Po $(DEPDIR)/url.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -171,10 +166,10 @@ all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .o .obj
-$(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --gnu  store/Makefile
-Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && \
 	  CONFIG_HEADERS= CONFIG_LINKS= \
 	  CONFIG_FILES=$(subdir)/$@ $(SHELL) ./config.status
@@ -212,11 +207,9 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/art.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/breader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/decode.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/expiry.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/flatfile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/indexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/mailto.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/main.Po@am__quote@
@@ -227,7 +220,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/service.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/summary.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/url.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/wbuffer.Po@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)
