@@ -67,28 +67,12 @@
     </table>
     
     <table class="navigation">
-     <tr><th colspan="2"><xsl:value-of select="$search-thread"/></th></tr>
      <tr>
-      <td>
-        <!-- make this the same height as mindex -->
-        <img src="../imgs/a.png" width="1" height="24" alt=""/>
-      </td>
-      <td nowrap="NOWRAP" align="center">
-       <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">
-        <input type="hidden" name="doc-url" value="{server/doc-url}"/>
-        <input type="hidden" name="format"  value="{$ext}"/>
-        <input type="text"   name="query"   value="th:{hash} " class="longtext"/>
-        <input type="submit" name="submit"  value="{$search}!"/>
-       </form>
-      </td>
+      <th colspan="2" align="left">
+       <xsl:value-of select="$thread-appears-in"/>
+      </th>
      </tr>
-     <tr>
-      <td colspan="2" align="center">
-       <xsl:value-of select="$use-special-word-thread"/>
-       <b>ml:<xsl:value-of select="hash"/></b>
-       <xsl:value-of select="$to-search-thread"/>
-      </td>
-     </tr>
+     <xsl:apply-templates mode="appear-in" select="list"/>
     </table>
    </div>
    
@@ -116,12 +100,28 @@
    
    <div class="footer">
     <table class="navigation">
+     <tr><th colspan="2"><xsl:value-of select="$search-thread"/></th></tr>
      <tr>
-      <th colspan="2" align="left">
-       <xsl:value-of select="$thread-appears-in"/>
-      </th>
+      <td>
+        <!-- make this the same height as mindex -->
+        <img src="../imgs/a.png" width="1" height="24" alt=""/>
+      </td>
+      <td nowrap="NOWRAP" align="center">
+       <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">
+        <input type="hidden" name="doc-url" value="{server/doc-url}"/>
+        <input type="hidden" name="format"  value="{$ext}"/>
+        <input type="text"   name="query"   value="th:{hash} " class="longtext"/>
+        <input type="submit" name="submit"  value="{$search}!"/>
+       </form>
+      </td>
      </tr>
-     <xsl:apply-templates mode="appear-in" select="list"/>
+     <tr>
+      <td colspan="2" align="center">
+       <xsl:value-of select="$use-special-word-thread"/>
+       <b>ml:<xsl:value-of select="hash"/></b>
+       <xsl:value-of select="$to-search-thread"/>
+      </td>
+     </tr>
     </table>
     <xsl:call-template name="lurker-signature"/>
    </div>
