@@ -9,6 +9,7 @@ Unfulfilled requirements:
 	Better packing of tree
 
 BUGS:
+	Config reloading is broken
 	Writes to an open KRecord are not reflected in read cache
 	We no longer support block device operation for append
 	We don't check for double append
