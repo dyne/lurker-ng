@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.76 2002-06-21 18:19:04 terpstra Exp $
+/*  $Id: service.c,v 1.77 2002-07-11 23:33:26 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -36,7 +36,6 @@
 #include "config.h"
 #include "summary.h"
 #include "search.h"
-#include "breader.h"
 #include "expiry.h"
 #include "mbox.h"
 #include "service.h"
@@ -1080,7 +1079,8 @@ static int my_service_summary(
 {
 	Lu_Summary_Message	msg;
 	
-	msg = lu_summary_read_msummary(id);
+	if (lu_summary_read_msummary(id, &msg) != 0)
+		return -1;
 	
 	if (my_service_buffer_write(h, "  <summary>\n")  != 0) return -1;
 	if (my_service_summary_body(h, id, &msg)         != 0) return -1;
@@ -1096,24 +1096,24 @@ static int my_service_thread_load(
 	int*			out_tree_size)
 {
 	char			key[20];
-	Lu_Breader_Handle	b;
 	My_Service_Reply_Tree*	tree;
 	int			tree_size;
-	int			i;
+	int			i, out;
+	KRecord			kr;
 	
 	snprintf(&key[0], sizeof(key), "%s%d", LU_KEYWORD_THREAD, id);
-	b = lu_breader_new(&key[0]);
-	if (b == 0)
+	out = kap_kopen(lu_config_keyword, &kr, &key[0]);
+	if (out != 0)
 	{
 		my_service_error(h,
 			_("Internal Server Error"),
-			_("Lurkerd failed to open a breader for thread"),
-			&key[0]);
+			_("Lurkerd failed to open a KRecord for thread"),
+			kap_strerror(out));
 		
 		goto my_service_thread_load_error0;
 	}
 	
-	if (lu_breader_records(b) == 0)
+	if (kr.records == 0)
 	{
 		my_service_error(h,
 			_("Thread Not Found"),
@@ -1123,7 +1123,7 @@ static int my_service_thread_load(
 		goto my_service_thread_load_error1;
 	}
 	
-	*out_tree_size = tree_size = lu_breader_records(b);
+	*out_tree_size = tree_size = kr.records;
 	*out_tree = tree = malloc(tree_size * sizeof(My_Service_Reply_Tree));
 	if (!tree)
 	{
@@ -1137,18 +1137,18 @@ static int my_service_thread_load(
 	
 	for (i = 0; i < tree_size; i++)
 	{
-		if (lu_breader_read(b, i, 1, &tree[i].id) != 0)
+		if ((out = kap_kread(lu_config_keyword, &kr, &key[0],
+			i, &tree[i].id, 1)) != 0)
 		{
 			my_service_error(h,
 				_("Internal Server Error"),
-				_("Lurkerd was unable to read a breader"),
-				&key[0]);
+				_("Lurkerd was unable to read from a krecord"),
+				kap_strerror(out));
 		
 			goto my_service_thread_load_error2;
 		}
 		
-		tree[i].summary = lu_summary_read_msummary(tree[i].id);
-		if (tree[i].summary.timestamp == 0)
+		if (lu_summary_read_msummary(tree[i].id, &tree[i].summary) != 0)
 		{
 			my_service_error(h,
 				_("Internal Server Error"),
@@ -1159,20 +1159,20 @@ static int my_service_thread_load(
 		}
 	}
 	
-	lu_breader_free(b);
+	kap_kclose(lu_config_keyword, &kr, &key[0]);
 	return 0;
 
 my_service_thread_load_error2:
 	free(tree);
 my_service_thread_load_error1:
-	lu_breader_free(b);
+	kap_kclose(lu_config_keyword, &kr, &key[0]);
 my_service_thread_load_error0:
 	return -1;
 }
 
 static int my_service_tree_compare(const void* a, const void* b)
 {
-	message_id key = *(message_id*)a;
+	message_id key = *(const message_id*)a;
 	message_id val = ((const My_Service_Reply_Tree*)b)->id;
 	
 	if (key < val)	return -1;
@@ -1397,8 +1397,7 @@ static int my_service_mbox(
 		goto my_service_mbox_error0;
 	}
 	
-	msg = lu_summary_read_msummary(id);
-	if (msg.timestamp == 0)
+	if (lu_summary_read_msummary(id, &msg) != 0)
 	{
 		my_service_error(h,
 			_("Internal Error"),
@@ -1518,8 +1517,7 @@ static int my_service_attach(
 		goto my_service_attach_error0;
 	}
 	
-	msg = lu_summary_read_msummary(id);
-	if (msg.timestamp == 0)
+	if (lu_summary_read_msummary(id, &msg) != 0)
 	{
 		my_service_error(h,
 			_("Internal Error"),
@@ -1710,14 +1708,14 @@ static int my_service_message(
 	Lu_Config_List*		list;
 	Lu_Config_Mbox*		mbox;
 	
-	Lu_Breader_Handle	b;
+	KRecord			kr;
 	char			keyword[LU_KEYWORD_LEN+1];
 	const char*		coding;
 	
 	message_id		count, ind, get, i, buf[20];
 	
 	My_Service_Reply_Tree*	tree = 0;
-	int			tree_size, p, n, j, head, cols;
+	int			tree_size, p, n, j, head, cols, out;
 	
 	if (strcmp(ext, "xml") && strcmp(ext, "html"))
 	{
@@ -1739,8 +1737,7 @@ static int my_service_message(
 		goto my_service_message_error0;
 	}
 	
-	msg = lu_summary_read_msummary(id);
-	if (msg.timestamp == 0)
+	if (lu_summary_read_msummary(id, &msg) != 0)
 	{
 		my_service_error(h,
 			_("Internal Error"),
@@ -1805,19 +1802,19 @@ static int my_service_message(
 			LU_KEYWORD_REPLY_TO,
 			lu_decode_id(mmsg.env->message_id));
 		
-		b = lu_breader_new(&keyword[0]);
-		if (b == 0)
+		out = kap_kopen(lu_config_keyword, &kr, &keyword[0]);
+		if (out != 0)
 		{
 			my_service_error(h,
 				_("Internal Error"),
 				_("Lurkerd was unable to access the reply-to keyword"),
-				request);
+				kap_strerror(out));
 			goto my_service_message_error2;
 		}
 	}
 	else
 	{
-		b = 0;
+		out = -1;
 	}
 	
 	coding = lu_mbox_find_charset(mmsg.body);
@@ -1881,7 +1878,7 @@ static int my_service_message(
 		if (my_service_buffer_write(h, "  </inreplyto>\n") != 0) goto my_service_message_error3;
 	}
 	
-	if (b != 0 && (count = lu_breader_records(b)) != 0)
+	if (out == 0 && (count = kr.records) != 0)
 	{
  		ind = 0;
  		
@@ -1893,7 +1890,8 @@ static int my_service_message(
  			if (get > sizeof(buf)/sizeof(message_id))
  				get = sizeof(buf)/sizeof(message_id);
  			
- 			if (lu_breader_read(b, ind, get, &buf[0]) != 0)
+ 			if (kap_kread(lu_config_keyword, &kr, &keyword[0],
+ 				ind, &buf[0], get) != 0)
  				goto my_service_message_error3;
  			
  			for (i = 0; i < get; i++)
@@ -1936,13 +1934,13 @@ static int my_service_message(
 	if (my_service_traverse(h, &mmsg, mmsg.body, 0, 1) == -1) goto my_service_message_error3;
 	if (my_service_buffer_write(h, "</message>\n")  != 0) goto my_service_message_error3;
 	
-	if (b != 0) lu_breader_free(b);
+	if (out == 0) kap_kclose(lu_config_keyword, &kr, &keyword[0]);
 	lu_mbox_destroy_message(&mmsg);
 	lu_mbox_destroy_map(&cmsg);
 	return 0;
 	
 my_service_message_error3:
-	if (b != 0) lu_breader_free(b);
+	if (out == 0) kap_kclose(lu_config_keyword, &kr, &keyword[0]);
 	if (tree != 0) free(tree);
 my_service_message_error2:
 	lu_mbox_destroy_message(&mmsg);
@@ -1959,7 +1957,7 @@ static int my_service_earlier_than(
 	lu_quad			tm = *(lu_quad*)arg;
 	Lu_Summary_Message	sum;
 	
-	sum = lu_summary_read_msummary(id);
+	lu_summary_read_msummary(id, &sum);
 	if (sum.timestamp < tm) return 1;
 	return 0;
 }
@@ -2060,13 +2058,13 @@ static int my_service_mindex(
 	const char* request,
 	const char* ext)
 {
-	Lu_Breader_Handle	b;
+	KRecord			kr;
 	Lu_Config_List*		l;
 	message_id		offset;
 	int			list;
 	char			keyword[40];
 	message_id		ids[LU_PROTO_INDEX];
-	int			i;
+	int			i, out;
 	message_id		count;
 	Lu_Summary_Message	msg;
 	time_t			tt;
@@ -2114,18 +2112,18 @@ static int my_service_mindex(
 	}
 	
 	sprintf(&keyword[0], "%s%d", LU_KEYWORD_LIST, list);
-	b = lu_breader_new(&keyword[0]);
-	if (b == 0)
+	out = kap_kopen(lu_config_keyword, &kr, &keyword[0]);
+	if (out != 0)
 	{
 		my_service_error(h,
 			_("Internal error"),
 			_("Lurkerd failed to access the keyword database"),
-			_("server failure - see log files"));
+			kap_strerror(out));
 		
 		goto my_service_mindex_error0;
 	}
 	
-	if (offset >= lu_breader_records(b))
+	if (offset >= kr.records)
 	{
 		my_service_error(h,
 			_("Invalid request"),
@@ -2135,24 +2133,35 @@ static int my_service_mindex(
 		goto my_service_mindex_error1;
 	}
 	
-	count = lu_breader_records(b) - offset;
+	count = kr.records - offset;
 	if (count > LU_PROTO_INDEX)
 		count = LU_PROTO_INDEX;
 	
-	if (lu_breader_read(b, offset, count, &ids[0]) != 0)
+	if ((out = kap_kread(lu_config_keyword, &kr, &keyword[0],
+		offset, &ids[0], count)) != 0)
 	{
 		my_service_error(h,
 			_("Internal error"),
 			_("Lurkerd failed to retrieve the records from the keyword file"),
-			_("server failure - see log files"));
+			kap_strerror(out));
 		
 		goto my_service_mindex_error1;
 	}
 	
+	if (lu_summary_read_msummary(ids[0], &msg) != 0)
+	{
+		my_service_error(h,
+			_("Internal error"),
+			_("Lurkerd failed to retrieve the first summary record for the file"),
+			kap_strerror(out));
+		
+		goto my_service_mindex_error1;
+	}
+
 	/* We shouldn't change if we already have next link */
 	if (my_service_buffer_init(h, "text/xml\n", 1, 
 		lu_config_cache_index_ttl,
-		(offset+count<lu_breader_records(b))?LU_EXPIRY_NO_LIST:list) != 0)
+		(offset+count<kr.records)?LU_EXPIRY_NO_LIST:list) != 0)
 	{
 		goto my_service_mindex_error1;
 	}
@@ -2162,7 +2171,7 @@ static int my_service_mindex(
 	if (my_service_write_int(h, offset)                   != 0) goto my_service_mindex_error1;
 	if (my_service_buffer_write(h, "</offset>\n")         != 0) goto my_service_mindex_error1;
 	
-	if (offset + count != lu_breader_records(b))
+	if (offset + count != kr.records)
 	{
 		if (my_service_buffer_write(h, " <next>")            != 0) goto my_service_mindex_error1;
 		if (my_service_write_int(h, offset + LU_PROTO_INDEX) != 0) goto my_service_mindex_error1;
@@ -2178,10 +2187,9 @@ static int my_service_mindex(
 	
 	if (my_service_server(h) != 0) goto my_service_mindex_error1;
 	
-	if (my_service_list(h, l, lu_breader_records(b), offset) != 0) goto my_service_mindex_error1;
-	lu_breader_free(b);
+	if (my_service_list(h, l, kr.records, offset) != 0) goto my_service_mindex_error1;
+	kap_kclose(lu_config_keyword, &kr, &keyword[0]);
 	
-	msg = lu_summary_read_msummary(ids[0]);
 	tt = msg.timestamp;
 	tm = localtime(&tt);
 	
@@ -2213,7 +2221,7 @@ static int my_service_mindex(
 	return 0;
 	
 my_service_mindex_error1:
-	lu_breader_free(b);
+	kap_kclose(lu_config_keyword, &kr, &keyword[0]);
 	
 my_service_mindex_error0:
 	return -1;
@@ -2553,7 +2561,8 @@ static int my_service_splash(
 {
 	Lu_Config_List*		scan;
 	char			key[40];
-	message_id		messages;
+	KRecord			kr;
+	int			out;
 	
 	if (strcmp(request, "index"))
 	{
@@ -2584,15 +2593,22 @@ static int my_service_splash(
 		scan++)
 	{
 		snprintf(&key[0], sizeof(key), "%s%d", LU_KEYWORD_LIST, scan->id);
-		messages = lu_breader_quick_records(&key[0]);
+		
+		/*!!! would be nice if we didn't blow cache away*/
+		out = kap_kopen(lu_config_keyword, &kr, &key[0]);
+		if (out != 0) return -1;
+		
 		if (my_service_list(
 			h, 
 			scan, 
-			messages, 
-			(messages - 1) / LU_PROTO_INDEX * LU_PROTO_INDEX) != 0)
+			kr.records, 
+			(kr.records - 1) / LU_PROTO_INDEX * LU_PROTO_INDEX) != 0)
 		{
 			return -1;
 		}
+		
+		out = kap_kclose(lu_config_keyword, &kr, &key[0]);
+		if (out != 0) return -1;
 	}
 	
 	if (my_service_buffer_write(h, "</splash>\n") != 0) return -1;
@@ -2602,27 +2618,27 @@ static int my_service_splash(
 
 /*------------------------------------------------- Public component methods */
 
-int lu_service_init()
+int lu_service_init(void)
 {
 	return 0;
 }
 
-int lu_service_open()
+int lu_service_open(void)
 {
 	return 0;
 }
 
-int lu_service_sync()
+int lu_service_sync(void)
 {
 	return 0;
 }
 
-int lu_service_close()
+int lu_service_close(void)
 {
 	return 0;
 }
 
-int lu_service_quit()
+int lu_service_quit(void)
 {
 	return 0;
 }
