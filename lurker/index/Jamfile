@@ -11,3 +11,5 @@ LinkLibraries lurker-index : libesort libcommon ;
 
 InstallBin $(BINDIR) : lurker-index ;
 InstallFile $(VARDIR)/lib/$(PACKAGE) : stub ;
+
+InstallMan $(MANDIR) : lurker-index.1 ;
