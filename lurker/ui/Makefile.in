@@ -122,7 +122,7 @@ htmldir = ${wwwdir}
 
 dist_fmt_DATA = \
 	default.css common.js english.xsl common.xsl list.xsl message.xsl \
-	mindex.xsl search.xsl splash.xsl thread.xsl
+	mindex.xsl search.xsl splash.xsl thread.xsl deutsch.xsl
 
 
 dist_html_DATA = index.html
