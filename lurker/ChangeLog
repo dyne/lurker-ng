@@ -7,6 +7,7 @@ v0.1d:
 	Quadrupled the cache dump frequency
 	Added command-line option for disabling import
 	Added command-line option for disabling service
+	Made the splash page display only list names in four column mode
 	Made the AVL trees reentrant
 	Reintegrated the read buffer into libkap -> faster searches
 	mmap is used for .append files to allow async writes
