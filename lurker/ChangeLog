@@ -10,6 +10,7 @@ v0.10:
 	New config option can disable web cache for low traffic sites
 	New config options specify how to handle gpg signatures
 	Verify gpg signatures and format them for the user
+	Display included photos from the gpg keyring of signed emails
 	All displayed dates will be browser local time if javascript is on
 	Mail with an unescaped From is now converted to quoted-printable
 	Added a heuristic to try and detect unescaped 'From ' lines
