@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.23 2002-02-22 01:56:44 terpstra Exp $
+/*  $Id: service.c,v 1.24 2002-02-22 02:43:59 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -54,6 +54,13 @@ typedef struct My_Service_Handle_T
 	st_netfd_t	fd;
 }* My_Service_Handle;
 
+/*------------------------------------------------- Private globals */
+
+static const char* my_service_mime[] = 
+{	"text", "multipart", "message", "application", "audio", 
+	"image", "video", "model", "x-unknown"
+};
+	    
 /*------------------------------------------------- Private helper methods */
 
 static int my_service_buffer_writel(
@@ -409,11 +416,6 @@ static int my_service_traverse(
 	struct mail_bodystruct* body,
 	int			count)
 {
-	static const char* names[] = 
-	{	"text", "multipart", "message", "application", "audio", 
-		"image", "video", "model", "x-unknown"
-	};
-	    
 	struct mail_body_part*	p;
 	size_t			length;
 	char*			buffer;
@@ -429,13 +431,14 @@ static int my_service_traverse(
 	
 	name = my_service_find_name(body);
 	
-	if (my_service_buffer_write(h, "<mime id=\""    ) != 0) return -1;
-	if (my_service_write_int   (h, count            ) != 0) return -1;
-	if (my_service_buffer_write(h, "\" type=\""     ) != 0) return -1;
-	if (my_service_buffer_write(h, names[body->type]) != 0) return -1;
-	if (my_service_buffer_write(h, "/"              ) != 0) return -1;
-	if (my_service_buffer_write(h, body->subtype    ) != 0) return -1;
-	if (my_service_buffer_write(h, "\""             ) != 0) return -1;
+	if (my_service_buffer_write(h, "<mime id=\"") != 0) return -1;
+	if (my_service_write_int   (h, count        ) != 0) return -1;
+	if (my_service_buffer_write(h, "\" type=\"" ) != 0) return -1;
+	if (my_service_buffer_write(h, 
+	                 my_service_mime[body->type]) != 0) return -1;
+	if (my_service_buffer_write(h, "/"          ) != 0) return -1;
+	if (my_service_buffer_write(h, body->subtype) != 0) return -1;
+	if (my_service_buffer_write(h, "\""         ) != 0) return -1;
 	
 	if (name)
 	{
@@ -494,6 +497,50 @@ static int my_service_traverse(
 	if (my_service_buffer_write(h, "</mime>\n") != 0) return -1;
 	
 	return count;
+}
+
+static struct mail_bodystruct* my_service_attach_id(
+	struct Lu_Mbox_Message* in, 
+	struct mail_bodystruct* body,
+	int*			count)
+{
+	struct mail_bodystruct* s;
+	struct mail_body_part*	p;
+	
+	if (*count == 0)
+	{	/* Base case */
+		return body;
+	}
+	
+	if (!body)
+	{	/* You never know... */
+		return 0;
+	}
+	
+	(*count)--;
+	
+	switch ((int)body->type)
+	{
+		case TYPEMESSAGE:
+			return my_service_attach_id(in, 
+				body->nested.msg->body, count);
+			break;
+
+		case TYPEMULTIPART:
+			/*
+			 * Multipart message.  Look at the nested parts
+			 * and hopefully find some plaintext.
+			 */
+			for (p = body->nested.part; p != NULL; p = p->next)
+			{
+				s = my_service_attach_id(in,
+					&p->body, count);
+				if (s) return s;
+			}
+			break;
+	}
+	
+	return 0;
 }
 
 static int my_service_list(
@@ -662,12 +709,168 @@ static int my_service_getmbox(
 	base += cmsg.headers - cmsg.map.off;
 	len = cmsg.end - cmsg.headers;
 	
-	my_service_buffer_writel(h, base, len);
+	if (my_service_buffer_writel(h, base, len) != 0)
+		goto my_service_getmbox_error1;
 	
 	lu_mbox_destroy_map(&cmsg);
 	return 0;
 
+my_service_getmbox_error1:
+	lu_mbox_destroy_map(&cmsg);
+	
 my_service_getmbox_error0:
+	return -1;
+}
+
+static int my_service_attach(
+	My_Service_Handle h, 
+	const char* request)
+{
+	char*		eptr;
+	char*		next;
+	message_id	id;
+	int		aid;
+	lu_addr		bits;
+	
+	lu_word		list_id;
+	lu_word		mbox_id;
+	off_t		offset;
+	
+	Lu_Summary_Message		msg;
+	struct Lu_Config_Message	cmsg;
+	struct Lu_Mbox_Message		mmsg;
+	
+	Lu_Config_List*		list;
+	Lu_Config_Mbox*		mbox;
+	
+	struct mail_bodystruct*	attach;
+	char*			base;
+	size_t			len;
+	int			nfree;
+	
+	id = strtoul(request, &eptr, 0);
+	if (eptr == request || (*eptr && !isspace(*eptr)))
+	{	/* There was nothing valid, or it did not end in whitespace
+		 * or a null.
+		 */
+		my_service_error(h,
+			"Malformed request",
+			"Lurkerd received a request for a non-numeric message",
+			request);
+		goto my_service_attach_error0;
+	}
+	
+	next = eptr;
+	aid = strtoul(next, &eptr, 0);
+	if (eptr == next || (*eptr && !isspace(*eptr)))
+	{
+		my_service_error(h,
+			"Malformed request",
+			"Lurkerd received a request for a non-numeric attachment",
+			request);
+		goto my_service_attach_error0;
+	}
+	
+	msg = lu_summary_read_msummary(id);
+	if (msg.timestamp == 0)
+	{
+		my_service_error(h,
+			"Internal Error",
+			"Lurkerd failed to retrieve the summary for the named message",
+			request);
+		goto my_service_attach_error0;
+	}
+	
+	bits = msg.flat_offset;
+	bits >>= (sizeof(lu_addr)*8) - 16;
+	list_id = bits;
+	
+	bits = msg.mbox_offset;
+	bits >>= (sizeof(lu_addr)*8) - 16;
+	mbox_id = bits;
+	
+	bits = 0xFFFFUL;
+	bits <<= (sizeof(lu_addr)*8) - 16;
+	offset = msg.mbox_offset & ~bits;
+	
+	list = lu_config_find_list(list_id);
+	if (!list)
+	{
+		my_service_error(h,
+			"Internal Error",
+			"Lurkerd has a message which refers to a missing mailing list",
+			request);
+		goto my_service_attach_error0;
+	}
+	
+	mbox = lu_config_find_mbox(list, mbox_id);
+	if (!mbox)
+	{
+		my_service_error(h,
+			"Internal Error",
+			"Lurkerd has a message which refers to a missing mailbox",
+			request);
+		goto my_service_attach_error0;
+	}
+	
+	if (lu_mbox_map_message(mbox, &cmsg, offset) != 0)
+	{
+		my_service_error(h,
+			"Internal Error",
+			"Lurkerd was unable to mmap the message into memory",
+			request);
+		goto my_service_attach_error0;
+	}
+	
+	if (lu_mbox_parse_message(&cmsg, &mmsg) != 0)
+	{
+		my_service_error(h,
+			"Internal Error",
+			"Lurkerd was unable to parse the message",
+			request);
+		goto my_service_attach_error1;
+	}
+	
+	attach = my_service_attach_id(&mmsg, mmsg.body, &aid);
+	
+	if (!attach)
+	{
+		my_service_error(h,
+			"Malformed request",
+			"Lurkerd received a request for a non-existant attachment",
+			request);
+		goto my_service_attach_error2;
+	}
+	
+	if (attach->type > 8) attach->type = 8;
+	
+	if (my_service_buffer_write(h, "Content-type: ") != 0) goto my_service_attach_error2;
+	if (my_service_write_str   (h, 
+	                  my_service_mime[attach->type]) != 0) goto my_service_attach_error2;
+	if (my_service_buffer_write(h, "/")              != 0) goto my_service_attach_error2;
+	if (my_service_write_str   (h, attach->subtype)  != 0) goto my_service_attach_error2;
+	if (my_service_buffer_write(h, "\r\n\r\n")       != 0) goto my_service_attach_error2;
+	
+	base = lu_mbox_select_body(&mmsg, attach, &len, &nfree);
+	
+	if (my_service_buffer_writel(h, base, len) != 0)
+		goto my_service_attach_error3;
+	
+	if (nfree) fs_give((void**)&base);
+	lu_mbox_destroy_message(&mmsg);
+	lu_mbox_destroy_map(&cmsg);
+	return 0;
+
+my_service_attach_error3:
+	if (nfree) fs_give((void**)&base);
+	
+my_service_attach_error2:
+	lu_mbox_destroy_message(&mmsg);
+	
+my_service_attach_error1:
+	lu_mbox_destroy_map(&cmsg);
+	
+my_service_attach_error0:
 	return -1;
 }
 
@@ -1138,6 +1341,8 @@ static int my_service_digest_request(My_Service_Handle h, const char* request)
 		out = my_service_getmsg(h, request+sizeof(LU_PROTO_GETMSG)-1);
 	if (!memcmp(request, LU_PROTO_GETMBOX, sizeof(LU_PROTO_GETMBOX)-1)) 
 		out = my_service_getmbox(h, request+sizeof(LU_PROTO_GETMBOX)-1);
+	if (!memcmp(request, LU_PROTO_ATTACH, sizeof(LU_PROTO_ATTACH)-1)) 
+		out = my_service_attach(h, request+sizeof(LU_PROTO_ATTACH)-1);
 	if (!memcmp(request, LU_PROTO_MINDEX, sizeof(LU_PROTO_MINDEX)-1)) 
 		out = my_service_mindex(h, request+sizeof(LU_PROTO_MINDEX)-1);
 	if (!memcmp(request, LU_PROTO_SEARCH, sizeof(LU_PROTO_SEARCH)-1)) 
