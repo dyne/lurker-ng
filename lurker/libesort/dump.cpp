@@ -1,4 +1,4 @@
-/*  $Id: dump.cpp,v 1.2 2003-04-21 18:25:33 terpstra Exp $
+/*  $Id: dump.cpp,v 1.3 2003-04-25 20:24:28 terpstra Exp $
  *  
  *  dump.cpp - Dump the contents of a libesort database to cout
  *  
@@ -51,16 +51,10 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	auto_ptr<Walker> w(r->seek(""));
-	if (!w.get())
-	{
-		if (errno == 0) return 0; // empty
-		perror("Reader::seek");
-		return 1;
-	}
+	auto_ptr<Walker> w(r->seek("", Forward));
 	
-	do cout << w->key << "\n";
-	while (w->advance() != -1);
+	while (w->advance() != -1)
+		cout << w->key << "\n";
 	
 	if (errno != 0)
 	{
