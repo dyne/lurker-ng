@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.16 2002-02-12 05:37:14 terpstra Exp $
+/*  $Id: service.c,v 1.17 2002-02-12 06:21:49 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -302,9 +302,9 @@ static int my_service_list(
 	
 	if (l->description)
 	{
-		if (my_service_buffer_write(fd, "  <desc>")  != 0) return -1;
-		if (my_service_write_str(fd, l->description) != 0) return -1;
-		if (my_service_buffer_write(fd, "</desc>\n") != 0) return -1;
+		if (my_service_buffer_write(fd, "  <description>")  != 0) return -1;
+		if (my_service_write_str(fd, l->description)        != 0) return -1;
+		if (my_service_buffer_write(fd, "</description>\n") != 0) return -1;
 	}
 	
 	if (my_service_buffer_write(fd, " </list>\n") != 0) return -1;
