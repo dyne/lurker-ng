@@ -1,4 +1,4 @@
-/*  $Id: File.cpp,v 1.5 2003-04-25 13:39:46 terpstra Exp $
+/*  $Id: File.cpp,v 1.6 2003-04-25 14:18:27 terpstra Exp $
  *  
  *  File.cpp - Disk segment for commit'd inserts
  *  
@@ -144,7 +144,9 @@ unsigned char* FileSource::inverseBuffer()
 	
 	//----------------
 	
-	// teminate the scratch
+	// teminate the scratch (0, 1) == eof
+	--w;
+	*w = 1; 
 	w -= f->p->keyWidth();
 	memset(w, 0, f->p->keyWidth());
 	
@@ -155,13 +157,12 @@ unsigned char* FileSource::inverseBuffer()
 		thisLength += *r;
 		++r;
 	}
-	if (thisLength == 0) return w; // corrupt!
 	thisDup = *r;
 	++r;
 	thisDelta = thisLength - thisDup;
-	if (thisDelta < 0) return w; // corrupt!
+	if (thisDelta < 0) return w; // corrupt! must have one record at least
 	
-	while (thisLength != 0)
+	while (thisDelta != -1)
 	{
 		// r points at the unique tail
 		// w point at the last completed record
@@ -176,16 +177,12 @@ unsigned char* FileSource::inverseBuffer()
 			++nextr;
 		}
 		
-		if (nextLength != 0)
-		{
-			nextDup = *nextr;
-			++nextr;
-		}
-		else
-		{	// first element has compression 0
-			nextDup = 0;
-		}
+		nextDup = *nextr;
+		++nextr;
+		
 		nextDelta = nextLength - nextDup;
+		if (nextDelta < -1) return w; // corrupt! (-1 == eof)
+		if (nextDelta == -1) nextDup = 0; // first record has 0 dup'd
 		
 		// Skip to next cell
 		long wDelta = thisLength - nextDup;
@@ -228,7 +225,7 @@ unsigned char* FileSource::inverseBuffer()
 int FileSource::advance()
 {
 //	printf("off: %d, buf: %d, wid: %d\n", off, buf, f->p->keyWidth());
-	assert ((off - buf) + f->p->keyWidth() <= f->p->blockSize());
+	assert ((off - buf) + f->p->keyWidth() + 1 <= f->p->blockSize());
 	
 	length = 0;
 	while (1)
@@ -240,13 +237,13 @@ int FileSource::advance()
 			++off;
 		}
 		
-		if (length != 0) break;
+		dup = *off;
+		++off;
+		
+		if (length != 0 || dup != 1) break; // (0, 1) == eof
 		
 		if (loadBuf() != 0) return -1;
 	}
-	
-	dup = *off;
-	++off;
 	
 	tail = off;
 	off += length - dup;
