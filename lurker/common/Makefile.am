@@ -1,7 +1,6 @@
 noinst_LIBRARIES = libcommon.a
-EXTRA_DIST = system.h.in
+EXTRA_DIST = system.h.in io.h
 
 libcommon_a_SOURCES = \
-	common.h common.c \
-	message.c message.h \
-	stub.c io.h prefix.h
+	keyword.c keyword.h \
+	common.c common.h

@@ -1,4 +1,4 @@
-/*  $Id: prefix.h,v 1.6 2002-05-09 06:26:34 terpstra Exp $
+/*  $Id: keyword.h,v 1.1 2002-06-10 12:23:14 terpstra Exp $
  *  
  *  prefix.h - What to place in front of keywords we search for
  *  
@@ -46,9 +46,11 @@
 /* The longest length a keyword can be */
 #define LU_KEYWORD_LEN		80
 
-/*------------------------------------------------- Public keyword methods */
-
-/* Cleanup the contents of a message id 
- */
-const char* lu_common_cleanup_id(
-	const char* id);
+/* Analyze the string for keywords. */
+extern int my_keyword_digest_string(
+	const char* buf,
+	int         len,
+	const char* prefix,
+	int       (*write)(const char* keyword, void* arg),
+	void*       arg,
+	int         do_div);

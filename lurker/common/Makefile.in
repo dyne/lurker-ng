@@ -76,12 +76,11 @@ urldir = @urldir@
 wwwdir = @wwwdir@
 
 noinst_LIBRARIES = libcommon.a
-EXTRA_DIST = system.h.in
+EXTRA_DIST = system.h.in io.h
 
 libcommon_a_SOURCES = \
-	common.h common.c \
-	message.c message.h \
-	stub.c io.h prefix.h
+	keyword.c keyword.h \
+	common.c common.h
 
 subdir = common
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
@@ -91,8 +90,7 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 libcommon_a_AR = $(AR) cru
 libcommon_a_LIBADD =
-am_libcommon_a_OBJECTS = common.$(OBJEXT) message.$(OBJEXT) \
-	stub.$(OBJEXT)
+am_libcommon_a_OBJECTS = keyword.$(OBJEXT) common.$(OBJEXT)
 libcommon_a_OBJECTS = $(am_libcommon_a_OBJECTS)
 
 DEFS = @DEFS@
@@ -101,8 +99,7 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/common.Po $(DEPDIR)/message.Po \
-@AMDEP_TRUE@	$(DEPDIR)/stub.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/common.Po $(DEPDIR)/keyword.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -166,8 +163,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/common.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/message.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/stub.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/keyword.Po@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)

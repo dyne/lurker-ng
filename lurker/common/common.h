@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.11 2002-06-03 10:37:15 terpstra Exp $
+/*  $Id: common.h,v 1.12 2002-06-10 12:23:14 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -31,8 +31,6 @@
 
 #define DEFAULT_CONFIG_FILE	SYSCONFDIR    "/"     PACKAGE ".conf"
 #define	DEFAULT_PID_FILE	LOCALSTATEDIR "/run/" PACKAGE "d.pid"
-
-#define WORD_BREAKS		" !\"'()*,;<>[]^`{|}"
 
 #if SIZEOF_CHAR == 1
 typedef unsigned char lu_byte;
@@ -115,17 +113,3 @@ typedef lu_quad message_id;
 
 extern message_id lu_common_minvalid;
 
-/*------------------------------------------------ Public helpers */
-
-/* Decode a message hreader into unescaped utf-8.
- * This deals with =?charset?coding?str?= escaping as well as broken mail
- * clients which mistakenly use the same charset they used for the body.
- */
-void lu_common_decode_header(
-	const char*	r,
-	char*		out,
-	size_t		outlen,
-	const char*	default_coding);
-
-const char* lu_common_charset_maps(
-	const char*	charset);
