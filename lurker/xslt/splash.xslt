@@ -24,7 +24,7 @@
 
 <xsl:template match="list">
   <tr>
-  <td><a href="../mindex/{id}@{string(floor(number(messages) div 20)*20)}.html">
+  <td><a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.html">
         <xsl:value-of select="email/@name"/></a></td>
 
   <xsl:if test="email/@address">
