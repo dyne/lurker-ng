@@ -326,7 +326,7 @@
     <a href="../thread/{thread}.{$ext}">
      <img src="../imgs/tree.png" alt="{$threading}"/>
     </a>
-    <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
+    &#160;
     <xsl:element name="a">
      <xsl:attribute name="href">
       <xsl:text>../message/</xsl:text>

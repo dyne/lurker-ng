@@ -25,7 +25,7 @@
 <xsl:template match="time">
  <form action="../lurker-jump.cgi">
   [ <b><xsl:value-of select="$jumpto"/></b>
-  <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
+  &#160;&#160;
   <input type="hidden" name="format" value="{$ext}"/>
   <input type="hidden" name="list" value="{../list/id}"/>
   <select name="hour">
@@ -110,7 +110,7 @@
     <xsl:with-param name="select"><xsl:value-of select="year"/></xsl:with-param>
    </xsl:call-template>
   </select>
-  <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
+  &#160;&#160;
   <input type="submit" value="Go!"/> ]
  </form>
 </xsl:template>
@@ -141,7 +141,7 @@
    <img src="../imgs/a.png" alt="..."/>
   </xsl:if>
 
-  <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
+  <xsl:text>&#160;&#160;</xsl:text>
 
   <xsl:apply-templates select="list/email"/> - <xsl:value-of select="$mess"/>
   <xsl:text> </xsl:text>

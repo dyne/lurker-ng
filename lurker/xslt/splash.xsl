@@ -8,8 +8,9 @@
  <option value="{id}">
   <xsl:value-of select="email/@name"/>
   <xsl:if test="email/@address">
-   <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
-   &lt;<xsl:value-of select="email/@address"/>&gt;
+   <xsl:text>&#160;&lt;</xsl:text>
+   <xsl:value-of select="email/@address"/>
+   <xsl:text>&gt;</xsl:text>
   </xsl:if>
  </option>
 </xsl:template>
@@ -225,7 +226,7 @@
  <dt>
   <xsl:value-of select="email/@name"/>
   <xsl:if test="email/@address">
-   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
+   <xsl:text>&#160;</xsl:text>
    <xsl:element name="a">
     <xsl:attribute name="href">
      <xsl:text>mailto:</xsl:text>

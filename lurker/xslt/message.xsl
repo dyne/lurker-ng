@@ -29,7 +29,7 @@
    <img src="../imgs/a.png" alt=".."/>
   </xsl:if>
 
-  <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
+  &#160;&#160;
 
   <xsl:choose>
    <xsl:when test="email[@address] or list/email[@address]">
@@ -102,7 +102,7 @@
    </xsl:otherwise>
   </xsl:choose>
 
-  <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
+  &#160;&#160;
 
   <!-- Draw the next link - otherwise, draw an image with the same size -->
   <xsl:if test="threading/next">
@@ -281,7 +281,7 @@
  <h2>
   <a href="../thread/{thread}.{$ext}#{id}">
    <img src="../imgs/tree.png" alt="{$threading}:"/>
-   <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
+   <xsl:text>&#160;</xsl:text>
    <xsl:value-of select="subject"/>
   </a>
  </h2>
