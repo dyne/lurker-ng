@@ -20,6 +20,7 @@ v0.1d:
 	Load config files more cleanly -- will facilitate config reloading
 	Mailing lists are refered to by name in the UI instead of ID
 	Include version information in pages
+	Added command-line option to output import speed statistics
 
 v0.1c:
 	Added libkap which completely replaces all of libdb3 and flatfile

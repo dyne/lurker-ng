@@ -14,6 +14,7 @@ Unfulfilled requirements:
 
 BUGS:
 	False search negatives
+	Links to www.foo.bar are relative and die
 	Config reloading is broken
 	We no longer support block device operation for append
 	We don't check for double append
