@@ -31,12 +31,9 @@ A: Postfix sets a file size resource limit. The intention of this option
    option also applies to ALL files opened by child processes.
    
    This means lurker will die with SIGXFSZ when accessing the database!
+   You must tell postfix not to set a file limit or use another MTA.
    
-   You must tell postfix not to set a file limit or use another MTA.  Even
-   better, send the postfix people mail complaining about how this hard
-   limit is inherited by child processes. A soft limit would suffice.
-   
-   For now: mailbox_size_limit = <as big a number as your postfix allows>
+   mailbox_size_limit = 0
    
    If you have a postfix with a soft limit (does not exist yet), then
    compile the stand-alone file lurker-drop-rlimit.cpp and run it infront of
