@@ -3,6 +3,7 @@ Why does lurker appear to use so much RAM?
 Why not store all the messages as XML instead of rendering them as it?
 What is better: one large mbox or lots of small ones?
 After adding a list I get "CORRUPT dataset". Why?
+How can I delete a mailing list?
 
 ---
 
@@ -101,8 +102,8 @@ A: Well, lurker assigns internal message numbers to email it imports in
    which are earlier than the last imported message, you will get this
    error.
    
-   Solution? Stop lurker, run the "purge" script, start lurker. Wait for the
-   import to complete.
+   Solution? Stop lurker, run the "purge" (/var/lib/lurker/purge) script,
+   start lurker. Wait for the import to complete.
    
    Also, creating a new list should not be a problem as long as there is no
    history for the list. If you add a new list and start importing messages
@@ -112,4 +113,11 @@ A: Well, lurker assigns internal message numbers to email it imports in
    simplifies the lurker code. Also, it makes certain operations possible
    to implement efficiently, like: searches always return most recent posts
    first, efficient keyword search + date range, etc.
+
+
+Q: How can I delete a mailing list?
+
+A: Remove the entry from the config file. Stop lurker, run the purge script,
+   restart lurker. The same reasoning applies as in the preceding question.
+   My goal is for lurker's import fast enough that this is not a problem.
 
