@@ -1,4 +1,4 @@
-/*  $Id: flatfile.c,v 1.3 2002-02-03 03:13:27 terpstra Exp $
+/*  $Id: flatfile.c,v 1.4 2002-02-03 03:21:48 terpstra Exp $
  *  
  *  flatfile.c - Knows how to manage the keyword flatfile database
  *  
@@ -945,6 +945,7 @@ int lu_flatfile_open()
 	 * Supposing we allow for 0 to bits or bits+1 records.
 	 */
 	
+	off = lseek(my_flatfile_fd, 0, SEEK_END);
 	if (off == -1)
 	{
 		perror("lseek'ing the keyword.flat");
