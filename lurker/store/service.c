@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.26 2002-02-25 00:34:11 terpstra Exp $
+/*  $Id: service.c,v 1.27 2002-02-25 03:56:57 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -40,6 +40,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <iconv.h>
 
 /*------------------------------------------------- Private types */
 
@@ -230,16 +231,6 @@ static int my_service_write_strl(
 			
 			start = buf+1;
 			break;
-			
-		default:
-			if (iscntrl(*buf) || (*buf & 0x80) != 0)
-			{
-				if (my_service_buffer_writel(h, start, buf - start) != 0)
-					return -1;
-				
-				/*!!! Do some sort of unicode craziness */
-				start = buf+1;
-			}
 		}
 	}
 	
@@ -263,6 +254,21 @@ static int my_service_write_int(
 	char buf[20];
 	sprintf(&buf[0], "%d", id);
 	return my_service_buffer_write(h, &buf[0]);
+}
+
+static int my_service_write_ehead(
+	My_Service_Handle	h,
+	const char*		header)
+{
+	char buf[1024];
+	
+	/* This will transform the string into raw binary encoded utf-8 */
+	lu_common_decode_header(header, &buf[0], sizeof(buf));
+	
+	/* Now, write it as an xml escaped string */
+	return my_service_write_str(h, &buf[0]);
+	
+	return 0;
 }
 
 static int my_service_write_time(
@@ -316,7 +322,7 @@ static int my_service_xml_head(
 	My_Service_Handle h)
 {
 	return my_service_buffer_write(h, 
-		"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		"<?xml-stylesheet type=\"text/xml\" href=\"render.xslt\"?>\n"
 		);
 }
@@ -376,7 +382,7 @@ static int my_service_addresses(
 		if (addr->personal)
 		{
 			if (my_service_buffer_write(h, " name=\""    ) != 0) return -1;
-			if (my_service_write_str   (h, addr->personal) != 0) return -1;
+			if (my_service_write_ehead (h, addr->personal) != 0) return -1;
 			if (my_service_buffer_write(h, "\""          ) != 0) return -1;
 		}
 		
@@ -419,17 +425,74 @@ static char* my_service_find_name(
 	return 0;
 }
 
+static char* my_service_find_charset(
+	struct mail_bodystruct* body)
+{
+	PARAMETER* scan;
+	
+	for (scan = body->disposition.parameter; scan; scan = scan->next)
+	{
+		if (	scan->attribute &&
+			(scan->attribute[0] == 'c' || scan->attribute[0] == 'C') &&
+			(scan->attribute[1] == 'h' || scan->attribute[1] == 'H') &&
+			(scan->attribute[2] == 'a' || scan->attribute[2] == 'A') &&
+			(scan->attribute[3] == 'r' || scan->attribute[3] == 'R') &&
+			(scan->attribute[4] == 's' || scan->attribute[4] == 'S') &&
+			(scan->attribute[5] == 'e' || scan->attribute[5] == 'E') &&
+			(scan->attribute[6] == 't' || scan->attribute[6] == 'T') &&
+			scan->attribute[7])
+		{
+			return scan->value;
+		}
+	}
+	
+	return 0;
+}
+
 static int my_service_dump(
 	My_Service_Handle	h,
-	const char*	buf,
-	size_t		len)
+	const char*		dat,
+	size_t			len,
+	const char*		coding)
 {
-	/*!!! Search the message for URLs, email address, quotations, etc */
-	return my_service_write_strl(h, buf, len);
+	char*	b;
+	char	buf[1024];
+	size_t	fill, tmp;
+	iconv_t	ic;
+	
+	/* Make a guess at what the coding is supposed to be. */
+	if (!coding) coding = "iso-8859-1";
+	
+	ic = iconv_open("utf-8", coding);
+	if (ic == (iconv_t)-1)
+	{
+		/* Don't know this encoding - just dump the data anyways */
+		syslog(LOG_WARNING, "Unknown coding: %s\n", coding);
+		return my_service_write_strl(h, dat, len);
+	}
+	
+	while (len)
+	{
+		fill = sizeof(buf);
+		b = &buf[0];
+		tmp = iconv(ic, (char**)&dat, &len, &b, &fill);
+		
+		/*!!! Search the message for URLs, email address, quotations, etc */
+		if (my_service_write_strl(h, &buf[0], sizeof(buf) - fill) != 0)
+			break;
+		
+		if (tmp == (size_t)-1 && errno != E2BIG)
+			break;
+	}
+	
+	iconv_close(ic);
+	
+	if (len) return -1;
+	return 0;
 }
 
 static int my_service_traverse(
-	My_Service_Handle		h,
+	My_Service_Handle	h,
 	struct Lu_Mbox_Message* in, 
 	struct mail_bodystruct* body,
 	int			count)
@@ -439,6 +502,7 @@ static int my_service_traverse(
 	char*			buffer;
 	int			nfree;
 	char*			name;
+	char*			charset;
 	
 	if (!body)
 	{	/* You never know... */
@@ -447,7 +511,8 @@ static int my_service_traverse(
 	
 	if (body->type > 8) body->type = 8;
 	
-	name = my_service_find_name(body);
+	name    = my_service_find_name(body);
+	charset = my_service_find_charset(body);
 	
 	if (my_service_buffer_write(h, "<mime id=\"") != 0) return -1;
 	if (my_service_write_int   (h, count        ) != 0) return -1;
@@ -475,7 +540,7 @@ static int my_service_traverse(
 			/* This part contains an encapsulated message.
 			 */
 			count = my_service_traverse(h, in, 
-				body->nested.msg->body, count);
+					body->nested.msg->body, count);
 				
 			if (count == -1) return -1;
 			break;
@@ -486,7 +551,7 @@ static int my_service_traverse(
 			 */
 			buffer = lu_mbox_select_body(in, body, &length, &nfree);
 			
-			if (my_service_dump(h, buffer, length) != 0)
+			if (my_service_dump(h, buffer, length, charset) != 0)
 				return -1;
 			
 			if (nfree)
@@ -502,7 +567,7 @@ static int my_service_traverse(
 			for (p = body->nested.part; p != NULL; p = p->next)
 			{
 				count = my_service_traverse(h, in,
-					&p->body, count);
+						&p->body, count);
 				if (count == -1) break;
 			}
 			
@@ -1092,7 +1157,7 @@ static int my_service_getmsg(
 	if (mmsg.env->subject)
 	{
 		if (my_service_buffer_write(h, " <subject>"     ) != 0) goto my_service_getmsg_error3;
-		if (my_service_write_str   (h, mmsg.env->subject) != 0) goto my_service_getmsg_error3;
+		if (my_service_write_ehead (h, mmsg.env->subject) != 0) goto my_service_getmsg_error3;
 		if (my_service_buffer_write(h, "</subject>\n"   ) != 0) goto my_service_getmsg_error3;
 	}
 	
