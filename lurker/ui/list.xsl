@@ -55,8 +55,8 @@
    </xsl:choose>
   </xsl:attribute>
   <td nowrap="NOWRAP">
-   <div class="squash">
-    <a href="../thread/{summary/id}.{$ext}" onclick="this.removeAttribute('href');">
+   <div class="squash" onclick="this.firstChild.removeAttribute('href');">
+    <a href="../thread/{summary/id}.{$ext}">
      <xsl:value-of select="summary/subject"/>
     </a>
    </div>
