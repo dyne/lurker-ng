@@ -1,4 +1,4 @@
-/*  $Id: Search.cpp,v 1.1 2004-08-24 16:11:33 terpstra Exp $
+/*  $Id: Search.cpp,v 1.2 2004-08-24 21:51:23 terpstra Exp $
  *  
  *  Search.cpp - Execute a keyword search
  *  
@@ -309,16 +309,20 @@ WordSearcher::WordSearcher(const Criterea& c, const string& word)
 
 bool WordSearcher::skipto(MessageId later_than)
 {
-	// later_than > next_id, so we are free to blindly advance.
-	int out = walker->advance();
+	while (later_than > next_id)
+	{
+		// later_than > next_id, so we are free to blindly advance.
+		int out = walker->advance();
+		
+		if (out == -1)
+			return false; // hit end of file (errno == 0) ?
+		
+		if (walker->key.length() != prefix + MessageId::raw_len)
+			return false; // corrupt!
+		
+		next_id = MessageId(walker->key.c_str() + prefix, 1);
+	}
 	
-	if (out == -1)
-		return false; // hit end of file (errno == 0) ?
-	
-	if (walker->key.length() != prefix + MessageId::raw_len)
-		return false; // corrupt!
-	
-	next_id = MessageId(walker->key.c_str() + prefix, 1);
 	return true;
 }
 
