@@ -1,0 +1,38 @@
+#! /bin/bash -e
+
+DBDIR=@DBDIR_expand@
+BINDIR=@BINDIR_expand@
+WWWDIR=@WWWDIR_expand@
+
+cd $WWWDIR
+echo -n "Deleting www cached files.... "
+rm -f */*.html */*.xml
+echo "Done"
+
+cd $DBDIR
+
+echo -n "Deleting all kap databases... "
+echo -n "merge "
+rm -f merge.btree
+echo -n "mid "
+rm -f mid.btree
+echo -n "mbox "
+rm -f mbox.btree
+echo -n "offset "
+rm -f offset.btree offset.append
+echo -n "keyword "
+rm -f keyword.btree keyword.append
+echo "- Done"
+
+echo -n "Deleting all flat files...... "
+echo -n "summary "
+rm -f summary.flat
+echo -n "variable "
+rm -f variable.flat
+echo -n "expiry "
+rm -f expiry.heap expiry.list
+echo "- Done"
+
+echo -n "Purging temporary files...... "
+rm -f merge.raw mid.raw mbox.raw offset.raw keyword.raw
+echo "Done"

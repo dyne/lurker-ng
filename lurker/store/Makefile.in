@@ -103,7 +103,7 @@ INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common -I${top_srcdir}/libkap
 REQUESTS = message mindex search splash mbox attach thread jump
 
 sbin_PROGRAMS = lurkerd
-db_SCRIPTS = backup restore
+db_SCRIPTS = backup restore purge
 
 EXTRA_DIST = Design
 
@@ -125,7 +125,7 @@ lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ../libkap/libkap.a ${LIBICO
 subdir = store
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES = backup restore
+CONFIG_CLEAN_FILES = backup restore purge
 sbin_PROGRAMS = lurkerd$(EXEEXT)
 PROGRAMS = $(sbin_PROGRAMS)
 
@@ -159,7 +159,7 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
 DIST_SOURCES = $(lurkerd_SOURCES)
-DIST_COMMON = Makefile.am Makefile.in backup.in restore.in
+DIST_COMMON = Makefile.am Makefile.in backup.in purge.in restore.in
 SOURCES = $(lurkerd_SOURCES)
 
 all: all-am
@@ -176,6 +176,8 @@ Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.s
 backup: $(top_builddir)/config.status backup.in
 	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= CONFIG_LINKS= $(SHELL) ./config.status
 restore: $(top_builddir)/config.status restore.in
+	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= CONFIG_LINKS= $(SHELL) ./config.status
+purge: $(top_builddir)/config.status purge.in
 	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= CONFIG_LINKS= $(SHELL) ./config.status
 install-sbinPROGRAMS: $(sbin_PROGRAMS)
 	@$(NORMAL_INSTALL)

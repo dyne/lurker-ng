@@ -5,7 +5,7 @@ INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common -I${top_srcdir}/libkap
 REQUESTS = message mindex search splash mbox attach thread jump
 
 sbin_PROGRAMS = lurkerd
-db_SCRIPTS   = backup restore
+db_SCRIPTS   = backup restore purge
 
 EXTRA_DIST = Design
 

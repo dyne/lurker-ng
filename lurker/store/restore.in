@@ -6,17 +6,30 @@ DB=$1
 
 if ! test -f "$DB"; then
   echo "Usage: ./restore <backup-file>"
+  exit 1
 fi
 
 cd $DBDIR
 
-ar sx $DB merge.raw mid.raw mbox.raw offset.raw summary.flat variable.flat
-$BINDIR/kapmake -b -k 80 -l 8 -s 2048 merge < merge.raw
-$BINDIR/kapmake -b -k 80 -l 4 -s 2048 mid   < mid.raw
-$BINDIR/kapmake -b -k 24 -l 8 -s 1024 mbox  < mbox.raw
-$BINDIR/kapmake -k 12 -r 8 offset < offset.raw
-rm merge.raw mid.raw mbox.raw offset.raw
+./purge
 
-ar sx $DB keyword.raw
+echo "Extracting tar.gz backup..... "
+gzip -dc $DB | tar xf -
+echo "Done"
+
+echo "Rebuilding kap databases..... "
+echo -n "merge "
+$BINDIR/kapmake -b -k 80 -l 8 -s 2048 merge < merge.raw
+echo -n "mid "
+$BINDIR/kapmake -b -k 80 -l 4 -s 2048 mid   < mid.raw
+echo -n "mbox "
+$BINDIR/kapmake -b -k 24 -l 8 -s 1024 mbox  < mbox.raw
+echo -n "offset "
+$BINDIR/kapmake -k 12 -r 8 offset < offset.raw
+echo -n "keyword "
 $BINDIR/kapmake keyword < keyword.raw
-rm keyword.raw
+echo "- Done"
+
+echo "Purging temporary files..... "
+rm merge.raw mid.raw mbox.raw offset.raw keyword.raw
+echo "Done"
