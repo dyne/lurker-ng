@@ -1,4 +1,4 @@
-/*  $Id: db.c,v 1.1.1.1 2002-01-21 00:03:07 terpstra Exp $
+/*  $Id: db.c,v 1.2 2002-01-21 01:18:00 terpstra Exp $
  *  
  *  db.c - manage the databases
  *  
@@ -26,6 +26,14 @@
 #include "io.h"
 #include "globals.h"
 
+#include <string.h>
+
+#ifdef HAVE_SYSLOG_H
+#include <syslog.h>
+#else
+#define syslog(x, y, ...)
+#endif
+
 int	lu_summary_fd;
 int	lu_variable_fd;
 DB_ENV*	lu_db_env;
@@ -34,6 +42,114 @@ DB*	lu_merge_db;
 
 static message_id	lu_msg_free;
 static time_t		lu_last_time;
+
+MessageSummary lu_read_msummary(message_id mid)
+{
+	MessageSummary	out;
+	off_t		offset = mid;
+	
+	offset *= sizeof(MessageSummary);
+	if (lseek(lu_summary_fd, offset, SEEK_SET) != offset)
+	{
+		memset(&out, 0, sizeof(MessageSummary));
+		return out;
+	}
+	
+	if (read(lu_summary_fd, &out, sizeof(MessageSummary)) != 
+		sizeof(MessageSummary))
+	{
+		memset(&out, 0, sizeof(MessageSummary));
+		return out;
+	}
+	
+	return out;
+}
+
+static int lu_path_compress(message_id* mid)
+{
+	message_id	bak;
+	off_t		offset;
+	
+	/* First, follow the union-find trail and path compress as we do so. */
+	MessageSummary	sum = lu_read_msummary(*mid);
+	
+	if (sum.timestamp == 0)
+	{	/* Invalid messages are their own thread */
+		return -1;
+	}
+	
+	/* Is this the top of a thread? */
+	if (sum.thread_parent == *mid)
+	{
+		return 0;
+	}
+	
+	/* Nope, find out who is the top. */
+	bak = sum.thread_parent;
+	if (lu_path_compress(&sum.thread_parent) != 0)
+	{	/* Something f*ked up, pass the error down */
+		return -1;
+	}
+	
+	/* Was the path compressed? Update if so. */
+	if (sum.thread_parent != bak)
+	{
+		offset = *mid;
+		offset *= sizeof(MessageSummary);
+		
+		/* If we can't rewrite, no big deal, we don't HAVE to 
+		 * do the path compression.
+		 */
+		if (lseek(lu_summary_fd, offset, SEEK_SET) != offset ||
+		    write(lu_summary_fd, &sum, sizeof(MessageSummary)) !=
+		    	sizeof(MessageSummary))
+		{
+			syslog(LOG_WARNING, 
+				"Could not compress thread path for message %d\n",
+				*mid);
+		}
+	}
+	
+	*mid = sum.thread_parent;
+	return 0;
+}
+
+ThreadSummary lu_read_tsummary(message_id tid)
+{
+	ThreadSummary out;
+	
+	DBT key;
+	DBT val;
+	
+	int error;
+	
+	memset(&key, 0, sizeof(DBT));
+	memset(&val, 0, sizeof(DBT));
+	
+	/* Find the actual thread head.
+	 */
+	if (lu_path_compress(&tid) != 0)
+	{	/* Something messed up, propogate error */
+		memset(&out, 0, sizeof(out));
+		return out;
+	}
+	
+	key.data = &tid;
+	key.size = sizeof(tid);
+	val.data = &out;
+	val.size = sizeof(out);
+	
+	/* Retrieve it from the database.
+	 */
+	if ((error = lu_thread_db->get(lu_thread_db, 0, &key, &val, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Thread-head %d does not have summary record\n",
+			tid);
+		memset(&out, 0, sizeof(out));
+	}
+	
+	return out;
+}
 
 int lu_open_db()
 {
@@ -128,6 +244,19 @@ int lu_open_db()
 	lu_msg_free  = offset;
 	
 	/* lookup lu_last_time from summary info */
+	if (lu_msg_free == 0)
+	{	/* We use zero as an error, so start at 1971 for epoch */
+		lu_last_time = 31536000;
+	}
+	else
+	{
+		MessageSummary sum = lu_read_msummary(lu_msg_free - 1);
+		if (sum.timestamp == 0)
+		{
+			perror("Grabbing last summary block");
+			return -1;
+		}
+	}
 	
 	return 0;
 }
