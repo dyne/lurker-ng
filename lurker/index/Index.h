@@ -1,4 +1,4 @@
-/*  $Id: Index.h,v 1.3 2003-04-26 12:10:14 terpstra Exp $
+/*  $Id: Index.h,v 1.4 2003-05-04 11:15:15 terpstra Exp $
  *  
  *  Index.h - Insert all the keywords from the given email
  *  
@@ -26,6 +26,7 @@
 #define INDEX_H
 
 #include <mimelib/message.h>
+#include <sys/types.h>	// off_t
 
 #include <esort.h>
 #include <MessageId.h>
