@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.30 2002-02-25 07:06:49 terpstra Exp $
+/*  $Id: service.c,v 1.31 2002-02-25 08:05:32 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1156,6 +1156,7 @@ static int my_service_getmsg(
 	if (my_service_traverse(h, &mmsg, mmsg.body, 0) == -1) goto my_service_getmsg_error3;
 	if (my_service_buffer_write(h, "</message>\n")  != 0) goto my_service_getmsg_error3;
 	
+	if (b != 0) lu_breader_free(b);
 	lu_mbox_destroy_message(&mmsg);
 	lu_mbox_destroy_map(&cmsg);
 	return 0;
