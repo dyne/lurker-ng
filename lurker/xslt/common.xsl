@@ -52,7 +52,7 @@
  <xsl:param name="select"/>
  <xsl:element name="option">
   <xsl:attribute name="value"><xsl:value-of select="$start"/></xsl:attribute>
-  <xsl:if test="$start = $select">
+  <xsl:if test="number($start) = number($select)">
    <xsl:attribute name="selected">SELECTED</xsl:attribute>
   </xsl:if>
   <xsl:value-of select="$start"/>:00
