@@ -69,6 +69,11 @@ Quick start
   has >100,000 emails (~ 300Mb). If you have less than this, lurker will
   probably work just fine on budget hardware.
   
+  Also, please read LIMITS to learn about just how much email lurker can
+  import and what to do to handle the volume you want.
+  
+  Keep in mind these points:
+  
     a. lurkerd can take a fairly long time to shut down on a system this
        large as it gets quite deeply into cache. You should allow lurker up
        to 15 minutes to shutdown after a SIGTERM before a SIGKILL. It
