@@ -1,4 +1,4 @@
-/*  $Id: keyword.h,v 1.4 2002-01-25 07:31:07 terpstra Exp $
+/*  $Id: keyword.h,v 1.5 2002-01-26 22:41:33 terpstra Exp $
  *  
  *  keyword.h - manages a database for keyword searching
  *  
@@ -24,6 +24,8 @@
 
 #include "records.h"
 
+extern message_id lu_kw_invalid;
+
 /** Initialize the keyword database in case it's empty.
  */
 extern int lu_keyword_init();
@@ -34,10 +36,10 @@ extern int lu_keyword_init();
  */
 extern int lu_push_keyword(const char* keyword, message_id message);
 
-/** Pop the last record off the keyword.
+/** Pop the last record off the last keyword if it is 'id'.
  *  This is intended for backing out of indexing a message.
  */
-extern int lu_pop_keyword(const char* keyword);
+extern int lu_pop_keyword(const char* keyword, message_id id);
 
 /*-------------------------------------------------- Direct access methods */
 
@@ -74,7 +76,7 @@ extern Search lu_new_search(const char* const * words);
  */
 extern int lu_search_skip(Search search, int records);
 
-/** Extract the next matching document.
+/** Extract the next matching document. lu_kw_invalid if no more hits.
  */
 extern message_id lu_search_next(Search search);
 
