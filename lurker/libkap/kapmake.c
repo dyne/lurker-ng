@@ -1,4 +1,4 @@
-/*  $Id: kapmake.c,v 1.4 2002-07-04 19:24:11 terpstra Exp $
+/*  $Id: kapmake.c,v 1.5 2002-07-09 00:53:54 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool
  *  
@@ -182,10 +182,11 @@ int main(int argc, char * const * argv)
 	out = kap_btree_set_treesize(k, tree_size);
 	if (out != 0) bail(out, "kap_btree_set_treesize");
 	
-/*
-	out = kap_append_set_recordsize(k, record_size);
-	if (out != 0) bail(out, "kap_append_set_recordsize");
-*/
+	if ((mode & KAP_APPEND) == KAP_APPEND)
+	{
+		out = kap_append_set_recordsize(k, record_size);
+		if (out != 0) bail(out, "kap_append_set_recordsize");
+	}
 	
 	key  = malloc(max_key_size);
 	data = malloc(leaf_size);
