@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.10 2003-06-11 01:33:00 terpstra Exp $
+/*  $Id: PTable.cpp,v 1.11 2003-06-11 02:00:54 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -236,6 +236,7 @@ string PTable::loadLists()
 string PTable::load()
 {
 	loadDir("attach",  false);
+	loadDir("list",    false);
 	loadDir("mbox",    false);
 	loadDir("message", true);
 	loadDir("mindex",  false);
