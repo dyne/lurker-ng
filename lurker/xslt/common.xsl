@@ -365,6 +365,12 @@
    <xsl:value-of select="$ext"/>
   </xsl:attribute>
   
+  <xsl:attribute name="class">
+   <xsl:if test="thread-head">
+    <xsl:text>drift</xsl:text>
+   </xsl:if>
+  </xsl:attribute>
+  
   <xsl:call-template name="summary-post"/>
   <xsl:if test="drift"> (drifted)</xsl:if>
  </xsl:element>
