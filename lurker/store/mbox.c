@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.37 2002-07-12 19:02:00 terpstra Exp $
+/*  $Id: mbox.c,v 1.38 2002-07-17 10:51:41 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -932,8 +932,9 @@ char* lu_mbox_select_body(
 	size_t*	len,
 	int*	nfr)
 {
-	char *(*output)(unsigned char *, unsigned long, unsigned long *);
-	char *input;
+	char* out;
+	char* (*output)(unsigned char *, unsigned long, unsigned long *);
+	char* input;
 
 	switch ((int)body->encoding)
 	{
@@ -949,17 +950,26 @@ char* lu_mbox_select_body(
 			output = NULL;
 	}
 
+	*nfr = 0;
+	*len = body->contents.text.size;
+	
+	if (*len == 0)
+		return 0;
+	
 	input = in->buffer + body->contents.offset;
 	if (output)
 	{
 		*nfr = 1;
-		return (output((unsigned char *)input, body->contents.text.size,
-				(unsigned long *)len));
+		out = output((unsigned char *)input, body->contents.text.size,
+				(unsigned long *)len);
+	}
+	else
+	{
+		out = input;
 	}
 	
-	*nfr = 0;
-	*len = body->contents.text.size;
-	return input;
+	if (!out) *nfr = 0;
+	return out;
 }
 
 int lu_mbox_map_message(
