@@ -101,7 +101,8 @@ Quick start
   You must make certain that .xsl and .xml files have type text/xml.
   For email reply support .rfc822 must have type message/rfc822.
   You must set the default charset to UTF-8 for these files.
-  You must make lurker your 404 error handler.
+  You must make lurker your 404 error handler or another way of creating
+      missing cache files (eg: apache's RewriteRule).
   You must pass the config file and lurker's document root to lurker.cgi 
       as ? delimited arguments in QUERY_STRING 'cfgfile?docdir'. The docdir
       is relative to the location of lurker.cgi and cfgfile is relative to
@@ -136,7 +137,16 @@ Quick start
 	AddType message/rfc822 .rfc822
 	AddDefaultCharset UTF-8
 	ErrorDocument 404 /cgi-bin/lurker.cgi?../lurker.conf?../htdocs
+   
+   or, using the Rewite Engine (avoids 404 log messages):
 
+	AddType text/xml .xsl
+	AddType text/xml .xml
+	AddType message/rfc822 .rfc822
+	AddDefaultCharset UTF-8
+        RewriteEngine on
+        RewriteCond %{REQUEST_FILENAME} !-s
+        RewriteRule (attach|list|mbox|message|mindex|search|splash|thread)/ /cgi-bin/lurker.cgi?../lurker/lurker.conf?../htdocs [T=application/x-httpd-cgi,L,PT]
 
 8 point your browser at the url where lurker is installed
 
