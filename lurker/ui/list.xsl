@@ -34,16 +34,20 @@
     <xsl:otherwise>row2</xsl:otherwise>
    </xsl:choose>
   </xsl:attribute>
-  <td nowrap="NOWRAP" width="30%">
-   <div style="overflow: hidden; width:400px;">
-   <a name="{id}"/>
-   <a href="../thread/{summary/id}.{$ext}">
-    <xsl:value-of select="summary/subject"/>
-   </a>
+  <td nowrap="NOWRAP" class="clipped">
+   <div class="squash">
+    <a name="{id}"/>
+    <a href="../thread/{summary/id}.{$ext}">
+     <xsl:value-of select="summary/subject"/>
+    </a>
    </div>
   </td>
-  <td nowrap="NOWRAP" width="30%"><xsl:apply-templates mode="email-link" select="summary/email"/></td>
-  <td nowrap="NOWRAP" class="chart" valign="bottom">
+  <td nowrap="NOWRAP" class="clipped">
+   <div class="squash">
+    <xsl:apply-templates mode="email-link" select="summary/email"/>
+   </div>
+  </td>
+  <td nowrap="NOWRAP" class="chart">
    <xsl:variable name="maxval">
     <xsl:call-template name="max">
      <xsl:with-param name="args" select="day"/>
@@ -53,7 +57,9 @@
     <img src="../imgs/bar.png" height="{(number(.)*24 div $maxval)+1}" width="5"/>
    </xsl:for-each>
   </td>
-  <td nowrap="NOWRAP" align="right"><xsl:value-of select="sum(day)"/></td>
+  <td nowrap="NOWRAP" align="right">
+   <xsl:value-of select="sum(day)"/>
+  </td>
  </xsl:element>
 </xsl:template>
 
@@ -103,22 +109,25 @@
      <xsl:value-of select="list/description"/>
     </xsl:if>
     <br/>
-    [ <a href="../mindex/{list/id}@{$last-date}.{$ext}"><xsl:value-of select="$newest-messages"/></a> ]
-    <xsl:if test="list/email/@address">
-     [ <a href="mailto:{list/email/@address}"><xsl:value-of select="$post-new"/></a> ]
-    </xsl:if>
-    <xsl:if test="list/link">
-     [ <a href="{list/link}"><xsl:value-of select="$subscribe"/></a> ]
-    </xsl:if>
+    <div class="mini">
+     [ <a href="../mindex/{list/id}@{$last-date}.{$ext}"><xsl:value-of select="$newest-messages"/></a> ]
+     [ <a href="../splash/index.{$ext}#{list/group}"><xsl:value-of select="$jump-group"/></a> ]
+     <xsl:if test="list/email/@address">
+      [ <a href="mailto:{list/email/@address}"><xsl:value-of select="$post-new"/></a> ]
+     </xsl:if>
+     <xsl:if test="list/link">
+      [ <a href="{list/link}"><xsl:value-of select="$subscribe"/></a> ]
+     </xsl:if>
+    </div>
     
     <br/><br/>
     
     <table class="index">
      <tr>
-      <th width="30%"><xsl:value-of select="$new-threads"/></th>
-      <th width="30%"><xsl:value-of select="$recent-poster"/></th>
-      <th><xsl:value-of select="$activity-chart"/></th>
-      <th><xsl:value-of select="$post-count"/></th>
+      <th><xsl:value-of width="2*" select="$new-threads"/></th>
+      <th><xsl:value-of width="1*" select="$recent-poster"/></th>
+      <th><xsl:value-of width="0*" select="$activity-chart"/></th>
+      <th><xsl:value-of width="0*" select="$post-count"/></th>
      </tr>
      <xsl:apply-templates mode="newthreads" select="row"/>
     </table>

@@ -51,6 +51,10 @@ table.external td.mini {
   font-size: 80%;
 }
 
+div.mini {
+  font-size: 80%;
+}
+
 a:link    { color:#11F }
 a:visited { color:#00B }
 a:hover   { color:#F00 }
@@ -189,15 +193,15 @@ h1.group {
 table.index {
   border: 1px solid #000;
   background-color: white;
+  width: 100%;
 }
 
-table.index tr {
-  text-align: left;
+table.index td {
+  vertical-align: middle;
 }
 
 table.index th {
   background-color: #a8a8a8;
-  width: 100%;
 }
 
 td.chart img {
@@ -207,6 +211,15 @@ td.chart img {
 
 td.chart {
   padding: 1px;
+}
+
+td.clipped {
+  overflow: hidden;
+}
+
+div.squash {
+  overflow: visible;
+  width: 1px;
 }
 
 .padded td { padding-bottom:1px }  /* Adds padding to output tables containing Discussion Tree icon */

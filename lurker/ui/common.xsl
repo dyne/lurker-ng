@@ -34,13 +34,14 @@
 <xsl:variable name="jump" select="'Jump'"/>
 <xsl:variable name="use-special-word-list" select="'Use the keyword '"/>
 <xsl:variable name="to-search-list" select="' to restrict your search to this mailing list.'"/>
+<xsl:variable name="newest-messages" select="'View Newest Messages'"/>
+<xsl:variable name="jump-group" select="'Jump to Group'"/>
 <xsl:variable name="post-new" select="'Start a New Thread'"/>
 <xsl:variable name="subscribe" select="'Visit Subscription Page'"/>
 <xsl:variable name="recent-poster" select="'Latest Poster'"/>
 <xsl:variable name="new-threads" select="'Active Threads'"/>
 <xsl:variable name="post-count" select="'Posts'"/>
 <xsl:variable name="activity-chart" select="'Activity'"/>
-<xsl:variable name="newest-messages" select="'View Newest Messages'"/>
 
 <xsl:variable name="jan">January</xsl:variable>
 <xsl:variable name="feb">February</xsl:variable>
