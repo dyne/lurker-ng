@@ -11,8 +11,8 @@
  <h2>
   <xsl:choose>
    <xsl:when test="prev">
-    <a href="{$first-date}@{query}.{$ext}"><img alt="&lt;&lt;=" src="../imgs/first.png"/></a>
-    <a href="{prev}@{query}.{$ext}"><img alt="&lt;-" src="../imgs/prev.png"/></a>
+    <a href="{$first-date}@{translate(query,'/','!')}.{$ext}"><img alt="&lt;&lt;=" src="../imgs/first.png"/></a>
+    <a href="{prev}@{translate(query,'/','!')}.{$ext}"><img alt="&lt;-" src="../imgs/prev.png"/></a>
    </xsl:when>
    <xsl:otherwise>
     <img src="../imgs/a.png" alt="..."/>
@@ -21,8 +21,8 @@
   </xsl:choose>
   <xsl:choose>
    <xsl:when test="next">
-    <a href="{next}@{query}.{$ext}"><img alt="-&gt;" src="../imgs/next.png"/></a>
-    <a href="{$last-date}@{query}.{$ext}"><img alt="=&gt;&gt;" src="../imgs/last.png"/></a>
+    <a href="{next}@{translate(query,'/','!')}.{$ext}"><img alt="-&gt;" src="../imgs/next.png"/></a>
+    <a href="{$last-date}@{translate(query,'/','!')}.{$ext}"><img alt="=&gt;&gt;" src="../imgs/last.png"/></a>
    </xsl:when>
    <xsl:otherwise>
     <img src="../imgs/a.png" alt=".."/>
