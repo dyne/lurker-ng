@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.9 2002-06-21 18:19:04 terpstra Exp $
+/*  $Id: search.c,v 1.10 2002-06-23 11:47:46 terpstra Exp $
  *  
  *  search.h - Uses the breader to execute a given search
  *  
@@ -182,6 +182,7 @@ int lu_search_start(
 			
 			if (my_search_handle[my_search_handles] == 0)
 			{
+				*error = _("Unable to obtain a breader");
 				lu_search_end(&predict);
 				return -1;
 			}
