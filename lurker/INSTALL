@@ -29,18 +29,31 @@ Quick start
   --with-libiconv-prefix=DIR  search for libiconv in DIR/include and DIR/lib
   --with-included-gettext use the GNU gettext library included here
   XSLT_CONFIG=/path is also handy
+   
+  A few examples:
+
+  ./configure	--prefix=/home/youruser/runtime \
+		--with-urldir=/~youruser \
+		--with-wwwdir=/home/youruser/public_html
+  (to install in a user home directory top-level web page -- no root needed)
+
+  ./configure	--prefix=/usr \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--with-urldir=/lurker
+  (to install as a subdirectory of the system web page -- root needed)
 
 2 make
 3 make install	(as root)
 
 4 Edit your apache config to allow .htaccess files to override CGI options,
-error documents, and work recursively. ie: Ensure that the installed
-.htaccess file is honoured. Often this is accomplished by:
+  error documents, and work recursively. ie: Ensure that the installed
+  .htaccess file is honoured. Often this is accomplished by:
 
     AllowOverride Options FileInfo
 
-in either <Directory /var/www> or /home/*/public_html or /usr/local/www or
-something like this.
+in either <Directory /var/www/lurker> or /home/*/public_html or 
+ /home/httpd/htdocs/lurker or something like this.
 
 5 /usr/local/sbin/lurkerd
 
