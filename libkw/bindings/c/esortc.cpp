@@ -1,4 +1,4 @@
-/*  $Id: esortc.cpp,v 1.4 2003-08-17 11:38:26 terpstra Exp $
+/*  $Id: esortc.cpp,v 1.5 2003-08-17 12:49:45 terpstra Exp $
  *  
  *  esortc.cpp - C binding for the ESort API
  *  
@@ -97,7 +97,7 @@ Walker esort_reader_seek(Reader r, const char* key, unsigned long keylen, int di
 {
 	ESort::Reader* rr = reinterpret_cast<ESort::Reader*>(r);
 	ESort::Direction d = (ESort::Direction)direction;
-	std::auto_ptr<ESort::Walker> o(rr->seek(std::string(key, keylen), d));
+	ESort::auto_ptr<ESort::Walker> o(rr->seek(ESort::string(key, keylen), d));
 	return o.release();
 }
 
@@ -105,7 +105,7 @@ Walker esort_reader_seekp(Reader r, const char* prefix, unsigned long prefixlen,
 {
 	ESort::Reader* rr = reinterpret_cast<ESort::Reader*>(r);
 	ESort::Direction d = (ESort::Direction)direction;
-	std::auto_ptr<ESort::Walker> o(rr->seekp(std::string(prefix, prefixlen), std::string(key, keylen), d));
+	ESort::auto_ptr<ESort::Walker> o(rr->seekp(ESort::string(prefix, prefixlen), ESort::string(key, keylen), d));
 	return o.release();
 }
 
@@ -113,7 +113,7 @@ Walker esort_writer_seek(Writer w, const char* key, unsigned long keylen, int di
 {
 	ESort::Writer* rw = reinterpret_cast<ESort::Writer*>(w);
 	ESort::Direction d = (ESort::Direction)direction;
-	std::auto_ptr<ESort::Walker> o(rw->seek(std::string(key, keylen), d));
+	ESort::auto_ptr<ESort::Walker> o(rw->seek(ESort::string(key, keylen), d));
 	return o.release();
 }
 
@@ -121,14 +121,14 @@ Walker esort_writer_seekp(Writer w, const char* prefix, unsigned long prefixlen,
 {
 	ESort::Writer* rw = reinterpret_cast<ESort::Writer*>(w);
 	ESort::Direction d = (ESort::Direction)direction;
-	std::auto_ptr<ESort::Walker> o(rw->seekp(std::string(prefix, prefixlen), std::string(key, keylen), d));
+	ESort::auto_ptr<ESort::Walker> o(rw->seekp(ESort::string(prefix, prefixlen), ESort::string(key, keylen), d));
 	return o.release();
 }
 
 int esort_writer_insert(Writer w, const char* key, unsigned long keylen)
 {
 	ESort::Writer* rw = reinterpret_cast<ESort::Writer*>(w);
-	return rw->insert(std::string(key, keylen));
+	return rw->insert(ESort::string(key, keylen));
 }
 
 int esort_writer_commit(Writer w)
