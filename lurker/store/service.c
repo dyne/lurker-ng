@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.74 2002-06-16 10:36:41 terpstra Exp $
+/*  $Id: service.c,v 1.75 2002-06-16 10:46:27 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -712,11 +712,17 @@ static void my_service_kill_html(
 			buf++;
 			while (*buf && *buf != '"')
 				if (*buf++ == '\\' && *buf) buf++;
+			if (*buf) buf++;
 			break;
 		default:
 			buf++;
 		}
+		if (*buf) buf++;
 		
+		break;
+	case '\n':
+		/* Ignore whitespace */
+		buf++;
 		break;
 	default:
 		*w++ = *buf++;
