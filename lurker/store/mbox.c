@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.18 2002-02-25 08:01:31 terpstra Exp $
+/*  $Id: mbox.c,v 1.19 2002-02-25 10:36:27 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -297,6 +297,11 @@ static int my_mbox_process_mbox(
 			&decode_subj[0],
 			sizeof(decode_subj),
 			lu_mbox_find_charset(m.body));
+	}
+	
+	if (decode_subj[0])
+	{
+		strcpy(&decode_subj[0], "No subject");
 	}
 		
 	/* Empty fields initially */

@@ -1,0 +1,19 @@
+What about the same message in multiple lists?
+Ideally want to reuse id and only have one indexed copy - both lists
+	refer to the message.
+
+Also, we need to know the offset of a given message in each list.
+	Unfortunately, the message may occur in multiple lists.
+	FAWK! Should list them all.
+	There will still be a 'primary' list from which we retrieve the
+	message.
+
+For threading:
+	subject merging only - DOES span lists
+	has dangling zigzag for topic drift (seperate row with diff subj shown)
+	IN FACT! Don't do threading AT ALL! ... well need sim. subject linkage
+	Since I want dangling arrows, I'm already going to have to hit
+	disk for every single message -> seek
+
+Would also be cool to have a 'jump to first occurance in a given list' for
+the thread.

@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.34 2002-02-25 10:08:36 terpstra Exp $
+/*  $Id: service.c,v 1.35 2002-02-25 10:36:27 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1138,12 +1138,16 @@ static int my_service_getmsg(
 		if (my_service_buffer_write(h, "</message-id>\n"   ) != 0) goto my_service_getmsg_error3;
 	}
 	
-	if (mmsg.env->subject)
+	if (my_service_buffer_write(h, " <subject>") != 0) goto my_service_getmsg_error3;
+	if (mmsg.env->subject && mmsg.env->subject[0])
 	{
-		if (my_service_buffer_write(h, " <subject>"     ) != 0) goto my_service_getmsg_error3;
 		if (my_service_write_ehead (h, mmsg.env->subject, coding) != 0) goto my_service_getmsg_error3;
-		if (my_service_buffer_write(h, "</subject>\n"   ) != 0) goto my_service_getmsg_error3;
 	}
+	else
+	{
+		if (my_service_buffer_write(h, "No subject") != 0) goto my_service_getmsg_error3;
+	}
+	if (my_service_buffer_write(h, "</subject>\n") != 0) goto my_service_getmsg_error3;
 	
 	if (my_service_traverse(h, &mmsg, mmsg.body, 0) == -1) goto my_service_getmsg_error3;
 	if (my_service_buffer_write(h, "</message>\n")  != 0) goto my_service_getmsg_error3;
