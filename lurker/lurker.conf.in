@@ -12,8 +12,10 @@ archive = Some Mailing List Archive
 
 # You can also localize web viewable strings.
 # The most appropriate will be automatically selected when rendering.
+# 
+# *** THE CHARSET MUST IN ALL CASES BE UTF-8 OR IT WON'T LOAD ***
+# 
 # Some examples:
-#
 # archive[de] = Einige Mailing-Lists
 # archive[pt] = ...
 # archive[pt-BR] = ...
