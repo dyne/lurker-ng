@@ -31,6 +31,9 @@ pidfile = @LOCALSTATEDIR_expand@/run/@PACKAGE@d.pid
 #  .htaccess, like: ErrorDocument 404 lurker.cgi?/the/new/db/dir
 dbdir   = @DBDIR_expand@
 
+# The directory relative to which lurker finds mailbox files.
+maildir = /
+
 # These are some cache settings that control how web content is cached to
 # minimize CPU utilization and decrease page load times.
 

@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.13 2002-06-03 10:37:15 terpstra Exp $
+/*  $Id: config.c,v 1.14 2002-06-04 13:44:38 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -64,6 +64,7 @@ static const char*	my_config_file;
 
 char*	lu_config_dbdir   = 0;
 char*	lu_config_pidfile = 0;
+char*	lu_config_maildir = 0;
 
 char*	lu_config_list_host	= 0;
 char*	lu_config_admin_name	= 0;
@@ -317,6 +318,12 @@ static int my_config_open_mboxs()
 	
 	int ok = 0;
 	
+	if (chdir(lu_config_maildir) != 0)
+	{
+		perror(lu_config_maildir);
+		return -1;
+	}
+	
 	for (list = lu_config_list; list != lu_config_list + lu_config_lists; list++)
 	{
 		for (mbox = list->mbox; mbox != list->mbox + list->mboxs; mbox++)
@@ -324,6 +331,7 @@ static int my_config_open_mboxs()
 			mbox->fd = open(mbox->path, O_RDONLY);
 			if (mbox->fd == -1)
 			{
+				fprintf(stderr, "opening mailbox for %s: ", list->name);
 				perror(mbox->path);
 				ok = -1;
 			}
@@ -574,6 +582,7 @@ static int my_config_load_config()
 			target_mbox = &(*target_mbox)->next;
 		}
 		else PRE_LIST_STR("dbdir",             lu_config_dbdir)
+		else PRE_LIST_STR("maildir",           lu_config_maildir)
 		else PRE_LIST_STR("pidfile",           lu_config_pidfile)
 		else PRE_LIST_STR("list_host",         lu_config_list_host)
 		else PRE_LIST_STR("admin_name",        lu_config_admin_name)
@@ -597,7 +606,9 @@ static int my_config_load_config()
 	fclose(c);
 	
 	DEF_STR("dbdir",         lu_config_dbdir,         DBDIR)
+	DEF_STR("maildir",       lu_config_maildir,       lu_config_dbdir)
 	DEF_STR("pidfile",       lu_config_pidfile,       DEFAULT_PID_FILE)
+	
 	DEF_STR("list_host",     lu_config_list_host,     "somewhere.org")
 	DEF_STR("admin_name",    lu_config_admin_name,    "unconfigured")
 	DEF_STR("admin_address", lu_config_admin_address, "nill@unconfigured.org")
