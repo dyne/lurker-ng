@@ -1,5 +1,11 @@
 body { padding:10px; margin:0 }
 
+/* This makes the two pages have the same top offset
+ */
+body > h1:first-node {
+  margin-top: 0pt;
+}
+
 /* h1 used only for lurker@server header */
 h1 { text-align:center; font-family:HoratioDMed, Tahoma, Arial, sans-serif; font-size:200%; font-weight:bold }
 h2 { width:100%; text-indent:8%; background-color:#BBF; margin-top:0; margin-bottom:1.2em;
