@@ -120,7 +120,14 @@
 </xsl:template>
 
 <xsl:template match="url">
- <a class="url" href="{.}"><xsl:value-of select="."/></a>
+ <xsl:choose>
+  <xsl:when test="substring(., 1, 7) = 'http://'">
+    <a class="url" href="{.}"><xsl:value-of select="."/></a>
+  </xsl:when>
+  <xsl:otherwise>
+    <a class="url" href="http://{.}"><xsl:value-of select="."/></a>
+  </xsl:otherwise>
+ </xsl:choose>
 </xsl:template>
 
 <xsl:template match="quote">
