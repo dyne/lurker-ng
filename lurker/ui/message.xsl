@@ -142,8 +142,8 @@
      <tr>
       <td align="left">
        <h1>
-        <xsl:value-of select="substring(summary/subject,1,40)"/>
-        <xsl:if test="string-length(summary/subject) &gt; 40">&#x2026;</xsl:if>
+        <xsl:value-of select="substring(summary/subject,1,60)"/>
+        <xsl:if test="string-length(summary/subject) &gt; 60">&#x2026;</xsl:if>
        </h1>
       </td>
       <td align="right">
