@@ -1,4 +1,4 @@
-/*  $Id: jump.c,v 1.5 2002-07-11 20:28:30 terpstra Exp $
+/*  $Id: jump.c,v 1.6 2002-07-21 20:03:07 terpstra Exp $
  *  
  *  jump.c - redirect mindex jumps
  *  
@@ -66,13 +66,65 @@ static int extract_int(
 	return atol(s);
 }
 
+static const char* extract_str(
+	const char* parameter, 
+	const char* field)
+{
+	static char buf[100];
+	char* o;
+	char* e;
+	int   i;
+	const char* s;
+	
+	s = parameter-1;
+	do s = strstr(s+1, field);
+	while (s && s != parameter && *(s-1) != '&');
+	
+	if (s == 0) return 0;
+	
+	/* skip the field */
+	s += strlen(field); 
+	
+	/* pass the = */
+	if (*s != '=') return 0;
+	s++;
+	
+	/* De-urlify the data */
+	e = &buf[sizeof(buf)-1];
+	for (o = &buf[0]; o != e && *s && *s != '&'; o++)
+	{
+		if (*s == '+') { *o = ' '; s++; }
+		else if (*s == '%')
+		{
+			s++;
+			if (*s && *(s+1))
+			{
+				sscanf(s, "%2X", &i);
+				*o = i;
+				s += 2;
+			}
+			else
+			{
+				*o = '?';
+			}
+		}
+		else
+		{
+			*o = *s++;
+		}
+	}
+	
+	*o = 0;
+	return &buf[0];
+}
+
 int main(int argc, char** argv)
 {
 	char* uri = getenv("REQUEST_URI");
 	char* qs  = getenv("QUERY_STRING");
 	char* w;
 	const char* s;
-	int   list;
+	const char* list;
 	int   tmp;
 	
 	time_t		tmt;
@@ -113,7 +165,7 @@ int main(int argc, char** argv)
 	
 	/* Ok, uri is now the path relative to which the request goes */
 	
-	list = extract_int(qs, "list");
+	list = extract_str(qs, "list");
 	
 	tmt = time(0);
 	memcpy(&tms, localtime(&tmt), sizeof(struct tm));
@@ -140,7 +192,7 @@ int main(int argc, char** argv)
 	else	s = "xml";
 	
 	printf("Status: 303 Moved Permanently\r\n");
-	printf("Location: %s/jump/%d@%ld.%s\r\n", uri, list, (long)tmt, s);
+	printf("Location: %s/jump/%ld@%s.%s\r\n", uri, (long)tmt, list, s);
 	printf("Content-type: text/%s\r\n\r\n", s);
 	printf(&redirect_error[0], uri, list, (long)tmt, s);
 	
