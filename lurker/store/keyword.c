@@ -1,4 +1,4 @@
-/*  $Id: keyword.c,v 1.3 2002-01-24 23:11:54 terpstra Exp $
+/*  $Id: keyword.c,v 1.4 2002-01-24 23:15:17 terpstra Exp $
  *  
  *  keyword.c - manages a database for keyword searching
  *  
@@ -484,7 +484,6 @@ static int lu_write_keyword_block(
 	off_t		spot;
 	off_t		new_records;
 	off_t		ind;
-	int		need_resize;
 	
 	if (lu_locate_keyword(keyword, &where) != 0)
 		return -1;
@@ -585,3 +584,30 @@ int lu_push_keyword(const char* keyword, message_id msg)
 	return lu_write_keyword_block(keyword, &msg, 1);
 }
 
+int lu_pop_keyword(const char* keyword)
+{
+	off_t		where;
+	message_id	count;
+	
+	/*!!! Should deal with buffering here. */
+	
+	if (lu_locate_keyword(keyword, &where) != 0)
+	{
+		return -1;
+	}
+	
+	if (lu_sread(lu_keyword_fd, where, &count, sizeof(message_id),
+		"reading old message counter") != sizeof(message_id))
+	{
+		return -1;
+	}
+	
+	count--;
+	if (lu_swrite(lu_keyword_fd, where, &count, sizeof(message_id),
+		"pushing popped message counter") != sizeof(message_id))
+	{
+		return -1;
+	}
+	
+	return 0;
+}
