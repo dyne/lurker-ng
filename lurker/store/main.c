@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.6 2002-01-26 08:52:05 terpstra Exp $
+/*  $Id: main.c,v 1.7 2002-01-26 22:39:53 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -216,7 +216,8 @@ static time_t extract_timestamp(Mbox* mbox, List* list)
 	old = lseek(mbox->fd, 0, SEEK_CUR);
 	if (old == -1)
 	{
-		syslog(LOG_ERR, "Unable to read mbox: %s\n", mbox->path);
+		syslog(LOG_ERR, "Unable to read mbox offset(%s): %s\n",
+			mbox->path, strerror(errno));
 		lu_unlock_mbox(mbox->fd, mbox->path);
 		return 0;
 	}
@@ -241,6 +242,13 @@ static time_t extract_timestamp(Mbox* mbox, List* list)
 		if (old != -1)
 			lu_move_mbox_end(mbox, list, old);
 		lu_unlock_mbox(mbox->fd, mbox->path);
+		return 0;
+	}
+	
+	if (lseek(mbox->fd, old, SEEK_SET) != old)
+	{
+		syslog(LOG_ERR, "Unable to rewind mbox(%s): %s\n", 
+			mbox->path, strerror(errno));
 		return 0;
 	}
 	
