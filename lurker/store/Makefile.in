@@ -69,13 +69,15 @@ VERSION = @VERSION@
 XSLT_CONFIG = @XSLT_CONFIG@
 am__include = @am__include@
 am__quote = @am__quote@
-dbdir = @dbdir@
 install_sh = @install_sh@
 wwwdir = @wwwdir@
+
+dbdir = @dbdir@
 
 INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common
 
 sbin_PROGRAMS = @PACKAGE@d
+dist_db_DATA = DB_CONFIG
 EXTRA_DIST = Design
 
 @PACKAGE@d_SOURCES = \
@@ -124,7 +126,9 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
 DIST_SOURCES = $(@PACKAGE@d_SOURCES)
-DIST_COMMON = Makefile.am Makefile.in
+DATA = $(dist_db_DATA)
+
+DIST_COMMON = $(dist_db_DATA) Makefile.am Makefile.in
 SOURCES = $(@PACKAGE@d_SOURCES)
 
 all: all-am
@@ -198,6 +202,23 @@ distclean-depend:
 	$(COMPILE) -c `cygpath -w $<`
 CCDEPMODE = @CCDEPMODE@
 uninstall-info-am:
+install-dist_dbDATA: $(dist_db_DATA)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(dbdir)
+	@list='$(dist_db_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(dbdir)/$$f"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(dbdir)/$$f; \
+	done
+
+uninstall-dist_dbDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_db_DATA)'; for p in $$list; do \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " rm -f $(DESTDIR)$(dbdir)/$$f"; \
+	  rm -f $(DESTDIR)$(dbdir)/$$f; \
+	done
 
 tags: TAGS
 
@@ -254,10 +275,10 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(PROGRAMS) $(DATA)
 
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(sbindir)
+	$(mkinstalldirs) $(DESTDIR)$(sbindir) $(DESTDIR)$(dbdir)
 
 install: install-am
 install-exec: install-exec-am
@@ -299,7 +320,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-dist_dbDATA
 
 install-exec-am: install-sbinPROGRAMS
 
@@ -317,18 +338,19 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-compile mostlyclean-generic
 
-uninstall-am: uninstall-info-am uninstall-sbinPROGRAMS
+uninstall-am: uninstall-dist_dbDATA uninstall-info-am \
+	uninstall-sbinPROGRAMS
 
 .PHONY: GTAGS all all-am check check-am clean clean-generic \
 	clean-sbinPROGRAMS distclean distclean-compile distclean-depend \
 	distclean-generic distclean-tags distdir dvi dvi-am info \
 	info-am install install-am install-data install-data-am \
-	install-exec install-exec-am install-info install-info-am \
-	install-man install-sbinPROGRAMS install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+	install-dist_dbDATA install-exec install-exec-am install-info \
+	install-info-am install-man install-sbinPROGRAMS install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic tags uninstall uninstall-am \
-	uninstall-info-am uninstall-sbinPROGRAMS
+	uninstall-dist_dbDATA uninstall-info-am uninstall-sbinPROGRAMS
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

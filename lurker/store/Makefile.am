@@ -1,6 +1,9 @@
+dbdir = @dbdir@
+
 INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common
 
 sbin_PROGRAMS = @PACKAGE@d
+dist_db_DATA = DB_CONFIG
 EXTRA_DIST = Design
 
 @PACKAGE@d_SOURCES = \
