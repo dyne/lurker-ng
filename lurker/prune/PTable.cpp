@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.8 2003-05-16 16:22:16 terpstra Exp $
+/*  $Id: PTable.cpp,v 1.9 2003-05-18 11:40:04 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -188,8 +188,8 @@ string PTable::loadLists()
 	{
 		string pfx = 
 			string(LU_KEYWORD LU_KEYWORD_LIST)
-			+ '\0'
-			+ list->first;
+			+ list->first
+			+ '\0';
 			
 		auto_ptr<ESort::Walker> forward(
 			reader->seek(pfx, oldest.raw(), ESort::Forward));
