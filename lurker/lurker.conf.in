@@ -11,7 +11,7 @@ admin_address = nill@bitbucket.org
 
 # The command to invoke to transform xml into html.
 # This command is fed xml via stdin and expected to produce on stdout.
-xslt = xsltproc fmt/render-html.xsl -
+xslt = xsltproc --nonet -
 
 # The directory where lurker will keep it's database information.
 dbdir = @VARDIR@/lib/@PACKAGE_NAME@

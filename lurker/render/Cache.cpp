@@ -1,4 +1,4 @@
-/*  $Id: Cache.cpp,v 1.4 2003-05-18 12:36:50 terpstra Exp $
+/*  $Id: Cache.cpp,v 1.5 2003-06-09 16:11:57 terpstra Exp $
  *  
  *  Cache.h - Helper which transforms xml -> html and caches files
  *  
@@ -102,15 +102,24 @@ int streambug::sync()
 Cache::Cache(const Config& cfg, const string& command, const string& parameter)
  : bug(new streambug), o(bug)
 {
-	string name = command + "/" + parameter;
-	cache = fopen(name.c_str(), "w+");
+	if (chdir(command.c_str()) != 0)
+	{
+		cout << "Status: 200 OK\r\n";
+		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout << error(_("Entering command dir"), command + ":" + strerror(errno),
+			_("Perhaps the directory does not exist to which "
+			  "the cache file is being written."));
+		exit(1);
+	}
+	
+	cache = fopen(parameter.c_str(), "w+");
 	if (!cache)
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Creating cache file"), name + ":" + strerror(errno),
-			_("Perhaps the directory does not exist to which "
-			  "the cache file is being written."));
+		cout << error(_("Creating cache file"), parameter + ":" + strerror(errno),
+			_("Perhaps the user which runs lurker.cgi does not have write"
+			  "permissions to this directory."));
 		exit(1);
 	}
 	
