@@ -72,7 +72,7 @@ xslt = xsltproc --nonet -
 # Do not mess with the files in this directory on pain of death.
 # Before taking a backup, make sure your MTA has a frozen mail queue.
 
-dbdir = @VARDIR@/lib/@PACKAGE_NAME@
+dbdir = @vardir@
 
 # Include another file for additional configuration.
 # 

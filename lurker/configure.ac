@@ -76,7 +76,9 @@ else
 fi
 
 wwwdir="${localstatedir}/www/${PACKAGE}"
+vardir="${localstatedir}/lib/${PACKAGE}"
 AC_SUBST(wwwdir)
+AC_SUBST(vardir)
 
 AC_CONFIG_FILES([
 	Makefile libesort/Makefile common/Makefile index/Makefile
