@@ -3,7 +3,7 @@ noinst_LIBRARIES = libkap.a
 bin_PROGRAMS = kapmake kapdump
 
 libkap_a_SOURCES = \
-	kap.h private.h \
+	kap.h private.h avl.h \
 	btree.c append.c \
 	kap.c
 
