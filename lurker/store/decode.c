@@ -1,4 +1,4 @@
-/*  $Id: decode.c,v 1.5 2002-06-21 18:19:03 terpstra Exp $
+/*  $Id: decode.c,v 1.6 2002-07-11 20:30:10 terpstra Exp $
  *  
  *  decode.c - decode definitions and types for all tools
  *  
@@ -48,7 +48,7 @@ static char my_decode_debase64[256];
 const char* lu_decode_id(
 	const char* id)
 {
-	static char buf[80];
+	static char buf[MAX_MESSAGE_ID];
 	char* w;
 	char* e;
 	const char* scan;
@@ -181,7 +181,7 @@ static char* my_decode_base64(
 		/* Firstly, decode a hunk of the string to binary */
 		while (r != re && be - b >= 3)
 		{
-			lu_quad	tmp;
+			lu_quad	qtmp;
 			
 			while (my_decode_debase64[(int)*r] == 0x7F && r != re) r++;
 			
@@ -189,8 +189,8 @@ static char* my_decode_base64(
 			if (r == re) break;
 			if (*r == '=') break;
 			
-			tmp = my_decode_debase64[(int)*r++];
-			tmp <<= 6;
+			qtmp = my_decode_debase64[(int)*r++];
+			qtmp <<= 6;
 			
 			while (my_decode_debase64[(int)*r] == 0x7F && r != re) r++;
 			
@@ -198,8 +198,8 @@ static char* my_decode_base64(
 			if (r == re) break;
 			if (*r == '=') break;
 			
-			tmp |= my_decode_debase64[(int)*r++];
-			tmp <<= 6;
+			qtmp |= my_decode_debase64[(int)*r++];
+			qtmp <<= 6;
 			
 			while (my_decode_debase64[(int)*r] == 0x7F && r != re) r++;
 			
@@ -209,28 +209,28 @@ static char* my_decode_base64(
 			/* Premature end? */
 			if (*r == '=')
 			{
-				*b++ = (tmp >> 10);
+				*b++ = (qtmp >> 10);
 				break;
 			}
 			
-			tmp |= my_decode_debase64[(int)*r++];
-			tmp <<= 6;
+			qtmp |= my_decode_debase64[(int)*r++];
+			qtmp <<= 6;
 			
 			while (my_decode_debase64[(int)*r] == 0x7F && r != re) r++;
 			if (r == re) break;
 			
 			if (*r == '=')
 			{
-				*b++ = (tmp >> 16);
-				*b++ = (tmp >> 8);
+				*b++ = (qtmp >> 16);
+				*b++ = (qtmp >> 8);
 				break;
 			}
 			
-			tmp |= my_decode_debase64[(int)*r++];
+			qtmp |= my_decode_debase64[(int)*r++];
 			
-			*b++ = (tmp >> 16);
-			*b++ = (tmp >> 8);
-			*b++ = tmp;
+			*b++ = (qtmp >> 16);
+			*b++ = (qtmp >> 8);
+			*b++ = qtmp;
 		}
 		
 		/* Now, transform the charset to utf-8 */

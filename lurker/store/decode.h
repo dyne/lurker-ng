@@ -1,4 +1,4 @@
-/*  $Id: decode.h,v 1.1 2002-06-10 12:25:58 terpstra Exp $
+/*  $Id: decode.h,v 1.2 2002-07-11 20:30:10 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -36,6 +36,8 @@ void lu_decode_header(
 
 const char* lu_decode_charset(
 	const char*	charset);
+
+#define MAX_MESSAGE_ID	80
 
 /* Cleanup the contents of a message id 
  */
