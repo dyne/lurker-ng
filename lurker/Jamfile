@@ -17,10 +17,8 @@ if $(LOCAL_MIMELIB) = yes
 		mimelib/group.cpp mimelib/headers.cpp mimelib/mailbox.cpp
 		mimelib/mboxlist.cpp mimelib/mechansm.cpp
 		mimelib/mediatyp.cpp mimelib/message.cpp mimelib/msgcmp.cpp
-		mimelib/msgid.cpp mimelib/multipar.cpp mimelib/nntp.cpp
-		mimelib/param.cpp mimelib/pop.cpp mimelib/protocol.cpp
-		mimelib/smtp.cpp mimelib/text.cpp mimelib/token.cpp
-		mimelib/uuencode.cpp
+		mimelib/msgid.cpp mimelib/multipar.cpp mimelib/param.cpp
+		mimelib/text.cpp mimelib/token.cpp mimelib/uuencode.cpp
 	;
 }
 
