@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.2 2002-02-03 03:10:53 terpstra Exp $
+/*  $Id: common.h,v 1.3 2002-02-03 23:40:23 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -98,11 +98,3 @@ typedef lu_quad message_id;
 /*------------------------------------------------ Public global vars */
 
 extern message_id lu_common_minvalid;
-
-/*------------------------------------------------ Public component methods */
-
-extern int lu_common_init();
-extern int lu_common_open();
-extern int lu_common_sync();
-extern int lu_common_close();
-extern int lu_common_quit();

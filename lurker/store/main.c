@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.21 2002-02-03 06:05:43 terpstra Exp $
+/*  $Id: main.c,v 1.22 2002-02-03 23:40:23 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -55,7 +55,6 @@
 
 static int my_main_init(const char* c)
 {
-	if (lu_common_init()   != 0) return -1;
 	if (lu_config_init(c)  != 0) return -1;
 	if (lu_flatfile_init() != 0) return -1;
 	if (lu_wbuffer_init()  != 0) return -1;
@@ -71,7 +70,6 @@ static int my_main_init(const char* c)
 
 static int my_main_open()
 {
-	if (lu_common_open()   != 0) return -1;
 	if (lu_config_open()   != 0) return -1;
 	if (lu_flatfile_open() != 0) return -1;
 	if (lu_wbuffer_open()  != 0) return -1;
@@ -98,7 +96,6 @@ static int my_main_sync()
 	if (lu_wbuffer_sync()  != 0) fail = -1;
 	if (lu_flatfile_sync() != 0) fail = -1;
 	if (lu_config_sync()   != 0) fail = -1; 
-	if (lu_common_sync()   != 0) fail = -1;
 	
 	return fail;
 }
@@ -116,7 +113,6 @@ static int my_main_close()
 	if (lu_wbuffer_close()  != 0) fail = -1;
 	if (lu_flatfile_close() != 0) fail = -1;
 	if (lu_config_close()   != 0) fail = -1; 
-	if (lu_common_close()   != 0) fail = -1;
 	
 	return fail;
 }
@@ -134,7 +130,6 @@ static int my_main_quit()
 	if (lu_wbuffer_quit()  != 0) fail = -1;
 	if (lu_flatfile_quit() != 0) fail = -1;
 	if (lu_config_quit()   != 0) fail = -1; 
-	if (lu_common_quit()   != 0) fail = -1;
 	
 	return fail;
 }

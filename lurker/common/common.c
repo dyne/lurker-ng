@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.1 2002-02-03 03:10:53 terpstra Exp $
+/*  $Id: common.c,v 1.2 2002-02-03 23:40:23 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -28,32 +28,4 @@
 
 /*------------------------------------------------ Public global vars */
 
-message_id lu_common_minvalid;
-
-/*------------------------------------------------ Public component methods */
-
-int lu_common_init()
-{
-	memset(&lu_common_minvalid, 0xFF, sizeof(message_id));
-	return 0;
-}
-
-int lu_common_open()
-{
-	return 0;
-}
-
-int lu_common_sync()
-{
-	return 0;
-}
-
-int lu_common_close()
-{
-	return 0;
-}
-
-int lu_common_quit()
-{
-	return 0;
-}
+message_id lu_common_minvalid = -1;
