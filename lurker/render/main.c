@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.21 2002-06-14 11:16:58 terpstra Exp $
+/*  $Id: main.c,v 1.22 2002-06-21 00:44:58 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -134,10 +134,20 @@ int lu_connect_server()
 	if (connect(sun_fd, (struct sockaddr*)&sun_addr, sun_len) != 0)
 	{
 		printf("Content-Type: text/html\r\n\r\n");
-		printf(&basic_error[0], 
-			_("Unable to connect to server"), 
-			"connect",
-			strerror(errno));
+		if (errno == ENOENT || errno == ECONNREFUSED)
+		{
+			printf(&basic_error[0], 
+				_("Unable to connect to server"), 
+				"connect",
+				_("The daemon (lurkerd) is not running"));
+		}
+		else
+		{
+			printf(&basic_error[0], 
+				_("Unable to connect to server"), 
+				"connect",
+				strerror(errno));
+		}
 		return -1;
 	}
 	
