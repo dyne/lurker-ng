@@ -1,4 +1,4 @@
-/*  $Id: mbox.h,v 1.1 2002-02-03 05:45:29 terpstra Exp $
+/*  $Id: mbox.h,v 1.2 2002-02-10 21:50:38 terpstra Exp $
  *  
  *  mbox.h - Knows how to follow mboxes for appends and import messages
  *  
@@ -24,8 +24,8 @@
 
 /*------------------------------------------------- Public component methods */
 
-extern int lu_mbox_init();
-extern int lu_mbox_open();
-extern int lu_mbox_sync();
-extern int lu_mbox_close();
-extern int lu_mbox_quit();
+extern int lu_mbox_init (void);
+extern int lu_mbox_open (void);
+extern int lu_mbox_sync (void);
+extern int lu_mbox_close(void);
+extern int lu_mbox_quit (void);

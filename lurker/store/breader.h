@@ -1,4 +1,4 @@
-/*  $Id: breader.h,v 1.4 2002-02-10 08:20:44 terpstra Exp $
+/*  $Id: breader.h,v 1.5 2002-02-10 21:50:38 terpstra Exp $
  *  
  *  breader.h - Knows how to use the abstracted read interface for buffered access
  *  
@@ -28,11 +28,11 @@ typedef int Lu_Breader_Handle;
 
 /*------------------------------------------------- Public component methods */
 
-extern int lu_breader_init();
-extern int lu_breader_open();
-extern int lu_breader_sync();
-extern int lu_breader_close();
-extern int lu_breader_quit();
+extern int lu_breader_init (void);
+extern int lu_breader_open (void);
+extern int lu_breader_sync (void);
+extern int lu_breader_close(void);
+extern int lu_breader_quit (void);
 
 /*-------------------------------------------------- Reader methods */
 

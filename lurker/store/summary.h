@@ -1,4 +1,4 @@
-/*  $Id: summary.h,v 1.2 2002-02-10 09:33:53 terpstra Exp $
+/*  $Id: summary.h,v 1.3 2002-02-10 21:50:38 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -86,11 +86,11 @@ typedef struct Lu_Summary_Thread_T
 
 /*------------------------------------------------- Public component methods */
 
-extern int lu_summary_init();
-extern int lu_summary_open();
-extern int lu_summary_sync();
-extern int lu_summary_close();
-extern int lu_summary_quit();
+extern int lu_summary_init (void);
+extern int lu_summary_open (void);
+extern int lu_summary_sync (void);
+extern int lu_summary_close(void);
+extern int lu_summary_quit (void);
 
 /*------------------------------------------------- Direct access methods */
 

@@ -1,4 +1,4 @@
-/*  $Id: search.h,v 1.1 2002-02-03 03:10:53 terpstra Exp $
+/*  $Id: search.h,v 1.2 2002-02-10 21:50:38 terpstra Exp $
  *  
  *  search.h - Uses the breader to execute a given search
  *  
@@ -24,9 +24,9 @@
 
 /*------------------------------------------------- Public component methods */
 
-extern int lu_search_init();
-extern int lu_search_open();
-extern int lu_search_sync();
-extern int lu_search_close();
-extern int lu_search_quit();
+extern int lu_search_init (void);
+extern int lu_search_open (void);
+extern int lu_search_sync (void);
+extern int lu_search_close(void);
+extern int lu_search_quit (void);
 

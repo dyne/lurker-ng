@@ -1,4 +1,4 @@
-/*  $Id: indexer.h,v 1.3 2002-02-03 08:25:32 terpstra Exp $
+/*  $Id: indexer.h,v 1.4 2002-02-10 21:50:38 terpstra Exp $
  *  
  *  indexer.h - Handles indexing a message for keyword searching
  *  
@@ -24,11 +24,11 @@
 
 /*------------------------------------------------- Public component methods */
 
-extern int lu_indexer_init();
-extern int lu_indexer_open();
-extern int lu_indexer_sync();
-extern int lu_indexer_close();
-extern int lu_indexer_quit();
+extern int lu_indexer_init (void);
+extern int lu_indexer_open (void);
+extern int lu_indexer_sync (void);
+extern int lu_indexer_close(void);
+extern int lu_indexer_quit (void);
 
 /*------------------------------------------------- Indexing algorithm */
 

@@ -1,4 +1,4 @@
-/*  $Id: flatfile.h,v 1.3 2002-02-03 03:13:27 terpstra Exp $
+/*  $Id: flatfile.h,v 1.4 2002-02-10 21:50:38 terpstra Exp $
  *  
  *  flatfile.h - Knows how to manage the keyword flatfile database
  *  
@@ -29,11 +29,11 @@ typedef struct My_Flatfile_Handle_T* Lu_Flatfile_Handle;
 
 /*------------------------------------------------- Public component methods */
 
-extern int lu_flatfile_init();
-extern int lu_flatfile_open();
-extern int lu_flatfile_sync();
-extern int lu_flatfile_close();
-extern int lu_flatfile_quit();
+extern int lu_flatfile_init (void);
+extern int lu_flatfile_open (void);
+extern int lu_flatfile_sync (void);
+extern int lu_flatfile_close(void);
+extern int lu_flatfile_quit (void);
 
 /*-------------------------------------------------- Append methods */
 
