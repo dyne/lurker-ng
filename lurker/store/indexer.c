@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.9 2002-02-20 03:43:12 terpstra Exp $
+/*  $Id: indexer.c,v 1.10 2002-02-20 05:08:50 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -35,7 +35,6 @@
 #include "btree.h"
 
 #include <stdlib.h>
-#include <ctype.h>
 #include <stdio.h>
 
 /*------------------------------------------------ Constant parameters */
@@ -43,12 +42,13 @@
 /* A message is not allowed to have more than this many keywords. We simply
  * start ignoring keywords beyond this limit.
  */
-#define LU_INDEXER_MAX_KEYS	1024
+#define LU_INDEXER_MAX_KEYS	2048
 
 /* A limit on the amount of dynamic storage we allow for decomposing and
- * creating extra keywords
+ * creating extra keywords. Here we assume that the average word is 8 chars
+ * long.
  */
-#define LU_INDEXER_MAX_DYNAMIC	10240
+#define LU_INDEXER_MAX_DYNAMIC	16384
 
 /* Max size of my_indexer_ptr */
 #define MY_INDEXER_MAX		0xFFFFUL
@@ -73,15 +73,38 @@ static My_Indexer_Tree*	my_indexer_buf = 0;
 /* These tell us how much of the dynamic vars above have been used by the
  * current indexer pass.
  */
+static my_indexer_ptr	my_indexer_avl_root= 0;
 static char*		my_indexer_dyn_off = 0;
-static int		my_indexer_avl_off = 0;
+static my_indexer_ptr	my_indexer_avl_off = 0;
 
-static const char* lu_indexer_mons[12] = { 
+static const char* my_indexer_mons[12] = { 
 	"jan", "feb", "mar", "apr", "may", "jun", 
 	"jul", "aug", "sep", "oct", "nov", "dec" };
 
-static const char* lu_indexer_dows[7] = {
+static const char* my_indexer_dows[7] = {
 	"sun", "mon", "tue", "wed", "thu", "fri", "sat" };
+
+/* These are characters which should be interpretted as both part of the word
+ * and as a word seperator. eg: 'maul.sith.vpn' should be indexed as 'maul',
+ * 'sith', 'vpn', and 'maul.sith.vpn' because '.' is listed here.
+ */
+static const char my_indexer_word_splits[] =
+"$@./:\\-_";
+static char my_indexer_is_split[256];
+
+/* These are characters which should be interpretted as word breaks.
+ * No known language should use these as letters in a word.
+ * All chars 000-037 fall in this category too.
+ */
+static const char my_indexer_word_divs[] =
+" !\"#%&'()*+,;<=>?[]^`{|}~";
+static char my_indexer_is_div[256];
+
+/* These tables are the conversion for characters being written to keywords.
+ */
+static const char my_indexer_orig[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static const char my_indexer_dest[] = "abcdefghijklmnopqrstuvwxyz";
+static char my_indexer_conv[256];
 
 /*------------------------------------------------ Private helper methods */
 
@@ -100,7 +123,8 @@ static int my_indexer_strcasecmp(
 {
 	while (*a && *b)
 	{
-		int dif = tolower(*a++) - tolower(*b++);
+		int dif = my_indexer_conv[((int)*a++)] - 
+		          my_indexer_conv[((int)*b++)];
 		if (dif != 0) return dif;
 	}
 	
@@ -116,6 +140,8 @@ static int my_indexer_strcasecmp(
 static int my_indexer_push_keyword(
 	const char* keyword)
 {
+	my_indexer_ptr tmp;
+	
 	int len = strlen(keyword) + 1;
 	
 	/* Do we have a record we could fit this keyword and the avl tree
@@ -129,11 +155,15 @@ static int my_indexer_push_keyword(
 	my_indexer_buf[my_indexer_avl_off].key = keyword;
 	
 	/* Use the avl insert method to insert the key balanced. */
-	if (my_btree_indexer_insert(my_indexer_avl_off) ==
-		LU_BTREE_ALREADY_THERE)
+	tmp = my_btree_indexer_insert(my_indexer_avl_root, my_indexer_avl_off);
+	
+	if (tmp == MY_INDEXER_MAX)
 	{	/* It was already indexed */
 		return 0;
 	}
+	
+	/* This is the new root */
+	my_indexer_avl_root = tmp;
 	
 	/* The record was not there and has been added. Finalize it. */
 	my_indexer_dyn_off -= len;
@@ -166,10 +196,10 @@ static int my_indexer_index_hunk(
 	
 	e = &out[sizeof(out) - 1];
 	
-	/* Copy the range into the buffer while lower-casing it */
+	/* Copy the range into the buffer while converting it */
 	while (w != e && buf != eos)
 	{
-		*w++ = tolower(*buf++);
+		*w++ = my_indexer_conv[((int)*buf++)];
 	}
 	
 	*w = 0;
@@ -182,11 +212,56 @@ static int my_indexer_digest_hunk(
 	const char* eos, 
 	const char* prefix)
 {
-	/*!!! Make me do my job */
-	return my_indexer_index_hunk(buf, eos, prefix);
+	const char* start;
+	const char* scan;
+	
+	/*!!! Make me work with non-romanian languages (eg. japanese) */
+	/* Japanese has no spaces to delineate words */
+	
+	/* Firstly, index the entire chunk, but without leading or trailing
+	 * chars from is_split.
+	 */
+	
+	while (buf != eos && my_indexer_is_split[((int)*buf)])    buf++;
+	
+	/* Don't index the ether */
+	if (buf == eos) return 0;
+	
+	/* We know there's at least one non-split char so we can keep
+	 * knocking off the eos without testing for emptiness.
+	 */
+	while (my_indexer_is_split[((int)*(eos-1))]) eos--;
+	
+	/* Index the entire hunk. */
+	if (my_indexer_index_hunk(buf, eos, prefix) != 0)
+		return -1;
+	
+	/* Now, divide the chunk into bits which we will keyword index */
+	start = buf;
+	for (scan = buf; scan != eos; scan++)
+	{
+		if (my_indexer_is_split[((int)*scan)])
+		{
+			if (start != scan)
+			{
+				if (my_indexer_index_hunk(start, scan, prefix) != 0)
+					return -1;
+			}
+			
+			start = scan+1;
+		}
+	}
+	
+	if (start != eos)
+	{
+		if (my_indexer_index_hunk(start, eos, prefix) != 0)
+			return -1;
+	}
+	
+	return 0;
 }
 
-/* Run through a buffer looking for segments of non-whitespace
+/* Run through a buffer looking for segments of non-divide characters.
  */
 static int my_indexer_keyword_scan(
 	const char* buf, 
@@ -200,7 +275,7 @@ static int my_indexer_keyword_scan(
 	start = 0;
 	for (scan = buf; scan != eos; scan++)
 	{
-		if (isspace(*scan))
+		if (my_indexer_is_div[((int)*scan)])
 		{
 			if (start)
 			{
@@ -359,6 +434,31 @@ static int my_indexer_dump_words(
 
 int lu_indexer_init()
 {
+	int i;
+	
+	/* Clear the lookup tables */
+	memset(&my_indexer_is_split[0], 0, sizeof(my_indexer_is_split));
+	memset(&my_indexer_is_div  [0], 0, sizeof(my_indexer_is_div));
+	
+	/* Bootstrap the lookup tables */
+	for (i = 0; i < sizeof(my_indexer_word_splits)-1; i++)
+		my_indexer_is_split[((int)my_indexer_word_splits[i])] = 1;
+	for (i = 0; i < sizeof(my_indexer_word_divs)-1; i++)
+		my_indexer_is_div[((int)my_indexer_word_divs[i])] = 1;
+	
+	/* All control characters divide words */
+	for (i = 0; i < 040; i++)
+		my_indexer_is_div[i] = 1;
+	
+	/* Initialize conversion table */
+	for (i = 0; i < 256; i++)
+		my_indexer_conv[i] = i;
+	
+	/* Fill the conversion entries */
+	for (i = 0; i < sizeof(my_indexer_orig)-1; i++)
+		my_indexer_conv[((int)my_indexer_orig[i])] = 
+			my_indexer_dest[i];
+	
 	my_indexer_buf = malloc(LU_INDEXER_MAX_KEYS * sizeof(My_Indexer_Tree) +
 				LU_INDEXER_MAX_DYNAMIC);
 	if (!my_indexer_buf)
@@ -412,7 +512,8 @@ int lu_indexer_import(
 	my_indexer_dyn_off = ((char*)my_indexer_buf) + 
 		LU_INDEXER_MAX_KEYS * sizeof(My_Indexer_Tree) +
 		LU_INDEXER_MAX_DYNAMIC;
-	my_indexer_avl_off = 0;
+	my_indexer_avl_off  = 0;
+	my_indexer_avl_root = 0;
 	
 	/* Push the mailing list keyword. */
 	snprintf(&buf[0], sizeof(buf), "%s%d", 
@@ -432,7 +533,7 @@ int lu_indexer_import(
 	my_indexer_push_keyword(&buf[0]);
 	
 	snprintf(&buf[0], sizeof(buf), "%s%s", 
-		LU_KEYWORD_MONTH, lu_indexer_mons[when->tm_mon]);
+		LU_KEYWORD_MONTH, my_indexer_mons[when->tm_mon]);
 	my_indexer_push_keyword(&buf[0]);
 	
 	snprintf(&buf[0], sizeof(buf), "%s%d",
@@ -444,7 +545,7 @@ int lu_indexer_import(
 	my_indexer_push_keyword(&buf[0]);
 		
 	snprintf(&buf[0], sizeof(buf), "%s%s", 
-		LU_KEYWORD_WEEKDAY, lu_indexer_dows[when->tm_wday]);
+		LU_KEYWORD_WEEKDAY, my_indexer_dows[when->tm_wday]);
 	my_indexer_push_keyword(&buf[0]);
 	
 	/* Now, push keywords for the message id and reply-to */
@@ -500,7 +601,7 @@ int lu_indexer_import(
 	/* Ok, we have all the keyword - dump them. */
 #ifdef DEBUG
 	printf("%d: [ ", id);
-	my_indexer_dump_words(0, id);
+	my_indexer_dump_words(my_indexer_avl_root, id);
 	printf("]\n");
 	return 0;
 #else
