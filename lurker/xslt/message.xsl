@@ -167,8 +167,10 @@
    </xsl:if>
   </div>
  <xsl:apply-templates/>
+ <xsl:if test="substring(@type,1,5) = string('image')">
+  <img src="../attach/{@id}@{/message/mid}.{substring(@type,7,5)}"/>
+ </xsl:if>
 </xsl:template>
-
 
 <!-- The main formatting procedure for a message -->
 
