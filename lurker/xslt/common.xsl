@@ -50,7 +50,7 @@
 </xsl:template>
 
 <xsl:template match="email">
-  <xsl:call-templates name="email-cut"/>
+  <xsl:call-template name="email-cut"/>
 </xsl:template>
 
 <xsl:template match="email[@address]" mode="list">
