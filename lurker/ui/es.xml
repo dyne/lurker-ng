@@ -55,6 +55,8 @@
  no-refine="El conjunto de resultados permanecerá intacto. Sólo se verá afectado el rango de fechas que se muestra."
  useful-prefixs="Los términos de búsqueda pueden ir precedidas de au:, sb: y ml: para hacerlos coincidir con el autor, el asunto o la lista de correo, respectivamente."
 
+ day-suffix=""
+ 
  jan="enero"
  feb="febrero"
  mar="marzo"
