@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.8 2002-02-11 01:40:50 terpstra Exp $
+/*  $Id: breader.c,v 1.9 2002-02-20 05:03:57 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -93,6 +93,10 @@
  *                   --> 2.0Mb
  */
 
+/* This is the maximum value my_breader_ptr can attain.
+ */
+#define MY_BREADER_PTR_MAX	0xFFFFUL
+
 /*------------------------------------------------ Private types */
 
 /* Must be able to store up to LU_BOUNDARY_RECORDS */
@@ -116,10 +120,11 @@ typedef struct My_Breader_Cache_T
 
 typedef struct My_Breader_Record_T
 {
-	My_Breader_Cache	cache[LU_CACHE_RECORDS];
+	My_Breader_Cache	cache   [LU_CACHE_RECORDS];
 	My_Breader_Boundary	boundary[LU_BOUNDARY_RECORDS];
 	
 	my_breader_ptr		boundary_usage;
+	my_breader_ptr		boundary_root;
 	
 	Lu_Flatfile_Handle	flatfile;
 	message_id		count;
@@ -149,7 +154,7 @@ inline int my_breader_compare(message_id a, message_id b)
 LU_BTREE_DEFINE(
 	breader, 
 	my_breader_ptr, 
-	0xFFFFUL,
+	MY_BREADER_PTR_MAX,
 	My_Breader_Boundary,
 	my_breader_table,
 	my_breader_compare)
@@ -163,6 +168,7 @@ static int my_breader_fetch_sector(
 	int		which  = 0;
 	int		i;
 	int		out;
+	my_breader_ptr	tmp;
 	
 	assert(index < record->count);
 	index -= (index % LU_PULL_AT_ONCE);
@@ -217,8 +223,10 @@ static int my_breader_fetch_sector(
 	
 	/* Push the new record and increase usage if it's not a duplicate */
 	my_breader_table = &record->boundary[0];
-	if (my_btree_breader_insert(record->boundary_usage) == 0)
+	tmp = my_btree_breader_insert(record->boundary_root, record->boundary_usage);
+	if (tmp != MY_BREADER_PTR_MAX)
 	{
+		record->boundary_root = tmp;
 		record->boundary_usage++;
 	}
 	
@@ -316,8 +324,8 @@ static int my_breader_find(
 #endif
 	
 	/* Now, use the boundary data to refine them */
-	ptr = 0;
-	while (ptr != 0xFFFFUL)
+	ptr = record->boundary_root;
+	while (ptr != MY_BREADER_PTR_MAX)
 	{
 		dir = my_breader_compare(id, record->boundary[ptr].key);
 #ifdef DEBUG
@@ -417,6 +425,7 @@ static void my_breader_purify_record(
 	strncpy(&record->keyword[0], keyword, LU_KEYWORD_LEN);
 	record->keyword[LU_KEYWORD_LEN] = 0;
 	
+	record->boundary_root  = 0;
 	record->boundary_usage = 0;
 	
 	for (i = 0; i < LU_CACHE_RECORDS; i++)
