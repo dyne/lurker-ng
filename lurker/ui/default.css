@@ -217,32 +217,24 @@ div.squash {
 div.goodsig {
   margin: 0px;
   padding: 0px;
-  overflow: hidden;
   border: 1px solid #0F0;
-}
-div.goodsig div.details {
   background-color: #0F0;
 }
 div.badsig {
   margin: 0px;
   padding: 0px;
-  overflow: hidden;
   border: 1px solid #F00;
-}
-div.badsig div.details {
   background-color: #F00;
 }
 div.unknownsig {
   margin: 0px;
   padding: 0px;
-  overflow: hidden;
-}
-div.unknownsig div.details {
   background-color: #888;
 }
 
 div.data {
   padding: 5px;
+  background-color: white;
 }
 
 img.photo {

@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.30 2003-07-02 10:33:12 terpstra Exp $
+/*  $Id: message.cpp,v 1.31 2003-07-02 21:39:08 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -58,8 +58,9 @@
 #include "KeyReader.h"
 #include "Cache.h"
 
-#define OLD_PGP_HEADER	"-----BEGIN PGP SIGNED MESSAGE-----"
-#define OLD_PGP_DIVIDER	"-----BEGIN PGP SIGNATURE-----" 
+#define OLD_PGP_HEADER	"-----BEGIN PGP SIGNED MESSAGE-----\n"
+#define OLD_PGP_DIVIDER	"-----BEGIN PGP SIGNATURE-----\n" 
+#define OLD_PGP_ENDER	"-----END PGP SIGNATURE-----\n"
 
 void    art_scan(const unsigned char** s, const unsigned char** e);
 void    url_scan(const unsigned char** s, const unsigned char** e);
@@ -188,7 +189,7 @@ void pgp_writefile(ostream& o, const DwString& data)
 	size_t s, e;
 	
 	s = 0;
-	while (1)
+	while (1) // signed data must have CRLF endcoding
 	{
 		e = data.find_first_of("\r\n", s);
 		if (e == DwString::npos) break;
@@ -252,7 +253,7 @@ void run_pgp(ostream& o, string& command)
 	}
 }
 
-bool handle_signed_inline(ostream& o, DwEntity& e)
+bool handle_signed_inline(ostream& o, const DwString& s)
 {
 	string command = pgp_config->pgpv_inline;
 	if (command == "off") return false;
@@ -260,49 +261,10 @@ bool handle_signed_inline(ostream& o, DwEntity& e)
 	string cleartext = pgp_tmpfile("cleartext");
 	find_and_replace(command, "%b", cleartext);
 	
-	// Oldschool pgp usually works by invoking a helper program which
-	// cannot control how the email client then encodes the signed data.
-	// Hence we nede to decode the transfer-encoding for verification
-	// to get back what the helper program probably gave the MUA.
-	
-	DwString out;
-	// if (e.hasHeaders() && 
-	if (e.Headers().HasContentTransferEncoding())
-	{
-		switch (e.Headers().ContentTransferEncoding().AsEnum())
-		{
-		case DwMime::kCteQuotedPrintable:
-			DwDecodeQuotedPrintable(e.Body().AsString(), out);
-			break;
-			
-		case DwMime::kCteBase64:
-			DwDecodeBase64(e.Body().AsString(), out);
-			break;
-		
-		case DwMime::kCteNull:
-		case DwMime::kCteUnknown:
-		case DwMime::kCte7bit:
-		case DwMime::kCte8bit:
-		case DwMime::kCteBinary:
-			out = e.Body().AsString();
-			break;
-		}
-		
-	}
-	else
-	{
-		out = e.Body().AsString();
-	}
-	
-	// We do NOT convert the charset because the user probably signed
-	// the text in the charset as which it was delivered. If it wasn't,
-	// we wouldn't be able to help anyways because we don't know what 
-	// to convert to.
-	
 	if (1)
 	{ // create the cleartext
 		std::ofstream body(cleartext.c_str());
-		pgp_writefile(body, out);
+		pgp_writefile(body, s);
 	}
 	
 	run_pgp(o, command);
@@ -355,37 +317,8 @@ bool handle_signed_mime(ostream& o, DwEntity& e)
 	return true;
 }
 
-void message_display(ostream& o, DwEntity& e, const string& charset, bool html)
+void process_text(ostream& o, bool html, const string& charset, const DwString& out)
 {
-	DwString out;
-	// if (e.hasHeaders() && 
-	if (e.Headers().HasContentTransferEncoding())
-	{
-		switch (e.Headers().ContentTransferEncoding().AsEnum())
-		{
-		case DwMime::kCteQuotedPrintable:
-			DwDecodeQuotedPrintable(e.Body().AsString(), out);
-			break;
-			
-		case DwMime::kCteBase64:
-			DwDecodeBase64(e.Body().AsString(), out);
-			break;
-		
-		case DwMime::kCteNull:
-		case DwMime::kCteUnknown:
-		case DwMime::kCte7bit:
-		case DwMime::kCte8bit:
-		case DwMime::kCteBinary:
-			out = e.Body().AsString();
-			break;
-		}
-		
-	}
-	else
-	{
-		out = e.Body().AsString();
-	}
-	
 	CharsetEscape decode(charset.c_str());
 	string utf8 = decode.write(out.c_str(), out.length());
 	
@@ -415,37 +348,93 @@ void message_display(ostream& o, DwEntity& e, const string& charset, bool html)
 	}
 	else
 	{
-		if (utf8.substr(0, sizeof(OLD_PGP_HEADER)-1) == OLD_PGP_HEADER
-		    && handle_signed_inline(o, e))
-		{	// this is an oldschool signed message!
+		my_service_quote(o, utf8.c_str(), utf8.length());
+	}
+}
+
+void message_display(ostream& o, DwEntity& e, const string& charset, bool html)
+{
+	// Oldschool pgp usually works by invoking a helper program which
+	// cannot control how the email client then encodes the signed data.
+	// Hence we nede to decode the transfer-encoding for verification
+	// to get back what the helper program probably gave the MUA.
+	
+	DwString out;
+	// if (e.hasHeaders() && 
+	if (e.Headers().HasContentTransferEncoding())
+	{
+		switch (e.Headers().ContentTransferEncoding().AsEnum())
+		{
+		case DwMime::kCteQuotedPrintable:
+			DwDecodeQuotedPrintable(e.Body().AsString(), out);
+			break;
+			
+		case DwMime::kCteBase64:
+			DwDecodeBase64(e.Body().AsString(), out);
+			break;
+		
+		case DwMime::kCteNull:
+		case DwMime::kCteUnknown:
+		case DwMime::kCte7bit:
+		case DwMime::kCte8bit:
+		case DwMime::kCteBinary:
+			out = e.Body().AsString();
+			break;
+		}
+		
+	}
+	else
+	{
+		out = e.Body().AsString();
+	}
+	
+	// We do NOT convert the charset because the user probably signed
+	// the text in the charset as which it was delivered. If it wasn't,
+	// we wouldn't be able to help anyways because we don't know what 
+	// to convert to.
+	
+	size_t pgp_last, pgp_header, pgp_divider, pgp_ender;
+	for (pgp_last = 0;
+	     ((pgp_header  = out.find(OLD_PGP_HEADER,  pgp_last))   != DwString::npos) &&
+	     ((pgp_divider = out.find(OLD_PGP_DIVIDER, pgp_header)) != DwString::npos) &&
+	     ((pgp_ender   = out.find(OLD_PGP_ENDER,   pgp_divider))!= DwString::npos);
+	     pgp_last = pgp_ender)
+	{
+		pgp_ender += sizeof(OLD_PGP_ENDER)-1; // include endline, not null
+		
+		// deal with leading text (substr is copy-free)
+		process_text(o, html, charset,
+			out.substr(pgp_last, pgp_header-pgp_last));
+		
+		bool signOpen = false;
+		if (handle_signed_inline(o, 
+			out.substr(pgp_header, pgp_ender-pgp_header)))
+		{
+			signOpen = true;
 			o << "<data>";
-			
-			// find the end of the signed body
-			string::size_type start = sizeof(OLD_PGP_HEADER)+1;
-			
-			// skip the hash line
-			start = utf8.find('\n', start);
-			if (start == string::npos) start = utf8.length();
-			else ++start;
-			
-			// skip the blank line
-			start = utf8.find('\n', start);
-			if (start == string::npos) start = utf8.length();
-			else ++start;
-			
-			string::size_type end = utf8.find(OLD_PGP_DIVIDER, start);
-			if (end == string::npos) end = utf8.length();
-			
-			// transform the signed body
-			my_service_quote(o, utf8.c_str() + start, end - start);
-			
+		}
+		
+		// skip the header + hash line + blank line
+		// (safe b/c we have 3 \n s for sure)
+		pgp_header += sizeof(OLD_PGP_HEADER)-1; // eol, !null
+		pgp_header = out.find('\n', pgp_header) + 1;
+		pgp_header = out.find('\n', pgp_header) + 1;
+		
+		if (pgp_header < pgp_divider)
+		{
+			// signed text
+			process_text(o, html, charset,
+				out.substr(pgp_header, pgp_divider-pgp_header));
+		}
+		
+		if (signOpen)
+		{
 			o << "</data></signed>";
 		}
-		else
-		{
-			my_service_quote(o, utf8.c_str(), utf8.length());
-		}
 	}
+	// trailing text
+	process_text(o, html, charset,
+		out.substr(pgp_last, out.length()-pgp_last));
 }
 
 // this will only output mime information if the dump is false

@@ -41,7 +41,7 @@ xslt = xsltproc --nonet -
 # The substitutions %s, %b, and %p are the signature, body, and photo.
 # 
 # pgp_verify_mime   = gpg 
-# 	--keyring /home/terpstra/runtime/debian-keyring.gpg
+# 	--keyring /usr/share/keyrings/debian-keyring.gpg
 # 	--no-default-keyring
 # 	--homedir /tmp
 # 	--always-trust
@@ -53,7 +53,7 @@ xslt = xsltproc --nonet -
 # 	--charset utf-8
 # 	--verify %s %b 2>&1
 # pgp_verify_inline = gpg
-# 	--keyring /home/terpstra/runtime/debian-keyring.gpg
+# 	--keyring /usr/share/keyrings/debian-keyring.gpg
 # 	--no-default-keyring
 # 	--homedir /tmp
 # 	--always-trust
