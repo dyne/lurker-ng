@@ -213,22 +213,49 @@
 
 <!-- Format the mime components of the email -->
 
+<xsl:template name="mime-url">
+ <xsl:text>../attach/</xsl:text>
+ <xsl:value-of select="@id"/>
+ <xsl:text>@</xsl:text>
+ 
+ <xsl:call-template name="my-escape-uri">
+  <xsl:with-param name="str" select="/message/mid"/>
+ </xsl:call-template>
+ 
+ <xsl:choose>
+  <xsl:when test="@name">
+   <xsl:text>@</xsl:text>
+   <xsl:value-of select="@name"/>
+  </xsl:when>
+  <xsl:otherwise>
+   <xsl:text>.</xsl:text>
+   <xsl:value-of select="substring-after(@type, '/')"/>
+  </xsl:otherwise>
+ </xsl:choose>
+</xsl:template>
+
 <xsl:template match="mime">
  <div class="mime-label">
-  <xsl:if test="@name">
-   <xsl:if test="ancestor::mime">--</xsl:if>
-   <a href="../attach/{@id}@{/message/mid}@{@name}"><xsl:value-of select="@name"/> (<xsl:value-of select="@type"/>)</a>
-   <xsl:if test="ancestor::mime">--</xsl:if>
-  </xsl:if>
-  <xsl:if test="not(@name)">
-   <xsl:if test="ancestor::mime">--</xsl:if>
-   <a href="../attach/{@id}@{/message/mid}.attach">(<xsl:value-of select="@type"/>)</a>
-   <xsl:if test="ancestor::mime">--</xsl:if>
-  </xsl:if>
+  <xsl:if test="ancestor::mime">--</xsl:if>
+  
+  <xsl:element name="a">
+   <xsl:attribute name="href">
+    <xsl:call-template name="mime-url"/>
+   </xsl:attribute>
+   
+   <xsl:value-of select="@name"/> (<xsl:value-of select="@type"/>)
+  </xsl:element>
+  <xsl:if test="ancestor::mime">--</xsl:if>
  </div>
+ 
  <div class="mime"><xsl:apply-templates/></div>
+ 
  <xsl:if test="substring(@type,1,5) = string('image')">
-  <img src="../attach/{@id}@{/message/mid}.{substring(@type,7,5)}"/>
+  <xsl:element name="img">
+   <xsl:attribute name="src">
+    <xsl:call-template name="mime-url"/>
+   </xsl:attribute>
+  </xsl:element>
  </xsl:if>
 </xsl:template>
 
@@ -268,7 +295,18 @@
   <b>
    <xsl:value-of select="$appearinmbox"/>
    <xsl:text> </xsl:text>
-   <a href="../mbox/{mid}.txt"><xsl:value-of select="$mailbox"/></a>
+   <xsl:element name="a">
+    <xsl:attribute name="href">
+     <xsl:text>../mbox/</xsl:text>
+     <xsl:call-template name="my-escape-uri">
+      <xsl:with-param name="str" select="mid"/>
+     </xsl:call-template>
+     <xsl:text>.txt</xsl:text>
+    </xsl:attribute>
+    
+    <xsl:value-of select="$mailbox"/>
+   </xsl:element>
+   
    <xsl:text> </xsl:text>
    <xsl:value-of select="$mailboxof"/>:
   </b>

@@ -47,7 +47,8 @@
 
 <xsl:variable name="uri-input">The@dog-z went/_&#127;_%ab%zu%c</xsl:variable>
 <xsl:variable name="uri-output">The%40dog-z%20went%2F_%7F_%ab%25zu%25c</xsl:variable>
-<xsl:variable name="have-escape-uri" select="escape-uri($uri-input, true()) = $uri-output"/>
+<xsl:variable name="have-escape-uri" select="false()"/>
+<!-- "escape-uri($uri-input, true()) = $uri-output" -->
 
 <!-- According to the RFC, non-ascii chars will be utf-8 encoded and escaped
      with %s by the xslt-engine when in a 'uri' attribute or by the browser
@@ -107,7 +108,7 @@
  
  <xsl:choose>
   <xsl:when test="$have-escape-uri">
-   <xsl:value-of select="escape-uri($str, true())"/>
+<!--   <xsl:value-of select="escape-uri($str, true())"/> -->
   </xsl:when>
   <xsl:otherwise>
    <xsl:call-template name="do-escape-uri">
@@ -229,17 +230,21 @@
   <xsl:attribute name="class">thm</xsl:attribute>
   <xsl:attribute name="href">
    <xsl:text>../message/</xsl:text>
-   <xsl:choose>
-    <xsl:when test="summary">
-     <xsl:value-of select="summary/mid"/>
-    </xsl:when>
-    <xsl:when test="ancestor::snippet">
-     <xsl:value-of select="descendant::snippet/mid"/>
-    </xsl:when>
-    <xsl:when test="ancestor::summary">
-     <xsl:value-of select="ancestor::summary/mid"/>
-    </xsl:when>
-   </xsl:choose>
+   <xsl:call-template name="my-escape-uri">
+    <xsl:with-param name="str">
+     <xsl:choose>
+      <xsl:when test="summary">
+       <xsl:value-of select="summary/mid"/>
+      </xsl:when>
+      <xsl:when test="ancestor::snippet">
+       <xsl:value-of select="descendant::snippet/mid"/>
+      </xsl:when>
+      <xsl:when test="ancestor::summary">
+       <xsl:value-of select="ancestor::summary/mid"/>
+      </xsl:when>
+     </xsl:choose>
+    </xsl:with-param>
+   </xsl:call-template>
    <xsl:text>.</xsl:text>
    <xsl:value-of select="$ext"/>
   </xsl:attribute>
@@ -307,12 +312,21 @@
      <img src="../imgs/tree.png" alt="{$threading}"/>
     </a>
     <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
-    <a href="../message/{mid}.{$ext}">
+    <xsl:element name="a">
+     <xsl:attribute name="href">
+      <xsl:text>../message/</xsl:text>
+      <xsl:call-template name="my-escape-uri">
+       <xsl:with-param name="str" select="mid"/>
+      </xsl:call-template>
+      <xsl:text>.</xsl:text>
+      <xsl:value-of select="$ext"/>
+     </xsl:attribute>
+     
      <xsl:call-template name="truncate">
       <xsl:with-param name="length">50</xsl:with-param>
       <xsl:with-param name="string"><xsl:value-of select="subject"/></xsl:with-param>
      </xsl:call-template>
-    </a>
+    </xsl:element>
    </xsl:if>
   </td>
   <td nowrap="1"><xsl:apply-templates select="email"/></td>
@@ -337,10 +351,19 @@
 
 <xsl:template match="summary" mode="list">
  <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text><br/></xsl:if>
- <a href="{mid}.{$ext}">
+ <xsl:element name="a">
+  <xsl:attribute name="href">
+   <xsl:text>../message/</xsl:text>
+   <xsl:call-template name="my-escape-uri">
+    <xsl:with-param name="str" select="mid"/>
+   </xsl:call-template>
+   <xsl:text>.</xsl:text>
+   <xsl:value-of select="$ext"/>
+  </xsl:attribute>
+  
   <xsl:call-template name="summary-post"/>
   <xsl:if test="drift"> (drifted)</xsl:if>
- </a>
+ </xsl:element>
 </xsl:template>
 
 
