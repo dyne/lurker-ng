@@ -14,8 +14,8 @@ AC_SEARCH_LIBS(iconv,
   [AC_MSG_ERROR(Need iconv to link)])
 
 AC_ARG_WITH([mimelib-local],   AC_HELP_STRING([--with-mimelib-local],
-                                              [Use internal lurker/mimelib/*]),
-            [with_mimelib_local=""])
+                                              [Use internal lurker/mimelib/*]),,
+            [with_mimelib_local="no"])
 
 AC_ARG_WITH([mimelib-include], AC_HELP_STRING([--with-mimelib-include=DIR],
                                               [Location of mimelib/message.h]),,

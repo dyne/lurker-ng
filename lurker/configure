@@ -2478,7 +2478,9 @@ fi
 # Check whether --with-mimelib-local or --without-mimelib-local was given.
 if test "${with_mimelib_local+set}" = set; then
   withval="$with_mimelib_local"
-  with_mimelib_local=""
+
+else
+  with_mimelib_local="no"
 fi;
 
 
