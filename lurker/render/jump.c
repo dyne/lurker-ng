@@ -1,4 +1,4 @@
-/*  $Id: jump.c,v 1.6 2002-07-21 20:03:07 terpstra Exp $
+/*  $Id: jump.c,v 1.7 2003-03-30 14:23:05 terpstra Exp $
  *  
  *  jump.c - redirect mindex jumps
  *  
@@ -39,7 +39,7 @@ const char redirect_error[] =
 "<title>301 Moved Permanently</title>\r\n"
 "</head><body>\r\n"
 "<h1>Moved Permanently</h1>\r\n"
-"The document has moved <a href=\"%s/jump/%d@%ld.%s\">here</a>.\r\n"
+"The document has moved <a href=\"%s/jump/%ld@%s.%s\">here</a>.\r\n"
 "<p><hr>\r\n"
 "</body></html>\r\n";
 
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
 	printf("Status: 303 Moved Permanently\r\n");
 	printf("Location: %s/jump/%ld@%s.%s\r\n", uri, (long)tmt, list, s);
 	printf("Content-type: text/%s\r\n\r\n", s);
-	printf(&redirect_error[0], uri, list, (long)tmt, s);
+	printf(&redirect_error[0], uri, (long)tmt, list, s);
 	
 	return 0;
 }
