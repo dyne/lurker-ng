@@ -1,4 +1,4 @@
-/*  $Id: dump.cpp,v 1.3 2003-04-25 20:24:28 terpstra Exp $
+/*  $Id: dump.cpp,v 1.4 2003-06-12 20:37:28 terpstra Exp $
  *  
  *  dump.cpp - Dump the contents of a libesort database to cout
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
   
 #include "esort.h"
 

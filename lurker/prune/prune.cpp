@@ -1,4 +1,4 @@
-/*  $Id: prune.cpp,v 1.6 2003-05-16 16:22:17 terpstra Exp $
+/*  $Id: prune.cpp,v 1.7 2003-06-12 20:37:29 terpstra Exp $
  *  
  *  prune.cpp - Prune obsolete / stale cache files
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include <Config.h>
 #include <esort.h>

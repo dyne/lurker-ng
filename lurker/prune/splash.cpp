@@ -1,4 +1,4 @@
-/*  $Id: splash.cpp,v 1.3 2003-05-16 16:22:17 terpstra Exp $
+/*  $Id: splash.cpp,v 1.4 2003-06-12 20:37:30 terpstra Exp $
  *  
  *  splash.cpp - Cleanup after a splash/ command
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include "PTable.h"
 #include <Keys.h>

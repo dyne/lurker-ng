@@ -1,4 +1,4 @@
-/*  $Id: Summary.cpp,v 1.7 2003-06-08 15:29:34 terpstra Exp $
+/*  $Id: Summary.cpp,v 1.8 2003-06-12 20:37:31 terpstra Exp $
  *  
  *  Summary.cpp - Helper which can load a message given MessageId
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include <mimelib/message.h>
 

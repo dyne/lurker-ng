@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.24 2003-06-08 15:29:34 terpstra Exp $
+/*  $Id: main.cpp,v 1.25 2003-06-12 20:37:26 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include <Config.h>
 #include <esort.h>

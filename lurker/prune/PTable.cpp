@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.13 2003-06-11 23:23:25 terpstra Exp $
+/*  $Id: PTable.cpp,v 1.14 2003-06-12 20:37:28 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -21,6 +21,9 @@
  *    along with this program; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
+#define _XOPEN_SOURCE 500
+#define _FILE_OFFSET_BITS 64
 
 #include "PTable.h"
 #include <Keys.h>

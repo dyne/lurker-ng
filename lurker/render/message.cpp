@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.13 2003-06-11 14:45:05 terpstra Exp $
+/*  $Id: message.cpp,v 1.14 2003-06-12 20:37:33 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include <mimelib/headers.h>
 #include <mimelib/message.h>

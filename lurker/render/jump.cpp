@@ -1,4 +1,4 @@
-/*  $Id: jump.cpp,v 1.3 2003-04-23 22:57:42 terpstra Exp $
+/*  $Id: jump.cpp,v 1.4 2003-06-12 20:37:33 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include "parse.h"
 

@@ -1,4 +1,4 @@
-/*  $Id: Transaction.cpp,v 1.6 2003-05-18 20:15:48 terpstra Exp $
+/*  $Id: Transaction.cpp,v 1.7 2003-06-12 20:37:28 terpstra Exp $
  *  
  *  Transaction.cpp - Write buffer for a commit
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
   
 #include "io.h"
 #include "Transaction.h"

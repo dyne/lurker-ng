@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.3 2003-06-04 15:08:10 terpstra Exp $
+/*  $Id: list.cpp,v 1.4 2003-06-12 20:37:26 terpstra Exp $
  *  
  *  list.cpp - Parse the config file for helper scripts
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include <Config.h>
 

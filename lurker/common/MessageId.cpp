@@ -1,4 +1,4 @@
-/*  $Id: MessageId.cpp,v 1.4 2003-05-03 13:21:39 terpstra Exp $
+/*  $Id: MessageId.cpp,v 1.5 2003-06-12 20:37:25 terpstra Exp $
  *  
  *  MessageId.cpp - Helper class for manipulating internal message ids
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include "MessageId.h"
 

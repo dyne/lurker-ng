@@ -26,6 +26,7 @@ v0.9:
 	Tidied up logic for author selection
 	Reject any email address with control or non-ascii chars
 	Retrieve attachment filename
+	Fixed a bug with databases over 6Gb
 
 v0.8:
 	@ signs are legitimate inside urls

@@ -1,4 +1,4 @@
-/*  $Id: Memory.cpp,v 1.3 2003-04-24 23:52:36 terpstra Exp $
+/*  $Id: Memory.cpp,v 1.4 2003-06-12 20:37:27 terpstra Exp $
  *  
  *  Memory.cpp - Memory segment for inserts prior to commit
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
   
 #include "io.h"
 

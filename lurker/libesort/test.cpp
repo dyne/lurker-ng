@@ -1,4 +1,4 @@
-/*  $Id: test.cpp,v 1.8 2003-06-04 12:06:20 terpstra Exp $
+/*  $Id: test.cpp,v 1.9 2003-06-12 20:37:28 terpstra Exp $
  *  
  *  test.cpp - Write lots of crap and compare with RAM
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
   
 #include "esort.h"
 

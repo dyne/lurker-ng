@@ -1,4 +1,4 @@
-/*  $Id: CharsetEscape.cpp,v 1.8 2003-06-08 16:23:13 terpstra Exp $
+/*  $Id: CharsetEscape.cpp,v 1.9 2003-06-12 20:37:23 terpstra Exp $
  *  
  *  CharsetEscape.h - A stream manipulator-like thing for charset conversion
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include <mimelib/string.h>
 #include <mimelib/utility.h>

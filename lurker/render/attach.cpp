@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.5 2003-04-24 12:50:42 terpstra Exp $
+/*  $Id: attach.cpp,v 1.6 2003-06-12 20:37:32 terpstra Exp $
  *  
  *  attach.cpp - Handle a attach/ command
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include <mimelib/message.h>
 #include <mimelib/headers.h>

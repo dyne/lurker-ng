@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.8 2003-06-10 02:31:13 terpstra Exp $
+/*  $Id: search.cpp,v 1.9 2003-06-12 20:37:35 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include <iostream>
 #include <cerrno>

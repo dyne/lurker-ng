@@ -1,4 +1,4 @@
-/*  $Id: splash.cpp,v 1.5 2003-06-10 02:31:13 terpstra Exp $
+/*  $Id: splash.cpp,v 1.6 2003-06-12 20:37:35 terpstra Exp $
  *  
  *  splash.cpp - Handle a splash/ command
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include "commands.h"
 #include "Cache.h"

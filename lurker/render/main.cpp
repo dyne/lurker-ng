@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.6 2003-06-09 02:31:48 terpstra Exp $
+/*  $Id: main.cpp,v 1.7 2003-06-12 20:37:33 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include <cstdlib>
 #include <cerrno>

@@ -1,4 +1,4 @@
-/*  $Id: XmlEscape.cpp,v 1.5 2003-05-03 19:29:17 terpstra Exp $
+/*  $Id: XmlEscape.cpp,v 1.6 2003-06-12 20:37:25 terpstra Exp $
  *  
  *  XmlEscape.cpp - A stream manipulator-like thing for escaping XML
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include "XmlEscape.h"
 

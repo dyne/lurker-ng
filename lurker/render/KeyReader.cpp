@@ -1,4 +1,4 @@
-/*  $Id: KeyReader.cpp,v 1.1 2003-05-02 11:18:41 terpstra Exp $
+/*  $Id: KeyReader.cpp,v 1.2 2003-06-12 20:37:31 terpstra Exp $
  *  
  *  KeyReader.cpp - Helper which can stream keywords
  *  
@@ -22,6 +22,9 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
  
+#define _XOPEN_SOURCE 500
+#define _FILE_OFFSET_BITS 64
+
 #include "KeyReader.h"
 #include <Keys.h>
 

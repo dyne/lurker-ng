@@ -1,4 +1,4 @@
-/*  $Id: mbox.cpp,v 1.2 2003-04-21 18:26:20 terpstra Exp $
+/*  $Id: mbox.cpp,v 1.3 2003-06-12 20:37:33 terpstra Exp $
  *  
  *  mbox.cpp - Handle a mbox/ command
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include <mimelib/message.h>
 

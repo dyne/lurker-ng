@@ -1,4 +1,4 @@
-/*  $Id: Failer.cpp,v 1.1 2003-04-24 23:52:36 terpstra Exp $
+/*  $Id: Failer.cpp,v 1.2 2003-06-12 20:37:27 terpstra Exp $
  *  
  *  Failer.cpp - Output an error on advance
  *  
@@ -22,6 +22,9 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#define _XOPEN_SOURCE 500
+#define _FILE_OFFSET_BITS 64
+  
 #include "Failer.h"
 
 #include <cerrno>

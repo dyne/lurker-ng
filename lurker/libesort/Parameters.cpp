@@ -1,4 +1,4 @@
-/*  $Id: Parameters.cpp,v 1.7 2003-06-07 12:28:32 terpstra Exp $
+/*  $Id: Parameters.cpp,v 1.8 2003-06-12 20:37:28 terpstra Exp $
  *  
  *  Parameters.cpp - Control how the database is stored
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include "esort.h"
 

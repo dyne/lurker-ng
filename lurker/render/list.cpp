@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.2 2003-06-10 02:31:13 terpstra Exp $
+/*  $Id: list.cpp,v 1.3 2003-06-12 20:37:33 terpstra Exp $
  *  
  *  list.cpp - Handle a list/ command
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include <iostream>
 #include <cerrno>

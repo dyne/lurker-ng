@@ -1,4 +1,4 @@
-/*  $Id: Threading.cpp,v 1.7 2003-06-08 17:07:32 terpstra Exp $
+/*  $Id: Threading.cpp,v 1.8 2003-06-12 20:37:32 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -23,8 +23,7 @@
  */
  
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include "Threading.h"
 #include <Keys.h>

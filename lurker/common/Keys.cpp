@@ -1,4 +1,4 @@
-/*  $Id: Keys.cpp,v 1.2 2003-06-08 16:23:13 terpstra Exp $
+/*  $Id: Keys.cpp,v 1.3 2003-06-12 20:37:25 terpstra Exp $
  *  
  *  Keys.cpp - Digest a hunk of string into keywords.
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 /* #define DEBUG 1 */
 

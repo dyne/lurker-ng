@@ -1,4 +1,4 @@
-/*  $Id: File.cpp,v 1.9 2003-05-14 12:35:43 terpstra Exp $
+/*  $Id: File.cpp,v 1.10 2003-06-12 20:37:27 terpstra Exp $
  *  
  *  File.cpp - Disk segment for commit'd inserts
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
   
 #include "io.h"
 

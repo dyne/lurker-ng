@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.3 2003-06-10 02:31:13 terpstra Exp $
+/*  $Id: thread.cpp,v 1.4 2003-06-12 20:37:35 terpstra Exp $
  *  
  *  thread.cpp - Handle a thread/ command
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include <Keys.h>
 

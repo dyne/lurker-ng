@@ -1,4 +1,4 @@
-/*  $Id: Config.cpp,v 1.10 2003-06-04 16:27:53 terpstra Exp $
+/*  $Id: Config.cpp,v 1.11 2003-06-12 20:37:24 terpstra Exp $
  *  
  *  Config.cpp - Knows how to load the config file
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include "Config.h"
 #include "XmlEscape.h"

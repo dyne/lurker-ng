@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.5 2003-06-12 13:22:20 terpstra Exp $
+/*  $Id: list.cpp,v 1.6 2003-06-12 20:37:29 terpstra Exp $
  *  
  *  mindex.cpp - Cleanup after a mindex/ command
  *  
@@ -23,8 +23,7 @@
  */
 
 #define _XOPEN_SOURCE 500
-#define _BSD_SOURCE
-#define _ISOC99_SOURCE
+#define _FILE_OFFSET_BITS 64
 
 #include "PTable.h"
 #include <Keys.h>

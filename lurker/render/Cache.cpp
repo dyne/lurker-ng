@@ -1,4 +1,4 @@
-/*  $Id: Cache.cpp,v 1.6 2003-06-09 16:13:04 terpstra Exp $
+/*  $Id: Cache.cpp,v 1.7 2003-06-12 20:37:30 terpstra Exp $
  *  
  *  Cache.h - Helper which transforms xml -> html and caches files
  *  
@@ -21,6 +21,9 @@
  *    along with this program; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
+#define _XOPEN_SOURCE 500
+#define _FILE_OFFSET_BITS 64
 
 #include "Cache.h"
 #include "commands.h"
