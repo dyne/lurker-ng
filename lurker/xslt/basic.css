@@ -12,12 +12,8 @@ hr.search { width:500px; color:#66B; height:3px }  /* search component seperator
 img.selected { background-color:#BBF; }
 
 #listblock { width:100%; text-align:center }  /* contains splash page list tables */
-/* when less than 8 entries, only listtable0 is present.               */
-/* when 8 entries or more, only listtable1 and listtable2 are present. */
-.listtable0 { border:2px solid black }
-#listtable1 { float:left; width:48.5%; border-right:3px solid black; padding-right:1%}
-#listtable2 { float:right; width:49% }
 
+.listtable { border:2px solid black }
 
 th { text-align:center; font-weight:bold; font-family:Times New Roman, serif }
 table { text-align:left; vertical-align:top; padding:2px 8px; font-family:Arial, sans-serif }
@@ -26,3 +22,8 @@ tr.row1 { background-color:#DDD; text-align:left; vertical-align:top; padding:0p
 tr.row2 { background-color:#EEE; text-align:left; vertical-align:top; padding:0px 0px; font-family:Arial, sans-serif }
 
 dd { margin-left:2em; margin-right:3em }
+
+a:link    { color:#11F }
+a:visited { color:#009 }
+a:hover   { color:#F00 }
+a:active  { color:#A00 }
