@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.12 2003-06-11 23:08:22 terpstra Exp $
+/*  $Id: PTable.cpp,v 1.13 2003-06-11 23:23:25 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -102,7 +102,7 @@ string PTable::loadNewIds()
 		newIds.insert(id);
 		summaries[id].changed = true;
 		
-		cout << "New message: " << id.serialize() << endl;
+		if (verbose) cout << "New message: " << id.serialize() << endl;
 	}
 	if (errno != 0)
 	{
