@@ -11,16 +11,18 @@
 <xsl:template match="search" mode="body">
  <h2>
   <xsl:if test="prev">
-   <a href="{prev}%20{queryurl}.{$ext}"><img border="0" src="../imgs/prev.png"/></a>
+   <a href="0%20{queryurl}.{$ext}"><img border="0" src="../imgs/first.png" alt="&lt;&lt;="/></a>
+   <a href="{prev}%20{queryurl}.{$ext}"><img border="0" src="../imgs/prev.png" alt="&lt;-"/></a>
   </xsl:if>
   <xsl:if test="not(prev)">
-   <img src="../imgs/a.png"/>
+   <img src="../imgs/a.png" alt="..."/>
+   <img src="../imgs/a.png" alt=".."/>
   </xsl:if>
   <xsl:if test="next">
-   <a href="{next}%20{queryurl}.{$ext}"><img border="0" src="../imgs/next.png"/></a>
+   <a href="{next}%20{queryurl}.{$ext}"><img border="0" src="../imgs/next.png" alt="-&gt;"/></a>
   </xsl:if>
   <xsl:if test="not(next)">
-   <img src="../imgs/a.png"/>
+   <img src="../imgs/a.png" alt=".."/>
   </xsl:if>
 
   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;&amp;nbsp;</xsl:text>
