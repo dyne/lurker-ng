@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.5 2003-04-25 20:08:50 terpstra Exp $
+/*  $Id: main.cpp,v 1.6 2003-04-25 22:27:10 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -54,13 +54,14 @@ void help(const char* name)
 {
 	cerr << "Lurker-index (v" << VERSION << ") imports messages to the archive.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> -l <list> ( -m | -b <count> )\n";
+	cerr << "Usage: " << name << " -c <config-file> -l <list> ( -m | -b <count> ) [ -v -d ]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-l <list>        Import messages to the named list\n";
 	cerr << "\t-b <count>       Import a batch of messages; flush every <count>.\n";
 	cerr << "\t-m               Import a single message\n";
 	cerr << "\t-v               Verbose operation\n";
+	cerr << "\t-d               Drop duplicates per list\n";
 	cerr << "\n";
 	cerr << "Index messages from standard input and store them in the lurker database.\n";
 	cerr << "Either import a single message, or import a batch of messages in mbox format.\n";
@@ -131,7 +132,7 @@ int commit()
 }
 
 int index(const DwString& msg, long batch)
-{
+{	// !!! use the dropdup flag
 //	cout << msg.c_str() << endl;
 	static int count = 0;
 	if (++count == batch)
@@ -195,6 +196,7 @@ int main(int argc, char** argv)
 	const char* listn   = 0;
 	long        batch   = 0;
 	int         verbose = 0;
+	int         dropdup = 0;
 	
 	srandom(time(0));
 	
@@ -216,6 +218,9 @@ int main(int argc, char** argv)
 			break;
 		case 'v':
 			verbose = 1;
+			break;
+		case 'd':
+			dropdup = 1;
 			break;
 		default:
 			help(argv[0]);
