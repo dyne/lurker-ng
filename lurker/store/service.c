@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.35 2002-02-25 10:36:27 terpstra Exp $
+/*  $Id: service.c,v 1.36 2002-05-03 20:57:34 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -23,17 +23,17 @@
  */
 
 #define _GNU_SOURCE
-// #define DEBUG 1
+#define DEBUG 1
 
 #include "common.h"
 #include "io.h"
-#include "protocol.h"
 #include "prefix.h"
 
 #include "config.h"
 #include "summary.h"
 #include "search.h"
 #include "breader.h"
+#include "expiry.h"
 #include "mbox.h"
 #include "service.h"
 
@@ -42,6 +42,8 @@
 #include <stdlib.h>
 #include <iconv.h>
 
+#define LU_PROTO_INDEX	20
+
 /*------------------------------------------------- Private types */
 
 /* We need one of these for each connection - a global will cause much
@@ -49,10 +51,20 @@
  */
 typedef struct My_Service_Handle_T
 {
-	char 		buffer[4096];
 	int		used;
+	int		sent;
 	
 	st_netfd_t	fd;
+	
+	int		cache;
+	time_t		ttl;
+	lu_word		list;
+	
+	int		first_flush;
+	int		init;
+	
+	int		bufsize;
+	char* 		buffer;
 }* My_Service_Handle;
 
 /*------------------------------------------------- Private globals */
@@ -64,6 +76,43 @@ static const char* my_service_mime[] =
 	    
 /*------------------------------------------------- Private helper methods */
 
+static int my_service_buffer_init(
+	My_Service_Handle h,
+	const char*	type,
+	int		cache,
+	time_t		ttl,
+	lu_word		list)
+{
+	assert(!h->init);
+	
+	if (st_write(h->fd, type, strlen(type), 5000000) != strlen(type))
+	{
+		return -1;
+	}
+	
+	h->sent  = 0;
+	h->used  = 0;
+	
+	h->init  = 1;
+	
+	h->cache = cache;
+	h->ttl   = ttl;
+	h->list  = list;
+	
+	if (cache)
+	{
+		h->first_flush = 1;
+	}
+	else
+	{
+		if (st_write(h->fd, "0\n", 2, 5000000) != 2)
+			return -1;
+		h->first_flush = 0;
+	}
+	
+	return 0;
+}
+
 static int my_service_buffer_writel(
 	My_Service_Handle h,
 	const char* str,
@@ -71,9 +120,11 @@ static int my_service_buffer_writel(
 {
 	char buf[20];
 	
+	assert(h->init);
+	
 	while (len)
 	{
-		size_t amt = sizeof(h->buffer) - h->used;
+		size_t amt = h->bufsize - h->used;
 		if (amt > len)
 			amt = len;
 		
@@ -83,14 +134,22 @@ static int my_service_buffer_writel(
 		len -= amt;
 		h->used += amt;
 		
-		if (h->used == sizeof(h->buffer))
+		if (h->used == h->bufsize)
 		{
 #ifdef DEBUG
-			write(1, &h->buffer[0], sizeof(h->buffer));
+			write(1, &h->buffer[0], h->bufsize);
 #endif
+			if (h->first_flush)
+			{
+				if (st_write(h->fd, "0\n", 2, 5000000) != 2)
+				{
+					return -1;
+				}
+				h->first_flush = 0;
+			}
 			
 			/* Tell the caller how big this chunk is */
-			sprintf(&buf[0], "%d\n", sizeof(h->buffer));
+			sprintf(&buf[0], "%d\n", h->bufsize);
 			if (st_write(h->fd, &buf[0], 
 				strlen(&buf[0]), 5000000) !=
 				strlen(&buf[0]))
@@ -99,12 +158,13 @@ static int my_service_buffer_writel(
 			}
 			
 			if (st_write(h->fd, &h->buffer[0],
-				sizeof(h->buffer), 5000000) !=
-				sizeof(h->buffer))
+				h->bufsize, 5000000) !=
+				h->bufsize)
 			{
 				return -1;
 			}
 			
+			h->sent += h->bufsize;
 			h->used = 0;
 		}
 	}
@@ -127,6 +187,17 @@ static int my_service_buffer_flush(
 #ifdef DEBUG
 	write(1, &h->buffer[0], h->used);
 #endif
+	
+	assert(h->init);
+	
+	if (h->first_flush)
+	{
+		if (st_write(h->fd, "1\n", 2, 5000000) != 2)
+		{
+			return -1;
+		}
+		h->first_flush = 0;
+	}
 
 	/* Tell the caller how big this chunk is */
 	sprintf(&buf[0], "%d\n", h->used);
@@ -143,6 +214,8 @@ static int my_service_buffer_flush(
 	{
 		return -1;
 	}
+	
+	h->sent += h->used;
 	
 	if (h->used != 0)
 	{	/* Signal end of reply if we haven't already */
@@ -345,6 +418,7 @@ static int my_service_error(
 	const char* error,
 	const char* detail)
 {
+	if (my_service_buffer_init(h, "text/xml\n", 0, 0, 0)    != 0) return -1;
 	if (my_service_xml_head(h)                              != 0) return -1;
 	if (my_service_buffer_write(h, "<error>\n <title>")     != 0) return -1;
 	if (my_service_write_str(h, title)                      != 0) return -1;
@@ -703,7 +777,8 @@ static int my_service_summary(
 
 static int my_service_getmbox(
 	My_Service_Handle h, 
-	const char* request)
+	const char* request,
+	const char* ext)
 {
 	char*		eptr;
 	message_id	id;
@@ -721,6 +796,15 @@ static int my_service_getmbox(
 	
 	char*		base;
 	size_t		len;
+	
+	if (strcmp(ext, "txt"))
+	{
+		my_service_error(h,
+			"Malformed request",
+			"Lurkerd received a request for a non-textual mbox",
+			request);
+		goto my_service_getmbox_error0;
+	}
 	
 	id = strtoul(request, &eptr, 0);
 	if (eptr == request || (*eptr && !isspace(*eptr)))
@@ -789,6 +873,9 @@ static int my_service_getmbox(
 	base += cmsg.headers - cmsg.map.off;
 	len = cmsg.end - cmsg.headers;
 	
+	if (my_service_buffer_init(h, "text/rfc822\n", 1, 
+			lu_config_cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
+		goto my_service_getmbox_error1;
 	if (my_service_buffer_writel(h, base, len) != 0)
 		goto my_service_getmbox_error1;
 	
@@ -804,7 +891,8 @@ my_service_getmbox_error0:
 
 static int my_service_attach(
 	My_Service_Handle h, 
-	const char* request)
+	const char* request,
+	const char* ext)
 {
 	char*		eptr;
 	char*		next;
@@ -827,6 +915,17 @@ static int my_service_attach(
 	char*			base;
 	size_t			len;
 	int			nfree;
+	char			buf[100];
+	
+	if (strcmp(ext, "attach"))
+	{
+		my_service_error(h,
+			"Malformed request",
+			"Lurkerd received an attachment request for non .attach",
+			ext);
+		
+		goto my_service_attach_error0;
+	}
 	
 	id = strtoul(request, &eptr, 0);
 	if (eptr == request || (*eptr && !isspace(*eptr)))
@@ -924,12 +1023,11 @@ static int my_service_attach(
 	
 	if (attach->type > 8) attach->type = 8;
 	
-	if (my_service_buffer_write(h, "Content-type: ") != 0) goto my_service_attach_error2;
-	if (my_service_write_str   (h, 
-	                  my_service_mime[attach->type]) != 0) goto my_service_attach_error2;
-	if (my_service_buffer_write(h, "/")              != 0) goto my_service_attach_error2;
-	if (my_service_write_str   (h, attach->subtype)  != 0) goto my_service_attach_error2;
-	if (my_service_buffer_write(h, "\r\n\r\n")       != 0) goto my_service_attach_error2;
+	snprintf(&buf[0], sizeof(buf), "%s/%s\n",
+		my_service_mime[attach->type], attach->subtype);
+	
+	if (my_service_buffer_init(h, buf, 0, 0, 0) != 0)
+		goto my_service_attach_error2;
 	
 	base = lu_mbox_select_body(&mmsg, attach, &len, &nfree);
 	
@@ -956,7 +1054,8 @@ my_service_attach_error0:
 
 static int my_service_getmsg(
 	My_Service_Handle h, 
-	const char* request)
+	const char* request,
+	const char* ext)
 {
 	char*		eptr;
 	message_id	id;
@@ -978,6 +1077,16 @@ static int my_service_getmsg(
 	const char*		coding;
 	
 	message_id		count, ind, get, i, buf[1024];
+	
+	if (strcmp(ext, "xml") && strcmp(ext, "html"))
+	{
+		my_service_error(h,
+			"Malformed request",
+			"Lurkerd received a message request for non html/xml",
+			ext);
+		
+		goto my_service_getmsg_error0;
+	}
 	
 	id = strtoul(request, &eptr, 0);
 	if (eptr == request || (*eptr && !isspace(*eptr)))
@@ -1074,6 +1183,10 @@ static int my_service_getmsg(
 	
 	coding = lu_mbox_find_charset(mmsg.body);
 	
+	if (my_service_buffer_init(h, "text/xml\n", 1, 
+			lu_config_cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
+		goto my_service_getmsg_error3;
+	
 	if (my_service_xml_head(h)                       != 0) goto my_service_getmsg_error3;
 	if (my_service_buffer_write(h, "<message>\n")    != 0) goto my_service_getmsg_error3;
 	if (my_service_server(h)                         != 0) goto my_service_getmsg_error3;
@@ -1169,7 +1282,8 @@ my_service_getmsg_error0:
 
 static int my_service_mindex(
 	My_Service_Handle h, 
-	const char* request)
+	const char* request,
+	const char* ext)
 {
 	Lu_Breader_Handle	b;
 	Lu_Config_List*		l;
@@ -1180,12 +1294,22 @@ static int my_service_mindex(
 	int			i;
 	message_id		count;
 	
-	if (sscanf(request, "%d %d", &list, &offset) != 2)
+	if (sscanf(request, "%d@%d", &list, &offset) != 2)
 	{	/* They did something funny. */
 		my_service_error(h,
 			"Malformed request",
 			"Lurkerd received an improperly formatted mindex request",
 			request);
+		
+		goto my_service_mindex_error0;
+	}
+	
+	if (strcmp(ext, "xml") && strcmp(ext, "html"))
+	{
+		my_service_error(h,
+			"Malformed request",
+			"Lurkerd received an index request for non html/xml",
+			ext);
 		
 		goto my_service_mindex_error0;
 	}
@@ -1247,6 +1371,10 @@ static int my_service_mindex(
 		goto my_service_mindex_error1;
 	}
 	
+	if (my_service_buffer_init(h, "text/xml\n", 1, 
+			lu_config_cache_index_ttl, list) != 0)
+		goto my_service_mindex_error1;
+	
 	if (my_service_xml_head(h)                            != 0) goto my_service_mindex_error1;
 	if (my_service_buffer_write(h, "<mindex>\n <offset>") != 0) goto my_service_mindex_error1;
 	if (my_service_write_int(h, offset)                   != 0) goto my_service_mindex_error1;
@@ -1289,12 +1417,23 @@ my_service_mindex_error0:
 
 static int my_service_thread(
 	My_Service_Handle h, 
-	const char* request)
+	const char* request,
+	const char* ext)
 {
 	char*			eptr;
 	message_id		id;
 	
 	Lu_Summary_Thread	th;
+	
+	if (strcmp(ext, "xml") && strcmp(ext, "html"))
+	{
+		my_service_error(h,
+			"Malformed request",
+			"Lurkerd received a thread request for non html/xml",
+			ext);
+		
+		goto my_service_thread_error0;
+	}
 	
 	id = strtoul(request, &eptr, 0);
 	if (eptr == request || (*eptr && !isspace(*eptr)))
@@ -1321,6 +1460,10 @@ static int my_service_thread(
 	/*!!! Load reply linkages */
 	/*!!! Invoke drawing algorithm */
 	
+	if (my_service_buffer_init(h, "text/xml\n", 1, 
+			lu_config_cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
+		goto my_service_thread_error1;
+	
 	if (my_service_xml_head(h)                        != 0) goto my_service_thread_error1;
 	if (my_service_buffer_write(h, "<thread>\n <id>") != 0) goto my_service_thread_error1;
 	if (my_service_write_int(h, id)                   != 0) goto my_service_thread_error1;
@@ -1340,7 +1483,8 @@ my_service_thread_error0:
 
 static int my_service_search(
 	My_Service_Handle h, 
-	const char* request)
+	const char* request,
+	const char* ext)
 {
 	int		i;
 	message_id	out;
@@ -1472,11 +1616,32 @@ my_service_search_error0:
 
 static int my_service_lists(
 	My_Service_Handle h, 
-	const char* request)
+	const char* request,
+	const char* ext)
 {
 	Lu_Config_List*		scan;
 	char			key[40];
 	
+	if (strcmp(request, "index"))
+	{
+		my_service_error(h,
+			"Request error",
+			"You requested an invalid splash - must be index",
+			request);
+		return -1;
+	}
+	
+	if (strcmp(ext, "html") && strcmp(ext, "xml"))
+	{
+		my_service_error(h,
+			"Request error",
+			"You requested an invalid splash extension - must be xml or html",
+			ext);
+		return -1;
+	}
+	
+	if (my_service_buffer_init(h, "text/xml\n", 1, 
+			2592000, LU_EXPIRY_NO_LIST) != 0) return -1;
 	if (my_service_xml_head(h)                  != 0) return -1;
 	if (my_service_buffer_write(h, "<lists>\n") != 0) return -1;
 	if (my_service_server(h)                    != 0) return -1;
@@ -1496,37 +1661,6 @@ static int my_service_lists(
 	if (my_service_buffer_write(h, "</lists>\n") != 0) return -1;
 	
 	return 0;
-}
-
-static int my_service_digest_request(My_Service_Handle h, const char* request)
-{
-	int out = -1;
-	h->used = 0;
-
-#ifdef DEBUG
-	printf("Request: '%s'\n", request);
-#endif
-	
-	/* Determine what to do with the request */
-	if (!memcmp(request, LU_PROTO_GETMSG, sizeof(LU_PROTO_GETMSG)-1)) 
-		out = my_service_getmsg(h, request+sizeof(LU_PROTO_GETMSG)-1);
-	if (!memcmp(request, LU_PROTO_GETMBOX, sizeof(LU_PROTO_GETMBOX)-1)) 
-		out = my_service_getmbox(h, request+sizeof(LU_PROTO_GETMBOX)-1);
-	if (!memcmp(request, LU_PROTO_ATTACH, sizeof(LU_PROTO_ATTACH)-1)) 
-		out = my_service_attach(h, request+sizeof(LU_PROTO_ATTACH)-1);
-	if (!memcmp(request, LU_PROTO_MINDEX, sizeof(LU_PROTO_MINDEX)-1)) 
-		out = my_service_mindex(h, request+sizeof(LU_PROTO_MINDEX)-1);
-	if (!memcmp(request, LU_PROTO_SEARCH, sizeof(LU_PROTO_SEARCH)-1)) 
-		out = my_service_search(h, request+sizeof(LU_PROTO_SEARCH)-1);
-	if (!memcmp(request, LU_PROTO_LISTS, sizeof(LU_PROTO_LISTS)-1)) 
-		out = my_service_lists(h, request+sizeof(LU_PROTO_LISTS)-1);
-	if (!memcmp(request, LU_PROTO_THREAD, sizeof(LU_PROTO_THREAD)-1)) 
-		out = my_service_thread(h, request+sizeof(LU_PROTO_THREAD)-1);
-	
-	/* Get rid of any buffering */
-	my_service_buffer_flush(h);
-	
-	return out;
 }
 
 /*------------------------------------------------- Public component methods */
@@ -1560,22 +1694,35 @@ int lu_service_quit()
 
 extern int lu_service_connection(st_netfd_t fd)
 {
-	char	buf[200];
-	char*	f;
 	char*	s;
-	char*	e;
 	int	off;
 	ssize_t	got;
+	int	lfs;
+	char*	cwd = 0;
+	char*	mod = 0;
+	char*	qs  = 0;
+	char*	ext = 0;
+	char	buf[1024];
 	
 	struct My_Service_Handle_T h;
 	h.fd = fd;
 	
-	off = 0;
+	h.buffer  = malloc(lu_config_cache_cutoff);
+	h.bufsize = lu_config_cache_cutoff;
+	h.init = 0;
+	
+	if (!h.buffer)
+		return -1;
 	
 #ifdef DEBUG
 	printf("Connect!\n");
 #endif
-	while (1)
+	
+	off = 0;
+	lfs = 0;
+	
+	cwd = &buf[0];
+	while (lfs < 4)
 	{
 		got = st_read(fd, 
 			&buf[off], sizeof(buf) - off, 
@@ -1584,40 +1731,62 @@ extern int lu_service_connection(st_netfd_t fd)
 		{	/* We're done - they closed link, timed out, or else
 			 * something else went wrong.
 			 */
+			free(h.buffer);
 			return -1;
 		}
 		
-		/* Look for an end of request */
-		f = &buf[0];
-		e = &buf[off+got];
-		
-		for (s = &buf[off]; s != e; s++)
+		for (s = &buf[off]; s != &buf[off+got]; s++)
 		{
-			if (*s == LU_PROTO_ENDREQ)
+			if (*s == '\n') switch (lfs)
 			{
-				*s = 0;
-				if (my_service_digest_request(&h, f) != 0)
-				{	/* Service the requst */
-					return -1;
-				}
-				
-				f = s+1;
+			case 0:	*s = 0; lfs++; mod = s+1; break;
+			case 1:	*s = 0; lfs++; qs  = s+1; break;
+			case 2: *s = 0; lfs++; ext = s+1; break;
+			default: *s = 0; lfs++; break;
 			}
 		}
 		
-		off = e - f;
-		if (f != &buf[0])
-		{	/* Move the remaining data to the start */
-			memmove(&buf[0], f, off);
-		}
-		
-		if (off == sizeof(buf))
-		{	/* They filled our buffer without making a complete
-			 * request.
-			 */
-			return -1;
-		}
+		off += got;
+	}
+
+#ifdef DEBUG
+	printf("Request: %s: %s . %s\n", mod, qs, ext);
+#endif
+	
+	if      (!strcmp(mod, "message")) my_service_getmsg (&h, qs, ext);
+	else if (!strcmp(mod, "mbox"))    my_service_getmbox(&h, qs, ext);
+	else if (!strcmp(mod, "attach"))  my_service_attach (&h, qs, ext);
+	else if (!strcmp(mod, "mindex"))  my_service_mindex (&h, qs, ext);
+	else if (!strcmp(mod, "search"))  my_service_search (&h, qs, ext);
+	else if (!strcmp(mod, "splash"))  my_service_lists  (&h, qs, ext);
+	else if (!strcmp(mod, "thread"))  my_service_thread (&h, qs, ext);
+	else
+	{
+		my_service_error(&h,
+			"Request error",
+			"You requested an invalid module",
+			mod);
 	}
 	
+	/* Make cwd into path */
+	*(mod-1) = '/';
+	*(qs-1)  = '/';
+	*(ext-1) = '.';
+	
+	my_service_buffer_flush(&h);
+	
+	if (h.cache)
+	{
+#if DEBUG
+		printf("Cache file: %s\n", cwd);
+#endif
+		
+		if (lu_expiry_record_file(cwd, h.sent, h.ttl, h.list))
+			st_write(h.fd, "0\n", 2, 5000000);
+		else
+			st_write(h.fd, "1\n", 2, 5000000);
+	}
+	
+	free(h.buffer);
 	return 0;
 }

@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.13 2002-02-25 08:01:31 terpstra Exp $
+/*  $Id: indexer.c,v 1.14 2002-05-03 20:57:34 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -96,8 +96,7 @@ static char my_indexer_is_split[256];
  * No known language should use these as letters in a word.
  * All chars 000-037 fall in this category too.
  */
-static const char my_indexer_word_divs[] =
-" !\"#%&'()*+,;<=>?[]^`{|}~";
+static const char my_indexer_word_divs[] = WORD_BREAKS;
 static char my_indexer_is_div[256];
 
 /* These tables are the conversion for characters being written to keywords.

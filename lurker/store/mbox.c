@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.20 2002-02-25 10:38:07 terpstra Exp $
+/*  $Id: mbox.c,v 1.21 2002-05-03 20:57:34 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -35,6 +35,7 @@
 #include "config.h"
 #include "summary.h"
 #include "indexer.h"
+#include "expiry.h"
 
 #include <sys/types.h>
 #include <sys/param.h>
@@ -334,7 +335,14 @@ static int my_mbox_process_mbox(
 		if (!strchr(&reply_to[0], '@'))
 			reply_to[0] = 0;
 	}
-
+	
+	/* Notify the cache about an import */
+	if (lu_expiry_notice_import(list->id) != 0)
+	{
+		lu_mbox_destroy_message(&m);
+		return -1;
+	}
+	
 	id = lu_summary_import_message(
 		list->id, 
 		mbox->id, 
