@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.18 2002-06-20 14:50:09 terpstra Exp $
+/*  $Id: breader.c,v 1.19 2002-06-20 14:54:30 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -82,7 +82,7 @@
 
 /* This is how many records about offset information we keep.
  */
-#define LU_BOUNDARY_RECORDS	4096
+define LU_BOUNDARY_RECORDS	256
 
 /* This is how many cache records we keep for each keyword. Each one of them
  * holds LU_PULL_AT_ONCE records.
@@ -92,7 +92,7 @@
 /* Total cache used: LU_MAX_HANDLES*LU_PULL_AT_ONCE*LU_CACHE_RECORDS*4
  *                   --> 2.0Mb
  * Total offset information: LU_MAX_HANDLES*LU_BOUNDARY_RECORDS*16
- *                   --> 2.0Mb
+ *                   --> 256Kb
  */
 
 /* This is the maximum value my_breader_ptr can attain.
