@@ -88,13 +88,13 @@ RANLIB = @RANLIB@
 USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
-XSLT_CONFIG = @XSLT_CONFIG@
 am__include = @am__include@
 am__quote = @am__quote@
 install_sh = @install_sh@
 localedir = @localedir@
 urldir = @urldir@
 wwwdir = @wwwdir@
+xsltproc = @xsltproc@
 
 dbdir = @dbdir@
 

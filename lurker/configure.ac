@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1d)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.37 2002-07-17 11:06:40 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.38 2002-07-22 12:55:26 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -75,7 +75,27 @@ AC_C_CHAR_UNSIGNED
 
 ST_CHECK(STORAGE)
 C_CLIENT_CHECK(STORAGE)
-XSLT_CHECK(RENDER)
+
+xsltengine="no"
+
+AC_PATH_TOOL(xsltproc, xsltproc, "nil")
+if test "x${xsltproc}" != "xnil"; then
+  xsltengine="${xsltproc} ../fmt/render-html.xsl -"
+fi
+
+AC_ARG_WITH(xsltengine, AC_HELP_STRING(
+	[--with-xslt=CMD],
+	[Use the given command to render xslt]))
+
+if test "x${with_xsltengine}" != "x"; then
+  xsltengine="${with_xsltengine}"
+fi
+
+if test "x${xsltengine}" = "xno"; then
+ AC_MSG_ERROR([Some form of xslt tool must be available])
+fi
+
+AC_DEFINE_UNQUOTED(XSLT_ENGINE, ["${xsltengine}"], [What is our xslt engine?])
 
 AC_CHECK_HEADERS(unistd.h signal.h fcntl.h io.h time.h sys/mman.h sys/time.h sys/file.h assert.h sys/fcntl.h errno.h syslog.h)
 AC_CHECK_FUNCS(setsid fork flock fcntl lockf)

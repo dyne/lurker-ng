@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.24 2002-07-11 20:27:22 terpstra Exp $
+/*  $Id: main.c,v 1.25 2002-07-22 12:55:29 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -368,7 +368,7 @@ int main(int argc, char* argv[])
 	
 	/* If we need xslt conversion, prep it */
 	if (!strcmp(type, "text/xml") && strcmp(ext, "xml"))
-		lu_output = popen("../" PACKAGE ".xslt ../fmt/render-html.xsl", "w");
+		lu_output = popen(XSLT_ENGINE, "w");
 	else
 		lu_output = stdout;
 	

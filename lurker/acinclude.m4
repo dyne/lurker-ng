@@ -14,43 +14,11 @@ AC_DEFUN([AC_DEFINE_DIR],
   AC_SUBST($1_expand)
  ])
 
-AC_DEFUN(XSLT_CHECK, [
-  if test -z "$XSLT_CONFIG"; then
-    AC_PATH_PROG(XSLT_CONFIG, xslt-config, no)
-  fi
-
-  if test "$XSLT_CONFIG" = "no" ; then
-     echo "*** The xslt-config script could not be found. Make sure it is"
-     echo "*** in your path, or set the XSLT_CONFIG environment variable"
-     echo "*** to the full path to xslt-config."
-     AC_MSG_ERROR(Need xslt to compile)
-  else
-     AC_MSG_CHECKING(for libxslt)
-     xslt_CFLAGS=`$XSLT_CONFIG --cflags || echo no`
-     if test "x$$1_CFLAGS" = "xno"; then
-       AC_MSG_ERROR(Need xslt to compile)
-     fi
-     
-     xslt_LIBS=`$XSLT_CONFIG --libs || echo no`
-     if test "x$$1_LIBS" = "xno"; then
-       AC_MSG_ERROR(Need xslt to compile)
-     fi
-     
-     AC_MSG_RESULT(have it)
-     
-     $1_CFLAGS="$$1_CFLAGS $xslt_CFLAGS"
-     $1_LIBS="$$1_LIBS $xslt_LIBS"
-     
-     AC_SUBST($1_CFLAGS)
-     AC_SUBST($1_LIBS)
-  fi
-])
-
 AC_DEFUN(ST_CHECK,
 [ AC_MSG_CHECKING(for the st library)
 
   AC_ARG_WITH(stdir, AC_HELP_STRING(
-	[--with-stdir], 
+	[--with-stdir=DIR], 
 	[st installation directory (default: none)]))
   if test "x$with_stdir" != "x"; then
     ST_LTEST="-L$with_stdir/lib -L$with_stdir"
@@ -103,7 +71,7 @@ AC_DEFUN(C_CLIENT_CHECK,
 [ AC_MSG_CHECKING(for the c-client library)
   
   AC_ARG_WITH(cclientdir, AC_HELP_STRING(
-	[--with-cclientdir], 
+	[--with-cclientdir=DIR], 
 	[c-client installation directory (default: none)]))
   if test "x$with_cclientdir" != "x"; then
     CL_LTEST="-L$with_cclientdir/lib -L$with_cclientdir"

@@ -6,7 +6,6 @@ Ideas:
 
 Unfulfilled requirements:
 	Better packing of tree
-	Sever dependency on libxslt - use xsltproc or configable
 	XSL support detection
 
 BUGS:
