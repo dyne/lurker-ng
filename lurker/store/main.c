@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.17 2002-01-28 09:31:52 terpstra Exp $
+/*  $Id: main.c,v 1.18 2002-01-31 03:21:36 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -274,6 +274,17 @@ static void process_mbox(Mbox* mbox, List* list, time_t stamp)
 		
 		id = lu_import_message(list->id, mbox->id, old, stamp,
 			m->env->subject, author_name, &author_email[0]);
+		if (id == lu_kw_invalid)
+		{
+			if (lseek(mbox->fd, old, SEEK_SET) != old)
+			{
+				syslog(LOG_ERR, "Eep - failed to import message and unable to seek back for retry: %s\n",
+					strerror(errno));
+			}
+			
+			lu_unlock_mbox(mbox->fd, mbox->path);
+			return;
+		}
 		
 		lu_reply_to_resolution(id,
 			m->env->message_id,
