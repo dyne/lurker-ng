@@ -69,5 +69,8 @@ int main()
 		assert (out == 0);
 	}
 	
+	out = kap_close(k);
+	assert (out == 0);
+	
 	return 0;
 }
