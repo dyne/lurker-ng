@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.3 2002-02-03 05:45:29 terpstra Exp $
+/*  $Id: config.c,v 1.4 2002-02-10 20:38:38 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -292,6 +292,9 @@ static int my_config_open_mboxs()
 				perror(mbox->path);
 				ok = -1;
 			}
+			
+			mbox->next_message = 0;
+			mbox->locked       = 0;
 		}
 	}
 	

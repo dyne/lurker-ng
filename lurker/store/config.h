@@ -1,4 +1,4 @@
-/*  $Id: config.h,v 1.2 2002-02-03 05:45:29 terpstra Exp $
+/*  $Id: config.h,v 1.3 2002-02-10 20:38:38 terpstra Exp $
  *  
  *  config.h - Knows how to load the config file
  *  
@@ -31,6 +31,9 @@ typedef struct Lu_Config_Mbox_T
 	lu_word	id;
 	char*	path;
 	int	fd;
+	
+	time_t	next_message;
+	int	locked;
 	
 	/* only used during load of config */
 	struct Lu_Config_Mbox_T*	next;

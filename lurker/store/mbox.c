@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.6 2002-02-04 23:02:17 terpstra Exp $
+/*  $Id: mbox.c,v 1.7 2002-02-10 20:38:38 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -52,52 +52,63 @@ static int my_mbox_stop_watch = 0;
 static int my_mbox_skip_watch = 1;
 
 /*------------------------------------------------ Private helper methods */
-
+;
 /* Returns 0 on success.
  */
 static int my_mbox_lock_mbox(
-	int fd, 
-	const char* path)
+	Lu_Config_Mbox* mbox)
 {
 #ifdef USE_LOCK_FCNTL
 	struct flock lck;
+#endif
 	
+	if (mbox->locked)
+		return 0;
+
+#ifdef USE_LOCK_FCNTL	
 	memset (&lck, 0, sizeof (struct flock));
 	lck.l_type = F_RDLCK;
 	lck.l_whence = SEEK_CUR;
 	/* leave range as current to eof */
 	
-	if (fcntl(fd, F_SETLK, &lck) == -1)
+	if (fcntl(mbox->fd, F_SETLK, &lck) == -1)
 		return -1;
 #endif
 
 #if defined(USE_LOCK_FLOCK)
-	if (flock(fd, LOCK_SH) == -1)
+	if (flock(mbox->fd, LOCK_SH) == -1)
 		return -1;
 #elif defined(USE_LOCK_LOCKF)
-	if (lockf(fd, F_TLOCK, 0) == -1)
+	if (lockf(mbox->fd, F_TLOCK, 0) == -1)
 		return -1;
 #endif
 	
+	mbox->locked = 1;
 	return 0;
 }
 
 static int my_mbox_unlock_mbox(
-	int fd, 
-	const char* path)
+	Lu_Config_Mbox* mbox)
 {
 #ifdef USE_LOCK_FCNTL
 	struct flock lck;
+#endif
+	
+	if (!mbox->locked)
+		return 0;
+	
+#ifdef USE_LOCK_FCNTL
 	lck.l_type = F_UNLCK;
-	fcntl(fd, F_SETLK, &lck);
+	fcntl(mbox->fd, F_SETLK, &lck);
 #endif
 
 #if defined(USE_LOCK_FLOCK)
-	flock(fd, LOCK_UN);
+	flock(mbox->fd, LOCK_UN);
 #elif defined(USE_LOCK_LOCKF)
-	lockf(fd, F_ULOCK, 0);
+	lockf(mbox->fd, F_ULOCK, 0);
 #endif
-
+	
+	mbox->locked = 0;
 	return 0;
 }
 
@@ -113,13 +124,9 @@ static void my_mbox_process_mbox(
 	char		author_email[200];
 	int		error;
 	
-	if (my_mbox_lock_mbox(mbox->fd, mbox->path) == -1)
-		return;
-	
 	old = lseek(mbox->fd, 0, SEEK_CUR);
 	if (old == -1)
 	{
-		my_mbox_unlock_mbox(mbox->fd, mbox->path);
 		return;
 	}
 	
@@ -177,7 +184,6 @@ static void my_mbox_process_mbox(
 					strerror(errno));
 			}
 			
-			my_mbox_unlock_mbox(mbox->fd, mbox->path);
 			mail_free(m);
 			return;
 		}
@@ -197,7 +203,6 @@ static void my_mbox_process_mbox(
 					strerror(errno));
 			}
 			
-			my_mbox_unlock_mbox(mbox->fd, mbox->path);
 			mail_free(m);
 			return;
 		}
@@ -206,6 +211,8 @@ static void my_mbox_process_mbox(
 			id,
 			m->env->message_id,
 			m->env->in_reply_to);
+		
+		/*!!! don't forget to remove this in release */
 		printf("."); fflush(stdout);
 		
 		mail_free(m);
@@ -218,7 +225,6 @@ static void my_mbox_process_mbox(
 	if (new == -1)
 	{
 		syslog(LOG_ERR, "Unable to locate position in mbox\n");
-		my_mbox_unlock_mbox(mbox->fd, mbox->path);
 	}
 	
 	if (new < old)
@@ -228,7 +234,6 @@ static void my_mbox_process_mbox(
 	}
 	
 	lu_config_move_mbox_end(mbox, list, new);
-	my_mbox_unlock_mbox(mbox->fd, mbox->path);
 }
 
 static time_t my_mbox_convert_date_mbox(
@@ -288,22 +293,17 @@ static time_t my_mbox_extract_timestamp(
 	off_t	old;
 	ssize_t	got;
 	
-	if (my_mbox_lock_mbox(mbox->fd, mbox->path) == -1)
-		return 0;
-	
 	old = lseek(mbox->fd, 0, SEEK_CUR);
 	if (old == -1)
 	{
 		syslog(LOG_ERR, "Unable to read mbox offset(%s): %s\n",
 			mbox->path, strerror(errno));
-		my_mbox_unlock_mbox(mbox->fd, mbox->path);
 		return 0;
 	}
 	
 	got = read(mbox->fd, &buf[0], sizeof(buf)-1);
 	if (got <= 0)
 	{	/* hit eof, that's fine */
-		my_mbox_unlock_mbox(mbox->fd, mbox->path);
 		return 0;
 	}
 	
@@ -322,7 +322,6 @@ static time_t my_mbox_extract_timestamp(
 		old = lseek(mbox->fd, 0, SEEK_CUR);
 		if (old != -1)
 			lu_config_move_mbox_end(mbox, list, old);
-		my_mbox_unlock_mbox(mbox->fd, mbox->path);
 		return 0;
 	}
 	
@@ -350,12 +349,24 @@ static time_t my_mbox_extract_timestamp(
 		}
 	}
 	
-	my_mbox_unlock_mbox(mbox->fd, mbox->path);
-	return lu_summary_timestamp_heuristic(arrival_timestamp, client_timestamp);
+	return mbox->next_message = 
+		lu_summary_timestamp_heuristic(arrival_timestamp, client_timestamp);
 }
 
-static void* my_mbox_watch(
-	void* arg)
+/* We need to avoid excessive locking. Experimentation shows that this is one 
+ * of the programs bottlenecks (esp. over nfs to the spool).
+ *
+ * Plan: keep the mbox we imported from last locked after import.
+ * Remember the timestamp of the next message in each mbox so we don't need
+ * to relock/reread them.
+ *
+ * We release locks whenever a mbox is rejected as a candidate for import.
+ * We release the importing mbox lock after 40 imports.
+ */
+
+static time_t my_mbox_find_lowest(
+	Lu_Config_List** list, 
+	Lu_Config_Mbox** mbox)
 {
 	Lu_Config_List*	scan_list;
 	Lu_Config_Mbox*	scan_mbox;
@@ -364,6 +375,64 @@ static void* my_mbox_watch(
 	Lu_Config_List*	lowest_list = 0;
 	Lu_Config_Mbox*	lowest_mbox = 0;
 	
+	lowest_timestamp = 0;
+	
+	for (	scan_list = lu_config_list; 
+		scan_list != lu_config_list + lu_config_lists; 
+		scan_list++)
+	{
+		for (	scan_mbox = scan_list->mbox;
+			scan_mbox != scan_list->mbox + scan_list->mboxs;
+			scan_mbox++)
+		{
+			if (scan_mbox->next_message != 0)
+			{
+				candidate = scan_mbox->next_message;
+			}
+			else
+			{
+				if (my_mbox_lock_mbox(scan_mbox) != 0)
+					continue;
+				
+				candidate = my_mbox_extract_timestamp(
+					scan_mbox, scan_list);
+			}
+			
+			if (candidate != 0 &&
+				(lowest_timestamp == 0 ||
+				 lowest_timestamp > candidate))
+			{
+				if (lowest_mbox)
+				{
+					my_mbox_unlock_mbox(lowest_mbox);
+				}
+				
+				lowest_timestamp = candidate;
+				lowest_list = scan_list;
+				lowest_mbox = scan_mbox;
+			}
+			else
+			{
+				my_mbox_unlock_mbox(scan_mbox);
+			}
+		}
+	}
+	
+	*list = lowest_list;
+	*mbox = lowest_mbox;
+	
+	return lowest_timestamp;
+}
+
+static void* my_mbox_watch(
+	void* arg)
+{
+	Lu_Config_List*	list;
+	Lu_Config_Mbox*	mbox;
+	time_t		stamp;
+	int		count;
+	
+	count = 0;
 	while (!my_mbox_stop_watch)
 	{
 		if (my_mbox_skip_watch)
@@ -372,34 +441,20 @@ static void* my_mbox_watch(
 			continue;
 		}
 		
-		lowest_timestamp = 0;
+		stamp = my_mbox_find_lowest(&list, &mbox);
 		
-		for (	scan_list = lu_config_list; 
-			scan_list != lu_config_list + lu_config_lists; 
-			scan_list++)
+		if (list != 0 && mbox != 0 && stamp != 0)
 		{
-			for (	scan_mbox = scan_list->mbox;
-				scan_mbox != scan_list->mbox + scan_list->mboxs;
-				scan_mbox++)
+			my_mbox_lock_mbox(mbox);
+			my_mbox_process_mbox(mbox, list, stamp);
+			mbox->next_message = 0;
+			
+			count++;
+			if (count == 40)
 			{
-				candidate = my_mbox_extract_timestamp(
-					scan_mbox, scan_list);
-				
-				if (candidate != 0 &&
-					(lowest_timestamp == 0 ||
-					 lowest_timestamp > candidate))
-				{
-					lowest_timestamp = candidate;
-					lowest_list = scan_list;
-					lowest_mbox = scan_mbox;
-				}
+				count = 0;
+				my_mbox_unlock_mbox(mbox);
 			}
-		}
-		
-		if (lowest_timestamp != 0)
-		{
-			my_mbox_process_mbox(
-				lowest_mbox, lowest_list, lowest_timestamp);
 			
 			/* Don't actually sleep, just reschedual to allow for
 			 * requests to be serviced

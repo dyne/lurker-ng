@@ -24,10 +24,10 @@ It must support these queries:
 
 Component diagram:
 
-main--> service --------+------------\
-  |        |            |            |
-  v        v            v            v
-mbox--> summary      search -----> breader
+main--> service ---------------------+-------------\
+  |        |                         |             |
+  v        v                         v             v
+mbox--> summary ----------------> breader <---- search
   |        |                         |
   |        v                         |
   +---> config  <-----------------\  |
