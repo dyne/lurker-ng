@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.2 2003-08-17 11:21:40 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.3 2003-08-17 14:45:33 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -152,7 +152,7 @@ int DbMan::scanFile(Parameters& p)
 #endif
 		
 	rewind(dbfile);
-	if (fscanf(dbfile, "%ld %ld", &blockSize, &keySize) != 3)
+	if (fscanf(dbfile, "%ld %ld", &blockSize, &keySize) != 2)
 		return -1;
 	p = Parameters(p.synced(), p.unique(), blockSize, keySize);
 	
