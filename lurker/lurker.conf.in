@@ -21,7 +21,7 @@ admin_address = nill@bitbucket.org
 # The pid file is written out by lurker if it is run in undetached mode.
 # Lurker does not check to see if another lurker process is running, instead
 # this is left up to programs like start-stop-daemon.
-pidfile = @LOCALSTATEDIR_expand@/run/@PACKAGE@.pid
+pidfile = @LOCALSTATEDIR_expand@/run/@PACKAGE@d.pid
 
 # The directory where lurker will keep it's database information.
 # The domain socket used to communicate with the CGI is also placed here.
