@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.35 2002-06-21 18:19:03 terpstra Exp $
+/*  $Id: mbox.c,v 1.36 2002-07-11 20:54:36 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -265,7 +265,7 @@ static void my_mbox_swallow(
 	while (s != e)
 	{
 		for (buf = s; s != e && *s >= 33 && *s <= 126; s++);
-		MD5Update(ctx, buf, s - buf);
+		MD5Update(ctx, (unsigned char*)buf, s - buf);
 		for (; s != e && (*s < 33 || *s > 126); s++);
 	}
 }
@@ -297,8 +297,8 @@ static int my_mbox_process_mbox(
 	char			decode_subj [200];
 	char			author_name [100];
 	char			author_email[100];
-	char			message_id[LU_KEYWORD_LEN+1];
-	char			reply_to  [LU_KEYWORD_LEN+1];
+	char			mmessage_id[LU_KEYWORD_LEN+1];
+	char			reply_to   [LU_KEYWORD_LEN+1];
 	int			error;
 	int			new_message;
 	struct MD5Context	md5c;
@@ -396,16 +396,16 @@ static int my_mbox_process_mbox(
 	}
 		
 	/* Empty fields initially */
-	message_id[0] = reply_to[0] = 0;
+	mmessage_id[0] = reply_to[0] = 0;
 	
 	if (m.env->message_id)
-		strcpy(&message_id[0], lu_decode_id(m.env->message_id));
-	if (!strchr(&message_id[0], '@'))
+		strcpy(&mmessage_id[0], lu_decode_id(m.env->message_id));
+	if (!strchr(&mmessage_id[0], '@'))
 	{	/* We only like message-ids with an '@' in them. */
-		message_id[0] = 0;
+		mmessage_id[0] = 0;
 	}
 	
-	if (!message_id[0])
+	if (!mmessage_id[0])
 	{	/* We need a message-id. Invent one with md5! */
 		MD5Init(&md5c);
 		my_mbox_swallow_addr(&md5c, m.env->from);
@@ -417,7 +417,7 @@ static int my_mbox_process_mbox(
 			m.body->contents.text.size);
 		
 		MD5Final(digest, &md5c);
-		sprintf(&message_id[0], 
+		sprintf(&mmessage_id[0], 
 			"%02x%02x%02x%02x%02x%02x%02x%02x"
 			"%02x%02x%02x%02x%02x%02x%02x%02x"
 			"@lurker.mid",
@@ -471,7 +471,7 @@ static int my_mbox_process_mbox(
 		mbox->id, 
 		mbox->length, 
 		stamp,
-		&message_id  [0],
+		&mmessage_id  [0],
 		&decode_subj [0], 
 		&author_name [0],
 		&author_email[0],
@@ -493,7 +493,7 @@ static int my_mbox_process_mbox(
 		
 		error = lu_summary_reply_to_resolution(
 			id,
-			&message_id[0],
+			&mmessage_id[0],
 			&reply_to[0]);
 		
 		if (error != 0)
@@ -769,7 +769,7 @@ static time_t my_mbox_find_lowest(
 	return lowest_timestamp;
 }
 
-static int my_mbox_unlock_all()
+static int my_mbox_unlock_all(void)
 {
 	Lu_Config_List*	scan_list;
 	Lu_Config_Mbox*	scan_mbox;
@@ -860,7 +860,7 @@ static void* my_mbox_profile(
 
 /*------------------------------------------------- Public component methods */
 
-int lu_mbox_init()
+int lu_mbox_init(void)
 {
 	my_mbox_stop_watch = 0;
 	my_mbox_skip_watch = 1;
@@ -873,24 +873,24 @@ int lu_mbox_init()
 	return 0;
 }
 
-int lu_mbox_open()
+int lu_mbox_open(void)
 {
 	my_mbox_skip_watch = 0;
 	return 0;
 }
 
-int lu_mbox_sync()
+int lu_mbox_sync(void)
 {
 	return 0;
 }
 
-int lu_mbox_close()
+int lu_mbox_close(void)
 {
 	my_mbox_skip_watch = 1;
 	return 0;
 }
 
-int lu_mbox_quit()
+int lu_mbox_quit(void)
 {
 	my_mbox_stop_watch = 1;
 	return 0;
@@ -934,10 +934,12 @@ char* lu_mbox_select_body(
 	switch ((int)body->encoding)
 	{
 		case ENCQUOTEDPRINTABLE:
-			output = (char *(*)())rfc822_qprint;
+			output = (char* (*)(unsigned char*, unsigned long, unsigned long*))
+				&rfc822_qprint;
 			break;
 		case ENCBASE64:
-			output = (char *(*)())rfc822_base64;
+			output = (char* (*)(unsigned char*, unsigned long, unsigned long*))
+				&rfc822_base64;
 			break;
 		default:
 			output = NULL;
@@ -1044,30 +1046,31 @@ int lu_mbox_destroy_map(
 }
 
 int lu_mbox_parse_message(
-	struct Lu_Config_Message*	mmap,
+	struct Lu_Config_Message*	mmmap,
 	struct Lu_Mbox_Message*		msg)
 {
 	char*	buf;
+	char	hostname[100] = "localhost";
 	
-	buf = mmap->map.base;
-	buf += mmap->headers - mmap->map.off;
+	buf = mmmap->map.base;
+	buf += mmmap->headers - mmmap->map.off;
 	
 	msg->buffer = buf;
-	msg->buffer += mmap->body - mmap->headers;
+	msg->buffer += mmmap->body - mmmap->headers;
 	
 	/* Parse the message. */
 	INIT(	&msg->bss, 
 		mail_string, 
 		msg->buffer, 
-		(size_t)(mmap->end - mmap->body));
+		(size_t)(mmmap->end - mmmap->body));
 		
 	rfc822_parse_msg(
 		&msg->env, 
 		&msg->body, 
 		buf, 
-		(size_t)(mmap->body - mmap->headers),
+		(size_t)(mmmap->body - mmmap->headers),
 		&msg->bss, 
-		"localhost", 
+		&hostname[0], 
 		0);
 	
 	return 0;
