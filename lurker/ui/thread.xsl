@@ -131,7 +131,7 @@
         <input type="hidden" name="doc-url" value="{server/doc-url}"/>
         <input type="hidden" name="format"  value="{$ext}"/>
         <input type="text"   name="query"   value="th:{hash} " class="longtext"/>
-        <input type="submit" name="submit"  value="{$search}!"/>
+        <input type="submit" name="submit"  value="{$search-button}"/>
        </form>
       </td>
      </tr>

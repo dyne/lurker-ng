@@ -56,7 +56,7 @@
  <html lang="{$lang}">
   <head>
    <link rel="stylesheet" href="../fmt/default.css" type="text/css"/>
-   <title><xsl:value-of select="$search"/>: <xsl:value-of select="translate(query,',',' ')"/></title>
+   <title><xsl:value-of select="$search-heading"/><xsl:value-of select="translate(query,',',' ')"/></title>
    <script type="text/javascript" src="../fmt/common.js"/>
   </head>
   <body>
@@ -64,7 +64,7 @@
     <table class="external">
      <tr>
       <td align="left">
-       <h1><xsl:value-of select="$search"/>: <xsl:value-of select="translate(query,',',' ')"/></h1>
+       <h1><xsl:value-of select="$search-heading"/><xsl:value-of select="translate(query,',',' ')"/></h1>
       </td>
       <td align="right"><xsl:call-template name="navbar"/></td>
      </tr>
@@ -94,7 +94,7 @@
         <input type="hidden" name="mon"  value="{substring($sdate,5,2)}"/>
         <input type="hidden" name="year" value="{substring($sdate,1,4)}"/>
         <input type="text"   name="query"   value="{translate(query,',',' ')}" class="longtext"/>
-        <input type="submit" name="submit" value="{$search}"/>
+        <input type="submit" name="submit" value="{$search-button}"/>
        </form>
       </td>
       <td align="right">
@@ -152,7 +152,7 @@
         <xsl:call-template name="date-fields">
          <xsl:with-param name="date" select="$sdate"/>
         </xsl:call-template>
-        <input type="submit" name="submit" value="{$jump}!"/>
+        <input type="submit" name="submit" value="{$jump-button}"/>
        </form>
       </td>
      </tr>

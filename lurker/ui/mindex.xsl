@@ -83,7 +83,7 @@
         <xsl:call-template name="date-fields">
          <xsl:with-param name="date" select="row[position()=11]/summary/id"/>
         </xsl:call-template>
-        <input type="submit" value="{$jump}!"/>
+        <input type="submit" value="{$jump-button}"/>
        </form>
       </td>
       <td align="right">
@@ -146,7 +146,7 @@
         <input type="hidden" name="doc-url" value="{server/doc-url}"/>
         <input type="hidden" name="format"  value="{$ext}"/>
         <input type="text"   name="query"   value="ml:{list/id} " class="longtext"/>
-        <input type="submit" name="submit"  value="{$search}!"/>
+        <input type="submit" name="submit"  value="{$search-button}"/>
        </form>
       </td>
      </tr>

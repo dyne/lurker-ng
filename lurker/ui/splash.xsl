@@ -91,7 +91,7 @@
         <tr>
          <td colspan="2">
           <input type="text" name="query" class="longtext"/>
-          <input type="submit" name="submit" value="{$search}!"/>
+          <input type="submit" name="submit" value="{$search-button}"/>
          </td>
         </tr>
         

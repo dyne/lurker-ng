@@ -42,11 +42,12 @@
 <xsl:variable name="missing-lang" select="document($langfile)/text/@missing-lang"/>
 <xsl:variable name="offline" select="document($langfile)/text/@offline"/>
 <xsl:variable name="deleted-message" select="document($langfile)/text/@deleted-message"/>
-<xsl:variable name="search" select="document($langfile)/text/@search"/>
+<xsl:variable name="search-button" select="document($langfile)/text/@search-button"/>
+<xsl:variable name="search-heading" select="document($langfile)/text/@search-heading"/>
 
 <xsl:variable name="jump-to-date" select="document($langfile)/text/@jump-to-date"/>
 <xsl:variable name="search-list" select="document($langfile)/text/@search-list"/>
-<xsl:variable name="jump" select="document($langfile)/text/@jump"/>
+<xsl:variable name="jump-button" select="document($langfile)/text/@jump-button"/>
 <xsl:variable name="use-special-word-list" select="document($langfile)/text/@use-special-word-list"/>
 <xsl:variable name="to-search-list" select="document($langfile)/text/@to-search-list"/>
 <xsl:variable name="newest-messages" select="document($langfile)/text/@newest-messages"/>
