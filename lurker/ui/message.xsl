@@ -9,7 +9,7 @@
 </xsl:template>
 <xsl:template match="summary" mode="post-subject-link">
  <a href="{id}.{$ext}">
-  <xsl:apply-templates mode="post-subject" select=."/>
+  <xsl:apply-templates mode="post-subject" select="."/>
  </a>
 </xsl:template>
 <xsl:template match="summary" mode="post-subject-list">
