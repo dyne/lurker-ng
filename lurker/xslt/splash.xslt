@@ -24,12 +24,16 @@
 
 <xsl:template match="list">
   <tr>
-  <td><a href="../mindex/{id}@{messages}"><xsl:value-of select="name"/></a></td>
-  <td><xsl:value-of select="messages"/></td>
-  <td><xsl:if test="address">
-        <a href="mailto:{address}"><xsl:value-of select="address"/></a>
-      </xsl:if></td>
-  <td><xsl:value-of select="description"/></td>
+  <td><a href="../mindex/{id}@{string(floor(number(messages) div 20)*20)}.html"><xsl:value-of select="name"/></a></td>
+  <td align="right"><xsl:value-of select="messages"/></td>
+  <xsl:if test="address">
+    <td><a href="mailto:{address}"><xsl:value-of select="address"/></a></td>
+  </xsl:if>
+  <xsl:if test="not(address)"><td align="center">-</td></xsl:if>
+  <xsl:if test="description">
+    <td><xsl:value-of select="description"/></td>
+  </xsl:if>
+  <xsl:if test="not(description)"><td align="center">-</td></xsl:if>
   </tr>
 </xsl:template>
 
@@ -48,6 +52,11 @@
   <h2>Welcome</h2>
 
   <table>
+
+<tr><th align="left">List</th>
+    <th align="center">Messages</th>
+    <th align="left">Address</th>
+    <th align="left">Description</th></tr>
     <xsl:apply-templates select="/lists/list"/>
   </table>
   <hr/>
