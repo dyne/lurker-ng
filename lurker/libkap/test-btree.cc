@@ -28,7 +28,7 @@ void test_read(Kap k, const char* key, string val, int exist)
 	unsigned char buf[1000];
 	ssize_t len;
 	
-	cout << "TEST READ: " << key << endl;
+//	cout << "TEST READ: " << key << endl;
 	
 	out = kap_btree_read(k, key, &buf[0], &len);
 	assert (exist || out == KAP_NOT_FOUND);
@@ -55,7 +55,7 @@ int main()
 	out = kap_btree_set_sectorsize(k, 512);
 	assert (out == ERANGE);
 	
-	out = kap_btree_set_sectorsize(k, 768);
+	out = kap_btree_set_sectorsize(k, 1024);
 	assert (out == 0);
 	
 	out = kap_open(k, ".", "test-btree");
@@ -100,7 +100,8 @@ int main()
 		val[6] = random() % 256;
 		
 		test_write(k, buf, val, tbl.find(buf) != tbl.end());
-		tbl[buf] = val;
+		if (tbl.find(buf) == tbl.end())
+			tbl[buf] = val;
 	}
 	
 	map<string, string>::iterator i;
