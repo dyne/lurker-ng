@@ -29,6 +29,7 @@ Quick start
   --with-cclientdir       c-client installation directory (default: none)
   --with-libiconv-prefix=DIR  search for libiconv in DIR/include and DIR/lib
   --with-included-gettext use the GNU gettext library included here
+  XSLT_CONFIG=/path is also handy
 
 2 make
 3 make install	(as root)
