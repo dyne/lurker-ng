@@ -1,4 +1,4 @@
-.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-index.1,v 1.9 2004-08-24 16:25:44 terpstra Exp $
+.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-index.1,v 1.10 2004-08-25 21:40:10 terpstra Exp $
 .\"
 .\"	transcript compatibility for postscript use.
 .\"
@@ -56,7 +56,7 @@
 lurker\-index \(em imports messages into the archive 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker\-index\fR [\-c <config-file>]  [\-l <list>]  [\-i <mbox/maildir>]  [\-v \-d \-n \-f]  [\-m | \-b <count>]  
+\fBlurker\-index\fR [\-c <config-file>]  [\-l <list>]  [\-i <mbox/maildir>]  [\-v \-d \-n \-u \-f]  [\-m | \-b <count>]  
 .SH "DESCRIPTION" 
 .PP 
 \fBlurker\-index\fR indexes messages from 
@@ -128,6 +128,17 @@ compressed and uncompressed messages. However, zcat/gzip and
 database upgrades cannot. If you need these to function, you 
 should never mix compressed and uncompressed messages within a 
 single mailing list. 
+.IP "\fB\-u\fP" 10 
+Trust user Date headers from the email more than the delivery  
+time. Normally lurker compares the two and if the user time differs 
+too much from the delivery time, the delivery time is used instead. 
+When this option is used, lurker will simply trust the user Date 
+header whenever it exists, otherwise it uses the delivery time. 
+.IP "" 10 
+This option should never be used as a default. It is intended 
+for dealing with corrupt mailboxes or maildirs. A better solution 
+than using this option is to find an uncorrupted copy of the mail. 
+ 
 .IP "\fB\-f\fP" 10 
 Fast import (but vulnerable to power-failure). This may 
 improve the lifetime of your hard-disk and increase import speed 
@@ -167,4 +178,4 @@ Before reporting a bug, please confirm that the bug you found is
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
 <lurker\-users@lists.sourceforge.net>. 
-.\" created by instant / docbook-to-man, Mon 23 Aug 2004, 18:11 
+.\" created by instant / docbook-to-man, Wed 25 Aug 2004, 23:39 

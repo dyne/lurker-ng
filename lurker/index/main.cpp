@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.41 2004-08-24 16:09:01 terpstra Exp $
+/*  $Id: main.cpp,v 1.42 2004-08-25 21:39:46 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -70,22 +70,24 @@ bool verbose = false;
 bool dropdup = false;
 bool synced = true;
 bool compressmail = true;
+bool userdate = false;
 
 void help(const char* name)
 {
 	cerr << "Lurker-index (v" << VERSION << ") imports messages into the archive.\n";
 	cerr << "\n";
 	cerr << "Usage: " << name << " -c <config-file> -l <list> (-m | -b <count>)\n";
-	cerr << "                                     [-i <mbox/maildir> -v -d -n -f]\n";
+	cerr << "                                     [-i <mbox/maildir> -v -d -n -u -f]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-l <list>        Import messages to the named list\n";
 	cerr << "\t-b <count>       Import a batch of messages; flush every count messages\n";
-	cout << "\t-i <mbox/mdir>   Read input from mbox or maildir instead of std input\n";
+	cerr << "\t-i <mbox/mdir>   Read input from mbox or maildir instead of std input\n";
 	cerr << "\t-m               Import a single message\n";
 	cerr << "\t-v               Verbose operation\n";
 	cerr << "\t-d               Drop duplicates per list\n";
-	cout << "\t-n               Don't compress messages\n";
+	cerr << "\t-n               Don't compress messages\n";
+	cerr << "\t-u               Trust the user Date header more than arrival time\n";
 	cerr << "\t-f               Fast import (but vulnerable to power-failure)\n";
 	cerr << "\n";
 	cerr << "Index messages from standard input and store them in the lurker database.\n";
@@ -342,7 +344,7 @@ int index(DwString& msg, time_t arrival)
 	Index i(message, db.get(), *list, start, msg.length() + strlen(prefix));
 	
 	bool exist;
-	if (i.index(arrival, import, dropdup, exist) != 0)
+	if (i.index(userdate, arrival, import, dropdup, exist) != 0)
 	{
 		cerr << "Import failed; aborting..." << endl;
 		return -1;
@@ -535,7 +537,7 @@ int main(int argc, char** argv)
 	
 	srandom(time(0));
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:l:b:i:mvndf?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:l:b:i:mvndfu?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -562,6 +564,9 @@ int main(int argc, char** argv)
 			break;
 		case 'f':
 			synced = false;
+			break;
+		case 'u':
+			userdate = true;
 			break;
 		case 'n':
 			compressmail = false;

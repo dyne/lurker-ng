@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.29 2004-08-19 23:52:51 terpstra Exp $
+/*  $Id: Index.cpp,v 1.30 2004-08-25 21:39:46 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -233,7 +233,7 @@ int feed_writer(const char* keyword, void* arg)
 	return i->writer->insert(x);
 }
 
-int Index::index_id(time_t server)
+int Index::index_id(bool userdate, time_t server)
 {
 	time_t stamp = server;
 	string messageId;
@@ -249,6 +249,7 @@ int Index::index_id(time_t server)
 		 * However, more than 7 day delivery time is unlikely.
 		 */
 		if ((user <= server && server < user+7*60*60*24) ||
+		    userdate ||  // trusting the userdate?
 		    server <= 0) // server is on crack?
 			stamp = user;
 	}
@@ -621,14 +622,14 @@ int Index::index_keywords(DwEntity& e, const string& parentCharset)
 	return 0;
 }
 
-int Index::index(time_t envelope, time_t import, bool check, bool& exist)
+int Index::index(bool userdate, time_t envelope, time_t import, bool check, bool& exist)
 {
 	exist = false;
 	
 //	cout << message.Headers().Subject().AsString().c_str() << endl;
 	
-	if (index_author()    < 0) return -1;
-	if (index_id(envelope) < 0) return -1;
+	if (index_author() < 0) return -1;
+	if (index_id(userdate, envelope) < 0) return -1;
 	if (index_summary(check, exist) < 0) return -1;
 	
 	if (exist) return 0;

@@ -34,6 +34,7 @@ v1.2:
 	Allow empty files to be included in the config file
 	Include a fixed version of Silas Jantzen's apache RewriteRule
 	Included a ton of lurker UI translations, see the AUTHORS file
+	Added a '-u' option to lurker-index to trust the user Date header
 
 v1.1:
 	Create mbox and attach directory upon install

@@ -60,7 +60,7 @@ lurker-index.1: lurker-index.sgml
       <arg>\-c &lt;config-file&gt;</arg>
       <arg>\-l &lt;list&gt;</arg>
       <arg>\-i &lt;mbox/maildir&gt;</arg>
-      <arg>\-v \-d \-n \-f</arg>
+      <arg>\-v \-d \-n \-u \-f</arg>
       <arg>\-m | \-b &lt;count&gt;</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
@@ -170,6 +170,21 @@ lurker-index.1: lurker-index.sgml
           database upgrades cannot. If you need these to function, you
           should never mix compressed and uncompressed messages within a
           single mailing list.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>\-u</option></term>
+        <listitem>
+          <para>Trust user Date headers from the email more than the delivery 
+          time. Normally lurker compares the two and if the user time differs
+          too much from the delivery time, the delivery time is used instead.
+          When this option is used, lurker will simply trust the user Date
+          header whenever it exists, otherwise it uses the delivery time.</para>
+          
+          <para>This option should never be used as a default. It is intended
+          for dealing with corrupt mailboxes or maildirs. A better solution
+          than using this option is to find an uncorrupted copy of the mail.
+          </para>
         </listitem>
       </varlistentry>
       <varlistentry>
