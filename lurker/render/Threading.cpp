@@ -1,4 +1,4 @@
-/*  $Id: Threading.cpp,v 1.10 2003-07-01 12:39:39 terpstra Exp $
+/*  $Id: Threading.cpp,v 1.11 2003-07-01 12:42:02 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -151,7 +151,7 @@ string Threading::load(Reader* r, const Summary& sum, Key& out)
 			}
 			
 			// Did we find no queued predecessors?
-			if (replyto+4 > i->in_replytos.size())
+			if (replyto+4 > i->in_reply_tos.size())
 				break;
 		}
 		
