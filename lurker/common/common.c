@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.14 2002-05-11 07:50:38 terpstra Exp $
+/*  $Id: common.c,v 1.15 2002-05-11 08:00:31 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -32,7 +32,7 @@
 
 #if defined(HAVE_ICONV_H)
 #include <iconv.h>
-#elif defined(HAVE_ICONV_H)
+#elif defined(HAVE_SYS_ICONV_H)
 #include <sys/iconv.h>
 #else
 #error Missing iconv
