@@ -1,4 +1,4 @@
-/*  $Id: File.cpp,v 1.6 2003-04-25 14:18:27 terpstra Exp $
+/*  $Id: File.cpp,v 1.7 2003-04-25 17:05:09 terpstra Exp $
  *  
  *  File.cpp - Disk segment for commit'd inserts
  *  
@@ -281,9 +281,10 @@ auto_ptr<Source> File::openBlock(long block, bool forward)
 	
 	auto_ptr<FileSource> out(new FileSource(this, block, forward));
 	
-	if (out->loadBuf() == 0)
-		return auto_ptr<Source>(out);
-	// else return 0
+	if (out->loadBuf() != 0)
+		return auto_ptr<Source>(0);
+	
+	return auto_ptr<Source>(out);
 }
 
 }
