@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.19 2002-07-11 16:38:14 terpstra Exp $
+/*  $Id: btree.c,v 1.20 2002-07-11 23:50:54 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -1217,16 +1217,16 @@ int kap_btree_write(Kap k, const char* key,
 	return 0;
 }
 
-struct ReadNext_Back
+struct ReadGe_Back
 {
 	char*		key;
 	unsigned char*	buf;
 	ssize_t*	len;
 };
 
-static int kap_read_next_back(void* arg, const char* key, unsigned char* buf, ssize_t* len)
+static int kap_read_ge_back(void* arg, const char* key, unsigned char* buf, ssize_t* len)
 {
-	struct ReadNext_Back* nfo = arg;
+	struct ReadGe_Back* nfo = arg;
 	
 	strcpy(nfo->key, key);
 	*nfo->len = *len;
@@ -1235,14 +1235,27 @@ static int kap_read_next_back(void* arg, const char* key, unsigned char* buf, ss
 	return 0;
 }
 
-int kap_btree_read_next(Kap k, char* key,
+int kap_btree_read_ge(Kap k, char* key,
 	unsigned char* buf, ssize_t* len)
 {
 	int	out;
-	unsigned char*	ks;
-	struct ReadNext_Back nfo;
+	struct ReadGe_Back nfo;
 	
-	/* Make key point to the next largest possible key */
+	nfo.key = key;
+	nfo.buf = buf;
+	nfo.len = len;
+	out = kap_btree_op(k, key, &kap_read_ge_back, &nfo);
+	
+	if (out) return out;
+	if (*nfo.len == -1) return KAP_NOT_FOUND;
+	
+	return 0;
+}
+
+int kap_btree_next_key(Kap k, char* key)
+{
+	unsigned char*	ks;
+	
 	ks =  (unsigned char*)key;
 	while (*ks) ks++;
 	
@@ -1269,14 +1282,13 @@ int kap_btree_read_next(Kap k, char* key,
 		*ks++ = 1;
 		*ks = 0;
 	}
-		
-	nfo.key = key;
-	nfo.buf = buf;
-	nfo.len = len;
-	out = kap_btree_op(k, key, &kap_read_next_back, &nfo);
-	
-	if (out) return out;
-	if (*nfo.len == -1) return KAP_NOT_FOUND;
 	
 	return 0;
+}
+
+int kap_btree_read_next(Kap k, char* key,
+	unsigned char* buf, ssize_t* len)
+{
+	kap_btree_next_key(k, key);
+	return kap_btree_read_ge(k, key, buf, len);
 }

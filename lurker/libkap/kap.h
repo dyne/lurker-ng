@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.11 2002-07-09 22:42:45 terpstra Exp $
+/*  $Id: kap.h,v 1.12 2002-07-11 23:50:54 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -215,11 +215,28 @@ int	kap_btree_read(Kap k, const char* key,
 int	kap_btree_write(Kap k, const char* key,
 	const unsigned char* buf, ssize_t len);
 
+/** Do a database read for the first key which is >= the search key.
+ *  This will modifiy key with the new key name. Make sure that key has
+ *  max_key_size storage available!
+ *  This is useful in combination with next_key for iterating through a btree.
+ *  Errors: kap_btree_op(), KAP_NOT_FOUND (on end of tree)
+ */
+int	kap_btree_read_ge(Kap k, char* key,
+	unsigned char* buf, ssize_t* len);
+
+/** Modify the key to be the next possible record name.
+ *  This will modifiy key with the new key name. Make sure that key has
+ *  max_key_size storage available!
+ *  Errors: none
+ */
+int	kap_btree_next_key(Kap k, char* key);
+
 /** Do a database read for the first key which is > the search key.
  *  This will modifiy key with the new key name. Make sure that key has
  *  max_key_size storage available!
  *  This is useful for iterating through a btree.
- *  Errors: kap_btree_op(), KAP_NOT_FOUND (on end of tree)
+ *  Equivalent to calling next_key and then read_ge
+ *  Errors: all kap_btree_read_ge()
  */
 int	kap_btree_read_next(Kap k, char* key,
 	unsigned char* buf, ssize_t* len);
@@ -297,6 +314,13 @@ int	kap_kwrite(Kap k, KRecord* kr, const char* key,
  */
 int	kap_append(Kap k, const char* key, 
 	void* data, size_t len);
+
+/** Encode offsets in portable manner.
+ *  Some people find this useful for storing integers on disk.
+ */
+void kap_decode_offset(const unsigned char* where, off_t* out, short len);
+void kap_encode_offset(      unsigned char* where, off_t  rec, short len);
+
 
 
 #ifdef __cplusplus

@@ -1,4 +1,4 @@
-/*  $Id: avl.h,v 1.4 2002-07-11 16:31:36 terpstra Exp $
+/*  $Id: avl.h,v 1.5 2002-07-11 23:50:54 terpstra Exp $
  *  
  *  avl.h - Manage a AVL search tree
  *  
@@ -41,7 +41,8 @@
 #define AVL_OK		0
 
 /* The user of this file should call:
- *   AVL_DEFINE(PREFIX, RECTYPE, INVALID, STRUCT, TABLE, COMPARE)
+ *   AVL_DEFINE_INSERT(PREFIX, RECTYPE, INVALID, STRUCT, TABLE, COMPARE)
+ *   AVL_DEFINE_REMOVE(PREFIX, RECTYPE, INVALID, STRUCT, TABLE, COMPARE)
  *
  *   PREFIX  -> an indetifier to prevent symbol conflict
  *   RECTYPE -> the type used to index the table
@@ -61,7 +62,7 @@
  *     -> INVALID if not in tree, the new root else (ok)
  */
 
-#define AVL_DEFINE(PREFIX, RECTYPE, INVALID, STRUCT, TABLE, COMPARE) \
+#define AVL_DEFINE_INSERT(PREFIX, RECTYPE, INVALID, STRUCT, TABLE, COMPARE) \
 \
 \
 inline void my_avl_##PREFIX##_rot_left(RECTYPE* n) \
@@ -271,7 +272,13 @@ static RECTYPE my_avl_##PREFIX##_insert(RECTYPE root, RECTYPE recno) \
 		return INVALID; \
 	\
 	return root; \
-} \
+}
+
+
+
+
+
+#define AVL_DEFINE_REMOVE(PREFIX, RECTYPE, INVALID, STRUCT, TABLE, COMPARE) \
 \
 \
 inline int my_avl_##PREFIX##_left_shrunk(RECTYPE* n) \

@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.5 2002-07-11 16:38:14 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.6 2002-07-11 23:50:54 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -223,13 +223,8 @@ static Keyword*	avl_cache; /*!!! change avl to take this as param */
 
 /*------------------------------------------------- Private methods */
 
-AVL_DEFINE(
-	wb,
-	kptr,
-	KINVALID,
-	Keyword,
-	avl_cache,
-	strcmp)
+AVL_DEFINE_INSERT(wb, kptr, KINVALID, Keyword, avl_cache, strcmp)
+AVL_DEFINE_REMOVE(wb, kptr, KINVALID, Keyword, avl_cache, strcmp)
 
 /* Dump the contents of a cache record to disk.
  */

@@ -1,4 +1,4 @@
-/*  $Id: private.h,v 1.7 2002-07-09 22:42:45 terpstra Exp $
+/*  $Id: private.h,v 1.8 2002-07-11 23:50:54 terpstra Exp $
  *  
  *  private.h - Private internal interfaces for libkap
  *  
@@ -64,10 +64,6 @@ int kap_append_real(Kap k, const char* key, void* data, size_t len, size_t* out)
 /* Protected methods for use by kap */
 int kap_wbuffer_push (Kap k, const char* key, unsigned char* buf);
 int kap_wbuffer_flush(Kap k, const char* key);
-
-/* Encode offsets in portable manner */
-void kap_decode_offset(const unsigned char* where, off_t* out, short len);
-void kap_encode_offset(      unsigned char* where, off_t  rec, short len);
 
 /* Kap databases only support a single reader/writer */
 int kap_lock(int fd);
