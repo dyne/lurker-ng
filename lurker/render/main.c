@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.25 2002-07-22 12:55:29 terpstra Exp $
+/*  $Id: main.c,v 1.26 2002-08-11 16:19:24 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -280,8 +280,8 @@ int main(int argc, char* argv[])
 		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
-			_("Invalid request"), 
-			"chdir&access",
+			mod, 
+			"chdir&access (possibly not invoked as an error document handler)",
 			strerror(errno));
 		return 1;
 	}
