@@ -61,7 +61,7 @@
    <img src="../imgs/a.png" alt=".."/>
   </xsl:if>
 
-  <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;&amp;nbsp;</xsl:text>
+  <xsl:text>&#160;&#160;&#160;</xsl:text>
   
   <xsl:value-of select="$search"/> - <xsl:value-of select="$mess"/>
   <xsl:text> </xsl:text>
