@@ -10,6 +10,7 @@ v1.1:
 	Removed obsolete Version.h.in
 	Spell checked lurker.conf.in
 	Added hide_email config option
+	Absolute urls now support SSL (https)
 
 v1.0:
 	Froze the 1.* series against all changes other than bug fixes

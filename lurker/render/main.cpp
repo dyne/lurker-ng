@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.9 2003-07-01 14:05:52 terpstra Exp $
+/*  $Id: main.cpp,v 1.10 2004-01-06 20:41:01 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -109,7 +109,7 @@ void help(const string& about)
 
 int main(int argc, char** argv)
 {
-	string config, cdpath, request, host, port, cgipath;
+	string config, cdpath, request, host, port, cgipath, https;
 	const char* tmp;
 	
 #if 0	
@@ -124,6 +124,7 @@ int main(int argc, char** argv)
 	if ((tmp = getenv("SERVER_NAME" )) != 0) host    = tmp;
 	if ((tmp = getenv("SERVER_PORT" )) != 0) port    = tmp;
 	if ((tmp = getenv("SCRIPT_NAME" )) != 0) cgipath = tmp;
+	if ((tmp = getenv("HTTPS"       )) != 0) https   = tmp;
 	
 	if (argc > 1) config  = argv[1];
 	if (argc > 2) request = argv[2];
@@ -199,14 +200,26 @@ int main(int argc, char** argv)
 	
 	string param   = tokens[tokens.size()-1];
 	string command = tokens[tokens.size()-2];
+	string server;
 	
-	cfg.cgiUrl = "http://" + host + ":" + port + cgipath;
+	if (https == "on")
+	{
+		server = "https://" + host;
+		if (port != "443") server += ":" + port;
+	}
+	else
+	{
+		server = "http://" + host;
+		if (port != "80") server += ":" + port;
+	}
+	
+	cfg.cgiUrl = server + cgipath;
 	string::size_type psplit;
 	if ((psplit = cfg.cgiUrl.rfind('/')) != string::npos)
 		cfg.cgiUrl.resize(psplit);
 	
 	vector<string>::size_type tok;
-	cfg.docUrl = "http://" + host + ":" + port;
+	cfg.docUrl = server;
 	for (tok = 0; tok < tokens.size()-2; ++tok)
 		cfg.docUrl += "/" + tokens[tok];
 	
