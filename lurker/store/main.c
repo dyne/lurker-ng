@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.18 2002-01-31 03:21:36 terpstra Exp $
+/*  $Id: main.c,v 1.19 2002-02-03 03:10:53 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -22,10 +22,21 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "keyword.h"
-#include "globals.h"
+#define _GNU_SOURCE
+// #define DEBUG 1
+
+#include "common.h"
 #include "io.h"
 #include "message.h"
+
+#include "config.h"
+#include "flatfile.h"
+#include "wbuffer.h"
+#include "indexer.h"
+#include "summary.h"
+#include "breader.h"
+#include "search.h"
+#include "service.h"
 
 #include <sys/types.h>
 #include <sys/un.h>
@@ -39,12 +50,7 @@
 #include <signal.h>
 #endif
 
-#ifdef HAVE_SYSLOG_H
-#include <syslog.h>
-#else
-#define syslog(x, y, ...)
-#define openlog(x, y, z)
-#endif
+/*------------------------------------------------ Constant parameters */
 
 #if defined(HAVE_FLOCK)
 #define USE_LOCK_FLOCK
@@ -54,9 +60,94 @@
 #define USE_LOCK_LOCKF
 #endif
 
+/*------------------------------------------------ Private helper methods */
+
+static int my_main_init()
+{
+	if (lu_common_init() != 0) return -1;
+	if (lu_config_init() != 0) return -1;
+	if (lu_flatfile_init() != 0) return -1;
+	if (lu_wbuffer_init()  != 0) return -1;
+	if (lu_indexer_init()  != 0) return -1;
+	if (lu_summary_init()  != 0) return -1;
+	if (lu_breader_init()  != 0) return -1;
+	if (lu_search_init()   != 0) return -1;
+	if (lu_service_init()  != 0) return -1;
+	
+	return 0;
+}
+
+static int my_main_open(const char* c)
+{
+	if (lu_common_open()   != 0) return -1;
+	if (lu_config_open(c)  != 0) return -1;
+	if (lu_flatfile_open() != 0) return -1;
+	if (lu_wbuffer_open()  != 0) return -1;
+	if (lu_indexer_open()  != 0) return -1;
+	if (lu_summary_open()  != 0) return -1;
+	if (lu_breader_open()  != 0) return -1;
+	if (lu_search_open()   != 0) return -1;
+	if (lu_service_open()  != 0) return -1;
+	
+	return 0;
+}
+
+static int my_main_sync()
+{
+	int fail = 0;
+	
+	if (lu_service_sync()  != 0) fail = -1;
+	if (lu_search_sync()   != 0) fail = -1;
+	if (lu_breader_sync()  != 0) fail = -1;
+	if (lu_summary_sync()  != 0) fail = -1; 
+	if (lu_indexer_sync()  != 0) fail = -1;
+	if (lu_wbuffer_sync()  != 0) fail = -1;
+	if (lu_flatfile_sync() != 0) fail = -1;
+	if (lu_config_sync()   != 0) fail = -1; 
+	if (lu_common_sync()   != 0) fail = -1;
+	
+	return fail;
+}
+
+static int my_main_close()
+{
+	int fail = 0;
+	
+	if (lu_service_close()  != 0) fail = -1;
+	if (lu_search_close()   != 0) fail = -1;
+	if (lu_breader_close()  != 0) fail = -1;
+	if (lu_summary_close()  != 0) fail = -1; 
+	if (lu_indexer_close()  != 0) fail = -1;
+	if (lu_wbuffer_close()  != 0) fail = -1;
+	if (lu_flatfile_close() != 0) fail = -1;
+	if (lu_config_close()   != 0) fail = -1; 
+	if (lu_common_close()   != 0) fail = -1;
+	
+	return fail;
+}
+
+static int my_main_quit()
+{
+	int fail = 0;
+	
+	if (lu_service_quit()  != 0) fail = -1;
+	if (lu_search_quit()   != 0) fail = -1;
+	if (lu_breader_quit()  != 0) fail = -1;
+	if (lu_summary_quit()  != 0) fail = -1; 
+	if (lu_indexer_quit()  != 0) fail = -1;
+	if (lu_wbuffer_quit()  != 0) fail = -1;
+	if (lu_flatfile_quit() != 0) fail = -1;
+	if (lu_config_quit()   != 0) fail = -1; 
+	if (lu_common_quit()   != 0) fail = -1;
+	
+	return fail;
+}
+
 /* Returns 0 on success.
  */
-int lu_lock_mbox(int fd, const char* path)
+static int my_main_lock_mbox(
+	int fd, 
+	const char* path)
 {
 #ifdef USE_LOCK_FCNTL
 	struct flock lck;
@@ -81,7 +172,9 @@ int lu_lock_mbox(int fd, const char* path)
 	return 0;
 }
 
-int lu_unlock_mbox(int fd, const char* path)
+static int my_main_unlock_mbox(
+	int fd, 
+	const char* path)
 {
 #ifdef USE_LOCK_FCNTL
 	struct flock lck;
@@ -98,126 +191,10 @@ int lu_unlock_mbox(int fd, const char* path)
 	return 0;
 }
 
-static int lu_move_mbox_end(Mbox* mbox, List* list, off_t now)
-{
-	MboxEatKey	key;
-	MboxEatValue	val;
-	
-	DBT	dkey;
-	DBT	dval;
-	
-	int error;
-	
-	off_t offset;
-	
-	memset(&dkey, 0, sizeof(DBT));
-	memset(&dval, 0, sizeof(DBT));
-	
-	dkey.data = &key;
-	dkey.size = sizeof(key);
-	
-	dval.data = &val;
-	dval.size = sizeof(val);
-	
-	key.list = list->id;
-	key.mbox = mbox->id;
-	
-	offset = lseek(mbox->fd, 0, SEEK_CUR);
-	if (offset == -1) return -1;
-	if (lseek(mbox->fd, 0, SEEK_SET) != 0) return -1;
-	if (read(mbox->fd, &val.front[0], sizeof(val.front)) <= 0) return -1;
-	if (lseek(mbox->fd, offset, SEEK_SET) != offset) return -1;
-	
-	val.offset = now;
-	
-	error = lu_mbox_db->put(lu_mbox_db, 0, &dkey, &dval, 0);
-	if (error != 0)
-		return -1;
-	
-	return 0;
-}
-
-/*
- * Determine where to split words, and index the
- * results in the database with lu_push_keyword.
- */
-static void index_keywords(char *buffer, int length)
-{
-	const char *word, *adv;
-
-	while (length > 0 && isspace(*buffer))
-	{
-		++buffer;
-		--length;
-	}
-
-	printf("%.*s", length, buffer);
-
-	/*
-	 * Words are split based on punctuation (ispunct()) and
-	 * spacing (isspace()).  A word with punctuation in it
-	 * will be split into segments--before and after the
-	 * punctuation occurs--as well as indexed as a whole.
-	 * E.g., `foo_bar' causes `foo,' `bar,' and `foo_bar' to
-	 * be indexed.
-	 *
-	 * !!! Finish this RIGHT NOW.
-	 */
-	for (word = adv = buffer; length > 0; ++adv, --length);
-}
-
-/*
- * Traverse a message, looking for plaintext parts.  When
- * such a part is located, we'll index all of the words
- * it contains.
- */
-void index_traverse(struct msg* in, struct mail_bodystruct* body)
-{
-	struct mail_body_part *p;		/* Filthy struct. */
-	size_t length;
-	char *buffer;
-	int nfree;
-
-	switch ((int)body->type)
-	{
-		case TYPEMESSAGE:
-			/*
-			 * This part contains an encapsulated message.
-			 */
-			if (strcasecmp(body->subtype, "rfc822"))
-				break;
-
-			index_traverse(in, body->nested.msg->body);
-			break;
-
-		case TYPETEXT:
-			/*
-			 * This is what we want to index -- stop.
-			 */
-			if (strcasecmp(body->subtype, "plain"))
-				break;
-
-			buffer = mail_select(in, body, &length, &nfree);
-			index_keywords(buffer, length);
-			if (nfree)
-				fs_give((void **)&buffer);
-
-			break;
-
-		case TYPEMULTIPART:
-			/*
-			 * Multipart message.  Look at the nested parts
-			 * and hopefully find some plaintext.
-			 */
-			for (p = body->nested.part; p != NULL; p = p->next)
-				index_traverse(in, &p->body);
-			break;
-		default:
-			break;
-	}
-}
-
-static void process_mbox(Mbox* mbox, List* list, time_t stamp)
+static void my_main_process_mbox(
+	Lu_Config_Mbox* mbox, 
+	Lu_Config_List* list, 
+	time_t stamp)
 {
 	off_t old, new;
 	struct msg* m;
@@ -225,13 +202,13 @@ static void process_mbox(Mbox* mbox, List* list, time_t stamp)
 	char* author_name;
 	char author_email[200];
 	
-	if (lu_lock_mbox(mbox->fd, mbox->path) == -1)
+	if (my_main_lock_mbox(mbox->fd, mbox->path) == -1)
 		return;
 	
 	old = lseek(mbox->fd, 0, SEEK_CUR);
 	if (old == -1)
 	{
-		lu_unlock_mbox(mbox->fd, mbox->path);
+		my_main_unlock_mbox(mbox->fd, mbox->path);
 		return;
 	}
 	
@@ -272,9 +249,9 @@ static void process_mbox(Mbox* mbox, List* list, time_t stamp)
 			}
 		}
 		
-		id = lu_import_message(list->id, mbox->id, old, stamp,
+		id = lu_summary_import_message(list->id, mbox->id, old, stamp,
 			m->env->subject, author_name, &author_email[0]);
-		if (id == lu_kw_invalid)
+		if (id == lu_common_minvalid)
 		{
 			if (lseek(mbox->fd, old, SEEK_SET) != old)
 			{
@@ -282,11 +259,11 @@ static void process_mbox(Mbox* mbox, List* list, time_t stamp)
 					strerror(errno));
 			}
 			
-			lu_unlock_mbox(mbox->fd, mbox->path);
+			my_main_unlock_mbox(mbox->fd, mbox->path);
 			return;
 		}
 		
-		lu_reply_to_resolution(id,
+		lu_summary_reply_to_resolution(id,
 			m->env->message_id,
 			m->env->in_reply_to);
 		
@@ -298,12 +275,13 @@ static void process_mbox(Mbox* mbox, List* list, time_t stamp)
 	 */
 	new = lseek(mbox->fd, 0, SEEK_CUR);
 	if (new != -1)
-		lu_move_mbox_end(mbox, list, new);
+		lu_config_move_mbox_end(mbox, list, new);
 	
-	lu_unlock_mbox(mbox->fd, mbox->path);
+	my_main_unlock_mbox(mbox->fd, mbox->path);
 }
 
-static time_t convert_date_mbox(char* d)
+static time_t my_main_convert_date_mbox(
+	char* d)
 {	/* Format: www mmm dd hh:mm:ss yyyy */
 	struct tm t;
 	char mon[4];
@@ -334,7 +312,8 @@ static time_t convert_date_mbox(char* d)
 	return mktime(&t);
 }
 
-static time_t convert_date_field(char* d)
+static time_t my_main_convert_date_field(
+	char* d)
 {
 	MESSAGECACHE elt;
 	
@@ -344,7 +323,9 @@ static time_t convert_date_field(char* d)
 	return mail_longdate(&elt);
 }
 
-static time_t extract_timestamp(Mbox* mbox, List* list)
+static time_t my_main_extract_timestamp(
+	Lu_Config_Mbox* mbox, 
+	Lu_Config_List* list)
 {
 	time_t	arrival_timestamp;
 	time_t	client_timestamp;
@@ -356,7 +337,7 @@ static time_t extract_timestamp(Mbox* mbox, List* list)
 	off_t	old;
 	ssize_t	got;
 	
-	if (lu_lock_mbox(mbox->fd, mbox->path) == -1)
+	if (my_main_lock_mbox(mbox->fd, mbox->path) == -1)
 		return 0;
 	
 	old = lseek(mbox->fd, 0, SEEK_CUR);
@@ -364,14 +345,14 @@ static time_t extract_timestamp(Mbox* mbox, List* list)
 	{
 		syslog(LOG_ERR, "Unable to read mbox offset(%s): %s\n",
 			mbox->path, strerror(errno));
-		lu_unlock_mbox(mbox->fd, mbox->path);
+		my_main_unlock_mbox(mbox->fd, mbox->path);
 		return 0;
 	}
 	
 	got = read(mbox->fd, &buf[0], sizeof(buf)-1);
 	if (got <= 0)
 	{	/* hit eof, that's fine */
-		lu_unlock_mbox(mbox->fd, mbox->path);
+		my_main_unlock_mbox(mbox->fd, mbox->path);
 		return 0;
 	}
 	
@@ -389,8 +370,8 @@ static time_t extract_timestamp(Mbox* mbox, List* list)
 		syslog(LOG_ERR, "Discovered more to a message after we had already processed it.\n");
 		old = lseek(mbox->fd, 0, SEEK_CUR);
 		if (old != -1)
-			lu_move_mbox_end(mbox, list, old);
-		lu_unlock_mbox(mbox->fd, mbox->path);
+			lu_config_move_mbox_end(mbox, list, old);
+		my_main_unlock_mbox(mbox->fd, mbox->path);
 		return 0;
 	}
 	
@@ -401,7 +382,7 @@ static time_t extract_timestamp(Mbox* mbox, List* list)
 		return 0;
 	}
 	
-	arrival_timestamp = convert_date_mbox(&timestamp[0]);
+	arrival_timestamp = my_main_convert_date_mbox(&timestamp[0]);
 	/* Now, see if we can find a date field too */
 	t1 = strstr(s, "\n\n");
 	t2 = strstr(s, "\r\r");
@@ -414,36 +395,39 @@ static time_t extract_timestamp(Mbox* mbox, List* list)
 	{
 		if (sscanf(s, "\nDate: %58[^\n]\n", &timestamp[0]) == 1)
 		{
-			client_timestamp = convert_date_field(&timestamp[0]);
+			client_timestamp = my_main_convert_date_field(&timestamp[0]);
 		}
 	}
 	
-	lu_unlock_mbox(mbox->fd, mbox->path);
-	return lu_timestamp_heuristic(arrival_timestamp, client_timestamp);
+	my_main_unlock_mbox(mbox->fd, mbox->path);
+	return lu_summary_timestamp_heuristic(arrival_timestamp, client_timestamp);
 }
 
-static void* watch_mboxs(void* arg)
+static void* my_main_watch_mboxs(
+	void* arg)
 {
-	List*	scan_list;
-	Mbox*	scan_mbox;
-	time_t	lowest_timestamp;
-	time_t	candidate;
-	List*	lowest_list = 0;
-	Mbox*	lowest_mbox = 0;
+	Lu_Config_List*	scan_list;
+	Lu_Config_Mbox*	scan_mbox;
+	time_t		lowest_timestamp;
+	time_t		candidate;
+	Lu_Config_List*	lowest_list = 0;
+	Lu_Config_Mbox*	lowest_mbox = 0;
 	
 	while (1)
 	{
 		lowest_timestamp = 0;
 		
-		for (	scan_list = lu_list; 
-			scan_list != lu_list + lu_lists; 
+		for (	scan_list = lu_config_list; 
+			scan_list != lu_config_list + lu_config_lists; 
 			scan_list++)
 		{
 			for (	scan_mbox = scan_list->mbox;
 				scan_mbox != scan_list->mbox + scan_list->mboxs;
 				scan_mbox++)
 			{
-				candidate = extract_timestamp(scan_mbox, scan_list);
+				candidate = my_main_extract_timestamp(
+					scan_mbox, scan_list);
+				
 				if (candidate != 0 &&
 					(lowest_timestamp == 0 ||
 					 lowest_timestamp > candidate))
@@ -457,7 +441,8 @@ static void* watch_mboxs(void* arg)
 		
 		if (lowest_timestamp != 0)
 		{
-			process_mbox(lowest_mbox, lowest_list, lowest_timestamp);
+			my_main_process_mbox(
+				lowest_mbox, lowest_list, lowest_timestamp);
 			
 			/* Don't actually sleep, just reschedual to allow for
 			 * requests to be serviced
@@ -474,7 +459,7 @@ static void* watch_mboxs(void* arg)
 	return 0;
 }
 
-static void* handle_client(void* arg)
+static void* my_main_handle_client(void* arg)
 {
 	st_netfd_t client = (st_netfd_t)arg;
 	printf("c"); fflush(stdout);
@@ -489,11 +474,12 @@ static void* lu_sched_sync(void* die)
 {	/* We know that at this point we aren't in the middle of a message
 	 * import thanks to the joys of controlled context switching.
 	 */
-	lu_sync_db();
+	
+	my_main_sync();
 	
 	if (!die) return 0;
 	
-	lu_close_db();
+	my_main_close();
 	
 	syslog(LOG_NOTICE, "shutting down ...\n");
 	exit(0);
@@ -543,23 +529,11 @@ int main(int argc, const char* argv[])
 			return (1);
 		}
 	}
-
-	if (lu_load_config(config) != 0)
+	
+	if (my_main_init() != 0)
 		return 1;
 	
-	if (chdir(lu_dbdir) != 0)
-	{
-		perror(lu_dbdir);
-		return 1;
-	}
-	
-	if (lu_open_db() != 0)
-		return 1;
-	
-	if (lu_sync_mbox() != 0)
-		return 1;
-	
-	if (lu_keyword_init() != 0)
+	if (my_main_open(config) != 0)
 		return 1;
 	
 	if (st_init() != 0)
@@ -614,19 +588,11 @@ int main(int argc, const char* argv[])
 	signal(SIGTERM, &lu_cleanup_quit);
 #endif
 	
-	/* Run all the tests */
-	if (lu_test_index() != 0)
-		return 1;
-	if (lu_test_handle() != 0)
-		return 1;
-	if (lu_test_search() != 0)
-		return 1;
-	
 	if (detach)
 	{
-		if ((pid = fopen(lu_pidfile, "w")) == 0)
+		if ((pid = fopen(lu_config_pidfile, "w")) == 0)
 		{
-			perror(lu_pidfile);
+			perror(lu_config_pidfile);
 			return 1;
 		}
 		
@@ -657,7 +623,7 @@ int main(int argc, const char* argv[])
 	
 	/* Launch the thread which watches all the mboxes for data
 	 */
-	st_thread_create(&watch_mboxs, 0, 0, 0);
+	st_thread_create(&my_main_watch_mboxs, 0, 0, 0);
 	
 	/* Here is the main loop, we watch the domain socket for incoming
 	 * requests and spin them off in a service thread.
@@ -669,7 +635,7 @@ int main(int argc, const char* argv[])
 		client_fd = st_accept(sun_stfd, (struct sockaddr*)&sun_addr, &sun_len, 1000000);
 		if (client_fd != 0)
 		{
-			st_thread_create(&handle_client, client_fd, 0, 0);
+			st_thread_create(&my_main_handle_client, client_fd, 0, 0);
 		}
 	}
 	

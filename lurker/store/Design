@@ -24,17 +24,34 @@ It must support these queries:
 
 Component diagram:
 
-main--> service ------+-----------\
-  |        |          |           |
-  |        v          v           v
-  +---> summary    breader <-- search
-  |                   |
-  |                   +-----------\
-  |                   |           |
-  |                   v           v
-  +---> indexer -> wbuffer -> flatfile
-  |
-  \---> config
+main--> service --------+------------\
+  |        |            |            |
+  |        v            v            v
+  +---> summary      search -----> breader
+  |        |                         |
+  |        v                         |
+  +---> config  <-----------------\  |
+  |                               |  |
+  |                               |  v
+  +---> indexer -> wbuffer <--> flatfile
+
+Every component must provide these methods:
+	lu_component_init
+	lu_component_open
+	lu_component_sync
+	lu_component_close
+	lu_component_quit
+
+load order:
+	common
+	config
+	flatfile
+	wbuffer
+	indexer
+	summary
+	breader
+	search
+	service
 
 main:
 	Starts up the program
@@ -53,13 +70,13 @@ main:
 			-> passes them off to the service
 
 service:
+	Knows how to deal with request from the cgi
 	Receives requests
 	Decides which handler to use
 	Access the appropriate subsystem
 
 summary:
-	Opens the summary databases
-	Syncs the summary databases
+	Knows how to manage digested mail information
 	Provides summary add method
 	Provides summary reply-to resolver
 	Provides retrieval functions for retrieval of summary information
@@ -88,7 +105,41 @@ wbuffer:
 	Provides a buffer append method
 
 indexer:
+	Handles indexing a message for keyword searching
 	Accepts a message
 	Decides what the keywords in the body and subject are
 	Pushes the document to all of them
 	Pushes all the arbirary search words
+
+Source code layout:
+	Every file has a header describing it's public interface.
+	
+	All public  methods must be called lu_component_*
+	All private methods must be called my_component_* and static
+	
+	Public / private struct obey the same conventions
+	
+	Every file is _GNU_SOURCE
+	Our include headers should precede system headers
+	Only those headers shown as DIRECT dependencies may be included
+		( exception: main.c needs to init everyone )
+	
+	goto may be used, but ONLY as an error rollback system
+
+Source section order:
+	Header block
+	define _GNU_SOURCE
+	our includes
+	system setup stuff (includes etc)
+	constants
+
+	private types
+	private globals
+
+	public types
+	public globals
+
+	private methods
+
+	public module methods
+	public methods

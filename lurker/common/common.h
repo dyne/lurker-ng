@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.1.1.1 2002-01-21 00:03:06 terpstra Exp $
+/*  $Id: common.h,v 1.2 2002-02-03 03:10:53 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -21,6 +21,8 @@
  *    along with this program; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
+/*------------------------------------------------ System setup methods */
 
 #include "config.h"
 
@@ -63,3 +65,44 @@ typedef unsigned long long lu_addr;
 #ifndef HAVE_TIME_T
 typedef long time_t;
 #endif
+
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h> 
+#endif
+
+#if TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
+
+#ifdef HAVE_SYSLOG_H
+#include <syslog.h>
+#else
+#define syslog(x, y, ...)
+#endif
+
+/*------------------------------------------------ Public types */
+
+typedef lu_quad message_id;
+
+/*------------------------------------------------ Public global vars */
+
+extern message_id lu_common_minvalid;
+
+/*------------------------------------------------ Public component methods */
+
+extern int lu_common_init();
+extern int lu_common_open();
+extern int lu_common_sync();
+extern int lu_common_close();
+extern int lu_common_quit();

@@ -78,9 +78,15 @@ INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common
 sbin_PROGRAMS = @PACKAGE@d
 
 @PACKAGE@d_SOURCES = \
-	keyword.h keyword.c \
-	config.c db.c \
-	main.c globals.h records.h
+	config.h   config.c   \
+	flatfile.h flatfile.c \
+	wbuffer.h  wbuffer.c  \
+	indexer.h  indexer.c  \
+	summary.h  summary.c  \
+	breader.h  breader.c  \
+	search.h   search.c   \
+	service.h  service.c  \
+	main.c
 
 
 @PACKAGE@d_LDADD = @STORAGE_LIBS@ ../common/libcommon.a
@@ -91,7 +97,9 @@ CONFIG_CLEAN_FILES =
 sbin_PROGRAMS = @PACKAGE@d$(EXEEXT)
 PROGRAMS = $(sbin_PROGRAMS)
 
-am_@PACKAGE@d_OBJECTS = keyword.$(OBJEXT) config.$(OBJEXT) db.$(OBJEXT) \
+am_@PACKAGE@d_OBJECTS = config.$(OBJEXT) flatfile.$(OBJEXT) \
+	wbuffer.$(OBJEXT) indexer.$(OBJEXT) summary.$(OBJEXT) \
+	breader.$(OBJEXT) search.$(OBJEXT) service.$(OBJEXT) \
 	main.$(OBJEXT)
 @PACKAGE@d_OBJECTS = $(am_@PACKAGE@d_OBJECTS)
 @PACKAGE@d_DEPENDENCIES = ../common/libcommon.a
@@ -103,8 +111,11 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/config.Po $(DEPDIR)/db.Po \
-@AMDEP_TRUE@	$(DEPDIR)/keyword.Po $(DEPDIR)/main.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/breader.Po $(DEPDIR)/config.Po \
+@AMDEP_TRUE@	$(DEPDIR)/flatfile.Po $(DEPDIR)/indexer.Po \
+@AMDEP_TRUE@	$(DEPDIR)/main.Po $(DEPDIR)/search.Po \
+@AMDEP_TRUE@	$(DEPDIR)/service.Po $(DEPDIR)/summary.Po \
+@AMDEP_TRUE@	$(DEPDIR)/wbuffer.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -158,10 +169,15 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/breader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/config.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/db.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/keyword.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/flatfile.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/indexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/search.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/service.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/summary.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/wbuffer.Po@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)

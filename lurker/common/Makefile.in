@@ -76,7 +76,11 @@ wwwdir = @wwwdir@
 noinst_LIBRARIES = libcommon.a
 noinst_PROGRAMS = test
 
-libcommon_a_SOURCES = message.c stub.c message.h common.h io.h
+libcommon_a_SOURCES = \
+	common.h common.c \
+	message.c message.h \
+	stub.c io.h
+
 
 test_SOURCES = main.c
 test_LDADD = @STORAGE_LIBS@ libcommon.a
@@ -88,7 +92,8 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 libcommon_a_AR = $(AR) cru
 libcommon_a_LIBADD =
-am_libcommon_a_OBJECTS = message.$(OBJEXT) stub.$(OBJEXT)
+am_libcommon_a_OBJECTS = common.$(OBJEXT) message.$(OBJEXT) \
+	stub.$(OBJEXT)
 libcommon_a_OBJECTS = $(am_libcommon_a_OBJECTS)
 noinst_PROGRAMS = test$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
@@ -104,8 +109,8 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/main.Po $(DEPDIR)/message.Po \
-@AMDEP_TRUE@	$(DEPDIR)/stub.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/common.Po $(DEPDIR)/main.Po \
+@AMDEP_TRUE@	$(DEPDIR)/message.Po $(DEPDIR)/stub.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -174,6 +179,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/message.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/stub.Po@am__quote@

@@ -1,6 +1,6 @@
-/*  $Id: records.h,v 1.5 2002-02-03 03:10:53 terpstra Exp $
+/*  $Id: wbuffer.h,v 1.1 2002-02-03 03:10:53 terpstra Exp $
  *  
- *  records.h - the format of the databases
+ *  wbuffer.h - Implements a buffering system that delays appends to the flatfile
  *  
  *  Copyright (C) 2002 - Wesley W. Terpstra
  *  
@@ -22,24 +22,19 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "common.h"
+/*------------------------------------------------- Public component methods */
 
-/* lu_import_message */
-#define	LU_KEYWORD_LIST		'l'
-#define LU_KEYWORD_MBOX		'b'
-#define LU_KEYWORD_AUTHOR	'a'
-#define LU_KEYWORD_SUBJECT	's'
+extern int lu_wbuffer_init();
+extern int lu_wbuffer_open();
+extern int lu_wbuffer_sync();
+extern int lu_wbuffer_close();
+extern int lu_wbuffer_quit();
 
-/* date related words */
-#define LU_KEYWORD_DAY_OF_MONTH	'd'
-#define LU_KEYWORD_MONTH	'm'
-#define LU_KEYWORD_YEAR		'y'
-#define LU_KEYWORD_WEEKDAY	'x'
-#define LU_KEYWORD_HOUR		'h'
+/*-------------------------------------------------- Buffer methods */
 
-/* lu_reply_to_resolution */
-#define LU_KEYWORD_MESSAGE_ID	'i'
-#define LU_KEYWORD_REPLY_TO	'r'
+extern int lu_wbuffer_append(
+	const char* keyword,
+	message_id  msg);
 
-/* import processing */
-#define LU_KEYWORD_WORD		'w'
+extern int lu_wbuffer_flush(
+	const char* keyword);
