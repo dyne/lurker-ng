@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.23 2003-06-25 19:01:53 terpstra Exp $
+/*  $Id: message.cpp,v 1.24 2003-06-25 21:14:56 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -391,6 +391,11 @@ void message_display(ostream& o, DwEntity& e, const string& charset, bool html)
 			string::size_type start = sizeof(OLD_PGP_HEADER)+1;
 			
 			// skip the hash line
+			start = utf8.find('\n', start);
+			if (start == string::npos) start = utf8.length();
+			else ++start;
+			
+			// skip the blank line
 			start = utf8.find('\n', start);
 			if (start == string::npos) start = utf8.length();
 			else ++start;
