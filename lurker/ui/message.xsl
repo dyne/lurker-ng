@@ -74,9 +74,9 @@
 
 <!-- Format the message body -->
 <xsl:template mode="body" match="mailto">
- <i class="email-address">
+ <a class="email-address" href="mailto:{.}">
   <xsl:value-of select="."/>
- </i>
+ </a>
 </xsl:template>
 <xsl:template mode="body" match="url">
  <xsl:choose>
