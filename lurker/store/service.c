@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.59 2002-06-05 21:43:26 terpstra Exp $
+/*  $Id: service.c,v 1.60 2002-06-05 22:02:41 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1201,8 +1201,8 @@ static int my_service_tree_message_link(
 	int 			i,
 	int			hl)
 {
-	int  selected;
-	int  drift;
+	int  selected	= (hl == i);
+	int  drift	= (tree[i].summary.replies != tree[i].replies);
 	char buf[60];
 	char x;
 	
@@ -1227,12 +1227,12 @@ static int my_service_tree_message_link(
 	
 	if (hl == -1)
 	{
-		sprintf(&buf[0], "<%c/>", x);
+		sprintf(&buf[0], "<%c%s/>", 
+			x,
+			drift?" drift=\"yes\"":"");
 		return my_service_buffer_write(h, &buf[0]);
 	}
 	
-	selected = (hl == i);
-	drift    = (tree[i].summary.replies != tree[i].replies);
 	
 	sprintf(&buf[0], "<%c%s%s><summary>\n", 
 		x, 
