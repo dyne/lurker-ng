@@ -68,29 +68,41 @@ cache_index_ttl   = 604800
 #!!!!!!!!!!!!!!!!!!!!!!!!! Change below this point !!!!!!!!!!!!!!!!!!!!!!
 
 # Now comes configuration for the mailing lists lurker is to host.
-# 
-# Each list must be given a distinct number which is never changed or
-# reused even if the old list was removed. If you wish to renumber them,
-# you will have to reimport the database.
 #
-# Each mbox must be given a distinct number which is never changed or
-# reused within the specified list. You must also ensure that these mboxes
-# are only appended to. They must never be modified in any other way. This
-# means you should never open them with a mail reader---even just to examine
-# them. You may move the mboxes as long as you update the path given here.
+# Once lurker has indexed a mailbox, you can never take it away short of
+# reimporting the database. Also, if you want to add a new list, you will
+# not be able to add history without squashing all the timestamps to the
+# current time.
+#
+# What this means: you should give all the history for all the mailing lists
+# you intend to use, then start the import. If you create new mailing lists,
+# no problem---just make sure that you tell lurker about them before they
+# start generating mail or their timestamps may become mangled.
+# 
+# Finally, each mbox must be given a distinct id which is never changed or
+# reused within the specified list.
+# 
+# You must also ensure that these mboxes are only appended to.
+#
+# The mboxes must never be modified in any other than append.
+# This means you should NEVER OPEN THEM WITH A MAIL READER
+#  --- even just to examine them; mail readers change mailboxs on OPEN.
+#
+# You may move the mboxes as long as you update the path given here.
 #
 # Here is an example:
 #
-# list 0 = Debian-Devel
+# list = Debian-Devel
 # 	description = Debian Developer Discussion Forum
 # 	address     = debian-devel@lists.debian.org
 #	
-# 	mbox 0 = /var/mail/history/archive.00020101
-# 	mbox 1 = /var/mail/history/archive.00020102
-# 	mbox 2 = /var/spool/mail/debian-devel
+# 	mbox 20101 = /var/mail/history/archive.00020101
+# 	mbox 20102 = /var/mail/history/archive.00020102
+# 	mbox inbox = /var/spool/mail/debian-devel
 
-list 987 = Lurker-Support
+# Include the lurker documentation
+list = Lurker-Support
 	description = Example mailing list configuration
 	address     = lurker-users@lists.sourceforge.net
 
-	mbox 321 = @DATADIR_expand@/doc/@PACKAGE@/lurker.mbox
+	mbox initial = @DATADIR_expand@/doc/@PACKAGE@/lurker.mbox
