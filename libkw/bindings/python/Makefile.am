@@ -1,6 +1,6 @@
 AM_CPPFLAGS = -I@PYTHON_PREFIX@/include/python@PYTHON_VERSION@ -I$(top_srcdir)/libesort
 
-pythondir = @PYTHON_EXEC_PREFIX@/lib/python@PYTHON_VERSION@/site-packages/libkw
+pythondir = @PYTHON_EXEC_PREFIX@/lib/python@PYTHON_VERSION@/site-packages
 
 python_LTLIBRARIES = ESortmodule.la
 
