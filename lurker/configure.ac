@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1d)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.38 2002-07-22 12:55:26 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.39 2002-07-22 13:18:11 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -84,7 +84,7 @@ if test "x${xsltproc}" != "xnil"; then
 fi
 
 AC_ARG_WITH(xsltengine, AC_HELP_STRING(
-	[--with-xslt=CMD],
+	[--with-xsltengine=CMD],
 	[Use the given command to render xslt]))
 
 if test "x${with_xsltengine}" != "x"; then

@@ -850,7 +850,7 @@ Optional Packages:
   --with-dbdir            db directory (default: PREFIX/var/lib/lurker)
   --with-stdir=DIR        st installation directory (default: none)
   --with-cclientdir=DIR   c-client installation directory (default: none)
-  --with-xslt=CMD         Use the given command to render xslt
+  --with-xsltengine=CMD   Use the given command to render xslt
   --with-libiconv-prefix=DIR  search for libiconv in DIR/include and DIR/lib
   --with-included-gettext use the GNU gettext library included here
 
