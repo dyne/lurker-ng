@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.6 2002-02-12 05:47:29 terpstra Exp $
+/*  $Id: main.c,v 1.7 2002-02-12 07:40:43 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -559,6 +559,10 @@ int main(int argc, char* argv[])
 		close(2);
 		dup(1);
 		
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		fflush(stdout);
+		
 		*(suffix-1) = 0;
 		if ((fd = render_html(parameter)) == -1)
 		{	/* failed somehow */
@@ -576,10 +580,6 @@ int main(int argc, char* argv[])
 				strerror(errno));
 			return 1;
 		}
-		
-		printf("Status: 200 OK\r\n");
-		printf("Content-type: text/html\r\n\r\n");
-		fflush(stdout);
 	}
 	else
 	{
