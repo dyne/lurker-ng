@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.34 2002-06-21 21:27:56 terpstra Exp $
+/*  $Id: main.c,v 1.35 2002-07-11 20:44:54 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -32,12 +32,9 @@
 #include "io.h"
 
 #include "config.h"
-#include "flatfile.h"
-#include "wbuffer.h"
 #include "mbox.h"
 #include "indexer.h"
 #include "summary.h"
-#include "breader.h"
 #include "search.h"
 #include "service.h"
 #include "expiry.h"
@@ -58,10 +55,7 @@
 static int my_main_init(const char* c)
 {
 	if (lu_config_init(c)  != 0) return -1;
-	if (lu_flatfile_init() != 0) return -1;
-	if (lu_wbuffer_init()  != 0) return -1;
 	if (lu_indexer_init()  != 0) return -1;
-	if (lu_breader_init()  != 0) return -1;
 	if (lu_search_init()   != 0) return -1;
 	if (lu_summary_init()  != 0) return -1;
 	if (lu_expiry_init()   != 0) return -1;
@@ -71,13 +65,10 @@ static int my_main_init(const char* c)
 	return 0;
 }
 
-static int my_main_open()
+static int my_main_open(void)
 {
 	if (lu_config_open()   != 0) return -1;
-	if (lu_flatfile_open() != 0) return -1;
-	if (lu_wbuffer_open()  != 0) return -1;
 	if (lu_indexer_open()  != 0) return -1;
-	if (lu_breader_open()  != 0) return -1;
 	if (lu_search_open()   != 0) return -1;
 	if (lu_summary_open()  != 0) return -1;
 	if (lu_expiry_open()   != 0) return -1;
@@ -87,7 +78,7 @@ static int my_main_open()
 	return 0;
 }
 
-static int my_main_sync()
+static int my_main_sync(void)
 {
 	int fail = 0;
 	
@@ -96,16 +87,13 @@ static int my_main_sync()
 	if (lu_expiry_sync()   != 0) return -1;
 	if (lu_summary_sync()  != 0) fail = -1; 
 	if (lu_search_sync()   != 0) fail = -1;
-	if (lu_breader_sync()  != 0) fail = -1;
 	if (lu_indexer_sync()  != 0) fail = -1;
-	if (lu_wbuffer_sync()  != 0) fail = -1;
-	if (lu_flatfile_sync() != 0) fail = -1;
 	if (lu_config_sync()   != 0) fail = -1; 
 	
 	return fail;
 }
 
-static int my_main_close()
+static int my_main_close(void)
 {
 	int fail = 0;
 	
@@ -114,16 +102,13 @@ static int my_main_close()
 	if (lu_expiry_close()   != 0) return -1;
 	if (lu_summary_close()  != 0) fail = -1; 
 	if (lu_search_close()   != 0) fail = -1;
-	if (lu_breader_close()  != 0) fail = -1;
 	if (lu_indexer_close()  != 0) fail = -1;
-	if (lu_wbuffer_close()  != 0) fail = -1;
-	if (lu_flatfile_close() != 0) fail = -1;
 	if (lu_config_close()   != 0) fail = -1; 
 	
 	return fail;
 }
 
-static int my_main_quit()
+static int my_main_quit(void)
 {
 	int fail = 0;
 	
@@ -132,10 +117,7 @@ static int my_main_quit()
 	if (lu_expiry_quit()   != 0) return -1;
 	if (lu_summary_quit()  != 0) fail = -1; 
 	if (lu_search_quit()   != 0) fail = -1;
-	if (lu_breader_quit()  != 0) fail = -1;
 	if (lu_indexer_quit()  != 0) fail = -1;
-	if (lu_wbuffer_quit()  != 0) fail = -1;
-	if (lu_flatfile_quit() != 0) fail = -1;
 	if (lu_config_quit()   != 0) fail = -1; 
 	
 	return fail;
@@ -203,7 +185,7 @@ static void lu_cleanup_quit(int sig)
 
 #endif
 
-int main(int argc, const char* argv[])
+int main(int argc, char** argv)
 {
 	FILE*		pid;
 	int		c;
