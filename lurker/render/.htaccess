@@ -1,2 +1,3 @@
 ErrorDocument 404 lurker.cgi
 AddHandler cgi-script .cgi
+AddDefaultCharset utf-8 
