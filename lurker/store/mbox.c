@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.4 2002-02-04 05:10:09 terpstra Exp $
+/*  $Id: mbox.c,v 1.5 2002-02-04 07:53:43 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -214,9 +214,19 @@ static void my_mbox_process_mbox(
 	 * new offset should be. -> get past junk
 	 */
 	new = lseek(mbox->fd, 0, SEEK_CUR);
-	if (new != -1)
-		lu_config_move_mbox_end(mbox, list, new);
+	if (new == -1)
+	{
+		syslog(LOG_ERR, "Unable to locate position in mbox\n");
+		my_mbox_unlock_mbox(mbox->fd, mbox->path);
+	}
 	
+	if (new < old)
+	{
+		new = old;
+		syslog(LOG_ERR, "Somehow our file pointer was rewound.\n");
+	}
+	
+	lu_config_move_mbox_end(mbox, list, new);
 	my_mbox_unlock_mbox(mbox->fd, mbox->path);
 }
 
