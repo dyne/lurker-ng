@@ -18,6 +18,24 @@
  * definitions; now uses stuff from dpkg's config.h.
  *  - Ian Jackson <ijackson@nyx.cs.du.edu>.
  * Still in the public domain.
+ *
+ * This copy has been re-released as GPL by
+ *   Wesley W. Terpstra <terpstra@users.sourceforge.net>
+ * for inclusion in the lurker project. It is now c++ code without autoconf.
+ *
+ *    This program is free software; you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation; version 2.
+ *    
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *    
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
  */
 
 #define _XOPEN_SOURCE 500
@@ -26,13 +44,9 @@
 #include "md5.h"
 
 #include <cstring>		/* for memcpy() */
-#include <sys/types.h>		/* for stupid systems */
-#include <netinet/in.h>		/* for ntohl() */
 
-// !!! check this?
-#ifdef WORDS_BIGENDIAN
 void
-byteSwap(UWORD32 *buf, unsigned words)
+doByteSwap(UWORD32 *buf, unsigned words)
 {
 	md5byte *p = (md5byte *)buf;
 
@@ -42,9 +56,10 @@ byteSwap(UWORD32 *buf, unsigned words)
 		p += 4;
 	} while (--words);
 }
-#else
-#define byteSwap(buf,words)
-#endif
+
+bool doSwap = false;
+
+#define byteSwap(buf,words) if (doSwap) doByteSwap(buf, words)
 
 /*
  * Start MD5 accumulation.  Set bit count to 0 and buffer to mysterious
@@ -60,6 +75,10 @@ MD5Init(struct MD5Context *ctx)
 
 	ctx->bytes[0] = 0;
 	ctx->bytes[1] = 0;
+	
+	unsigned long x = 4;
+	if (*((unsigned char*)&x) != 4)
+		doSwap = true;
 }
 
 /*
@@ -76,7 +95,7 @@ MD5Update(struct MD5Context *ctx, md5byte const *buf, unsigned len)
 	t = ctx->bytes[0];
 	if ((ctx->bytes[0] = t + len) < t)
 		ctx->bytes[1]++;	/* Carry from low to high */
-
+	
 	t = 64 - (t & 0x3f);	/* Space available in ctx->in (at least 1) */
 	if (t > len) {
 		memcpy((md5byte *)ctx->in + 64 - t, buf, len);
@@ -88,7 +107,7 @@ MD5Update(struct MD5Context *ctx, md5byte const *buf, unsigned len)
 	MD5Transform(ctx->buf, ctx->in);
 	buf += t;
 	len -= t;
-
+	
 	/* Process data in 64-byte chunks */
 	while (len >= 64) {
 		memcpy(ctx->in, buf, 64);
@@ -137,8 +156,6 @@ MD5Final(md5byte digest[16], struct MD5Context *ctx)
 	memcpy(digest, ctx->buf, 16);
 	memset(ctx, 0, sizeof(ctx));	/* In case it's sensitive */
 }
-
-#ifndef ASM_MD5
 
 /* The four core functions - F1 is optimized somewhat */
 
@@ -240,5 +257,3 @@ MD5Transform(UWORD32 buf[4], UWORD32 const in[16])
 	buf[2] += c;
 	buf[3] += d;
 }
-
-#endif

@@ -1,6 +1,6 @@
-/*  $Id: CharsetEscape.cpp,v 1.10 2003-06-23 14:38:41 terpstra Exp $
+/*  $Id: CharsetEscape.cpp,v 1.11 2003-06-23 15:28:10 terpstra Exp $
  *  
- *  CharsetEscape.h - A stream manipulator-like thing for charset conversion
+ *  CharsetEscape.cpp - A stream manipulator-like thing for charset conversion
  *  
  *  Copyright (C) 2002 - Wesley W. Terpstra
  *  
