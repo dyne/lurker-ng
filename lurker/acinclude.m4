@@ -42,3 +42,54 @@ AC_DEFUN(XSLT_CHECK, [
      AC_SUBST($1_LIBS)
   fi
 ])
+
+AC_DEFUN(DB3_CHECK, [
+  AC_ARG_WITH(db3_libs, AC_HELP_STRING(
+	[--with-db3-libs],
+	[library options to link against db3]))
+  AC_ARG_WITH(db3_include, AC_HELP_STRING(
+	[--with-db3-include],
+        [compiler flags to compile against db3]))
+
+  if test "x$with_db3_libs" = "x"; then
+   AC_CHECK_LIB(db-3, db_env_create,
+    $1_LIBS="$$1_LIBS -ldb-3",
+      AC_MSG_ERROR(Need libdb-3 to compile))
+  else
+   db3_LIBS="$with_db3_libs"
+   bak_LIBS="$LIBS"
+   LIBS="$LIBS $db3_LIBS"
+   AC_MSG_CHECKING(for db3 with $db3_LIBS)
+   AC_TRY_LINK(
+    [void db_env_create();],
+    [db_env_create();],
+    [AC_MSG_RESULT(ok)],
+    [AC_MSG_ERROR($with_db3_libs does not seem to be db3+)])
+   LIBS="$bak_LIBS"
+  fi
+
+  db3_CFLAGS="$with_db3_include"
+  if test "x$db3_CFLAGS" = "x"; then
+    AC_MSG_CHECKING([for db.h >= 3.2.x])
+  else
+    AC_MSG_CHECKING([for db.h >= 3.2.x with $db3_CFLAGS])
+  fi
+
+  bak_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS $db3_CFLAGS"
+  AC_TRY_COMPILE(
+    [#include <db.h>],
+    [#if DB_VERSION_MAJOR < 3 || DB_VERSION_MINOR < 2
+#error The db3 header is too old  
+#endif
+return 0;],
+    [AC_MSG_RESULT([have it])],
+    [AC_MSG_ERROR([Need libdb >= 3.2.x])])
+CFLAGS="$bak_CFLAGS"
+
+  $1_LIBS="$$1_LIBS $db3_LIBS"
+  $1_CFLAGS="$$1_CFLAGS $db3_CFLAGS"
+
+  AC_SUBST($1_LIBS)
+  AC_SUBST($1_CFLAGS)
+])

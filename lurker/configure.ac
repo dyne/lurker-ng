@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.3 2002-01-21 03:30:45 cbond Exp $)
+AC_REVISION($Id: configure.ac,v 1.4 2002-01-21 06:04:05 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -51,24 +51,8 @@ AC_SYS_LARGEFILE
 AC_CHECK_LIB(popt, poptGetContext, 
   STORAGE_LIBS="$STORAGE_LIBS -lpopt",
   AC_MSG_ERROR(Need popt to compile))
-AC_CHECK_LIB(db-3, db_env_create,
-  STORAGE_LIBS="$STORAGE_LIBS -ldb-3",
-  AC_MSG_ERROR(Need libdb-3 to compile))
 
-AC_MSG_CHECKING([for db.h >= 3.2.x])
-AC_TRY_CPP(
-[#include <db.h>
-#if DB_VERSION_MAJOR < 3 || DB_VERSION_MINOR < 2
-#error The db3 header is too old
-#endif],
-[AC_MSG_RESULT([have it])],[AC_MSG_ERROR([Need libdb >= 3.2.x])])
-
-AC_MSG_CHECKING(STORAGE_LIBS)
-AC_MSG_RESULT($STORAGE_LIBS)
-
-AC_SUBST(STORAGE_LIBS)
-AC_SUBST(STORAGE_CFLAGS)
-
+DB3_CHECK(STORAGE)
 XSLT_CHECK(RENDER)
 
 dnl Use -Wall if we have gcc.
