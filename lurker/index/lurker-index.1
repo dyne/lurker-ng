@@ -55,43 +55,70 @@
 .ta 8n 16n 24n 32n 40n 48n 56n 64n 72n  
 .TH "LURKER-INDEX" "1" 
 .SH "NAME" 
-lurker-index \(em imports messages to the archive 
+lurker-index \(em imports messages into the archive 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker-index\fP [-c <config-file>]  [-l <list>]  [-m | -b <count>]  [-v -d]  
+\fBlurker-index\fP [-c <config-file>]  [-l <list>]  [-v -d -f]  [-m | -b <count>]  
 .SH "DESCRIPTION" 
 .PP 
 \fBlurker-index\fP indexes messages from 
 standard input and stores them in the lurker database. 
 It imports either a single message, or a batch of messages 
-in mbox format. Be aware that if the mbox is not delimited 
-by a valid "From <addr> <date>" line between 
-messages it will be interpretted as a single message with 
-an invalid date. 
+in mbox format.  
 .SH "OPTIONS" 
-.IP "\fB-m\fP" 10 
-Import a single message 
-.IP "\fB-v\fP" 10 
-Verbose operation 
-.IP "\fB-d\fP" 10 
-Drop duplicates per list 
 .IP "\fB-c config-file\fP" 10 
-Use this config file for lurker settings 
-.IP "\fB-l list\fP" 10 
-Import messages to the named list 
+Use this config file for lurker settings. 
+.IP "\fB-l listid\fP" 10 
+Import messages to the named mailing list. This should match 
+the value in the lurker.conf after the 'list = ' entry. 
 .IP "\fB-b count\fP" 10 
-Import a batch of messages; flush every count. A good value is 5, can be more depending on your CPU. 
+Import a batch of messages; flush every count messages. A 
+good value for count is 5. In this mode lurker assumes the input 
+is a mailbox delimited by 'From <addr> <date>' lines.  
+Be aware that if the mbox is not delimited correctly between 
+messages it will be interpretted as a single message with an 
+invalid date. The larger this parameter, the more CPU power lurker 
+needs during import, but the less disk seeks. 
+.IP "\fB-m\fP" 10 
+Import a single message. In this mode lurker will not 
+interpret 'From ' lines as message delimiters. This helps for when 
+lurker is being fed email directly from the MTA which sometimes 
+does not escape these lines. However, if possible, make your MTA 
+always escape these lines so the generated mbox is valid.  Use 
+this option when fed a single message from an MTA. 
+.IP "\fB-v\fP" 10 
+Verbose operation. Lurker will output statistics about import 
+speed to assist you in tweaking options for best throughput on 
+your system. It also helps you know how much longer you will have 
+to wait. 
+.IP "\fB-d\fP" 10 
+Drop duplicates per list. This option will check the 
+database to see if the message has already been imported to a 
+mailing list. Only if it has not been imported will lurker append 
+it to the mailbox. Even without this option lurker does not index 
+a message twice. If an import failed part-way through, you 
+probably want this option to avoid needless replication. However, 
+to generate mailboxes which accurately reflect delivery, leave the 
+option off. 
+.IP "\fB-f\fP" 10 
+Fast import (but vulnerable to power-failure). This may 
+improve the lifetime of your hard-disk and increase import speed 
+by up to 30%. However, if the power fails during import or shortly 
+thereafter, it is possible you will have a corrupted database. If 
+you use a journaling filesystem, lurker guarantees no corruption 
+when you OMIT this parameter. 
 .SH "SEE ALSO" 
 .PP 
 lurker documentation on http://lurker.sourceforge.net/ and in 
 /usr/share/doc/lurker. 
 .SH "AUTHOR" 
 .PP 
-This manual page was written by Jonas Meurer <jonas@freesources.org> for 
-the \fBDebian\fP system (but may be used by others).  Permission is 
+This manual page was originally written by Jonas Meurer <jonas@freesources.org>  
+for the \fBDebian\fP system. It is now maintained by Wesley W. Terpstra <terpstra@users.sourceforge.net> 
+for use within the \fBlurker\fP distribution. Permission is 
 granted to copy, distribute and/or modify this document under 
 the terms of the GNU Free Documentation 
 License, Version 1.1 or any later version published by the Free 
 Software Foundation; with no Invariant Sections, no Front-Cover 
 Texts and no Back-Cover Texts. 
-...\" created by instant / docbook-to-man, Sun 27 Apr 2003, 16:17 
+...\" created by instant / docbook-to-man, Sat 10 May 2003, 23:15 

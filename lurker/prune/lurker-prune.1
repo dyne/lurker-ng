@@ -1,0 +1,95 @@
+.\" This -*- nroff -*- file has been generated from
+.\" DocBook SGML with docbook-to-man on Debian GNU/Linux.
+...\"
+...\"	transcript compatibility for postscript use.
+...\"
+...\"	synopsis:  .P! <file.ps>
+...\"
+.de P!
+\\&.
+.fl			\" force out current output buffer
+\\!%PB
+\\!/showpage{}def
+...\" the following is from Ken Flowers -- it prevents dictionary overflows
+\\!/tempdict 200 dict def tempdict begin
+.fl			\" prolog
+.sy cat \\$1\" bring in postscript file
+...\" the following line matches the tempdict above
+\\!end % tempdict %
+\\!PE
+\\!.
+.sp \\$2u	\" move below the image
+..
+.de pF
+.ie     \\*(f1 .ds f1 \\n(.f
+.el .ie \\*(f2 .ds f2 \\n(.f
+.el .ie \\*(f3 .ds f3 \\n(.f
+.el .ie \\*(f4 .ds f4 \\n(.f
+.el .tm ? font overflow
+.ft \\$1
+..
+.de fP
+.ie     !\\*(f4 \{\
+.	ft \\*(f4
+.	ds f4\"
+'	br \}
+.el .ie !\\*(f3 \{\
+.	ft \\*(f3
+.	ds f3\"
+'	br \}
+.el .ie !\\*(f2 \{\
+.	ft \\*(f2
+.	ds f2\"
+'	br \}
+.el .ie !\\*(f1 \{\
+.	ft \\*(f1
+.	ds f1\"
+'	br \}
+.el .tm ? font underflow
+..
+.ds f1\"
+.ds f2\"
+.ds f3\"
+.ds f4\"
+'\" t 
+.ta 8n 16n 24n 32n 40n 48n 56n 64n 72n  
+.TH "LURKER-PRUNE" "1" 
+.SH "NAME" 
+lurker-prune \(em prunes the web-server cache 
+.SH "SYNOPSIS" 
+.PP 
+\fBlurker-prune\fP [-c <config-file>]  [-d <docroot>]  [-v]  
+.SH "DESCRIPTION" 
+.PP 
+\fBlurker-prune\fP prunes obsolete or stale html/xml 
+from the web-server accessible cache. This command must be run at 
+regular intervals from eg. a cronjob. If it is not run, then the 
+lurker web interface will appear to not be receiving new mail or have 
+contradictory links between pages. A good interval is every 15 minutes 
+and should not exceed one hour. 
+.SH "OPTIONS" 
+.IP "\fB-c config-file\fP" 10 
+Use this config file for lurker settings. 
+.IP "\fB-d docroot\fP" 10 
+The base directory of the lurker cache. This must be set to 
+the directory which contains message/*, thread/*, etc. If you have 
+multiple running lurker interfaces, you must run this pointing 
+at each of the document roots. 
+.IP "\fB-v\fP" 10 
+Verbose operation. Indicate which files are being deleted 
+and what the current operation is in order to convince you that 
+work continues. 
+.SH "SEE ALSO" 
+.PP 
+lurker documentation on http://lurker.sourceforge.net/ and in 
+/usr/share/doc/lurker. 
+.SH "AUTHOR" 
+.PP 
+This manual page was written by Wesley W. Terpstra <terpstra@users.sourceforge.net> for the 
+\fBlurker\fP distribution. It was adapted from a manpage by Jonas Meurer 
+<jonas@freesources.org>. Permission is granted to copy, distribute and/or modify 
+this document under the terms of the GNU Free 
+Documentation License, Version 1.1 or any later version published by 
+the Free Software Foundation; with no Invariant Sections, no 
+Front-Cover Texts and no Back-Cover Texts. 
+...\" created by instant / docbook-to-man, Sat 10 May 2003, 23:17 
