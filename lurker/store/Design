@@ -6,7 +6,7 @@ The storage component's functional I/O requirements include:
 
 Current non-functional goals:
 	4 billion messages total -> still fast (<= 0.001s)
-	>100 messages a second on import even when at 1 billion messages
+	>4000 messages a second on import even when at 1 billion messages
 
 It must support these queries:
 	starting at offset <x> give me the <y> summary blocks for search <z>
