@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.16 2002-05-03 20:42:43 terpstra Exp $
+/*  $Id: main.c,v 1.17 2002-05-06 22:18:34 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -243,7 +243,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	
-	if (chdir(mod) != 0 || access("render.xslt", R_OK) != 0)
+	if (chdir(mod) != 0)
 	{
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
@@ -308,7 +308,7 @@ int main(int argc, char* argv[])
 	
 	/* If we need xslt conversion, prep it */
 	if (!strcmp(type, "text/xml") && strcmp(ext, "xml"))
-		lu_output = popen("../" PACKAGE ".xslt render.xslt", "w");
+		lu_output = popen("../" PACKAGE ".xslt ../fmt/render-html.xsl", "w");
 	else
 		lu_output = stdout;
 	
