@@ -1,4 +1,4 @@
-/*  $Id: expiry.c,v 1.1 2002-05-03 05:21:27 terpstra Exp $
+/*  $Id: expiry.c,v 1.2 2002-05-03 05:44:34 terpstra Exp $
  *  
  *  expiry.c - Record when pages should be destroyed
  *  
@@ -70,9 +70,11 @@ static DB*	my_expiry_names_db	= 0;
 static long	my_expiry_files_used	= 0;
 static long	my_expiry_space_used	= 0;
 
-static long my_expiry_heaps = 0;
 My_Expiry_Heap*	my_expiry_heap = 0;	/* Stored as -1 of mmap */
 My_Expiry_List*	my_expiry_list = 0;
+
+static long my_expiry_heaps = 0;
+static long my_expiry_lists = 0;
 
 #define PARENT(i)	(i >> 1)
 #define LEFT(i)		(i << 1)
@@ -349,7 +351,9 @@ int lu_expiry_init()
 
 int lu_expiry_open()
 {
-	int	error;
+	int		error;
+	My_Expiry_List	list;
+	Lu_Config_List* clist;
 	
 	my_expiry_heap_fd = open("expiry.heap", 
 		O_RDWR | O_BINARY | O_CREAT,
@@ -366,6 +370,78 @@ int lu_expiry_open()
 	if (my_expiry_list_fd == -1)
 	{
 		perror("expiry.list");
+		return -1;
+	}
+	
+	my_expiry_heap = mmap(NULL, 
+		lu_config_cache_files * sizeof(My_Expiry_Heap),
+		PROT_READ | PROT_WRITE, MAP_SHARED, my_expiry_heap_fd, 0);
+	if (my_expiry_heap == MAP_FAILED)
+	{
+		perror("mmap'ing the expiry heap");
+		return -1;
+	}
+	my_expiry_heap--; /* So we can address it from 1 */
+	my_expiry_heaps = lseek(my_expiry_heap_fd, 0, SEEK_END) / sizeof(My_Expiry_Heap);
+	
+	error = read(my_expiry_list_fd, &list, sizeof(My_Expiry_List));
+	if (error == -1)
+	{
+		perror("reading the expiry list");
+		return -1;
+	}
+	
+	my_expiry_lists = 1;
+	if (error == 0)
+	{	/* new file */
+		memset(&list, 0, sizeof(My_Expiry_List));
+		if (write(my_expiry_list_fd, &list, sizeof(My_Expiry_List))
+			!= sizeof(My_Expiry_List))
+		{
+			perror("writing the expiry list");
+			return -1;
+		}
+	}
+	else
+	{	/* scan for known lists */
+		while ((error = read(my_expiry_list_fd, &list, sizeof(My_Expiry_List)))
+			== sizeof(My_Expiry_List))
+		{
+			clist = lu_config_find_list(list.list);
+			if (clist)
+				clist->cache_head = my_expiry_lists;
+			my_expiry_lists++;
+		}
+		
+		if (error == -1)
+		{
+			perror("reading the expiry list");
+			return -1;
+		}
+	}
+	
+	for (clist = lu_config_list; clist != lu_config_list + lu_config_lists; clist++)
+	{
+		if (clist->cache_head == 0)
+		{
+			clist->cache_head = my_expiry_lists++;
+			list.list = clist->id;
+			list.tail = 0;
+			if (write(my_expiry_list_fd, &list, sizeof(My_Expiry_List))
+				!= sizeof(My_Expiry_List))
+			{
+				perror("writing new records to expiry list");
+				return -1;
+			}
+		}
+	}
+	
+	my_expiry_list = mmap(NULL, 
+		my_expiry_lists * sizeof(My_Expiry_List),
+		PROT_READ | PROT_WRITE, MAP_SHARED, my_expiry_list_fd, 0);
+	if (my_expiry_list == MAP_FAILED)
+	{
+		perror("mmap'ing the expiry list");
 		return -1;
 	}
 	
@@ -399,6 +475,22 @@ int lu_expiry_sync()
 			db_strerror(error));
 	}
 	
+	if (msync(my_expiry_heap+1,  
+		lu_config_cache_files * sizeof(My_Expiry_Heap),
+		MS_SYNC) != 0)
+	{
+		syslog(LOG_ERR, "Syncing the file heap map: %s\n",
+			strerror(errno));
+	}
+	
+	if (msync(my_expiry_list,  
+		my_expiry_lists * sizeof(My_Expiry_List),
+		MS_SYNC) != 0)
+	{
+		syslog(LOG_ERR, "Syncing the file list map: %s\n",
+			strerror(errno));
+	}
+	
 	return 0;
 }
 
@@ -414,6 +506,23 @@ int lu_expiry_close()
 			db_strerror(error));
 		fail = -1;
 	}
+	
+	if (munmap(my_expiry_heap+1, 
+		lu_config_cache_files * sizeof(My_Expiry_Heap)) != 0)
+	{
+		syslog(LOG_ERR, "Closing the file heap mmap: %s\n",
+			db_strerror(errno));
+	}
+	
+	if (munmap(my_expiry_list,
+		my_expiry_lists * sizeof(My_Expiry_List)) != 0)
+	{
+		syslog(LOG_ERR, "Closing the file list mmap: %s\n",
+			db_strerror(errno));
+	}
+	
+	close(my_expiry_heap_fd);
+	close(my_expiry_list_fd);
 	
 	return fail;
 }
