@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.29 2003-07-02 10:21:08 terpstra Exp $
+/*  $Id: message.cpp,v 1.30 2003-07-02 10:33:12 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -46,10 +46,12 @@
 #include <Keys.h>
 
 #include <fstream>
-#include <unistd.h>
 #include <cstdio>
 #include <cstring>
 #include <cerrno>
+
+#include <unistd.h>
+#include <sys/wait.h>
 
 #include "commands.h"
 #include "Threading.h"
@@ -219,6 +221,15 @@ void run_pgp(ostream& o, string& command)
 		}
 		
 		status = pclose(pgp);
+		if (WIFEXITED(status))
+		{
+			status = WEXITSTATUS(status);
+		}
+		else
+		{
+			details += "\n" + command + " exited abnormally";
+			status = 2;
+		}
 	}
 	else
 	{
