@@ -1,6 +1,6 @@
 Ideas:
+	Forward / Backward message links
 	errordocument failthrough configable
-	Next/Prev message in list view
 	maybe use: message/YYYYMM,email,20chars of subject,goop
 		-- human recognizable
 	secured lists? login required?
@@ -12,12 +12,10 @@ Ideas:
 Unfulfilled requirements:
 	Better packing of tree
 	XSL support detection
-	Forward backward links within message
 	German pot
 
 BUGS:
-	Somehow or another >4k message errors are being reported by people
-	False search negatives
+	Somehow or another <4k message errors are being reported by people
 	Config reloading is broken
 	We no longer support block device operation for append
 	We don't check for double append

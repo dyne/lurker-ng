@@ -1,4 +1,4 @@
-/*  $Id: rbuffer.c,v 1.8 2002-07-26 13:32:37 terpstra Exp $
+/*  $Id: rbuffer.c,v 1.9 2002-08-12 21:45:51 terpstra Exp $
  *  
  *  rbuffer.c - Implements a buffering system that read combines
  *  
@@ -535,7 +535,7 @@ static int find(
 	{
 		m = (l+r)/2;
 		
-		if (testfn(arg, &record->cache[which].buffer[m]))
+		if (testfn(arg, &record->cache[which].buffer[m*k->rbuffer->recsize]))
 		{	/* This object passes, so: [m, inf) -> [m, r) */
 			l = m;
 		}
@@ -550,10 +550,12 @@ static int find(
 	 * Test to see that it satisfies the test!
 	 */
 	
-	if (testfn(arg, &record->cache[which].buffer[l]))
+	if (testfn(arg, &record->cache[which].buffer[l*k->rbuffer->recsize]))
 	{	/* Positive match */
 		*offset = left_off + l;
-		memcpy(rec, &record->cache[which].buffer[l], k->rbuffer->recsize);
+		memcpy(	rec, 
+			&record->cache[which].buffer[l*k->rbuffer->recsize], 
+			k->rbuffer->recsize);
 	}
 	else
 	{	/* This is the only record it could have been, and it fails. */

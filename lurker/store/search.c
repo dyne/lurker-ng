@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.16 2002-07-26 13:58:53 terpstra Exp $
+/*  $Id: search.c,v 1.17 2002-08-12 21:45:51 terpstra Exp $
  *  
  *  search.c - Uses libkap to execute a given search
  *  
@@ -177,6 +177,11 @@ int lu_search_start(
 	 */
 	my_search_min_ok = lu_summary_find_timestamp(begin);
 	
+#ifdef DEBUG
+	printf("Starting new search: %s: ", keywords);
+	fflush(stdout);
+#endif
+		
 	e = &buf[sizeof(buf)-1];
 	while (*keywords)
 	{
@@ -243,6 +248,11 @@ int lu_search_start(
 	}
 	
 
+#ifdef DEBUG
+	printf("Success\n");
+	fflush(stdout);
+#endif
+	
 	return 0;
 }
 
@@ -272,13 +282,27 @@ int lu_search_result(
 		largest  = lu_common_minvalid;
 		smallest = lu_common_minvalid;
 		
+#ifdef DEBUG
+		printf("Search: ");
+		fflush(stdout);
+#endif
+		
 		for (i = 0; i < my_search_handles; i++)
 		{
 			if (my_search_id[i] == lu_common_minvalid)
 			{	/* no more hits */
 				*result = lu_common_minvalid;
+#ifdef DEBUG
+				printf("EOS");
+				fflush(stdout);
+#endif
 				break;
 			}
+			
+#ifdef DEBUG
+			printf("%8d ", my_search_id[i]);
+			fflush(stdout);
+#endif
 			
 			if (largest == lu_common_minvalid ||
 			    my_search_id[i] > largest)
@@ -293,6 +317,10 @@ int lu_search_result(
 			}
 		}
 		
+#ifdef DEBUG
+		printf("\n");
+#endif
+				
 		if (i != my_search_handles) break;
 		
 		if (smallest == largest)
@@ -367,6 +395,11 @@ int lu_search_end(message_id* predict)
 {
 	double a, b, det, x;
 	int i;
+	
+#ifdef DEBUG
+	printf("Search Complete\n");
+	fflush(stdout);
+#endif
 	
 	for (i = 0; i < my_search_handles; i++)
 	{
