@@ -1,8 +1,11 @@
+Suggestion: remove 'lurker@' tag from xslt because it's ugly and you're stupid
+Suggestion: user-sensible errors for zero-byte mbox files mindex
 Suggestion: errordocument failthrough configable
 Suggestion: include documentation in a mbox format in default lurker.com
 Suggestion: base path mboxes are relative to
 
 BUGS:
+0	index.html does not update after restart (Adding new list/mbox)
 1	Use md5 hash of database path to get lurker shared mem key
 2	Seperate lists can receive the same message.
 		-> If we implement insertion earlier in the id list, we
