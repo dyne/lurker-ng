@@ -312,6 +312,7 @@ install-data-local:
 	for i in attach list mbox message mindex search splash thread; do \
 		$(mkinstalldirs) $(DESTDIR)$(htmldir)/$$i; \
 		done
+	touch $(DESTDIR)$(htmldir)/lurker.docroot
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
