@@ -1,4 +1,4 @@
-/*  $Id: PTable.h,v 1.3 2003-05-16 16:22:16 terpstra Exp $
+/*  $Id: PTable.h,v 1.4 2003-06-11 01:33:00 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -77,6 +77,7 @@ class PTable
 	Threads		threads;
 	Lists		lists;
 	
+	void calc_list   (KSI i);
 	void calc_message(KSI i);
 	void calc_thread (KSI i);
 	void calc_mindex (KSI i);

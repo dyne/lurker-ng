@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.9 2003-05-18 11:40:04 terpstra Exp $
+/*  $Id: PTable.cpp,v 1.10 2003-06-11 01:33:00 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -285,6 +285,7 @@ string PTable::calc()
 		{
 			if (i->first.substr(0, 6) == "attach" ) calc_attach (i);
 			if (i->first.substr(0, 4) == "mbox"   ) calc_mbox   (i);
+			if (i->first.substr(0, 4) == "list"   ) calc_list   (i);
 			if (i->first.substr(0, 7) == "message") calc_message(i);
 			if (i->first.substr(0, 6) == "mindex" ) calc_mindex (i);
 			if (i->first.substr(0, 6) == "search" ) calc_search (i);

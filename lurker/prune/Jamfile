@@ -6,6 +6,7 @@ Main lurker-prune :
 	prune.cpp
 	PTable.cpp
 	attach.cpp
+	list.cpp
 	mbox.cpp
 	message.cpp
 	mindex.cpp
