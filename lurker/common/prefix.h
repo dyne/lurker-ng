@@ -1,4 +1,4 @@
-/*  $Id: prefix.h,v 1.1 2002-02-03 05:55:14 terpstra Exp $
+/*  $Id: prefix.h,v 1.2 2002-02-03 07:20:03 terpstra Exp $
  *  
  *  prefix.h - What to place in front of keywords we search for
  *  
@@ -23,21 +23,21 @@
  */
 
 /* lu_import_message */
-#define	LU_KEYWORD_LIST		'l'
-#define LU_KEYWORD_MBOX		'b'
-#define LU_KEYWORD_AUTHOR	'a'
-#define LU_KEYWORD_SUBJECT	's'
+#define	LU_KEYWORD_LIST		"ml:"	/* Mailing List */
+#define LU_KEYWORD_MBOX		"mb:"	/* Mail Box */
+#define LU_KEYWORD_AUTHOR	"au:"	/* AUthor */
+#define LU_KEYWORD_SUBJECT	"sb:"	/* SuBject */
 
 /* date related words */
-#define LU_KEYWORD_DAY_OF_MONTH	'd'
-#define LU_KEYWORD_MONTH	'm'
-#define LU_KEYWORD_YEAR		'y'
-#define LU_KEYWORD_WEEKDAY	'x'
-#define LU_KEYWORD_HOUR		'h'
+#define LU_KEYWORD_DAY_OF_MONTH	"dm:"	/* Day of Month */
+#define LU_KEYWORD_MONTH	"mn:"	/* MoNth */
+#define LU_KEYWORD_YEAR		"yr:"	/* YeaR */
+#define LU_KEYWORD_WEEKDAY	"wd:"	/* WeekDay */
+#define LU_KEYWORD_HOUR		"hr:"	/* HouR */
 
 /* lu_reply_to_resolution */
-#define LU_KEYWORD_MESSAGE_ID	'i'
-#define LU_KEYWORD_REPLY_TO	'r'
+#define LU_KEYWORD_MESSAGE_ID	"id:"	/* message ID */
+#define LU_KEYWORD_REPLY_TO	"rt:"	/* Reply To id */
 
 /* import processing */
-#define LU_KEYWORD_WORD		'w'
+#define LU_KEYWORD_WORD		""	/* body keywords */
