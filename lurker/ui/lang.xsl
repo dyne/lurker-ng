@@ -65,6 +65,8 @@
 <xsl:variable name="no-refine" select="document($langfile)/text/@no-refine"/>
 <xsl:variable name="useful-prefixs" select="document($langfile)/text/@useful-prefixs"/>
 
+<xsl:variable name="day-suffix" select="document($langfile)/text/@day-suffix"/>
+
 <xsl:variable name="jan" select="document($langfile)/text/@jan"/>
 <xsl:variable name="feb" select="document($langfile)/text/@feb"/>
 <xsl:variable name="mar" select="document($langfile)/text/@mar"/>

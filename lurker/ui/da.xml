@@ -55,6 +55,8 @@
  no-refine="Resultatsættet ændres ikke. Kun det viste datoområde berøres."
  useful-prefixs="Søgetermer kan omfatte foranstillede au: sb: ml:, der søger i henholdsvis skribent, emne og postlistens navn."
 
+ day-suffix=""
+ 
  jan="Januar"
  feb="Februar"
  mar="Marts"

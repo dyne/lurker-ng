@@ -67,7 +67,9 @@
  oct="Octubre"
  nov="Novembre"
  dec="Desembre"
-
+ 
+ day-suffix=""
+ 
  unknown-address="Desconeguda"
  deleted-name="Eliminat"
  posted-at=" en "

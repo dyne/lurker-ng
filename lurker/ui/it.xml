@@ -56,6 +56,8 @@
  no-refine="I risultati rimarrà invariato. Solo l'intervallo di data mostrato dei messaggi sarà affetto."
  useful-prefixs="Cerca i termini che pososno includere i prefissi au: sb: ml: che corrispondono all'autore, all'oggetto ed alla Mailing List rispettivamente."
 
+ day-suffix=""
+ 
  jan="Gennaio"
  feb="Febbraio"
  mar="Marzo"

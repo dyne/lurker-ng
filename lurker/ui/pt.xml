@@ -55,6 +55,8 @@
  no-refine="O resultado irá manter-se inalterado. Apenas o intervalo de datas das mensagens apresentado é afectado."
  useful-prefixs="A pesquisa por termos pod incluir os prefixos au: sb: ml: para procurar em autores, assunto e mailing list respectively."
 
+ day-suffix=""
+ 
  jan="Janeiro"
  feb="Fevereiro"
  mar="Março"

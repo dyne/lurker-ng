@@ -55,6 +55,8 @@
  no-refine="Wynik wyszukiwania nie zostanie zmieniony. Zmieni się tylko wyświetlany zakres dat."
  useful-prefixs="Warunki wyszukiwania mogą zawierać prefiksy au: sb: ml: wyszukujące odpowiednio: autora, temat lub listę mailową."
 
+ day-suffix=""
+ 
  jan="styczeń"
  feb="luty"
  mar="marzec"

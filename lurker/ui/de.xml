@@ -55,6 +55,8 @@
  no-refine="Das Ergebnis bleibt unverändert. Nur das angezeigte Datum ist betroffen."
  useful-prefixs="Such-Strings können die Zusätze au: sb: und ml: enthalten, um speziell nach Autor, Betreff und Mailing-List zu suchen."
 
+ day-suffix=""
+ 
  jan="Januar"
  feb="Februar"
  mar="März"
