@@ -25,11 +25,14 @@
 <xsl:template match="/">
  <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="{$lang}" lang="{$lang}">
   <head>
-   <link href="../fmt/default.css" type="text/css"/>
+   <link rel="stylesheet" href="../fmt/default.css" type="text/css"/>
    <title><xsl:apply-templates mode="title"/></title>
   </head>
   <body>
    <xsl:apply-templates mode="body"/>
+
+   <hr/>
+   <p class="center"/><xsl:apply-templates select="*/server" mode="footer"/>
   </body>
  </html>
 </xsl:template>

@@ -36,9 +36,6 @@
       <th align="left">Timestamp</th></tr>
   <xsl:apply-templates select="summary"/>
  </table>
-
- <hr/>
- <p/><xsl:apply-templates select="server" mode="footer"/>
 </xsl:template>
 
 </xsl:stylesheet>

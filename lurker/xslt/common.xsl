@@ -15,7 +15,7 @@
 
 <xsl:template match="email">
  <xsl:if test="not(@name)">
-  SomeOne
+  Anonymous
  </xsl:if>
  <xsl:value-of select="@name"/>
 </xsl:template>

@@ -14,8 +14,6 @@
  <p/><h2><xsl:value-of select="title"/>:</h2>
  <p/><xsl:value-of select="message"/>
  <p/><xsl:value-of select="detail"/>
- <hr/>
- <p/><xsl:apply-templates select="server" mode="footer"/>
 </xsl:template>
 
 </xsl:stylesheet>

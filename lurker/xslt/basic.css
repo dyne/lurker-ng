@@ -1,0 +1,9 @@
+h1 { text-align:center }
+h2 { text-indent:5% }
+#listblock { width:100%; text-align:center }
+#listtable1 { float:left; width:49% }
+#listtable2 { float:right; width:49% }
+th { text-align:center; font-weight:bold }
+td { text-align:left; vertical-align:top }
+dd { margin-left:2em; margin-right:3em }
+.center { text-align:center }

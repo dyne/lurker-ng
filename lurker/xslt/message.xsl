@@ -45,9 +45,6 @@
  <blockquote>
   <xsl:apply-templates select="mime"/>
  </blockquote>
- 
- <hr/>
- <p/><xsl:apply-templates select="server" mode="footer"/>
 </xsl:template>
 
 </xsl:stylesheet>
