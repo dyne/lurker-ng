@@ -142,7 +142,7 @@ AC_DEFUN(DB3_CHECK,
 	[db3 installation directory (default: none)]))
   if test "x$with_db3dir" != "x"; then
     DB_LTEST="-L$with_db3dir/lib -L$with_db3dir"
-    DB_ITEST="-I$with_db3dir/include -I$with_db3dir"
+    DB_ITEST="-I$with_db3dir/include -I$with_db3dir/include/db3 -I$with_db3dir"
   fi
 
   AC_ARG_WITH(db3name, AC_HELP_STRING(
@@ -171,7 +171,7 @@ AC_DEFUN(DB3_CHECK,
 
   AC_MSG_CHECKING(for db3.2 header files)
 
-  for search in $DB_ITEST '' '-I/usr/include/db3' '-I/usr/local/include/db3'; do
+  for search in $DB_ITEST '' '-I/usr/include/db3' '-I/usr/local/include' '-I/usr/local/include/db3'; do
     save="$CFLAGS";
     CFLAGS="$CFLAGS $search";
 

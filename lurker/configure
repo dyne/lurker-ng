@@ -5441,7 +5441,7 @@ if test "${with_db3dir+set}" = set; then
 fi;
   if test "x$with_db3dir" != "x"; then
     DB_LTEST="-L$with_db3dir/lib -L$with_db3dir"
-    DB_ITEST="-I$with_db3dir/include -I$with_db3dir"
+    DB_ITEST="-I$with_db3dir/include -I$with_db3dir/include/db3 -I$with_db3dir"
   fi
 
 
@@ -5512,7 +5512,7 @@ echo "$as_me: error: This requires libdb >= 3.2 to build" >&2;}
   echo "$as_me:$LINENO: checking for db3.2 header files" >&5
 echo $ECHO_N "checking for db3.2 header files... $ECHO_C" >&6
 
-  for search in $DB_ITEST '' '-I/usr/include/db3' '-I/usr/local/include/db3'; do
+  for search in $DB_ITEST '' '-I/usr/include/db3' '-I/usr/local/include' '-I/usr/local/include/db3'; do
     save="$CFLAGS";
     CFLAGS="$CFLAGS $search";
 
