@@ -2,6 +2,18 @@ Suggestion: errordocument failthrough configable
 Suggestion: include documentation in a mbox format in default lurker.com
 Suggestion: base path mboxes are relative to
 
+Unfulfilled requirements:
+	lurkerctrl
+		show status of lurker
+		stop/start request processing
+		dump cache files
+	Better packing of tree
+	Reply-to link
+
+	If we get an HTML only email, we don't do anything smart - just
+	escape all the tags. This is ok, but it would be nice if we stripped
+	them and discarded contents of <head><style>... for instance.
+
 BUGS:
 	Presently we have no keyword write buffer
 	Also we don't check for double append
@@ -9,6 +21,4 @@ BUGS:
 	Attachments are never cached because we need to tell the browser
 	the content-type and we have no way to record this.
 	
-	If we get an HTML only email, we don't do anything smart - just
-	escape all the tags. This is ok, but it would be nice if we stripped
-	them and discarded contents of <head><style>... for instance.
+	Stale locks?
