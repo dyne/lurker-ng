@@ -144,7 +144,7 @@
 
  <h2><xsl:value-of select="$info"/></h2>
 
- <dl><xsl:apply-templates select="list" mode="longdesc"/></dl>
+ <dl><xsl:apply-templates select="group/list" mode="longdesc"/></dl>
 
 </xsl:template>
 
