@@ -13,6 +13,28 @@ AC_SEARCH_EXPRESSION_LIBS([iconv_t ic = iconv_open("ISO-8859-1", "UTF-8")],
   [iconv], [#include <iconv.h>],,
   [AC_MSG_ERROR(Need iconv to link)])
 
+AC_ARG_WITH([zlib-include], AC_HELP_STRING([--with-zlib-include=DIR],
+                                           [Location of zlib.h]),,
+            [with_zlib_include=""])
+
+AC_SEARCH_HEADER_DIRS(
+  [zlib.h], 
+  [$with_zlib_include /usr/include /usr/local/include],, 
+  [AC_MSG_ERROR(Need zlib.h to compile)])
+
+AC_ARG_WITH([zlib-libname], AC_HELP_STRING([--with-zlib-libname=LIB],
+                                              [Try an alternative library name]),,
+            [with_zlib_libname=""])
+
+AC_SEARCH_EXPRESSION_LIBS([gzFile f = gzdopen(0, "r")], 
+  [$with_zlib_libname zlib z libz], [#include <zlib.h>],,
+  [AC_MSG_ERROR(Need zlib to link)])
+
+AC_PATH_PROG(JAM, jam)
+if test "x${JAM}" = "x"; then
+  AC_MSG_ERROR([cannot build - jam required])
+fi
+
 AC_ARG_WITH([mimelib-local],   AC_HELP_STRING([--with-mimelib-local],
                                               [Use internal lurker/mimelib/*]),,
             [with_mimelib_local="no"])
@@ -43,28 +65,6 @@ else
    [AC_MSG_ERROR(Need mimelib to link)])
 fi
 AC_SUBST(LOCAL_MIMELIB, ${LOCAL_MIMELIB})
-
-AC_ARG_WITH([zlib-include], AC_HELP_STRING([--with-zlib-include=DIR],
-                                           [Location of zlib.h]),,
-            [with_zlib_include=""])
-
-AC_SEARCH_HEADER_DIRS(
-  [zlib.h], 
-  [$with_zlib_include /usr/include /usr/local/include],, 
-  [AC_MSG_ERROR(Need zlib.h to compile)])
-
-AC_ARG_WITH([zlib-libname], AC_HELP_STRING([--with-zlib-libname=LIB],
-                                              [Try an alternative library name]),,
-            [with_zlib_libname=""])
-
-AC_SEARCH_EXPRESSION_LIBS([gzFile f = gzdopen(0, "r")], 
-  [$with_zlib_libname zlib z], [#include <zlib.h>],,
-  [AC_MSG_ERROR(Need zlib to link)])
-
-AC_PATH_PROG(JAM, jam)
-if test "x${JAM}" = "x"; then
-  AC_MSG_ERROR([cannot build - jam required])
-fi
 
 AC_DEFINE_DIR(BINDIR,  "${bindir}")
 AC_DEFINE_DIR(LIBDIR,  "${libdir}")
