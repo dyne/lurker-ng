@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.3 2002-07-08 15:21:37 terpstra Exp $
+/*  $Id: append.c,v 1.4 2002-07-08 15:30:15 terpstra Exp $
  *  
  * append.c - Implementation of the append access methods.
  *  
@@ -289,13 +289,17 @@ int kap_append_read(Kap k, const KRecord* kr,
 			amt = len - start;
 		}
 		
-		if (lseek(k->append->fd, kr->jumps[i]+rstart, SEEK_SET)
-			!= kr->jumps[i]+rstart)
+		if (lseek(k->append->fd, 
+			kr->jumps[i]+(rstart*k->append->record_size), 
+			SEEK_SET)
+			!= kr->jumps[i]+(rstart*k->append->record_size))
 			return errno;
 		
-		if (kap_read_full(k->append->fd, 
-			((unsigned char*)data)+start,
-			amt) != 0)
+		if (kap_read_full(
+			k->append->fd, 
+			((unsigned char*)data)+(start*k->append->record_size),
+			amt*k->append->record_size)
+			!= 0)
 			return errno;
 	}
 	
