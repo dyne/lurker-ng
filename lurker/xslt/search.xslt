@@ -52,6 +52,11 @@
        <a href="{/search/next}%20{/search/query}.html">(next &gt;&gt;)</a>
      </xsl:if>
   </h2>
+  <p><form action="../search/bounce">Query: 
+              <input type="text" name="query" value="{/search/query}"/>
+              <input type="submit" name="submit" value="Search!"/>
+            </form>
+  </p>
 
   <table border="1">
     <tr><th align="left">Subject</th>
