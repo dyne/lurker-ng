@@ -1,3 +1,6 @@
+v0.7:
+	Fixed a bug where mailing list names were kept from Reply-To
+
 v0.6:
 	Jam replaces automake + overkill autoconf madness; hooray!
 	Mimelib replaces libc-client; hooray for a decent API!

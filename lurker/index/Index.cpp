@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: Index.cpp,v 1.3 2003-04-22 13:04:24 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -155,7 +155,10 @@ int Index::index_author()
 		
 		// Some evil mailing lists set reply-to the list.
 		if (author_email == list.address)
+		{
 			author_email = "";
+			author_name = "";
+		}
 	}
 	
 	if (message.Headers().HasFrom())
