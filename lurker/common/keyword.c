@@ -1,4 +1,4 @@
-/*  $Id: keyword.c,v 1.3 2002-06-21 21:39:10 terpstra Exp $
+/*  $Id: keyword.c,v 1.4 2002-06-21 21:45:58 terpstra Exp $
  *  
  *  prefix.c - Digest a hunk of string into keywords.
  *  
@@ -95,6 +95,12 @@ static int my_keyword_index_hunk(
 	}
 	
 	*w = 0;
+	if (!out[0])
+	{
+		/* Ignore this keyword */
+		return 0;
+	}
+	
 	return write(&out[0], arg);
 }
 
