@@ -10,7 +10,6 @@ libkap/wbuffer.c
 render/jump.c
 render/main.c
 render/search.c
-render/xslt.c
 store/config.c
 store/decode.c
 store/expiry.c
