@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.14 2003-06-04 15:29:19 terpstra Exp $
+/*  $Id: Index.cpp,v 1.15 2003-06-06 12:24:07 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -242,7 +242,8 @@ int Index::index_id(time_t server)
 		 * ... except by one hour due to daylight savings
 		 * However, more than 3 day delivery time is unlikely.
 		 */
-		if (user <= server+60*60 && server < user+3*60*60*24)
+		if ((user <= server+60*60 && server < user+3*60*60*24) ||
+		    server <= 0) // server is on crack?
 			stamp = user;
 	}
 	
@@ -255,11 +256,11 @@ int Index::index_id(time_t server)
 	{
 		vector<string> ids = extract_message_ids(
 			message.Headers().MessageId().AsString().c_str());
-					
+		
 		if (!ids.empty())
 			messageId = ids.front();
 	}
-
+	
 	if (messageId.length())
 	{
 		// Constant message-id across import, and threadable

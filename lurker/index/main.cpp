@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.21 2003-05-28 15:14:53 terpstra Exp $
+/*  $Id: main.cpp,v 1.22 2003-06-06 12:24:07 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -40,6 +40,9 @@
 
 #include "Index.h"
 
+// Our friendly neighbourhood date parser (getdate.y / getdate.cpp)
+time_t get_date (const char *p, const time_t *now);
+
 using namespace std;
 
 auto_ptr<ESort::Writer> db;
@@ -66,39 +69,6 @@ void help(const char* name)
 	cerr << "Index messages from standard input and store them in the lurker database.\n";
 	cerr << "Either import a single message, or import a batch of messages in mbox format.\n";
 	cerr << "\n";
-}
-
-time_t convert_date_mbox(const char* d)
-{	/* Format: www mmm dd hh:mm:ss yyyy */
-	struct tm t;
-	char mon[4];
-	
-	if (sscanf(d, "%*3s %3s %2d %02d:%02d:%02d %d",
-		&mon[0], &t.tm_mday, &t.tm_hour, &t.tm_min, &t.tm_sec, &t.tm_year)
-		!= 6)
-	{
-		return 0;
-	}
-	
-	t.tm_year -= 1900;
-	
-	if      (!strcmp(&mon[0], "Jan")) t.tm_mon = 0;
-	else if (!strcmp(&mon[0], "Feb")) t.tm_mon = 1;
-	else if (!strcmp(&mon[0], "Mar")) t.tm_mon = 2;
-	else if (!strcmp(&mon[0], "Apr")) t.tm_mon = 3;
-	else if (!strcmp(&mon[0], "May")) t.tm_mon = 4;
-	else if (!strcmp(&mon[0], "Jun")) t.tm_mon = 5;
-	else if (!strcmp(&mon[0], "Jul")) t.tm_mon = 6;
-	else if (!strcmp(&mon[0], "Aug")) t.tm_mon = 7;
-	else if (!strcmp(&mon[0], "Sep")) t.tm_mon = 8;
-	else if (!strcmp(&mon[0], "Oct")) t.tm_mon = 9;
-	else if (!strcmp(&mon[0], "Nov")) t.tm_mon = 10;
-	else if (!strcmp(&mon[0], "Dec")) t.tm_mon = 11;
-	else return 0;
-	
-	/** Mailbox arrival times are always local time... Sadly.
-	 */
-	return mktime(&t);
 }
 
 int commit()
@@ -156,7 +126,7 @@ int index(const DwString& msg, long batch, bool check)
 		while (*d && *d != ' ' && *d != '\t') ++d;
 		while (*d && (*d == ' ' || *d == '\t')) ++d;
 		
-		arrival = convert_date_mbox(d);
+		arrival = get_date(d, &import);
 	}
 	else
 	{

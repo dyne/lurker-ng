@@ -13,6 +13,7 @@ v0.9:
 	Searching by group is now supported
 	Support including files within configuration
 	Test mimelib last since mimelib local is not available during tests
+	Parse mailbox dates using GNU date's code
 
 v0.8:
 	@ signs are legitimate inside urls
