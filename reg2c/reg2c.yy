@@ -1,4 +1,4 @@
-/*  $Id: reg2c.yy,v 1.5 2002-07-11 22:11:02 terpstra Exp $
+/*  $Id: reg2c.yy,v 1.6 2003-04-28 18:47:41 terpstra Exp $
  *  
  *  reg2c.c - compile regular expressions to DFA switch()ing C
  *  
@@ -30,6 +30,8 @@
 #include <vector>
 #include <stdio.h>
 #include <string.h>
+
+using namespace std;
 
 typedef unsigned char	Input;
 
@@ -164,7 +166,7 @@ NFA token(Input c)
 	return out;
 }
 
-NFA or(const NFA& x, const NFA& y)
+NFA or_op(const NFA& x, const NFA& y)
 {
 	NFA out;
 	NFA_State sx, sy;
@@ -266,7 +268,7 @@ NFA onemore(const NFA& x)
 
 NFA option(const NFA& x)
 {	// a? = (#|a)
-	return or(empty(), x);
+	return or_op(empty(), x);
 }
 
 void compile(const NFA& nfa);
@@ -344,7 +346,7 @@ regel:	regao '-' regao		{ $$ = range($1, $3); }
 ;
 
 regar:	regel			{ $$ = $1; }
-	| regar regel		{ $$ = or($1, $2); }
+	| regar regel		{ $$ = or_op($1, $2); }
 ;
 
 rege:	TOKEN			{ $$ = token(*(regexp-1)); }
@@ -364,7 +366,7 @@ regcat:	rege			{ $$ = $1; }
 ;
 
 regex:	regcat			{ $$ = $1; }
-	| regex '|' regcat	{ $$ = or($1, $3); }
+	| regex '|' regcat	{ $$ = or_op($1, $3); }
 ;
 
 %%
@@ -758,7 +760,7 @@ int main(int argc, const char** argv)
 	printf(
 	"/* Copyright: Public domain\n"
 	" * Produced with reg2c for %s\n"
-	" * cvs id tag: $Id: reg2c.yy,v 1.5 2002-07-11 22:11:02 terpstra Exp $\n"
+	" * cvs id tag: $Id: reg2c.yy,v 1.6 2003-04-28 18:47:41 terpstra Exp $\n"
 	" *\n"
 	" * Regular expression: %s\n"
 	" */\n\n", getenv("EMAIL"), argv[3]);
