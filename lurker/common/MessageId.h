@@ -1,4 +1,4 @@
-/*  $Id: MessageId.h,v 1.3 2003-04-25 15:12:21 terpstra Exp $
+/*  $Id: MessageId.h,v 1.4 2003-04-25 15:36:07 terpstra Exp $
  *  
  *  MessageId.h - Helper class for manipulating internal message ids
  *  
@@ -123,6 +123,21 @@ class MessageId
  	/** Serialize it pretty for the user interface.
  	 */
  	string serialize() const;
+ 	
+ 	/** Slightly increase the MessageId. There can not exist any
+ 	  *  messages between the old value and the new.
+ 	  */
+ 	void increment()
+ 	{
+ 		++hash_[3] == 0 &&
+ 		++hash_[2] == 0 &&
+ 		++hash_[1] == 0 &&
+ 		++hash_[0] == 0 &&
+ 		++time_[3] == 0 &&
+ 		++time_[2] == 0 &&
+ 		++time_[1] == 0 &&
+ 		++time_[0];
+ 	}
  	
  	/** Is the message id the same as another message?
  	 */
