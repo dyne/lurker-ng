@@ -172,34 +172,34 @@
  </div>
  <table id="h-fields">
   <tr>
-   <th nowrap="1"><xsl:value-of select="$author"/>:</th>
+   <th nowrap="NOWRAP"><xsl:value-of select="$author"/>:</th>
    <td>
     <xsl:if test="email"><xsl:apply-templates select="email" mode="list"/></xsl:if>
     <xsl:if test="not(email)"><xsl:value-of select="$unknown"/></xsl:if>
    </td>
   </tr>
   <tr>
-   <th nowrap="1"><xsl:value-of select="$date"/>:</th>
+   <th nowrap="NOWRAP"><xsl:value-of select="$date"/>:</th>
    <td>
     <xsl:if test="time"><xsl:value-of select="time"/></xsl:if>
     <xsl:if test="not(time)"><xsl:value-of select="$unknown"/></xsl:if>
    </td>
   </tr>
   <tr>
-   <th nowrap="1"><xsl:value-of select="$to"/>:</th>
+   <th nowrap="NOWRAP"><xsl:value-of select="$to"/>:</th>
    <td>
     <xsl:if test="to"><xsl:apply-templates mode="list" select="to"/></xsl:if>
     <xsl:if test="not(to)"><xsl:value-of select="$unknown"/></xsl:if>
    </td>
   </tr>
   <xsl:if test="/message/cc">
-   <tr><th nowrap="1"><xsl:value-of select="$cc"/>:</th> <td><xsl:apply-templates mode="list" select="cc"/></td></tr>
+   <tr><th nowrap="NOWRAP"><xsl:value-of select="$cc"/>:</th> <td><xsl:apply-templates mode="list" select="cc"/></td></tr>
   </xsl:if>
   <xsl:if test="threading/inreplyto">
-   <tr><th nowrap="1"><xsl:value-of select="$irt"/>:</th> <td><xsl:apply-templates mode="list" select="threading/inreplyto/summary"/></td></tr>
+   <tr><th nowrap="NOWRAP"><xsl:value-of select="$irt"/>:</th> <td><xsl:apply-templates mode="list" select="threading/inreplyto/summary"/></td></tr>
   </xsl:if>
   <xsl:if test="threading/replies">
-   <tr><th nowrap="1"><xsl:value-of select="$fus"/>:</th> <td><xsl:apply-templates mode="list" select="threading/replies/summary"/></td></tr>
+   <tr><th nowrap="NOWRAP"><xsl:value-of select="$fus"/>:</th> <td><xsl:apply-templates mode="list" select="threading/replies/summary"/></td></tr>
   </xsl:if>
  </table>
 </xsl:template>
@@ -313,7 +313,7 @@
   <table width="100%">
    <tr>
     <td width="100%"><xsl:call-template name="header-fields"/></td>
-    <td id="navlet" nowrap="1"><xsl:call-template name="navigate-fields"/></td>
+    <td id="navlet" nowrap="NOWRAP"><xsl:call-template name="navigate-fields"/></td>
    </tr>
   </table>
  </xsl:if>
