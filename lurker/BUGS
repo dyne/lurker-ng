@@ -1,5 +1,4 @@
 Ideas:
-	Forward / Backward message links
 	errordocument failthrough configable
 	maybe use: message/YYYYMM,email,20chars of subject,goop
 		-- human recognizable
@@ -9,6 +8,8 @@ Ideas:
 	Maybe manually cache tail of the append layer
 
 Unfulfilled requirements:
+	Legend for colours and their meaning
+	Show drift in follow-ups
 	Better packing of tree
 	German pot
 
