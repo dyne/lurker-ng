@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.21 2003-06-25 17:25:00 terpstra Exp $
+/*  $Id: message.cpp,v 1.22 2003-06-25 17:29:15 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -250,8 +250,12 @@ bool handle_signed_mime(ostream& o, DwEntity& e)
 	
 	// signature has no type
 	if (!sig->Headers().HasContentType() ||
-	    sig->Headers().ContentType().Type() != DwMime::kTypeApplication ||
-	    sig->Headers().ContentType().Subtype() != DwMime::kSubtypePgpSignature)
+	    sig->Headers().ContentType().Type() != DwMime::kTypeApplication)
+		return false;
+	
+	DwString st = sig->Headers().ContentType().SubtypeStr();
+	st.ConvertToLowerCase();
+	if (st != "pgp-signature")
 		return false;
 	
 	string command = pgp_config->pgpv_mime;
@@ -426,9 +430,14 @@ void message_build(ostream& o, DwEntity& e,
 			break;
 		
 		case DwMime::kTypeMultipart:
-			if (t.Subtype() == DwMime::kSubtypeSigned)
-			{	// verify the signature
-				signedopen = handle_signed_mime(o, e);
+			if (1)
+			{ // scope in the string
+				DwString s = t.SubtypeStr();
+				s.ConvertToLowerCase();
+				if (s == "signed")
+				{	// verify the signature
+					signedopen = handle_signed_mime(o, e);
+				}
 			}
 			
 			// first body part is the signed data
