@@ -462,7 +462,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot LTVERSION MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT build build_cpu build_vendor build_os host host_cpu host_vendor host_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE EGREP LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB CPP CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP F77 FFLAGS ac_ct_F77 LIBTOOL PERL PERL_INC PERL_LIB PERL_XSI XSUBPP POD2MAN PERL_POD_MAN LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot LTVERSION MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT build build_cpu build_vendor build_os host host_cpu host_vendor host_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE EGREP LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB CPP CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP F77 FFLAGS ac_ct_F77 LIBTOOL PERL PERL_INC PERL_LIB PERL_DIR PERL_XSI XSUBPP POD2MAN PERL_POD_MAN PYTHON PYTHON_VERSION PYTHON_PREFIX PYTHON_EXEC_PREFIX LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -19577,8 +19577,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 
-
-
 # Check whether --with-perl or --without-perl was given.
 if test "${with_perl+set}" = set; then
   withval="$with_perl"
@@ -19674,10 +19672,25 @@ else
 fi
 echo "$as_me:$LINENO: result: $sfs_cv_perl_xsubpp" >&5
 echo "${ECHO_T}$sfs_cv_perl_xsubpp" >&6
+echo "$as_me:$LINENO: checking for perl site directory" >&5
+echo $ECHO_N "checking for perl site directory... $ECHO_C" >&6
+if test "${kw_cv_perl_sitedir+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  eval `$PERL '-V:site(arch|prefix)'`
+	kw_cv_perl_sitedir=\${exec_prefix}/`echo $sitearch | sed "s@$siteprefix@@;s@^/*@@"`
+
+fi
+echo "$as_me:$LINENO: result: $kw_cv_perl_sitedir" >&5
+echo "${ECHO_T}$kw_cv_perl_sitedir" >&6
+
 XSUBPP="$sfs_cv_perl_xsubpp"
 PERL_INC="$sfs_cv_perl_ccopts"
 PERL_LIB="$sfs_cv_perl_ldopts"
+PERL_DIR="$kw_cv_perl_sitedir"
 PERL_XSI="$PERL -MExtUtils::Embed -e xsinit -- -std"
+
+
 
 
 
@@ -19796,11 +19809,62 @@ fi
 
 
 
+for ac_prog in python
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_path_PYTHON+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $PYTHON in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PYTHON="$PYTHON" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PYTHON="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+  ;;
+esac
+fi
+PYTHON=$ac_cv_path_PYTHON
+
+if test -n "$PYTHON"; then
+  echo "$as_me:$LINENO: result: $PYTHON" >&5
+echo "${ECHO_T}$PYTHON" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  test -n "$PYTHON" && break
+done
+
+PYTHON_VERSION=`$PYTHON -c "import sys; print sys.version[:3]"`
+PYTHON_PREFIX=`$PYTHON -c "import sys; print sys.prefix"`
+PYTHON_EXEC_PREFIX=`$PYTHON -c "import sys; print sys.exec_prefix"`
+
+
+
+
 if test "x$USE_MAINTAINER_MODE" != "xno"; then
   CXXFLAGS="$CXXFLAGS -Wall -O2 -g"
 fi
 
-                                                  ac_config_files="$ac_config_files Makefile libesort/Makefile bindings/Makefile bindings/c/Makefile bindings/perl/Makefile"
+                                                            ac_config_files="$ac_config_files Makefile libesort/Makefile bindings/Makefile bindings/c/Makefile bindings/perl/Makefile bindings/python/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -20409,6 +20473,7 @@ do
   "bindings/Makefile" ) CONFIG_FILES="$CONFIG_FILES bindings/Makefile" ;;
   "bindings/c/Makefile" ) CONFIG_FILES="$CONFIG_FILES bindings/c/Makefile" ;;
   "bindings/perl/Makefile" ) CONFIG_FILES="$CONFIG_FILES bindings/perl/Makefile" ;;
+  "bindings/python/Makefile" ) CONFIG_FILES="$CONFIG_FILES bindings/python/Makefile" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
@@ -20563,10 +20628,15 @@ s,@LIBTOOL@,$LIBTOOL,;t t
 s,@PERL@,$PERL,;t t
 s,@PERL_INC@,$PERL_INC,;t t
 s,@PERL_LIB@,$PERL_LIB,;t t
+s,@PERL_DIR@,$PERL_DIR,;t t
 s,@PERL_XSI@,$PERL_XSI,;t t
 s,@XSUBPP@,$XSUBPP,;t t
 s,@POD2MAN@,$POD2MAN,;t t
 s,@PERL_POD_MAN@,$PERL_POD_MAN,;t t
+s,@PYTHON@,$PYTHON,;t t
+s,@PYTHON_VERSION@,$PYTHON_VERSION,;t t
+s,@PYTHON_PREFIX@,$PYTHON_PREFIX,;t t
+s,@PYTHON_EXEC_PREFIX@,$PYTHON_EXEC_PREFIX,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
@@ -20953,5 +21023,4 @@ if test "$no_create" != yes; then
   # would make configure fail if this is the last instruction.
   $ac_cs_success || { (exit 1); exit 1; }
 fi
-
 

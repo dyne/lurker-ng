@@ -1,6 +1,6 @@
 AM_CPPFLAGS = @PERL_INC@ -I$(top_srcdir)/libesort
 
-perldir = $(libdir)/perl/5.8.0
+perldir = @PERL_DIR@
 autodir = $(perldir)/auto/ESort
 
 perl_DATA = ESort.pm

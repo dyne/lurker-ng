@@ -1,3 +1,76 @@
+# Perl stuff taken from SFS and modified
+dnl
+dnl Find perl
+dnl
+AC_DEFUN(SFS_PERLINFO,
+[AC_ARG_WITH(perl,
+--with-perl=PATH          Specify perl executable to use,
+[case "$withval" in
+        yes|no|"") ;;
+        *) PERL="$withval" ;;
+esac])
+if test -z "$PERL" || test ! -x "$PERL"; then
+        AC_PATH_PROGS(PERL, perl5 perl)
+fi
+if test -x "$PERL" && $PERL -e 'require 5.004'; then :; else
+        AC_MSG_ERROR("Can\'t find perl 5.004 or later")
+fi
+AC_CACHE_CHECK(for perl includes, sfs_cv_perl_ccopts,
+        sfs_cv_perl_ccopts=`$PERL -MExtUtils::Embed -e ccopts`
+        sfs_cv_perl_ccopts=`echo $sfs_cv_perl_ccopts`
+)
+AC_CACHE_CHECK(for perl libraries, sfs_cv_perl_ldopts,
+        sfs_cv_perl_ldopts=`$PERL -MExtUtils::Embed -e ldopts -- -std`
+        sfs_cv_perl_ldopts=`echo $sfs_cv_perl_ldopts`
+)
+AC_CACHE_CHECK(for perl xsubpp, sfs_cv_perl_xsubpp,
+        sfs_cv_perl_xsubpp="$PERL "`$PERL -MConfig -e 'print qq(\
+        -I$Config{"installarchlib"} -I$Config{"installprivlib"}\
+        $Config{"installprivlib"}/ExtUtils/xsubpp\
+        -typemap $Config{"installprivlib"}/ExtUtils/typemap)'`
+        sfs_cv_perl_xsubpp=`echo $sfs_cv_perl_xsubpp`
+)
+AC_CACHE_CHECK(for perl site directory, kw_cv_perl_sitedir,
+	eval `$PERL '-V:site(arch|prefix)'`
+	kw_cv_perl_sitedir=\${exec_prefix}/`echo $sitearch | sed "s@$siteprefix@@;s@^/*@@"`
+)
+
+XSUBPP="$sfs_cv_perl_xsubpp"
+PERL_INC="$sfs_cv_perl_ccopts"
+PERL_LIB="$sfs_cv_perl_ldopts"
+PERL_DIR="$kw_cv_perl_sitedir"
+PERL_XSI="$PERL -MExtUtils::Embed -e xsinit -- -std"
+
+AC_SUBST(PERL)
+AC_SUBST(PERL_INC)
+AC_SUBST(PERL_LIB)
+AC_SUBST(PERL_DIR)
+AC_SUBST(PERL_XSI)
+AC_SUBST(XSUBPP)
+])
+dnl
+dnl Check for perl and for Pod::Man for generating man pages
+dnl
+AC_DEFUN(SFS_PERL_POD,
+[
+if test -z "$PERL" || test ! -x "$PERL"; then
+        AC_PATH_PROGS(PERL, perl5 perl)
+fi
+AC_PATH_PROGS(POD2MAN, pod2man)
+if test "$PERL"; then
+        AC_CACHE_CHECK(for Pod::Man, sfs_cv_perl_pod_man,
+                $PERL -e '{ require Pod::Man }' >/dev/null 2>&1
+                if test $? = 0; then
+                        sfs_cv_perl_pod_man="yes"
+                else
+                        sfs_cv_perl_pod_man="no"
+                fi                
+        )
+        PERL_POD_MAN="$sfs_cv_perl_pod_man"
+fi
+AC_SUBST(PERL_POD_MAN)
+])
+
 # libtool.m4 - Configure libtool for the host system. -*-Autoconf-*-
 ## Copyright 1996, 1997, 1998, 1999, 2000, 2001
 ## Free Software Foundation, Inc.

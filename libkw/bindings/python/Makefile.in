@@ -145,33 +145,29 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-AM_CPPFLAGS = @PERL_INC@ -I$(top_srcdir)/libesort
+AM_CPPFLAGS = -I@PYTHON_PREFIX@/include/python@PYTHON_VERSION@ -I$(top_srcdir)/libesort
 
-perldir = @PERL_DIR@
-autodir = $(perldir)/auto/ESort
+pythondir = @PYTHON_EXEC_PREFIX@/lib/python@PYTHON_VERSION@/site-packages/libkw
 
-perl_DATA = ESort.pm
-auto_LTLIBRARIES = ESort.la
-EXTRA_DIST = ESort.xs ESort.pm ESort.map
-CLEANFILES = ESort.cpp perlxsi.c
+python_LTLIBRARIES = ESortmodule.la
 
-nodist_ESort_la_SOURCES = ESort.cpp
-ESort_la_LIBADD = @PERL_LIB@ $(top_builddir)/libesort/libesort.la
-ESort_la_LDFLAGS = -module -avoid-version
-subdir = bindings/perl
+ESortmodule_la_SOURCES = ESortmodule.cpp
+ESortmodule_la_LIBADD = -L@PYTHON_EXEC_PREFIX@/lib -lpython@PYTHON_VERSION@ $(top_builddir)/libesort/libesort.la
+ESortmodule_la_LDFLAGS = -module -avoid-version
+subdir = bindings/python
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_CLEAN_FILES =
-LTLIBRARIES = $(auto_LTLIBRARIES)
+LTLIBRARIES = $(python_LTLIBRARIES)
 
-ESort_la_DEPENDENCIES = $(top_builddir)/libesort/libesort.la
-nodist_ESort_la_OBJECTS = ESort.lo
-ESort_la_OBJECTS = $(nodist_ESort_la_OBJECTS)
+ESortmodule_la_DEPENDENCIES = $(top_builddir)/libesort/libesort.la
+am_ESortmodule_la_OBJECTS = ESortmodule.lo
+ESortmodule_la_OBJECTS = $(am_ESortmodule_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir)
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/ESort.Plo
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/ESortmodule.Plo
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
@@ -180,11 +176,9 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES =
-DATA = $(perl_DATA)
-
+DIST_SOURCES = $(ESortmodule_la_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(nodist_ESort_la_SOURCES)
+SOURCES = $(ESortmodule_la_SOURCES)
 
 all: all-am
 
@@ -192,39 +186,39 @@ all: all-am
 .SUFFIXES: .cpp .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  bindings/perl/Makefile
+	  $(AUTOMAKE) --gnu  bindings/python/Makefile
 Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)
-autoLTLIBRARIES_INSTALL = $(INSTALL)
-install-autoLTLIBRARIES: $(auto_LTLIBRARIES)
+pythonLTLIBRARIES_INSTALL = $(INSTALL)
+install-pythonLTLIBRARIES: $(python_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(autodir)
-	@list='$(auto_LTLIBRARIES)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(pythondir)
+	@list='$(python_LTLIBRARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
 	    f="`echo $$p | sed -e 's|^.*/||'`"; \
-	    echo " $(LIBTOOL) --mode=install $(autoLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) $$p $(DESTDIR)$(autodir)/$$f"; \
-	    $(LIBTOOL) --mode=install $(autoLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) $$p $(DESTDIR)$(autodir)/$$f; \
+	    echo " $(LIBTOOL) --mode=install $(pythonLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) $$p $(DESTDIR)$(pythondir)/$$f"; \
+	    $(LIBTOOL) --mode=install $(pythonLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) $$p $(DESTDIR)$(pythondir)/$$f; \
 	  else :; fi; \
 	done
 
-uninstall-autoLTLIBRARIES:
+uninstall-pythonLTLIBRARIES:
 	@$(NORMAL_UNINSTALL)
-	@list='$(auto_LTLIBRARIES)'; for p in $$list; do \
+	@list='$(python_LTLIBRARIES)'; for p in $$list; do \
 	    p="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(autodir)/$$p"; \
-	  $(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(autodir)/$$p; \
+	  echo " $(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(pythondir)/$$p"; \
+	  $(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(pythondir)/$$p; \
 	done
 
-clean-autoLTLIBRARIES:
-	-test -z "$(auto_LTLIBRARIES)" || rm -f $(auto_LTLIBRARIES)
-	@list='$(auto_LTLIBRARIES)'; for p in $$list; do \
+clean-pythonLTLIBRARIES:
+	-test -z "$(python_LTLIBRARIES)" || rm -f $(python_LTLIBRARIES)
+	@list='$(python_LTLIBRARIES)'; for p in $$list; do \
 	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
 	  test "$$dir" = "$$p" && dir=.; \
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-ESort.la: $(ESort_la_OBJECTS) $(ESort_la_DEPENDENCIES) 
-	$(CXXLINK) -rpath $(autodir) $(ESort_la_LDFLAGS) $(ESort_la_OBJECTS) $(ESort_la_LIBADD) $(LIBS)
+ESortmodule.la: $(ESortmodule_la_OBJECTS) $(ESortmodule_la_DEPENDENCIES) 
+	$(CXXLINK) -rpath $(pythondir) $(ESortmodule_la_LDFLAGS) $(ESortmodule_la_OBJECTS) $(ESortmodule_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -232,7 +226,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ESort.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ESortmodule.Plo@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)
@@ -279,24 +273,6 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
-perlDATA_INSTALL = $(INSTALL_DATA)
-install-perlDATA: $(perl_DATA)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(perldir)
-	@list='$(perl_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(perlDATA_INSTALL) $$d$$p $(DESTDIR)$(perldir)/$$f"; \
-	  $(perlDATA_INSTALL) $$d$$p $(DESTDIR)$(perldir)/$$f; \
-	done
-
-uninstall-perlDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(perl_DATA)'; for p in $$list; do \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(perldir)/$$f"; \
-	  rm -f $(DESTDIR)$(perldir)/$$f; \
-	done
 
 ETAGS = etags
 ETAGSFLAGS =
@@ -385,10 +361,10 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(DATA)
+all-am: Makefile $(LTLIBRARIES)
 
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(autodir) $(DESTDIR)$(perldir)
+	$(mkinstalldirs) $(DESTDIR)$(pythondir)
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -406,7 +382,6 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
@@ -416,7 +391,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-autoLTLIBRARIES clean-generic clean-libtool \
+clean-am: clean-generic clean-libtool clean-pythonLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -432,7 +407,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-autoLTLIBRARIES install-perlDATA
+install-data-am: install-pythonLTLIBRARIES
 
 install-exec-am:
 
@@ -459,25 +434,21 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-autoLTLIBRARIES uninstall-info-am \
-	uninstall-perlDATA
+uninstall-am: uninstall-info-am uninstall-pythonLTLIBRARIES
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean \
-	clean-autoLTLIBRARIES clean-generic clean-libtool ctags \
-	distclean distclean-compile distclean-depend distclean-generic \
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
+	clean-libtool clean-pythonLTLIBRARIES ctags distclean \
+	distclean-compile distclean-depend distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am info \
-	info-am install install-am install-autoLTLIBRARIES install-data \
-	install-data-am install-exec install-exec-am install-info \
-	install-info-am install-man install-perlDATA install-strip \
+	info-am install install-am install-data install-data-am \
+	install-exec install-exec-am install-info install-info-am \
+	install-man install-pythonLTLIBRARIES install-strip \
 	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-autoLTLIBRARIES \
-	uninstall-info-am uninstall-perlDATA
+	tags uninstall uninstall-am uninstall-info-am \
+	uninstall-pythonLTLIBRARIES
 
-
-ESort.cpp:	ESort.xs ESort.map
-	@XSUBPP@ -typemap ESort.map $< > $@.tmp && mv $@.tmp $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
