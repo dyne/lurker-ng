@@ -59,7 +59,7 @@
 
 <xsl:template match="summary">
  <tr>
-  <td>
+  <td nowrap="1">
    <xsl:if test="draw"><xsl:apply-templates select="draw"/></xsl:if>
    <xsl:if test="not(draw)">
     <a href="../message/{mid}.{$ext}"><xsl:value-of select="subject"/></a>
