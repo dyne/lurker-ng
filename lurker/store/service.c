@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.3 2002-02-04 01:28:34 terpstra Exp $
+/*  $Id: service.c,v 1.4 2002-02-04 08:05:31 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -130,9 +130,10 @@ static int my_service_getmsg(st_netfd_t fd, const char* request)
 			
 			/* We need a copy of this because while we are doing
 			 * our st_writes, we could get context switched and
-			 * the file closed.
+			 * the file closed. Also, we need an independent
+			 * read position, so dup() is out.
 			 */
-			mbox_fd = dup(mbox->fd);
+			mbox_fd = open(mbox->path, O_RDONLY);
 		}
 	}
 	
