@@ -1,5 +1,5 @@
 /*
- * $Id: message.h,v 1.4 2002-01-28 08:20:15 cbond Exp $
+ * $Id: message.h,v 1.5 2002-02-03 05:55:14 terpstra Exp $
  *  
  *  message.h - header file for mail parsing routines.
  *  
@@ -55,8 +55,5 @@ extern char *mail_select(struct msg *, BODY *, size_t *, int *);
 
 /* Free a msg structure and the region it's mmapped. */
 extern void mail_free(struct msg *);
-
-/* Traverse a message structure and index the plaintext words. */
-extern void index_traverse(struct msg *, struct mail_bodystruct *);
 
 #endif
