@@ -3,6 +3,7 @@ v0.8:
 	Support iconv #define's used on MacOS
 	Renamed some files so filenames don't clash
 	Don't compile network-enabled bits of mimelib
+	getopt.h is not required and unavailable on some platforms
 
 v0.7:
 	Made VERSION controlled by one place: configure.ac

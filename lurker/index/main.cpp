@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.10 2003-04-27 19:32:37 terpstra Exp $
+/*  $Id: main.cpp,v 1.11 2003-05-03 11:49:29 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -37,7 +37,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <getopt.h>
 
 #include "Index.h"
 
