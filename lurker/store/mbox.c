@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.42 2002-07-26 15:27:03 terpstra Exp $
+/*  $Id: mbox.c,v 1.43 2002-08-12 14:21:04 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -620,7 +620,7 @@ static time_t my_mbox_extract_timestamp(
 		buf = mbox->msg.map.base;
 		buf += (mbox->length - mbox->msg.map.off);
 		
-		/* Null terminate the range for the purposes of strstr'n it.
+		/* Locate the end of string for scanning for "From "
 		 */
 		if (size - mbox->length < LU_MBOX_INIT_MSG_SIZE)
 			e = &buf[size - mbox->length];
@@ -643,7 +643,8 @@ static time_t my_mbox_extract_timestamp(
 		
 		if (s != buf)
 		{
-			syslog(LOG_ERR, _("Discovered <4k more to a message after we had already processed it.\n"));
+			syslog(LOG_ERR, _("Discovered <4k more to a message after we had already processed it (%ld bytes).\n"),
+				((long)s) - ((long)buf));
 			lu_config_move_mbox_end(mbox, list, mbox->length + (s - buf));
 			
 			continue;
