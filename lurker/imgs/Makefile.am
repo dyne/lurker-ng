@@ -6,10 +6,3 @@ IMGS =	a.png b.png c.png d.png e.png \
 
 imgs_DATA = ${IMGS}
 EXTRA_DIST = ${IMGS}
-
-install-data-local:
-	$(mkinstalldirs) $(DESTDIR)${imgsdir}
-	ln -fs ../imgs   $(DESTDIR)${wwwdir}/thread/i
-
-uninstall-local:
-	rm -f $(DESTDIR)${wwwdir}/thread/i
