@@ -1,4 +1,4 @@
-/*  $Id: Keys.h,v 1.6 2003-05-02 11:18:39 terpstra Exp $
+/*  $Id: Keys.h,v 1.7 2003-05-10 20:08:42 terpstra Exp $
  *  
  *  Keys.h - What prefixs various database keys
  *  
@@ -35,6 +35,7 @@ using std::vector;
 #define LU_THREADING	"t"
 #define LU_KEYWORD	"k"
 #define LU_SUMMARY	"s"
+#define LU_CACHE	"c"
 
 #define LU_MESSAGE_AUTHOR_EMAIL	'e'
 #define LU_MESSAGE_AUTHOR_NAME	'n'
@@ -91,6 +92,11 @@ vector<string> extract_message_ids(const char* str);
  *  LU_KEYWORD
  *  keyword
  *  '\0'
+ *  mid
+ *
+ * Cache cleaning:
+ *  LU_CACHE
+ *  import timestamp as 4 bytes in bigendian order
  *  mid
  */
 

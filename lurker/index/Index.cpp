@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.9 2003-05-03 19:29:17 terpstra Exp $
+/*  $Id: Index.cpp,v 1.10 2003-05-10 20:08:52 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -417,7 +417,7 @@ int feed_writer(const char* keyword, void* arg)
 	return i->writer->insert(x);
 }
 
-int Index::index_control()
+int Index::index_control(time_t import)
 {
 	bool ok = true;
 	if (writer->insert(
@@ -425,6 +425,12 @@ int Index::index_control()
 		LU_KEYWORD_LIST +
 		list.mbox + 
 		'\0' + 
+		id.raw()) != 0) ok = false;
+	
+	MessageId importStamp(import);
+	if (writer->insert(
+		LU_CACHE +
+		importStamp.raw().substr(0, 4) +
 		id.raw()) != 0) ok = false;
 	
 	if (author_email.length())
@@ -534,7 +540,7 @@ int Index::index_keywords(DwEntity& e)
 	return 0;
 }
 
-int Index::index(time_t envelope, bool check, bool& exist)
+int Index::index(time_t envelope, time_t import, bool check, bool& exist)
 {
 	exist = false;
 	message.Parse();
@@ -547,9 +553,9 @@ int Index::index(time_t envelope, bool check, bool& exist)
 	
 	if (exist) return 0;
 	
-	if (index_threading() < 0) return -1;
-	if (index_control  () < 0) return -1;
-	if (index_keywords(message) < 0) return -1;
+	if (index_threading(       ) < 0) return -1;
+	if (index_control  (import ) < 0) return -1;
+	if (index_keywords (message) < 0) return -1;
 	
 	return 0;
 }

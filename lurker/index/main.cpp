@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.14 2003-05-07 16:33:32 terpstra Exp $
+/*  $Id: main.cpp,v 1.15 2003-05-10 20:08:52 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -145,7 +145,9 @@ int index(const DwString& msg, long batch, bool check)
 	
 	string::size_type unwind = append.length();
 	
+	time_t import = time(0);
 	time_t arrival;
+
 	const char* d = msg.c_str();
 	if (d[0] == 'F' && d[1] == 'r' && d[2] == 'o' && d[3] == 'm' && d[4] == ' ')
 	{
@@ -158,7 +160,7 @@ int index(const DwString& msg, long batch, bool check)
 	}
 	else
 	{
-		arrival = time(0);
+		arrival = import;
 		
 		/** Make a local-timezone timestamp for the message envelope.
 		 */
@@ -174,7 +176,7 @@ int index(const DwString& msg, long batch, bool check)
 	Index i(msg, db.get(), *list, start, msg.length());
 	
 	bool exist;
-	if (i.index(arrival, check, exist) != 0)
+	if (i.index(arrival, import, check, exist) != 0)
 	{
 		cerr << "Import failed; aborting..." << endl;
 		return -1;
