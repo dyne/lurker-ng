@@ -1,4 +1,4 @@
-/*  $Id: keyword.c,v 1.4 2002-01-24 23:15:17 terpstra Exp $
+/*  $Id: keyword.c,v 1.5 2002-01-24 23:57:26 terpstra Exp $
  *  
  *  keyword.c - manages a database for keyword searching
  *  
@@ -26,8 +26,6 @@
  * from the disk at once to take advantage of no seeking.
  */
 
-#define LU_BLOCK_AT_ONCE	10240
-
 #include "keyword.h"
 #include "io.h"
 
@@ -47,7 +45,7 @@
 int	lu_keyword_fd;
 DB*	lu_keyword_db;
 
-/* Ok, how does this work?
+/* Ok, how does this work? (indexing)
  *
  * So, first we have the db3 btree which turns keyword strings into their
  * flat file offsets.
@@ -92,7 +90,7 @@ DB*	lu_keyword_db;
  * We define an offset of '0' to be invalid. The front of the file holds a
  * table, so this address is never needed.
  *
- * How a search is executed is explained further down.
+ * How the direct access and search methods work are explained further down.
  */
 
 /* We don't allow 2^0 or 2^1 sized blocks.
@@ -611,3 +609,58 @@ int lu_pop_keyword(const char* keyword)
 	
 	return 0;
 }
+
+/* Ok, the direct record access methods.
+ * These are used by the keyword search algorithm and also by the index
+ * rendering alogirhtms (which need to count from the front).
+ * 
+ * A handle just stores the information necessary to locate data that is
+ * requested by the caller. It is indexed from the front of the record
+ * not the rear (as in keyword searches). It also deals with records
+ * that are buffered, but not flushed.
+ * 
+ * Each record may also be partially fragmented. When a handle is opened, we
+ * partially defragment the record. We won't completely defragment the
+ * record or we won't meet the < 0.001s requirement. :-) So, we will do up
+ * to a constant number of disk ops to defragment it. Then allow reads into
+ * the fragmented buffer.
+ */
+
+/* What is the maximum number of records we'll move to defragment on open?
+ * Default: 8Mb
+ */
+#define LU_DEFRAGMENT_MAXIMUM	2097152
+
+/* Alright, how do we deal with keyword lookups?
+ * 
+ * Well, I presume that the reader already understands how to do set
+ * set intersection in O(n+m) time when |S1|=n |S2|=m and both are in sorted
+ * order. We use this algorithm, but we count from the right -> newer documents
+ * are the result of a search in preference to older documents.
+ * 
+ * We first grab a handle for each keyword that is involved in the search. 
+ * Rather than walking all the lists in order, we try to jump ahead to where
+ * we expect the record to be. This is done with a linear prediction which
+ * falls back to a binary search if the data does not seem uniformly
+ * distributed.
+ * 
+ * Because we will end up reading records ahead of our location when we do
+ * our jump prediction, we can cache them. How many records we keep cached
+ * in memory for each keyword is configured below.
+ */
+
+/* How many records do we pull at a time from the disk.
+ * Default: 8192 -> 32k
+ */
+#define LU_SPECULATIVE_READ_AHEAD	8192
+
+/* How many read_ahead buffers will we cache per keyword
+ * Default: 16
+ */
+#define LU_PER_KEYWORD_BUFFER		16
+
+/* How many search terms do we allow?
+ */
+#define LU_MAX_KEYWORDS			16
+
+/* Worst case memory usage: 16*16*8192*4 = 8Mb */

@@ -1,4 +1,4 @@
-/*  $Id: keyword.h,v 1.2 2002-01-23 07:33:12 terpstra Exp $
+/*  $Id: keyword.h,v 1.3 2002-01-24 23:57:26 terpstra Exp $
  *  
  *  keyword.h - manages a database for keyword searching
  *  
@@ -24,12 +24,11 @@
 
 #include "records.h"
 
-struct Search_T;
-typedef struct Search_T* Search;
-
 /** Initialize the keyword database in case it's empty.
  */
 extern int lu_keyword_init();
+
+/*-------------------------------------------------- Indexing methods */
 
 /** Record that named keyword appears in the message.
  */
@@ -40,12 +39,39 @@ extern int lu_push_keyword(const char* keyword, message_id message);
  */
 extern int lu_pop_keyword(const char* keyword);
 
+/*-------------------------------------------------- Direct access methods */
+
+struct Handle_T;
+typedef struct Handle_T* Handle;
+
+/** Open up a record for reading.
+ */
+extern Handle lu_open_handle(const char* keyword);
+
+/** How many records are in the handle.
+ */
+extern message_id lu_handle_records(Handle h);
+
+/** Retrieve the specified range of records.
+ */
+extern int lu_handle_read(Handle h, message_id* buf, message_id count);
+
+/** Close a record handle.
+ */
+extern void lu_close_handle(const char* keyword);
+
+/*-------------------------------------------------- Search methods */
+
+struct Search_T;
+typedef struct Search_T* Search;
+
 /** Start a new keyword search.
  */
-extern Search lu_new_search(const char* words);
+extern Search lu_new_search(const char* const * words);
 
 /** Skip ahead <n> records.
  */
+extern int lu_search_skip(Search search, int records);
 
 /** Extract the next matching document.
  */
