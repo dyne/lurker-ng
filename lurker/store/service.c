@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.52 2002-05-22 18:42:56 terpstra Exp $
+/*  $Id: service.c,v 1.53 2002-05-27 14:53:37 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -39,10 +39,10 @@
 #include "mbox.h"
 #include "service.h"
 
-#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <iconv.h>
+#include <regex.h>
 
 #define LU_PROTO_INDEX	20
 
@@ -58,6 +58,25 @@
 #define TOPMESSAGE_END	'i'
 #define TOPMESSAGE_DOWN	'j'
 #define TOPMESSAGE_BOTH	'k'
+
+#define TOKEN_REG	"([A-Za-z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9])"
+#define HOST_REG	"((" TOKEN_REG "\\.)*" TOKEN_REG ")"
+#define USER_REG	"([A-Za-z0-9][a-zA-Z0-9._-]*[a-zA-Z0-9]|[a-zA-Z0-9])"
+#define FILE_REG	"([A-Za-z%~0-9:.,_-]*)"
+#define PATH_REG	"((/" FILE_REG ")*)"
+#define POST_REG	"([A-Za-z%~0-9.,_=/:;+\\&-]*)"
+#define PROTO_REG	"([a-zA-Z]+)"
+#define INDENT_REG	"([a-zA-Z]{0,4}[>:] )"
+
+#define URL_REG		"(" PROTO_REG "://" HOST_REG \
+				"("    PATH_REG ")?" \
+				"(#"   FILE_REG ")?" \
+				"(\\?" POST_REG ")?" \
+			")"
+
+#define EMAIL_REG	"(" USER_REG "@" HOST_REG ")"
+
+#define QUOTE_REG	"(\n" INDENT_REG "[^\n]*\n(" INDENT_REG "[^\n]*\n)*)"
 
 /*------------------------------------------------- Private types */
 
@@ -105,6 +124,10 @@ static const char* my_service_mime[] =
 	"image", "video", "model", "x-unknown"
 };
 	    
+static regex_t	url_reg;
+static regex_t	email_reg;
+static regex_t	quote_reg;
+
 /*------------------------------------------------- Private helper methods */
 
 static int my_service_buffer_init(
@@ -414,7 +437,11 @@ static int my_service_write_url(
 
 	for (start = buf; *buf; buf++)
 	{
-		if (!isalnum(*buf))
+		if (	(*buf < 'a' && *buf > 'z') &&
+			(*buf < 'A' && *buf > 'Z') &&
+			(*buf < '0' && *buf > '9') &&
+			(*buf != '/' && *buf != ':' && 
+			 *buf != '-' && *buf != '_'))
 		{
 			snprintf(&hex[0], sizeof(hex), "%%%2X", *buf);
 			
@@ -545,6 +572,111 @@ static char* my_service_find_name(
 	return 0;
 }
 
+static int my_service_mailto(
+	My_Service_Handle	h,
+	char*			buf, 
+	long			len)
+{
+	char		bk;
+	regmatch_t	match;
+	int		result;
+	
+	bk = buf[len];
+	buf[len] = 0;
+	
+	while ((result = regexec(&email_reg, buf, 1, &match, 0)) == 0)
+	{
+		match.rm_eo -= match.rm_so;
+		
+		if (my_service_write_strl(h, buf, match.rm_so) != 0) return -1;
+		
+		buf += match.rm_so;
+		len -= match.rm_so;
+		
+		if (my_service_buffer_write (h, "<mailto>")       != 0) return -1;
+		if (my_service_buffer_writel(h, buf, match.rm_eo) != 0) return -1;
+		if (my_service_buffer_write (h, "</mailto>")      != 0) return -1;
+		
+		buf += match.rm_eo;
+		len -= match.rm_eo;
+	}
+	
+	if (my_service_write_strl(h, buf, len) != 0) return -1;
+	
+	buf[len] = bk;
+	return 0;
+}
+
+static int my_service_url(
+	My_Service_Handle	h,
+	char*			buf, 
+	long			len)
+{
+	char		bk;
+	regmatch_t	match;
+	int		result;
+	
+	bk = buf[len];
+	buf[len] = 0;
+	
+	while ((result = regexec(&url_reg, buf, 1, &match, 0)) == 0)
+	{
+		match.rm_eo -= match.rm_so;
+		
+		if (my_service_mailto(h, buf, match.rm_so) != 0) return -1;
+		
+		buf += match.rm_so;
+		len -= match.rm_so;
+		
+		if (my_service_buffer_write (h, "<url>")          != 0) return -1;
+		if (my_service_buffer_writel(h, buf, match.rm_eo) != 0) return -1;
+		if (my_service_buffer_write (h, "</url>")         != 0) return -1;
+		
+		buf += match.rm_eo;
+		len -= match.rm_eo;
+	}
+	
+	if (my_service_mailto(h, buf, len) != 0) return -1;
+	
+	buf[len] = bk;
+	return 0;
+}
+
+static int my_service_quote(
+	My_Service_Handle	h,
+	char*			buf, 
+	long			len)
+{
+	char		bk;
+	regmatch_t	match;
+	int		result;
+	
+	bk = buf[len];
+	buf[len] = 0;
+	
+	while ((result = regexec(&quote_reg, buf, 1, &match, 0)) == 0)
+	{
+		match.rm_eo -= match.rm_so;
+		
+		if (my_service_url(h, buf, match.rm_so) != 0) return -1;
+		
+		buf += match.rm_so;
+		len -= match.rm_so;
+		
+		if (my_service_buffer_write(h, "<quote>")        != 0) return -1;
+		if (my_service_url         (h, buf, match.rm_eo) != 0) return -1;
+		if (my_service_buffer_write(h, "</quote>")       != 0) return -1;
+		
+		buf += match.rm_eo;
+		len -= match.rm_eo;
+	}
+	
+	if (my_service_url(h, buf, len) != 0) return -1;
+	
+	buf[len] = bk;
+	return 0;
+}
+
 static int my_service_dump(
 	My_Service_Handle	h,
 	const char*		dat,
@@ -552,7 +684,7 @@ static int my_service_dump(
 	const char*		coding)
 {
 	char*	b;
-	char	buf[1024];
+	char	buf[10240];
 	size_t	fill, tmp;
 	iconv_t	ic;
 	
@@ -578,8 +710,8 @@ static int my_service_dump(
 		b = &buf[0];
 		tmp = iconv(ic, (ICONV_CAST)&dat, &len, &b, &fill);
 		
-		/*!!! Search the message for URLs, email address, quotations, etc */
-		if (my_service_write_strl(h, &buf[0], sizeof(buf) - fill) != 0)
+		/*!!! can miss stuff on 10k boundaries. oh well. */
+		if (my_service_quote(h, &buf[0], sizeof(buf) - fill) != 0)
 			break;
 		
 		if (tmp == (size_t)-1 && errno != E2BIG)
@@ -602,7 +734,8 @@ static int my_service_traverse(
 	My_Service_Handle	h,
 	struct Lu_Mbox_Message* in, 
 	struct mail_bodystruct* body,
-	int			count)
+	int			count,
+	int			draw)
 {
 	struct mail_body_part*	p;
 	size_t			length;
@@ -610,6 +743,7 @@ static int my_service_traverse(
 	int			nfree;
 	char*			name;
 	const char*		charset;
+	char*			lower;
 	
 	if (!body)
 	{	/* You never know... */
@@ -620,6 +754,10 @@ static int my_service_traverse(
 	
 	name    = my_service_find_name(body);
 	charset = lu_mbox_find_charset(body);
+	
+	for (lower = body->subtype; *lower; lower++)
+		if (*lower >= 'A' && *lower <= 'Z')
+			*lower += 'a' - 'A';
 	
 	if (my_service_buffer_write(h, "<mime id=\"") != 0) return -1;
 	if (my_service_write_int   (h, count        ) != 0) return -1;
@@ -643,49 +781,61 @@ static int my_service_traverse(
 	
 	switch ((int)body->type)
 	{
-		case TYPEMESSAGE:
-			/* This part contains an encapsulated message.
-			 */
+	case TYPEMULTIPART:
+		/*
+		 * Multipart message.  Look at the nested parts
+		 * and hopefully find some plaintext.
+		 */
+		
+		p = body->nested.part;
+		if (p)
+		{
 			count = my_service_traverse(h, in, 
-					body->nested.msg->body, count);
-				
-			if (count == -1) return -1;
-			break;
-
-		case TYPETEXT:
-			/*
-			 * This is what we want to display -- stop.
-			 */
+				&p->body, count, 
+				draw);
+			p = p->next;
+		}
+		
+		if (count == -1) break;
+		
+		for (; p != NULL; p = p->next)
+		{
+			count = my_service_traverse(h, in,
+				&p->body, count, 
+				draw && strcmp(body->subtype, "alternative"));
+			if (count == -1) break;
+		}
+		
+		break;
+		
+	case TYPEMESSAGE:
+		/* This part contains an encapsulated message.
+		 */
+		count = my_service_traverse(h, in, 
+				body->nested.msg->body, count, 
+				draw);
+		break;
+	
+	case TYPETEXT:
+		/*
+		 * This is what we want to display -- stop.
+		 */
+		
+		if (draw)
+		{
 			buffer = lu_mbox_select_body(in, body, &length, &nfree);
-			
 			if (my_service_dump(h, buffer, length, charset) != 0)
-				return -1;
-			
-			if (nfree)
-				fs_give((void **)&buffer);
-
-			break;
-
-		case TYPEMULTIPART:
-			/*
-			 * Multipart message.  Look at the nested parts
-			 * and hopefully find some plaintext.
-			 */
-			for (p = body->nested.part; p != NULL; p = p->next)
-			{
-				count = my_service_traverse(h, in,
-						&p->body, count);
-				if (count == -1) break;
-			}
-			
-			break;
-			
-		default:
-			break;
+				count = -1;
+			if (nfree) fs_give((void **)&buffer);
+		}
+		break;
+		
+	default:
+		break;
 	}
 	
+	if (count == -1) return -1;
 	if (my_service_buffer_write(h, "</mime>\n") != 0) return -1;
-	
 	return count;
 }
 
@@ -711,23 +861,23 @@ static struct mail_bodystruct* my_service_attach_id(
 	
 	switch ((int)body->type)
 	{
-		case TYPEMESSAGE:
-			return my_service_attach_id(in, 
-				body->nested.msg->body, count);
-			break;
-
-		case TYPEMULTIPART:
-			/*
-			 * Multipart message.  Look at the nested parts
-			 * and hopefully find some plaintext.
-			 */
-			for (p = body->nested.part; p != NULL; p = p->next)
-			{
-				s = my_service_attach_id(in,
-					&p->body, count);
-				if (s) return s;
-			}
-			break;
+	case TYPEMESSAGE:
+		return my_service_attach_id(in, 
+			body->nested.msg->body, count);
+		break;
+	
+	case TYPEMULTIPART:
+		/*
+		 * Multipart message.  Look at the nested parts
+		 * and hopefully find some plaintext.
+		 */
+		for (p = body->nested.part; p != NULL; p = p->next)
+		{
+			s = my_service_attach_id(in,
+				&p->body, count);
+			if (s) return s;
+		}
+		break;
 	}
 	
 	return 0;
@@ -1649,7 +1799,7 @@ static int my_service_message(
 	}
 	if (my_service_buffer_write(h, "</subject>\n") != 0) goto my_service_message_error3;
 	
-	if (my_service_traverse(h, &mmsg, mmsg.body, 0) == -1) goto my_service_message_error3;
+	if (my_service_traverse(h, &mmsg, mmsg.body, 0, 1) == -1) goto my_service_message_error3;
 	if (my_service_buffer_write(h, "</message>\n")  != 0) goto my_service_message_error3;
 	
 	if (b != 0) lu_breader_free(b);
@@ -2173,6 +2323,33 @@ static int my_service_splash(
 
 int lu_service_init()
 {
+	int  error;
+	char buf[100];
+	
+	if ((error = regcomp(&url_reg,   URL_REG,   REG_EXTENDED)) != 0)
+	{
+		regerror(error, &url_reg, &buf[0], sizeof(buf));
+		fprintf(stderr, "Unable to compile '%s': %s\n", 
+			URL_REG, &buf[0]);
+		exit(1);
+	}
+	
+	if ((error = regcomp(&email_reg, EMAIL_REG, REG_EXTENDED)) != 0)
+	{
+		regerror(error, &email_reg, &buf[0], sizeof(buf));
+		fprintf(stderr, "Unable to compile '%s': %s\n", 
+			URL_REG, &buf[0]);
+		exit(1);
+	}
+	
+	if ((error = regcomp(&quote_reg, QUOTE_REG, REG_EXTENDED)) != 0)
+	{
+		regerror(error, &quote_reg, &buf[0], sizeof(buf));
+		fprintf(stderr, "Unable to compile '%s': %s\n", 
+			QUOTE_REG, &buf[0]);
+		exit(1);
+	}
+	
 	return 0;
 }
 
@@ -2193,6 +2370,10 @@ int lu_service_close()
 
 int lu_service_quit()
 {
+	regfree(&url_reg);
+	regfree(&email_reg);
+	regfree(&quote_reg);
+	
 	return 0;
 }
 
