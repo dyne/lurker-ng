@@ -17,6 +17,7 @@ dist_man_MANS = lurker-index.1 lurker-list.1 lurker-params.1 lurker-search.1
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(vardir)
 
+if MAINTAINER_MODE
 lurker-index.1: lurker-index.sgml
 	docbook-to-man $< > $@
 lurker-list.1: lurker-list.sgml
@@ -25,3 +26,4 @@ lurker-params.1: lurker-params.sgml
 	docbook-to-man $< > $@
 lurker-search.1: lurker-search.sgml
 	docbook-to-man $< > $@
+endif

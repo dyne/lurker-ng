@@ -486,8 +486,8 @@ uninstall-man: uninstall-man1
 	uninstall-info-am uninstall-man uninstall-man1
 
 
-lurker-prune.1: lurker-prune.sgml     
-	docbook-to-man $< > $@
+@MAINTAINER_MODE_TRUE@lurker-prune.1: lurker-prune.sgml     
+@MAINTAINER_MODE_TRUE@	docbook-to-man $< > $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

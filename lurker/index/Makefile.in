@@ -511,14 +511,14 @@ uninstall-man: uninstall-man1
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(vardir)
 
-lurker-index.1: lurker-index.sgml
-	docbook-to-man $< > $@
-lurker-list.1: lurker-list.sgml
-	docbook-to-man $< > $@
-lurker-params.1: lurker-params.sgml
-	docbook-to-man $< > $@
-lurker-search.1: lurker-search.sgml
-	docbook-to-man $< > $@
+@MAINTAINER_MODE_TRUE@lurker-index.1: lurker-index.sgml
+@MAINTAINER_MODE_TRUE@	docbook-to-man $< > $@
+@MAINTAINER_MODE_TRUE@lurker-list.1: lurker-list.sgml
+@MAINTAINER_MODE_TRUE@	docbook-to-man $< > $@
+@MAINTAINER_MODE_TRUE@lurker-params.1: lurker-params.sgml
+@MAINTAINER_MODE_TRUE@	docbook-to-man $< > $@
+@MAINTAINER_MODE_TRUE@lurker-search.1: lurker-search.sgml
+@MAINTAINER_MODE_TRUE@	docbook-to-man $< > $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

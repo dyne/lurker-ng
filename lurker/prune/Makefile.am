@@ -10,5 +10,7 @@ lurker_prune_SOURCES = \
 
 dist_man_MANS = lurker-prune.1
 
+if MAINTAINER_MODE
 lurker-prune.1: lurker-prune.sgml     
 	docbook-to-man $< > $@
+endif
