@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.7 2002-01-26 22:39:53 terpstra Exp $
+/*  $Id: main.c,v 1.8 2002-01-27 01:47:27 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -422,6 +422,14 @@ int main(int argc, const char* argv[])
 	}
 	
 	openlog(STORAGE, LOG_PID, LOG_MAIL);
+	
+	/* Run all the tests */
+	if (lu_test_index() != 0)
+		return 1;
+	if (lu_test_handle() != 0)
+		return 1;
+	if (lu_test_search() != 0)
+		return 1;
 	
 	if (detach)
 	{

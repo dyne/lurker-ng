@@ -1,4 +1,4 @@
-/*  $Id: keyword.c,v 1.6 2002-01-25 07:31:07 terpstra Exp $
+/*  $Id: keyword.c,v 1.7 2002-01-27 01:47:27 terpstra Exp $
  *  
  *  keyword.c - manages a database for keyword searching
  *  
@@ -37,10 +37,16 @@
 #include <errno.h>
 #endif
 
+#define DEBUG 1
+
+#ifndef DEBUG
 #ifdef HAVE_SYSLOG_H
 #include <syslog.h>
 #else
 #define syslog(x, y, ...)
+#endif /* HAVE_SYSLOG_H */
+#else
+#define syslog(x, ...) printf(__VA_ARGS__)
 #endif
 
 int	lu_keyword_fd;
@@ -54,8 +60,6 @@ DB*	lu_keyword_db;
  * Then in the flat file we have lists of document ids for that keyword.
  * These lists MUST be in sorted order.
  *
- * Our defragmentation is simple: we don't.
- * 
  * Block sizes may be: 4, 8, 16, 32, 64, 128, 256, ..., 2^(bits in message_id)
  * We maintain a list of free block sizes at the start of the flat file. For
  * each block size we have a head pointer. Each free block's first off_t
@@ -69,8 +73,10 @@ DB*	lu_keyword_db;
  * <4 byte record count>
  * The document ids follow immediately in sorted order.
  *
- * The record count is *guaranteed* to be such that lu_cell_type will tell you
- * what the cell-type of it is.
+ * The record count does not tell you how big the record is. However, you
+ * can check if the end of the cell for 0xFFFFFFFFUL. If it has this value,
+ * it is twice as big otherwise it fits in the cell_type of messages. This
+ * works b/c the record count of the next entry could never be this large.
  *
  * If the first docid == 0xFFFFFFFFUL then there is a special case:
  * In this case, the first part of the record is located elsewhere.
@@ -98,6 +104,9 @@ DB*	lu_keyword_db;
  * We do allow up to 2^2 ... 2^(bits in message_id) sized blocks
  */
 #define LU_TABLE_SIZE	(sizeof(message_id) * 8 - 1)
+
+/* A constant with 0xFFF... in it */
+message_id lu_kw_invalid;
 
 /* Helper method to do a complete write 
  */
@@ -198,6 +207,8 @@ int lu_keyword_init()
 	off_t records[LU_TABLE_SIZE];
 	off_t off = lseek(lu_keyword_fd, 0, SEEK_END);
 	
+	memset(&lu_kw_invalid, 0xFF, sizeof(message_id));
+	
 	if (off == -1)
 	{
 		perror("lseek'ing the keyword.flat");
@@ -261,7 +272,7 @@ static char lu_cell_type(message_id hits)
  * the filesystem supports it.
  * Precondition: there must be no other free blocks of this size.
  */
-static int lu_create_empty_record(char cell_type)
+static int lu_create_empty_record(char cell_type, off_t* out)
 {
 	message_id junk = 0;
 	off_t amount;
@@ -272,7 +283,7 @@ static int lu_create_empty_record(char cell_type)
 	{
 		syslog(LOG_ERR, "seeking to eof keyword.flat: %s\n",
 			strerror(errno));
-		goto lu_create_empty_record_error0;
+		return -1;
 	}
 	
 	amount = 1 << (cell_type + 2); /* n is actualy 2^(n+2) */
@@ -282,31 +293,14 @@ static int lu_create_empty_record(char cell_type)
 	if (lu_swrite(lu_keyword_fd, ind, &junk, sizeof(message_id), 
 		"writing to extend file") != sizeof(message_id))
 	{
-		goto lu_create_empty_record_error0;
+		return -1;
 	}
 	
 	/* Alright, we've got the space. - unwind with error1 now
 	 * Now we just have to mark it as free.
 	 */
-	
-	ind = cell_type;
-	ind *= sizeof(off_t);
-	if (lu_swrite(lu_keyword_fd, ind, &where, sizeof(off_t),
-		"marking as free record") != sizeof(off_t))
-	{
-		goto lu_create_empty_record_error1;
-	}
-	
-	/* Score! It all worked! */
+	*out = where;
 	return 0;
-	
-lu_create_empty_record_error1:
-	if (ftruncate(lu_keyword_fd, where) != 0)
-		syslog(LOG_ERR, "could not release claimed space: %llu\n",
-			amount);
-	
-lu_create_empty_record_error0:
-	return -1;
 }
 
 /** This function sticks a cell on the free list.
@@ -314,10 +308,30 @@ lu_create_empty_record_error0:
  */
 static int lu_free_cell(off_t which, message_id msgs)
 {
+	message_id next_count;
 	off_t prior;
+	off_t amount;
 	off_t where = lu_cell_type(msgs);
-	where *= sizeof(off_t);
 	
+	amount = 1 << (lu_cell_type(msgs) + 2); /* n is actualy 2^(n+2) */
+	amount *= sizeof(message_id); /* We need to fit message_ids */
+	
+	while (1)
+	{
+		if (lu_sread(lu_keyword_fd, which + amount, &next_count, sizeof(message_id),
+			"detecting fragment on free") != sizeof(message_id))
+		{
+			goto lu_free_cell_error0;
+		}
+		
+		if (next_count != lu_kw_invalid) break;
+		
+		/* It's at least twice as big as it's holding */
+		amount <<= 1;
+		where++;
+	}
+	
+	where *= sizeof(off_t);
 	if (lu_sread(lu_keyword_fd, where, &prior, sizeof(off_t),
 		"reading old free index") != sizeof(off_t))
 	{
@@ -347,6 +361,35 @@ lu_free_cell_error1:
 	
 lu_free_cell_error0:
 	return -1;
+}
+
+/* This function should be called whenever the size of a record is being
+ * reduced. It will see if the new size does not indicate how large the
+ * record's space really is. It will place all the fragment markers necessary
+ * to keep the free function aware of the real size.
+ */
+int lu_push_fragment_markers(off_t ind, message_id old, message_id new)
+{
+	off_t		amount;
+	char		old_type = lu_cell_type(old);
+	char		new_type = lu_cell_type(new);
+	
+	amount = 1 << (old_type + 2);
+	amount *= sizeof(message_id);
+	while (new_type < old_type)
+	{
+		
+		if (lu_swrite(lu_keyword_fd, ind + amount, &lu_kw_invalid, sizeof(message_id),
+			"writing free space fragment marker") != sizeof(message_id))
+		{
+			return -1;
+		}
+		
+		new_type++;
+		amount <<= 1;
+	}
+	
+	return 0;
 }
 
 /** Pop a record off the free list. Return 0 if there is none.
@@ -396,15 +439,12 @@ static int lu_allocate_cell(char cell_type, off_t* out)
 		return 0;
 	}
 	
-	if (lu_create_empty_record(cell_type) != 0)
-		return -1;
-	
-	if (lu_pop_free_list(cell_type, out) != 0)
+	if (lu_create_empty_record(cell_type, out) != 0)
 		return -1;
 	
 	if (*out == 0)
 	{
-		syslog(LOG_ERR, "We created a free record, but it wasn't in keyword.flat\n");
+		syslog(LOG_ERR, "We created a free record, but we didn't get it\n");
 		return -1;
 	}
 	
@@ -565,7 +605,7 @@ static int lu_write_keyword_block(
 		}
 	}
 	
-	ind = where + ((records + 1) * sizeof(off_t));
+	ind = where + ((records + 1) * sizeof(off_t)); /* +1 to skip count */
 	if (lu_swrite(lu_keyword_fd, where, buf, count * sizeof(message_id),
 		"writing new message_id records") != count * sizeof(message_id))
 	{
@@ -587,21 +627,60 @@ int lu_push_keyword(const char* keyword, message_id msg)
 	return lu_write_keyword_block(keyword, &msg, 1);
 }
 
-int lu_pop_keyword(const char* keyword)
+static int lu_flush_buffer(const char* keyword)
+{
+	/*!!! Buffering needs to be done here. */
+	return 0;
+}
+
+int lu_pop_keyword(const char* keyword, message_id id)
 {
 	off_t		where;
 	message_id	count;
+	message_id	last;
+	off_t		amount;
 	
-	/*!!! Should deal with buffering here. */
+	if (lu_flush_buffer(keyword) != 0)
+	{
+		return -1;
+	}
 	
 	if (lu_locate_keyword(keyword, &where) != 0)
 	{
 		return -1;
 	}
 	
+	if (where == 0)
+	{	/* can't pop a non-existant record */
+		return -1;
+	}
+	
 	if (lu_sread(lu_keyword_fd, where, &count, sizeof(message_id),
 		"reading old message counter") != sizeof(message_id))
 	{
+		return -1;
+	}
+	
+	if (count == 0)
+	{	/* can't pop an empty record */
+		return -1;
+	}
+	
+	amount = count; /* Recall -1 for last, +1 to skip count */
+	amount *= sizeof(message_id);
+	if (lu_sread(lu_keyword_fd, where + amount, &last, sizeof(message_id),
+		"reading last record") != sizeof(message_id))
+	{	/* need to check last entry */
+		return -1;
+	}
+	
+	if (id != last)
+	{	/* Not what we were asked to pop */
+		return 0;
+	}
+	
+	if (lu_push_fragment_markers(where, count, count - 1) != 0)
+	{	/* can't mark this record as bigger than it seems */
 		return -1;
 	}
 	
@@ -654,55 +733,50 @@ struct Handle_T
 	} index[LU_TABLE_SIZE+1];
 };
 
+/* This routine will defragment at most one chunk of the handle. It will also
+ * not put in more effort than LU_DEFRAGMENT_MAXIMUM.
+ */
 static int lu_defrag_record(Handle h)
 {
+#if 0
+	/* Lets try doing nothing .. if it's fast searching maybe we will
+	 * never defrag. Or at least lets see the impact later - when I can
+	 * get real timings.
+	 */
+	 
+	message_id amount;
+	message_id frag_off;
 	message_id buf[LU_BLOCK_SIZE / sizeof(message_id)];
-	off_t		target;
-	message_id	count;
-	message_id	fragd;
-	message_id	scan;
-	message_id	hunk;
-	int		where;
 	
-	/* Ok, what's the range we're looking at defragmenting? */
+	if (h->index[0].after == 0)
+	{	/* Not fragmented - stop right here. */
+		return 0;
+	}
+	
 	if (h->index[0].after > LU_DEFRAGMENT_MAXIMUM)
 	{
-		fragd = h->index[0].after - LU_DEFRAGMENT_MAXIMUM;
-		count = LU_DEFRAGMENT_MAXIMUM;
+		amount = LU_DEFRAGMENT_MAXIMUM;
+		frag_off = h->index[0].after - amount;
+		
+		if (frag_off <= 3)
+		{	/* If you're going to be fragmented, you have to be
+			 * at least 3 records fragmented. Just do it all.
+			 */
+			amount   = h->index[0].after;
+			frag_off = h->index[1].after;
+		}
 	}
 	else
 	{
-		fragd = 0;
-		count = h->index[0].after;
+		amount   = h->index[0].after;
+		frag_off = h->index[1].after;
 	}
 	
-	/* Move the data */
-	scan = fragd;
-	target = h->index[0].where + ((1 + fragd) * sizeof(message_id));
-	while (count)
-	{
-		if (sizeof(buf)/sizeof(message_id) < count)
-			hunk = count;
-		else
-			hunk = sizeof(buf)/sizeof(message_id);
-		
-		if (lu_handle_read(h, scan, &buf[0], hunk) == -1)
-		{
-			return -1;
-		}
-		
-		if (lu_swrite(lu_keyword_fd, target, &buf[0], hunk*sizeof(message_id),
-			"defragmenting data") != hunk*sizeof(message_id))
-		{
-			return -1;
-		}
-		
-		count  -= hunk;
-		scan   += hunk;
-		target += hunk * sizeof(message_id);
-	}
+	/* Now, move [frag_off, frag_off+amount) into 0 from 1.
+	 */
 	
-	/*!!! Release the unused records */
+	/* Now, resize the records of ... */
+#endif
 	return 0;
 }
 
@@ -712,9 +786,11 @@ Handle lu_open_handle(const char* keyword)
 	off_t		scan;
 	int		where;
 	message_id	buf[2];
-	message_id	fragment;
 	
-	memset(&fragment, 0xFF, sizeof(message_id));
+	if (lu_flush_buffer(keyword) != 0)
+	{
+		return 0;
+	}
 	
 	if (lu_locate_keyword(keyword, &scan) != 0)
 	{
@@ -724,6 +800,15 @@ Handle lu_open_handle(const char* keyword)
 	if ((out = malloc(sizeof(struct Handle_T))) == 0)
 	{
 		return 0;
+	}
+	
+	if (scan == 0)
+	{
+		out->index[0].where   = 0;
+		out->index[0].after   = 0;
+		out->index[0].records = 0;
+		
+		return out;
 	}
 	
 	where = -1;
@@ -747,7 +832,7 @@ Handle lu_open_handle(const char* keyword)
 			free(out);
 			return 0;
 		}
-	} while(buf[1] == fragment);
+	} while(buf[1] == lu_kw_invalid);
 	
 	out->index[where].after = 0;
 	for (; where > 0; where--)
@@ -837,15 +922,434 @@ void lu_close_handle(Handle h)
 /* How many records do we pull at a time from the disk.
  * Default: 8192 -> 32k
  */
+#ifdef DEBUG
+/* Makes failure cases show up if this is small */
+#define LU_SPECULATIVE_READ_AHEAD	2
+#else
 #define LU_SPECULATIVE_READ_AHEAD	8192
+#endif
 
 /* How many read_ahead buffers will we cache per keyword
  * Default: 16
  */
 #define LU_PER_KEYWORD_BUFFER		16
 
-/* How many search terms do we allow?
- */
-#define LU_MAX_KEYWORDS			16
+/* Worst case memory usage: terms*16*8192*4 = 0.5Mb a keyword */
 
-/* Worst case memory usage: 16*16*8192*4 = 8Mb */
+/* This records a fragment of the ondisk record.
+ * Offset is the message_id offset from the first record #.
+ * used is how much of the buffer is full
+ */
+struct CacheRecord
+{
+	message_id	offset;
+	message_id	used;
+	message_id	buf[LU_SPECULATIVE_READ_AHEAD];
+};
+
+/* This is all the records currently cached.
+ * The indexes work thusly [where], [where+1], [where+2], ... [where+used]
+ * are locations after the last search and are all (mod LU_PER_KEYWORD_BUFFER).
+ * used never exceeds LU_PER_KEYWORD_BUFFER.
+ */
+struct Keyword
+{
+	Handle		handle;
+	message_id	last;
+	
+	/* The record which is furthest right in our search */
+	int 		cache_end_m1;
+	
+	/* The number of records actually containing data. 
+	 * Note: this even counts the record to the right of the search.
+	 */
+	int 		cache_fill;
+	
+	struct CacheRecord index[LU_PER_KEYWORD_BUFFER];
+};
+
+struct Search_T
+{
+	int		keywords;
+	struct Keyword	keyword[0];
+};
+
+/* This function will read into the next available CacheRecord as much of the
+ * message ids surrounding offset as possible. It trys to put offset in the
+ * middle of the buffer subject to the record boundaries.
+ */
+static int lu_pull_kw_record(struct Keyword* kw, message_id offset)
+{
+	struct CacheRecord* record;
+	message_id left;
+	message_id right;
+	
+	record = &kw->index[kw->cache_end_m1];
+	
+	if (lu_handle_records(kw->handle) <= LU_SPECULATIVE_READ_AHEAD)
+	{	/* Is the entire record so small it fits in our cache? */
+		left  = 0;
+		right = lu_handle_records(kw->handle);
+	}
+	else
+	{	/* Would the offset run off the end of the record? */
+		if (offset + LU_SPECULATIVE_READ_AHEAD/2 >= 
+			lu_handle_records(kw->handle))
+		{
+			left  = lu_handle_records(kw->handle) - LU_SPECULATIVE_READ_AHEAD;
+			right = lu_handle_records(kw->handle);
+		}
+		else
+		{	/* Would the offset end up with us before the front? */
+			if (offset <= LU_SPECULATIVE_READ_AHEAD/2)
+			{
+				left = 0;
+				right = LU_SPECULATIVE_READ_AHEAD;
+			}
+			else
+			{	/* Ok, we can just center on the offset. */
+				left  = offset - LU_SPECULATIVE_READ_AHEAD/2;
+				right = offset + LU_SPECULATIVE_READ_AHEAD/2;
+			}
+		}
+	}
+	
+	/* Ok, we now have the bounds on the request. */
+	record->offset = left;
+	record->used   = right - left;
+	if (lu_handle_read(kw->handle, record->offset,
+		&record->buf[0], record->used) != 0)
+	{	/* Failed to read cache */
+		return -1;
+	}
+	
+	return 0;
+}
+
+/* This will find the id which is less than or equal to id in the current
+ * record.
+ */
+static int lu_gather_id(struct Keyword* kw, message_id id)
+{
+	struct CacheRecord* record;
+	int left, right, mid;
+	
+	record = &kw->index[kw->cache_end_m1];
+	right = record->used;
+	left  = 0;
+	
+	while (right - left > 1)
+	{
+		mid = (right + left) / 2;
+		if (id > record->buf[mid])
+		{
+			left = mid;
+		}
+		else if (id < record->buf[mid])
+		{
+			right = mid;
+		}
+		else
+		{	/* The record exists */
+			kw->last = id;
+			return 0;
+		}
+	}
+	
+	/* It is less than the search criterea */
+	kw->last = record->buf[left];
+	return 0;
+}
+
+/* Find the message_id that is <= id. We require that the caller always call
+ * us in descending id order. The result is placed in kw->last.
+ */
+static int lu_search_find_id(struct Keyword* kw, message_id id)
+{
+	/*!!! add binary search fallback behaviour */
+	
+	lu_addr		accum;
+	message_id	buf_left;
+	message_id	buf_right;
+	message_id	off_left;
+	message_id	off_right;
+	message_id	predict;
+	int		last_where;
+	struct CacheRecord* record;
+	
+	/* As always, the search is in range [left, right) */
+	
+	off_left  = 0;
+	off_right = lu_handle_records(kw->handle);
+	
+	if (kw->cache_end_m1 == -1)
+	{	/* We have no records loaded. */
+		predict = off_right;
+		
+		kw->cache_end_m1 = 0;
+		kw->cache_fill = 1;
+	}
+	else
+	{	/* Start freeing cache until we find the record, pass it, or
+		 * run out of cache.
+		 */
+		while (1)
+		{
+			record = &kw->index[kw->cache_end_m1];
+			if (id < record->buf[0])
+			{	/* It's definitely not here, and the cache
+				 * lies to the right (useless)
+				 */
+				off_right = record->offset;
+				
+				kw->cache_fill--;
+				
+				if (kw->cache_end_m1 == 0)
+					kw->cache_end_m1 = LU_PER_KEYWORD_BUFFER;
+				kw->cache_end_m1--;
+			}
+			else if (id > record->buf[record->used-1])
+			{
+				off_left = record->offset + record->used - 1;
+			}
+			else
+			{	/* The answer lies in this range */
+				return lu_gather_id(kw, id);
+			}
+		}
+	}
+	
+	while (1)
+	{
+		/* Don't do anything stupid */
+		if (predict <= off_left)
+		{
+			predict = off_left + LU_SPECULATIVE_READ_AHEAD/2;
+		}
+		if (predict >= off_right)
+		{
+			predict = off_right - LU_SPECULATIVE_READ_AHEAD/2;
+		}
+		
+		if (lu_pull_kw_record(kw, predict) != 0)
+			return -1;
+		
+		/* On which side of our search did this fall? */
+		last_where = kw->cache_end_m1;
+		record = &kw->index[kw->cache_end_m1];
+		if (record->buf[0] > id)
+		{	/* it is to the right */
+			off_right = record->offset;
+		}
+		else if (record->buf[record->used - 1] < id)
+		{	/* it is to the left - keep this cached */
+			if (kw->cache_fill  != LU_PER_KEYWORD_BUFFER)
+				kw->cache_fill++;
+			kw->cache_end_m1++;
+			if (kw->cache_end_m1 == LU_PER_KEYWORD_BUFFER)
+				kw->cache_end_m1 = 0;
+			
+			off_left = record->offset + record->used - 1;
+		}
+		else
+		{	/* the answer lies in this range */
+			return lu_gather_id(kw, id);
+		}
+		
+		/* Use what we know to predict again */
+		
+		record = &kw->index[last_where];
+		buf_left  = record->buf[0];
+		buf_right = record->buf[record->used - 1];
+		
+		if (id > buf_left)
+		{
+			accum = (id - buf_left) * record->used;
+			accum /= buf_right - buf_left;
+			
+			if (accum > lu_handle_records(kw->handle) - record->offset)
+				predict = lu_handle_records(kw->handle);
+			else
+				predict = record->offset + accum;
+		}
+		else
+		{
+			accum = (buf_left - id) * record->used;
+			accum /= buf_right - buf_left;
+			
+			if (accum > record->offset)
+				predict = 0;
+			else
+				predict = record->offset - accum;
+		}
+	}
+}
+
+Search lu_new_search(const char* const * words)
+{
+	Search	out;
+	int	i;
+	
+	/* Count the entries */
+	for (i = 0; words[i]; i++)
+	{
+		/* noop */
+	}
+	
+	if (i == 0)
+	{	/* no search? */
+		return 0;
+	}
+	
+	out = malloc(sizeof(struct Search_T) + i * sizeof(struct Keyword));
+	if (out == 0)
+	{
+		return 0;
+	}
+	
+	out->keywords = i;
+	for (i = 0; i < out->keywords; i++)
+	{
+		out->keyword[i].handle = lu_open_handle(words[i]);
+		out->keyword[i].cache_fill   = 0;
+		out->keyword[i].cache_end_m1 = -1;
+		
+		if (out->keyword[i].handle == 0)
+			break;
+		
+		if (lu_handle_records(out->keyword[i].handle))
+		{
+			/* Find the last message id */
+			if (lu_handle_read(out->keyword[i].handle,
+				lu_handle_records(out->keyword[i].handle)-1,
+				&out->keyword[i].last,
+				1) != 0)
+			{
+				break;
+			}
+		}
+		else
+		{	/* No records -> no hits */
+			out->keyword[i].last = lu_kw_invalid;
+		}
+	}
+	
+	if (i != out->keywords)
+	{
+		while (i)
+		{
+			lu_close_handle(out->keyword[--i].handle);
+		}
+		
+		free(out);
+		return 0;
+	}
+	
+	return out;
+}
+
+void lu_free_search(Search s)
+{
+	int i;
+	
+	for (i = 0; i < s->keywords; i++)
+		lu_close_handle(s->keyword[i].handle);
+	free(s);
+}
+
+int lu_search_skip(Search s, int records)
+{
+	/*!!! optimize for keywords == 1 */
+	while (records--) lu_search_next(s);
+	return 0;
+}
+
+message_id lu_search_next(Search s)
+{
+	int		i;
+	message_id	big;
+	message_id	small;
+	int		i_big;
+	int		i_small;
+	
+	/* Remember, the search runs backwards.
+	 */
+	while (1)
+	{
+		small   = s->keyword[0].last;
+		i_small = 0;
+		big     = s->keyword[0].last;
+		i_big   = 0;
+		
+		for (i = 1; i < s->keywords; i++)
+		{
+			if (s->keyword[i].last == lu_kw_invalid)
+			{	/* No more hits available */
+				return lu_kw_invalid;
+			}
+			
+			if (s->keyword[i].last < small)
+			{
+				small   = s->keyword[i].last;
+				i_small = i;
+			}
+			
+			if (s->keyword[i].last > big)
+			{
+				big   = s->keyword[i].last;
+				i_big = i;
+			}
+		}
+		
+		if (big == small)
+		{
+			/* We have a hit! */
+			/* First, move one of the records forward so the next
+			 * call doesn't have them all equal
+			 */
+			lu_search_find_id(&s->keyword[0], big-1);
+			
+			/* Spit out the hit */
+			return big;
+		}
+		else
+		{
+			/* Move the largest to the smallest or earlier */
+			if (lu_search_find_id(&s->keyword[i_big], small) != 0)
+				return lu_kw_invalid;
+		}
+	}
+		
+	return 0;
+}
+
+
+/************************************************************* Testing!! */
+
+int lu_test_index()
+{
+#ifndef DEBUG
+	return 0;
+#else
+	printf("Running test on indexing methods...\n");
+	return -1;
+#endif
+}
+
+int lu_test_handle()
+{
+#ifndef DEBUG
+	return 0;
+#else
+	return -1;
+#endif
+}
+
+int lu_test_search()
+{
+#ifndef DEBUG
+	return 0;
+#else
+	return -1;
+#endif
+}

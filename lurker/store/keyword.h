@@ -1,4 +1,4 @@
-/*  $Id: keyword.h,v 1.5 2002-01-26 22:41:33 terpstra Exp $
+/*  $Id: keyword.h,v 1.6 2002-01-27 01:47:27 terpstra Exp $
  *  
  *  keyword.h - manages a database for keyword searching
  *  
@@ -83,3 +83,10 @@ extern message_id lu_search_next(Search search);
 /** Free the resources used by the search
  */
 extern void lu_free_search(Search search);
+
+/*-------------------------------------------------- Test methods */
+
+/* These are all noops if DEBUG is not defined */
+int lu_test_index();
+int lu_test_handle();
+int lu_test_search();
