@@ -7,6 +7,8 @@ Ideas:
 	consider mmaping the append file for faster writes
 		-- would restrict us to 6Gb max email on 32bit systems
 		-- would make us much faster
+	An import only mode
+	A service only mode
 
 Unfulfilled requirements:
 	Better packing of tree
