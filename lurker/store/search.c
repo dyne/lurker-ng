@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.5 2002-06-07 10:30:40 terpstra Exp $
+/*  $Id: search.c,v 1.6 2002-06-09 22:07:32 terpstra Exp $
  *  
  *  search.h - Uses the breader to execute a given search
  *  
@@ -35,6 +35,7 @@
 
 #include <st.h>
 #include <ctype.h>
+#include <stdio.h>
 
 /* Our search algorithm does a simple set intersection on several ordered 
  * lists. This is done by walking the lists in order. However, the underlying
@@ -57,7 +58,7 @@
  *
  * So, we want to find the best fit line 'ax + b = y' and then predict at 
  * which value of x the line crosses zero (no more hits).
- *
+ * 
  * Let A = [ x 1 ], c = [ a b ]^T, M = A^T*A, z = A^T*y
  * Then, we want to solve Mc = z to get our coefficients.
  *
@@ -66,12 +67,14 @@
  *
  * Then M^-1 = [  M11 -M01 ] / (M00*M11 - M10*M01)
  *             [ -M10  M00 ]
+ * 
+ * Then [ a b ]^T = [ M11*z0-M01*z1  -M10*z0+M00*z1 ] / (M00*M11-M10*M01)
+ * Solve ax + b = 0 -> x = -b / a = (M01*z0-M00*z1)/(M11*z0-M01*z1)
+ *                    Symmetric -------^
  *
- * Unfortunately, we sum from largest to smallest. This means we can't use a 
- * float to store the value during the summation. However, we can use two
- * message_ids for accumulation.
- *
- * Also, note M01 = M10 because it is symmetric.
+ * Strictly speaking, we should sum from smallest to largest... But...
+ * Well, that would take effort! We only do at most 1000 terms... double
+ * is big. If you don't like it---you implement the 3*messge_id math methods.
  */
 
 /*------------------------------------------------ Constant parameters */
@@ -87,11 +90,11 @@ static message_id		my_search_id[LU_MAX_TERMS];
 static int			my_search_handles = 0;
 static st_mutex_t		my_search_mutex;
 
-static message_id	my_search_M00[2];
-static message_id	my_search_M01[2];
-static message_id	my_search_M11[2];
-static message_id	my_search_z0[2];
-static message_id	my_search_z1[2];
+static double		my_search_m00;	/* +xx */
+static double		my_search_m01;	/* +x */
+static message_id	my_search_m11;	/* +1 */
+static double		my_search_z0;	/* +xy */
+static double		my_search_z1;	/* +y */
 
 /*------------------------------------------------- Public component methods */
 
@@ -189,6 +192,10 @@ int lu_search_start(
 		}
 	}
 	
+
+	my_search_z0 = my_search_z1 = 0;
+	my_search_m00 = my_search_m01 = my_search_m11 = 0;
+	
 	return 0;
 }
 
@@ -203,13 +210,14 @@ int lu_search_result(
 	message_id	smallest;
 	message_id	index;
 	
+	done = 0;
+	
 	if (my_search_handles == 0)
 	{	/* No results for empty search */
 		*result = lu_common_minvalid;
-		return 0;
+		done = 1;
 	}
 	
-	done = 0;
 	while (!done)
 	{
 		which    = 0;
@@ -221,7 +229,7 @@ int lu_search_result(
 			if (my_search_id[i] == lu_common_minvalid)
 			{	/* no more hits */
 				*result = lu_common_minvalid;
-				return 0;
+				break;
 			}
 			
 			if (largest == lu_common_minvalid ||
@@ -272,8 +280,7 @@ int lu_search_result(
 			{
 				*result = lu_common_minvalid;
 			}
-			
-			return 0;
+			break;
 		}
 		
 		/* Ok, what is the value at this location? */
@@ -287,11 +294,33 @@ int lu_search_result(
 		}
 	}
 	
+	if (*result != lu_common_minvalid)
+	{
+		my_search_m11 += 1;
+		my_search_m01 += my_search_m11;
+		my_search_m00 += my_search_m11*my_search_m11;
+		my_search_z0  += my_search_m11 * *result;
+		my_search_z1  += *result;
+	}
+	else
+	{	/* We have seen all the hits -- give exact answer:
+		 * x 0         y 1
+		 * x <answer>  y 0
+		 */
+		my_search_m00 =  my_search_m11;
+		my_search_m00 *= my_search_m11;
+		my_search_m01 = my_search_m11;
+		my_search_m11 = 2;
+		my_search_z0  = 0;
+		my_search_z1  = 1;
+	}
+	
 	return 0;
 }
 
 int lu_search_end(message_id* predict)
 {
+	double div, x;
 	int i;
 	
 	for (i = 0; i < my_search_handles; i++)
@@ -300,8 +329,33 @@ int lu_search_end(message_id* predict)
 	}
 	my_search_handles = 0;
 	
+#ifdef DEBUG
+	printf("M = [ %e %e ], z = [ %e ]\n", my_search_m00, my_search_m01, my_search_z0);
+	printf("    [ %e %e ]      [ %e ]\n", my_search_m01, (double)my_search_m11, my_search_z1);
+	
+	printf("a = %e\n",
+		(my_search_m11*my_search_z0 -my_search_m01*my_search_z1) /
+		(my_search_m00*my_search_m11-my_search_m01*my_search_m01));
+	printf("b = %e\n",
+		(my_search_m00*my_search_z1 -my_search_m01*my_search_z0) /
+		(my_search_m00*my_search_m11-my_search_m01*my_search_m01));
+#endif
+	
+	div = my_search_m11*my_search_z0-my_search_m01*my_search_z1;
+	if (div >= 1 || div <= -1)
+	{
+		x = (my_search_m01*my_search_z0-my_search_m00*my_search_z1) / div;
+		*predict = x;
+#ifdef DEBUG
+		printf("I predict: %e\n", x);
+#endif
+	}
+	else
+	{
+		*predict = lu_common_minvalid;
+	}
+	
 	st_mutex_unlock(my_search_mutex);
 	
-	*predict = 0;
 	return 0;
 }
