@@ -185,7 +185,8 @@ vardir = @vardir@
 wwwdir = @wwwdir@
 EXTRA_DIST = lurker-drop-rlimit.cpp lurker-regenerate \
              lurker-index.sgml lurker-list.sgml \
-             lurker-params.sgml lurker-search.sgml
+             lurker-params.sgml lurker-search.sgml \
+             lurker-regenerate.sgml
 
 AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/libesort
 LDADD = ../common/libcommon.a ../libesort/libesort.a
@@ -193,7 +194,9 @@ lurker_index_SOURCES = Index.cpp main.cpp getdate.cpp Index.h getdate.h
 lurker_list_SOURCES = list.cpp
 lurker_params_SOURCES = params.cpp
 lurker_search_SOURCES = search.cpp
-dist_man_MANS = lurker-index.1 lurker-list.1 lurker-params.1 lurker-search.1
+dist_man_MANS = lurker-index.1 lurker-list.1 lurker-params.1 \
+		lurker-search.1 lurker-regenerate.1
+
 all: all-am
 
 .SUFFIXES:
@@ -518,6 +521,8 @@ install-data-local:
 @MAINTAINER_MODE_TRUE@lurker-params.1: lurker-params.sgml
 @MAINTAINER_MODE_TRUE@	docbook-to-man $< > $@
 @MAINTAINER_MODE_TRUE@lurker-search.1: lurker-search.sgml
+@MAINTAINER_MODE_TRUE@	docbook-to-man $< > $@
+@MAINTAINER_MODE_TRUE@lurker-regenerate.1: lurker-regenerate.sgml
 @MAINTAINER_MODE_TRUE@	docbook-to-man $< > $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

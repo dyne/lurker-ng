@@ -1,0 +1,83 @@
+.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-regenerate.1,v 1.1 2004-08-28 21:28:00 terpstra Exp $
+.\"
+.\"	transcript compatibility for postscript use.
+.\"
+.\"	synopsis:  .P! <file.ps>
+.\"
+.de P!
+.fl
+\!!1 setgray
+.fl
+\\&.\"
+.fl
+\!!0 setgray
+.fl			\" force out current output buffer
+\!!save /psv exch def currentpoint translate 0 0 moveto
+\!!/showpage{}def
+.fl			\" prolog
+.sy sed -e 's/^/!/' \\$1\" bring in postscript file
+\!!psv restore
+.
+.de pF
+.ie     \\*(f1 .ds f1 \\n(.f
+.el .ie \\*(f2 .ds f2 \\n(.f
+.el .ie \\*(f3 .ds f3 \\n(.f
+.el .ie \\*(f4 .ds f4 \\n(.f
+.el .tm ? font overflow
+.ft \\$1
+..
+.de fP
+.ie     !\\*(f4 \{\
+.	ft \\*(f4
+.	ds f4\"
+'	br \}
+.el .ie !\\*(f3 \{\
+.	ft \\*(f3
+.	ds f3\"
+'	br \}
+.el .ie !\\*(f2 \{\
+.	ft \\*(f2
+.	ds f2\"
+'	br \}
+.el .ie !\\*(f1 \{\
+.	ft \\*(f1
+.	ds f1\"
+'	br \}
+.el .tm ? font underflow
+..
+.ds f1\"
+.ds f2\"
+.ds f3\"
+.ds f4\"
+'\" t 
+.ta 8n 16n 24n 32n 40n 48n 56n 64n 72n  
+.TH "LURKER\-REGENERATE" "1" 
+.SH "NAME" 
+lurker\-regenerate \(em imports messages into the archive 
+.SH "SYNOPSIS" 
+.PP 
+\fBlurker\-regenerate <lurker\-regenerate> <config file>\fR 
+.SH "DESCRIPTION" 
+.PP 
+\fBlurker\-regenerate\fR regenerates obsolete 
+lurker databases created by lurker >= 0.6. It generates 
+a new database first, then removes the old one. You will 
+need enough space for 2 times your obsolete database. 
+lurker\-index should be the location of the lurker\-index executable 
+[normally /usr/bin/lurker\-index] and config file should be the  
+location of your config file [normally /etc/lurker/lurker.conf]. 
+ 
+.SH "SEE ALSO" 
+.PP 
+lurker documentation on http://lurker.sourceforge.net/ and in 
+/usr/share/doc/lurker. 
+.SH "AUTHOR" 
+.PP 
+This manual page was written by Jonas Meurer <jonas@freesources.org> for 
+the \fBDebian\fP system (but may be used by others).  Permission is 
+granted to copy, distribute and/or modify this document under 
+the terms of the GNU Free Documentation 
+License, Version 1.1 or any later version published by the Free 
+Software Foundation; with no Invariant Sections, no Front-Cover 
+Texts and no Back-Cover Texts. 
+.\" created by instant / docbook-to-man, Sat 28 Aug 2004, 23:27 
