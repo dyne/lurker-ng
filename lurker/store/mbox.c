@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.41 2002-07-21 20:36:15 terpstra Exp $
+/*  $Id: mbox.c,v 1.42 2002-07-26 15:27:03 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -76,16 +76,15 @@
 /*------------------------------------------------ Public global vars */
 
 int lu_mbox_disable_watch = 0;
+int lu_mbox_enable_profile = 0;
 
 /*------------------------------------------------ Private global vars */
 
 static int my_mbox_stop_watch = 0;
 static int my_mbox_skip_watch = 1;
 
-#ifdef PROFILE
 static long    my_mbox_imported = 0;
 static time_t  my_mbox_checkpoint;
-#endif
 
 /*------------------------------------------------ Private helper methods */
 
@@ -525,9 +524,10 @@ static int my_mbox_process_mbox(
 	
 	lu_config_move_mbox_end(mbox, list, mbox->msg.end);
 	
-#ifdef PROFILE
-	my_mbox_imported++;
-#endif
+	if (lu_mbox_enable_profile)
+	{
+		my_mbox_imported++;
+	}
 	
 	lu_mbox_destroy_message(&m);
 	return 0;
@@ -848,7 +848,6 @@ static void* my_mbox_watch(
 	return 0;
 }
 
-#ifdef PROFILE
 static void* my_mbox_profile(
 	void* arg)
 {
@@ -857,7 +856,7 @@ static void* my_mbox_profile(
 	while (1)
 	{
 		st_sleep(10);
-		printf("Imported %ld message in last %d seconds\n", 
+		syslog(LOG_NOTICE, _("Imported %ld message in last %d seconds\n"), 
 			my_mbox_imported,
 			(int)(time(0) - my_mbox_checkpoint));
 		
@@ -865,7 +864,6 @@ static void* my_mbox_profile(
 		my_mbox_checkpoint = time(0);
 	}
 }
-#endif
 
 /*------------------------------------------------- Public component methods */
 
@@ -879,9 +877,8 @@ int lu_mbox_init(void)
 		st_thread_create(&my_mbox_watch, 0, 0, 0);
 	}
 	
-#ifdef PROFILE
-	st_thread_create(&my_mbox_profile, 0, 0, 0);
-#endif
+	if (lu_mbox_enable_profile)
+		st_thread_create(&my_mbox_profile, 0, 0, 0);
 	
 	return 0;
 }

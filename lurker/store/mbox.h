@@ -1,4 +1,4 @@
-/*  $Id: mbox.h,v 1.8 2002-07-19 12:24:17 terpstra Exp $
+/*  $Id: mbox.h,v 1.9 2002-07-26 15:27:03 terpstra Exp $
  *  
  *  mbox.h - Knows how to follow mboxes for appends and import messages
  *  
@@ -39,6 +39,7 @@ struct Lu_Mbox_Message
 /*------------------------------------------------- Public variables */
 
 extern int lu_mbox_disable_watch;
+extern int lu_mbox_enable_profile;
 
 /*------------------------------------------------- Public methods */
 

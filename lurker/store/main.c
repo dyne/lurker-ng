@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.38 2002-07-21 19:26:08 terpstra Exp $
+/*  $Id: main.c,v 1.39 2002-07-26 15:27:02 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -197,6 +197,7 @@ void help(const char* name)
 	fputs(_("\t-n\tDon't run as a daemon\n"),       stderr);
 	fputs(_("\t-i\tDon't import new messages\n"),	stderr);
 	fputs(_("\t-s\tDon't service requests\n"),	stderr);
+	fputs(_("\t-p\tOutput profiling information\n"),stderr);
 	fputs(_("\t-c file\tUse settings from file\n"), stderr);
 	exit(0);
 }
@@ -219,13 +220,16 @@ int main(int argc, char** argv)
 	textdomain(PACKAGE);
 	bind_textdomain_codeset(PACKAGE, "utf-8");
 	
-	while ((c = getopt(argc, (char *const *)argv, "vnsic:")) != -1) {
+	while ((c = getopt(argc, (char *const *)argv, "vpnsic:")) != -1) {
 		switch ((char)c) {
 		case 'c':
 			config = optarg;
 			break;
 		case 'n':
 			detach = 0;
+			break;
+		case 'p':
+			lu_mbox_enable_profile = 1;
 			break;
 		case 's':
 			lu_service_disable = 1;
