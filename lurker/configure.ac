@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1b)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.28 2002-07-11 13:27:16 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.29 2002-07-11 16:08:21 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -12,6 +12,9 @@ AM_MAINTAINER_MODE
 # Which languages are supported
 ALL_LINGUAS=""
 
+if test "x$USE_MAINTAINER_MODE" != "xno"; then
+  CFLAGS="$CFLAGS -ansi -pedantic -Wtraditional -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wnested-externs -Wlong-long -Winline"
+fi
 
 AC_ARG_WITH(wwwdir, AC_HELP_STRING(
 	[--with-wwwdir], 
@@ -53,23 +56,22 @@ else
 fi
 AC_SUBST(dbdir)
 
-AC_ISC_POSIX
 AC_PROG_CC
 AM_PROG_CC_STDC
 AC_PROG_RANLIB
 
 AC_HEADER_STDC
 AC_HEADER_DIRENT
-
-AC_C_BIGENDIAN
-AC_C_CONST
-AC_C_INLINE
-AC_C_CHAR_UNSIGNED
-
 AC_HEADER_TIME
 
 AC_FUNC_ALLOCA
 AC_FUNC_MMAP
+
+AC_ISC_POSIX
+AC_C_BIGENDIAN
+AC_C_CONST
+AC_C_INLINE
+AC_C_CHAR_UNSIGNED
 
 ST_CHECK(STORAGE)
 DB3_CHECK(STORAGE)
