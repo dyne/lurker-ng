@@ -1,4 +1,4 @@
-/*  $Id: Config.cpp,v 1.7 2003-06-04 15:29:18 terpstra Exp $
+/*  $Id: Config.cpp,v 1.8 2003-06-04 15:37:40 terpstra Exp $
  *  
  *  Config.cpp - Knows how to load the config file
  *  
@@ -135,7 +135,6 @@ bool isSimple(const string& s)
 	for (x = 0; x < s.length(); ++x)
 	{
 		char y = s[x];
-		if (y >= 'A' && y <= 'Z') continue;
 		if (y >= 'a' && y <= 'z') continue;
 		if (y >= '0' && y <= '9') continue;
 		if (y == '.' || y == '-' || y == '_') continue;
@@ -153,9 +152,10 @@ int Config::process_command(const string& key, const string& val)
 	
 	if (key == "group")
 	{
+		len = 32;
 		if (!isSimple(val) || val.length() == 0)
 		{
-			error << "Group id '" << val << "' is not a simple string!" << endl;
+			error << "Group id '" << val << "' is not a simple lowercase string!" << endl;
 			return -1;
 		}
 		
@@ -166,7 +166,7 @@ int Config::process_command(const string& key, const string& val)
 		len = 32;
 		if (!isSimple(val) || val.length() == 0)
 		{
-			error << "List id '" << val << "' is not a simple string!" << endl;
+			error << "List id '" << val << "' is not a simple lowercase string!" << endl;
 			return -1;
 		}
 		
