@@ -4,27 +4,6 @@
     xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
 
-<xsl:template match="splash" mode="title">
- <xsl:copy-of select="$splash"/>
-</xsl:template>
-
-<xsl:template match="list">
- <tr>
-  <td class="center">
-   <xsl:if test="number(messages) > 0">
-    <a href="../mindex/{id}@{offset}.{$ext}">
-     <xsl:value-of select="email/@name"/>
-    </a>
-   </xsl:if>
-   <xsl:if test="number(messages) = 0">
-    <xsl:value-of select="email/@name"/>
-   </xsl:if>
-  </td>
-  <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
-  <xsl:if test="not(description)"><td>--</td></xsl:if>
- </tr>
-</xsl:template>
-
 <xsl:template match="list" mode="select">
   <option value="{id}"><xsl:value-of select="email/@name"/>
   <xsl:if test="email/@address">
@@ -34,83 +13,78 @@
   </option>
 </xsl:template>
 
-<xsl:template match="splash" mode="body">
- <div id="listblock">
- <xsl:if test="count(list)&lt;8">
-  <table class="listtable0">
-   <tr class="header"><th width="35%"><xsl:value-of select="$lin-h"/></th>
-                      <th width="65%"><xsl:value-of select="$des-h"/></th></tr>
-   <xsl:apply-templates select="list"/>
-  </table>
+<xsl:template match="list">
+ <xsl:if test="number(messages) > 0">
+  <a href="../mindex/{id}@{offset}.{$ext}">
+   <xsl:value-of select="email/@name"/>
+  </a>
  </xsl:if>
+ <xsl:if test="number(messages) = 0">
+  <xsl:value-of select="email/@name"/>
+ </xsl:if>
+</xsl:template>
 
- <xsl:if test="count(list)>7">
-  <div id="listtable1">
-   <table>
-    <tr class="header"><th width="30%"><xsl:value-of select="$lin-h"/></th>
-                       <th width="70%"><xsl:value-of select="$des-h"/></th></tr>
-    <xsl:for-each select="list">
-     <xsl:if test="position()&lt;=ceiling(last() div 2)">
-      <xsl:if test="not(position()=ceiling(last() div 2))">
-       <tr class="list">
-        <td class="center">
-          <a href="../mindex/{id}@{offset}.{$ext}">
-          <xsl:value-of select="email/@name"/></a></td>
-        <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
-        <xsl:if test="not(description)"><td>--</td></xsl:if>
-       </tr>
-      </xsl:if>
-      <xsl:if test="position()=ceiling(last() div 2)">
-       <tr class="list">
-        <td class="center">
-         <a href="../mindex/{id}@{offset}.{$ext}">
-         <xsl:value-of select="email/@name"/></a></td>
-        <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
-        <xsl:if test="not(description)"><td>--</td></xsl:if>
-       </tr>
-      </xsl:if>
-     </xsl:if>
-    </xsl:for-each>
-   </table>
-  </div>
-  <div id="listtable2">
-   <table>
-    <tr class="header"><th width="30%"><xsl:value-of select="$lin-h"/></th>
-                       <th width="70%"><xsl:value-of select="$des-h"/></th></tr>
-    <xsl:for-each select="list">
-     <xsl:if test="position()>ceiling(last() div 2)">
-      <xsl:if test="not(position()=last())">
-       <tr class="list"> 
-        <td class="center">
-         <a href="../mindex/{id}@{offset}.{$ext}">
-         <xsl:value-of select="email/@name"/></a></td>
-        <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
-        <xsl:if test="not(description)"><td>--</td></xsl:if>
-       </tr>
-      </xsl:if>
-      <xsl:if test="position()=last()">
-       <tr>
-        <td class="center">
-         <a href="../mindex/{id}@{offset}.{$ext}">
-         <xsl:value-of select="email/@name"/></a></td>
-        <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
-        <xsl:if test="not(description)"><td>--</td></xsl:if>
-       </tr>
-      </xsl:if>
-     </xsl:if>
-    </xsl:for-each>
-   </table>
-  </div>
+<xsl:template name="format">
+ <xsl:param name="col1"/>
+ <xsl:param name="col2"/>
+ <xsl:param name="col3"/>
+ <xsl:param name="col4"/>
+ <xsl:if test="count($col1) &gt; 0 or count($col2) &gt; 0 or count($col3) &gt; 0 or count($col4) &gt; 0">
+<xsl:text>
+</xsl:text>
+  <tr>
+   <td><xsl:apply-templates select="$col1[position() = 1]"/></td>
+   <td><xsl:apply-templates select="$col2[position() = 1]"/></td>
+   <td><xsl:apply-templates select="$col3[position() = 1]"/></td>
+   <td><xsl:apply-templates select="$col4[position() = 1]"/></td>
+  </tr>
+  <xsl:call-template name="format">
+   <xsl:with-param name="col1" select="$col1[position() &gt; 1]"/>
+   <xsl:with-param name="col2" select="$col2[position() &gt; 1]"/>
+   <xsl:with-param name="col3" select="$col3[position() &gt; 1]"/>
+   <xsl:with-param name="col4" select="$col4[position() &gt; 1]"/>
+  </xsl:call-template>
  </xsl:if>
- </div>
+</xsl:template>
+
+<xsl:template match="splash" mode="title">
+ <xsl:copy-of select="$splash"/>
+</xsl:template>
+
+<xsl:template match="splash" mode="body">
+ <table class="listtable0" width="100%">
+  <tr class="header">
+   <th colspan="4" width="35%"><xsl:value-of select="$lin-h"/></th>
+  </tr>
+  
+  <xsl:variable name="size1" select="round((count(list)+3) div 4)"/>
+  <xsl:variable name="size2" select="round((count(list)+2) div 4)"/>
+  <xsl:variable name="size3" select="round((count(list)+1) div 4)"/>
+  <xsl:variable name="size4" select="round((count(list)+0) div 4)"/>
+  
+  <xsl:variable name="off1" select="0"/>
+  <xsl:variable name="off2" select="$off1+$size1"/>
+  <xsl:variable name="off3" select="$off2+$size2"/>
+  <xsl:variable name="off4" select="$off3+$size3"/>
+  <xsl:variable name="off5" select="$off4+$size4"/>
+  
+  <xsl:call-template name="format">
+   <xsl:with-param name="col1" select="list[position() &gt; $off1 and position() &lt;= $off2]"/>
+   <xsl:with-param name="col2" select="list[position() &gt; $off2 and position() &lt;= $off3]"/>
+   <xsl:with-param name="col3" select="list[position() &gt; $off3 and position() &lt;= $off4]"/>
+   <xsl:with-param name="col4" select="list[position() &gt; $off4 and position() &lt;= $off5]"/>
+  </xsl:call-template>
+ </table>
 
  <br/><br/><hr/>
  <h2>Lurker <xsl:copy-of select="$search"/></h2>
 
  <form action ="../lurker-search.cgi">
   <input type="hidden" name="format" value="{$ext}"/>
-  <input type="text"   name="query"  value="" size="50"/>
-  <input type="submit" name="submit" value="{$search}!"/>
+  <div class="center">
+   <input type="text"   name="query"  value="" size="50"/>
+   <input type="submit" name="submit" value="{$search}!"/>
+  </div>
   <hr class="search"/>
   <table class="search">
    <tr><th><xsl:copy-of select="$author"/></th>
