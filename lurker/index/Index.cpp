@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.18 2003-06-10 19:02:11 terpstra Exp $
+/*  $Id: Index.cpp,v 1.19 2003-06-11 10:55:33 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -108,16 +108,12 @@ pair<string, string> pickAddress(DwAddress* a, const char* charset)
 					addr = "";
 				}
 				
-				if (name != "") 
-				{	// prune any optional quotes
-					if (name[0] == '"' && name.length() > 2)
-						name = name.substr(1, name.length()-2);
-				}
+				// prune any optional quotes
+				if (name.length() > 2 && name[0] == '"')
+					name = name.substr(1, name.length()-2);
 				
 				if (addr != "")
-				{
 					return pair<string, string>(addr.c_str(), name);
-				}
 			}
 		}
 	}
@@ -151,8 +147,8 @@ int Index::index_author()
 			message.Headers().ReplyTo().FirstAddress(),
 			charset.c_str());
 		
-		author_name = addr.first;
-		author_email = addr.second;
+		author_email = addr.first;
+		author_name  = addr.second;
 		
 		// Some evil mailing lists set reply-to the list.
 		if (author_email == list.address)
