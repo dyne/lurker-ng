@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.2 2002-02-04 01:03:12 terpstra Exp $
+/*  $Id: service.c,v 1.3 2002-02-04 01:28:34 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -202,7 +202,7 @@ static int my_service_digest_request(st_netfd_t fd, const char* request)
 {
 	/* Determine what to do with the request */
 	if (memcmp(request, LU_PROTO_GETMSG, sizeof(LU_PROTO_GETMSG))) 
-		return my_service_getmsg(fd, LU_PROTO_GETMSG);
+		return my_service_getmsg(fd, request+sizeof(LU_PROTO_GETMSG)-1);
 	
 	return -1;
 }
