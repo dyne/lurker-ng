@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.8 2003-08-17 14:39:44 terpstra Exp $
+/*  $Id: esort.h,v 1.9 2003-08-17 16:15:48 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -151,7 +151,7 @@ class Reader
  	 *  
  	 *  This operation never fails; you must call advance() before use.
  	 */
- 	virtual auto_ptr<Walker> seek(const string& key, Direction direction) = 0;
+ 	virtual auto_ptr<Walker> seek(const string& key, Direction direction = FORWARD) = 0;
  	
  	/** Obtain a record Walker over only those records which are
  	 *  prefixed by 'prefix'. When the last such is passed, eof is
@@ -159,7 +159,7 @@ class Reader
  	 *  
  	 *  This operation never failes; you must call advance() before use.
  	 */
- 	virtual auto_ptr<Walker> seekp(const string& prefix, const string& key, Direction direction) = 0;
+ 	virtual auto_ptr<Walker> seekp(const string& prefix, const string& key, Direction direction = FORWARD) = 0;
  	
  	/** Open an existing database for reading.
  	 *  0 is returned and errno set on error.
