@@ -20,6 +20,16 @@ Quick start
 
 1 ./configure	--with-urldir="/relative-without-http/web/path/to/lurker" \
 		--with-wwwdir=/filesystem/path/to/above
+
+  If you need to specify dependency locations these options might help:
+  --with-dbdir            db directory (default: PREFIX/var/lib/lurker)
+  --with-stdir            st installation directory (default: none)
+  --with-db3dir           db3 installation directory (default: none)
+  --with-db3name          db3 library name (default: db-3 or db3)
+  --with-cclientdir       c-client installation directory (default: none)
+  --with-libiconv-prefix=DIR  search for libiconv in DIR/include and DIR/lib
+  --with-included-gettext use the GNU gettext library included here
+
 2 make
 3 make install	(as root)
 
