@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.10 2002-01-28 06:55:40 terpstra Exp $
+/*  $Id: main.c,v 1.11 2002-01-28 07:28:25 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -545,8 +545,9 @@ int main(int argc, const char* argv[])
 	memset(&sun_addr, 0, sizeof(sun_addr));
 	
 	sun_addr.sun_family = PF_UNIX;
-	strcpy(&sun_addr.sun_path[1], PACKAGE "_sock"); /* !!! Should somehow allow multiple lurkerd's */
-	sun_len = sizeof(sun_addr.sun_family) + strlen(&sun_addr.sun_path[1]) + 1;
+	strcpy(&sun_addr.sun_path[0], PACKAGE ".sock");
+	unlink(&sun_addr.sun_path[0]);
+	sun_len = sizeof(sun_addr.sun_family) + strlen(&sun_addr.sun_path[0]);
 	
 	if (bind(sun_fd, (struct sockaddr*)&sun_addr, sun_len) < 0)
 	{
@@ -559,6 +560,8 @@ int main(int argc, const char* argv[])
 		perror("Could not listen on abstract domain socket");
 		return 1;
 	}
+	
+	chmod(&sun_addr.sun_path[0], 0777);
 	
 	if ((sun_stfd = st_netfd_open(sun_fd)) == 0)
 	{
