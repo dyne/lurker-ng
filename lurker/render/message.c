@@ -1,4 +1,4 @@
-/*  $Id: message.c,v 1.7 2002-02-05 00:20:21 terpstra Exp $
+/*  $Id: message.c,v 1.8 2002-02-05 01:59:24 terpstra Exp $
  *  
  *  message.c - output results from a message/ lookup
  *  
@@ -89,6 +89,11 @@ static void write_xml_escaped(
 		case '&':
 			fwrite(start, 1, buf - start, out);
 			fputs("&amp;", out);
+			start = buf+1;
+			break;
+		case '\n':
+			fwrite(start, 1, buf - start, out);
+			fputs("<br/>\n", out);
 			start = buf+1;
 			break;
 		}
@@ -202,7 +207,7 @@ static void write_addresses(ADDRESS* addr, const char* name, FILE* out)
 {
 	if (!addr) return;
 	
-	fprintf(out, " <%s>\n", name);
+	fprintf(out, " <%s>", name);
 	for (; addr; addr = addr->next)
 	{
 		if (!addr->personal && (!addr->mailbox || !addr->host))
@@ -210,7 +215,7 @@ static void write_addresses(ADDRESS* addr, const char* name, FILE* out)
 			continue;
 		}
 		
-		fprintf(out, "  <email");
+		fprintf(out, "<email");
 		
 		if (addr->personal)
 		{
@@ -228,10 +233,10 @@ static void write_addresses(ADDRESS* addr, const char* name, FILE* out)
 			fputs("\"", out);
 		}
 		
-		fputs("/>\n", out);
+		fputs("/>", out);
 	}
 	
-	fprintf(out, " </%s>\n", name);
+	fprintf(out, "</%s>\n", name);
 }
 
 int lu_message_handler(char* parameter)
@@ -291,6 +296,10 @@ int lu_message_handler(char* parameter)
 	
 	fputs("<?xml-stylesheet type=\"text/xml\" href=\"render.xslt\"?>\n", xml);
 	fputs("<message>\n", xml);
+	
+	fputs(" <id>", xml);
+	fputs(parameter, xml);
+	fputs("</id>\n", xml);
 	
 	fputs(" <list>\n  <name>", xml);
 	write_xml_escaped_str(&msg.list_name[0], xml);
