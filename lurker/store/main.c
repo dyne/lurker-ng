@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.33 2002-06-21 20:12:32 terpstra Exp $
+/*  $Id: main.c,v 1.34 2002-06-21 21:27:56 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -175,7 +175,19 @@ static void* lu_sched_sync(void* die)
 
 static void lu_parachute(int sig)
 {
-	syslog(LOG_CRIT, _("Segmentation Fault - attempting to salvage db"));
+	static int once = 0;
+	
+	if (once)
+	{
+		syslog(LOG_CRIT, _("Program Fault (signal %d) in fault handler, giving up---your database is hosed"),
+			sig);
+		exit(0);
+	}
+	
+	once = 1;
+	syslog(LOG_CRIT, _("Program Fault (signal %d) - attempting to salvage db"), 
+		sig);
+	
 	lu_sched_sync((void*)1);
 }
 
