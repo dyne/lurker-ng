@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.14 2002-06-10 12:25:58 terpstra Exp $
+/*  $Id: breader.c,v 1.15 2002-06-10 22:36:54 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -409,7 +409,8 @@ static int my_breader_find(
 	assert (right_off >= left_off);
 	
 	if (right_off == left_off)
-	{	/* The range is empty -> no match */
+	{	/* No matches */
+		assert(left_off == 0);
 		*offset = lu_common_minvalid;
 		return 0;
 	}
@@ -417,7 +418,7 @@ static int my_breader_find(
 	/* Invariant was: largest matching element in range [l, r)
 	 *                l is sector aligned
 	 * Loop criterea failed:  r-l < LU_PULL_AT_ONCE
-	 * Test above passed: 0 < r-l
+	 * Test above failed: 0 < r-l
 	 * Thus: Pull [l, l+LU_PULL_AT_ONCE) records and the match is in it
 	 * (if there is a match)
 	 */
@@ -460,6 +461,7 @@ static int my_breader_find(
 	else
 	{	/* This is the only record it could have been, and it fails. */
 		*offset = lu_common_minvalid;
+		assert(l == 0 && left_off == 0);
 	}
 		
 	return 0;

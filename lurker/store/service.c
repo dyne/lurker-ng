@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.63 2002-06-10 12:25:58 terpstra Exp $
+/*  $Id: service.c,v 1.64 2002-06-10 22:36:54 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1923,6 +1923,109 @@ my_service_message_error0:
 	return -1;
 }
 
+static int my_service_earlier_than(
+	void*		arg,
+	message_id	id)
+{
+	lu_quad			tm = *(lu_quad*)arg;
+	Lu_Summary_Message	sum;
+	
+	sum = lu_summary_read_msummary(id);
+	if (sum.timestamp < tm) return 1;
+	return 0;
+}
+
+static int my_service_jump(
+	My_Service_Handle h, 
+	const char* request,
+	const char* ext)
+{
+	Lu_Breader_Handle	b;
+	lu_quad			tm;
+	int			list;
+	message_id		offset;
+	message_id		count;
+	char			keyword[40];
+	
+	if (sscanf(request, "%d@%d", &list, &tm) != 2)
+	{	/* They did something funny. */
+		my_service_error(h,
+			"Malformed request",
+			"Lurkerd received an improperly formatted jump request",
+			request);
+		
+		goto my_service_jump_error0;
+	}
+	
+	if (strcmp(ext, "xml") && strcmp(ext, "html"))
+	{
+		my_service_error(h,
+			"Malformed request",
+			"Lurkerd received a jump request for non html/xml",
+			ext);
+		
+		goto my_service_jump_error0;
+	}
+	
+	sprintf(&keyword[0], "%s%d", LU_KEYWORD_LIST, list);
+	b = lu_breader_new(&keyword[0]);
+	if (b == 0)
+	{
+		my_service_error(h,
+			"Internal error",
+			"Lurkerd failed to access the keyword database",
+			"server failure - see log files");
+		
+		goto my_service_jump_error0;
+	}
+	
+	if (lu_breader_offset(b, &my_service_earlier_than, &tm, &offset) != 0)
+	{
+		my_service_error(h,
+			"Internal error",
+			"Lurkerd failed to find a jump record",
+			"server failure - see log files");
+		
+		goto my_service_jump_error1;
+	}
+	
+	/* Normalize the offset */
+	count = lu_breader_records(b);
+	
+	if (offset == lu_common_minvalid)
+		offset = 0;
+	else if (offset < count-1)
+		offset++;
+	
+	offset -= (offset % LU_PROTO_INDEX);
+	
+	if (my_service_buffer_init(h, "text/xml\n", 1, 
+		lu_config_cache_index_ttl, 
+		(offset+LU_PROTO_INDEX >= count)?list:LU_EXPIRY_NO_LIST) != 0)
+	{
+		goto my_service_jump_error1;
+	}
+	
+	if (my_service_xml_head    (h)                 != 0) goto my_service_jump_error1;
+	if (my_service_buffer_write(h, "<redirect>\n") != 0) goto my_service_jump_error1;
+	if (my_service_server      (h)                 != 0) goto my_service_jump_error1;
+	if (my_service_buffer_write(h, " <url>mindex/")!= 0) goto my_service_jump_error1;
+	if (my_service_write_int   (h, list)           != 0) goto my_service_jump_error1;
+	if (my_service_buffer_write(h, "@")            != 0) goto my_service_jump_error1;
+	if (my_service_write_int   (h, offset)         != 0) goto my_service_jump_error1;
+	if (my_service_buffer_write(h, "</url>\n")     != 0) goto my_service_jump_error1;
+	if (my_service_buffer_write(h, "</redirect>\n")!= 0) goto my_service_jump_error1;
+	
+	lu_breader_free(b);
+	return 0;
+	
+my_service_jump_error1:
+	lu_breader_free(b);
+	
+my_service_jump_error0:
+	return -1;
+}
+
 static int my_service_mindex(
 	My_Service_Handle h, 
 	const char* request,
@@ -2014,18 +2117,12 @@ static int my_service_mindex(
 		goto my_service_mindex_error1;
 	}
 	
-	if (offset + count != lu_breader_records(b))
+	/* We shouldn't change if we already have next link */
+	if (my_service_buffer_init(h, "text/xml\n", 1, 
+		lu_config_cache_index_ttl,
+		(offset+count<lu_breader_records(b))?LU_EXPIRY_NO_LIST:list) != 0)
 	{
-		/* We shouldn't change if we already have next link */
-		if (my_service_buffer_init(h, "text/xml\n", 1, 
-				lu_config_cache_index_ttl, LU_EXPIRY_NO_LIST) != 0)
-			goto my_service_mindex_error1;
-	}
-	else
-	{
-		if (my_service_buffer_init(h, "text/xml\n", 1, 
-				lu_config_cache_index_ttl, list) != 0)
-			goto my_service_mindex_error1;
+		goto my_service_mindex_error1;
 	}
 	
 	if (my_service_xml_head(h)                            != 0) goto my_service_mindex_error1;
@@ -2565,6 +2662,7 @@ extern int lu_service_connection(st_netfd_t fd)
 	else if (!strcmp(mod, "search"))  my_service_search (&h, qs, ext);
 	else if (!strcmp(mod, "splash"))  my_service_splash (&h, qs, ext);
 	else if (!strcmp(mod, "thread"))  my_service_thread (&h, qs, ext);
+	else if (!strcmp(mod, "jump"))    my_service_jump   (&h, qs, ext);
 	else
 	{
 		my_service_error(&h,

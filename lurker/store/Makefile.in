@@ -78,7 +78,7 @@ dbdir = @dbdir@
 
 INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common
 
-REQUESTS = message mindex search splash mbox attach thread
+REQUESTS = message mindex search splash mbox attach thread jump
 
 sbin_PROGRAMS = @PACKAGE@d
 dist_db_DATA = DB_CONFIG
