@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.2 2004-08-24 19:28:44 terpstra Exp $
+/*  $Id: search.cpp,v 1.3 2004-08-24 21:15:59 terpstra Exp $
  *  
  *  search.cpp - Search for messages in lurker database (optionally delete)
  *  
@@ -107,14 +107,31 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	auto_ptr<ESort::Writer> db(ESort::Writer::opendb(cfg.dbdir + "/db"));
-	if (!db.get())
+	ESort::Writer* db;
+	auto_ptr<ESort::Reader> dbr;
+	
+	if (erase)
+	{
+		// Work around g++ 2.95 bug
+		auto_ptr<ESort::Writer> w
+			(ESort::Writer::opendb(cfg.dbdir + "/db"));
+		db = w.get();
+		dbr = w;
+	}
+	else
+	{
+		auto_ptr<ESort::Reader> r
+			(ESort::Reader::opendb(cfg.dbdir + "/db"));
+		dbr = r;
+	}
+
+	if (!dbr.get())
 	{
 		perror("opening database");
 		return 1;
 	}
 	
-	Search s(cfg, db.get(), ESort::Forward);
+	Search s(cfg, dbr.get(), ESort::Forward);
 	
 	while (optind < argc) s.keyword(argv[optind++]);
 	
@@ -129,7 +146,7 @@ int main(int argc, char** argv)
 		if (verbose)
 		{
 			string ok;
-			if ((ok = result.back().load(db.get(), cfg)) != "")
+			if ((ok = result.back().load(dbr.get(), cfg)) != "")
 			{
 				cerr << "Failed to load: " << ok << "\n";
 				return 1;
@@ -169,8 +186,18 @@ int main(int argc, char** argv)
 				i->id().raw()) != 0)
 			{
 				perror("insert");
-				cerr << "Delete failed; operation aborted.\n";
+				cerr << "Delete keyword failed; operation aborted.\n";
 				return 1; 
+			}
+			
+			if (db->insert(
+				LU_SUMMARY +
+				i->id().raw() + 
+				LU_MESSAGE_DELETED) != 0)
+			{
+				perror("insert");
+				cerr << "Delete summary failed; operation aborted.\n";
+				return 1;
 			}
 		}
 		if (!quiet) cerr << "Committing changes to disk" << endl;
