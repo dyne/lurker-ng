@@ -1,4 +1,4 @@
-/*  $Id: Parameters.cpp,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: Parameters.cpp,v 1.3 2003-04-25 14:05:37 terpstra Exp $
  *  
  *  Parameters.cpp - Control how the database is stored
  *  
@@ -40,7 +40,7 @@ Parameters::Parameters(
  : version_(version), blockSize_(blockSize), keySize_(keySize), unique_(unique)
 {
 	assert (keySize_ > 0);
-	assert (keySize_ * 4 <= blockSize_);
+	assert (keySize_ * 8 <= blockSize_);
 	
 	keyWidth_ = static_cast<int>(
 		ceil(

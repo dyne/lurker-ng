@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.3 2003-04-25 14:05:36 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -133,7 +133,7 @@ int DbMan::open(const string& db, Parameters& p, int mode)
 	dbfile = fdopen(fd, "r+");
 	assert (dbfile != 0);
 	
-	Parameters x(1,4,1);
+	Parameters x(1,8,1);
 	if (scanFile(x) != 0)
 	{
 		fseek(dbfile, 0, SEEK_SET);
@@ -202,7 +202,7 @@ int DbMan::snapshot(View& view)
 	int ok = lock_snapshot_ro();
 	if (ok != 0) return ok;
 	
-	Parameters p(1,4,1);
+	Parameters p(1,8,1);
 	if (scanFile(p) != 0)	// get the ids
 	{
 		unlock_snapshot_ro();

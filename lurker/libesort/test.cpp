@@ -1,4 +1,4 @@
-/*  $Id: test.cpp,v 1.5 2003-04-25 13:39:47 terpstra Exp $
+/*  $Id: test.cpp,v 1.6 2003-04-25 14:05:38 terpstra Exp $
  *  
  *  test.cpp - Write lots of crap and compare with RAM
  *  
@@ -36,8 +36,8 @@
 #include <cerrno>
 #include <cassert>
 
-#define DEBUG 1
-//#define DEBUG 0
+// #define DEBUG 1
+#define DEBUG 0
 
 using namespace std;
 using namespace ESort;
@@ -48,8 +48,7 @@ auto_ptr<Writer> db;
 string makeStr()
 {	// for testing with a human
 	
-	// !!! database has a bug --> zero length keys broken
-	int len = (random() % 20) + 1;
+	int len = random() % 20;
 	int i;
 	
 	string out;
@@ -210,7 +209,7 @@ int main(int argc, char** argv)
 		
 		check();
 		
-		if (DEBUG) cout << "Committing" << endl;
+		cout << "Committing" << endl;
 		
 		int c = db->commit();
 		if (c != 0)
