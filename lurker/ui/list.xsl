@@ -105,7 +105,7 @@
     <table class="external">
      <tr>
       <td align="left"><h1><xsl:value-of select="list/email/@name"/></h1></td>
-      <td align="right"><xsl:call-template name="language-dropdown"/></td>
+      <td nowrap="NOWRAP" align="right"><xsl:call-template name="language-dropdown"/></td>
      </tr>
     </table>
     

@@ -181,7 +181,7 @@
         <xsl:if test="string-length(summary/subject) &gt; 60">&#x2026;</xsl:if>
        </h1>
       </td>
-      <td align="right"><xsl:call-template name="language-dropdown"/></td>
+      <td nowrap="NOWRAP" align="right"><xsl:call-template name="language-dropdown"/></td>
      </tr>
     </table>
     
