@@ -116,7 +116,15 @@
 <!-- Format email message contents -->
 
 <xsl:template match="mailto">
- <a class="mailto" href="mailto:{.}"><xsl:value-of select="."/></a>
+ <xsl:element name="a">
+  <xsl:attribute name="href">
+   <xsl:text>mailto:</xsl:text>
+   <xsl:call-template name="my-escape-uri">
+    <xsl:with-param name="str" select="."/>
+   </xsl:call-template>
+  </xsl:attribute>
+  <xsl:value-of select="."/>
+ </xsl:element>
 </xsl:template>
 
 <xsl:template match="url">

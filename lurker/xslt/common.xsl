@@ -43,9 +43,84 @@
  </xsl:if>
 </xsl:template>
 
+<!-- Escape URIs -->
+
+<xsl:variable name="uri-input">The@dog-z went/_&#127;_%ab%zu%c</xsl:variable>
+<xsl:variable name="uri-output">The%40dog-z%20went%2F_%7F_%ab%25zu%25c</xsl:variable>
+<xsl:variable name="have-escape-uri" select="escape-uri($uri-input, true()) = $uri-output"/>
+
+<!-- According to the RFC, non-ascii chars will be utf-8 encoded and escaped
+     with %s by the xslt-engine when in a 'uri' attribute or by the browser
+     if the xlst-engine doesn't. This is ok, but not enough since we still
+     won't have working RFC822 (email) Froms! since they need =s. 
+     However, as there is nothing I can do about this, I will just hope for
+     the best if an xslt engine doesn't have uri-escape. -->
+<xsl:variable name="ascii-charset"> !&quot;#$%&amp;&apos;()*+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~&#127;</xsl:variable>
+<xsl:variable name="uri-ok">-_.!~*&apos;()0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz</xsl:variable>
+<xsl:variable name="hex">0123456789ABCDEFabcdef</xsl:variable>
+
+<xsl:template name="do-escape-uri">
+ <xsl:param name="str"/>
+ <xsl:param name="allow-utf8"/>
+
+ <xsl:if test="$str">
+  <xsl:variable name="first-char" select="substring($str,1,1)"/>
+  <xsl:choose>
+   <xsl:when test="$first-char = '%' and string-length($str) &gt;= 3 and contains($hex, substring($str,2,1)) and contains($hex, substring($str,3,1))">
+    <!-- The percent char is ok IF it followed by a valid hex pair -->
+    <xsl:value-of select="$first-char"/>
+   </xsl:when>
+   <xsl:when test="contains($uri-ok, $first-char)">
+    <!-- This char is ok inside urls -->
+    <xsl:value-of select="$first-char"/>
+   </xsl:when>
+   <xsl:when test="not(contains($ascii-charset, $first-char))">
+    <!-- Non-ascii output raw based on utf8 allowed or not -->
+    <xsl:choose>
+     <xsl:when test="$allow-utf8">
+      <xsl:value-of select="$first-char"/>
+     </xsl:when>
+     <xsl:otherwise>
+      <xsl:text>%3F</xsl:text>
+     </xsl:otherwise>
+    </xsl:choose>
+   </xsl:when>
+   <xsl:otherwise>
+    <!-- URL escape this char -->
+    <xsl:variable name="ascii-value" select="string-length(substring-before($ascii-charset,$first-char)) + 32"/>
+    <xsl:text>%</xsl:text>
+    <xsl:value-of select="substring($hex,floor($ascii-value div 16) + 1,1)"/>
+    <xsl:value-of select="substring($hex,$ascii-value mod 16 + 1,1)"/>
+   </xsl:otherwise>
+  </xsl:choose>
+  
+  <xsl:call-template name="do-escape-uri">
+   <xsl:with-param name="str" select="substring($str,2)"/>
+   <xsl:with-param name="allow-utf8" select="$allow-utf8"/>
+  </xsl:call-template>
+ </xsl:if>
+</xsl:template>
+
+<xsl:template name="my-escape-uri">
+ <xsl:param name="str"/>
+ <xsl:param name="allow-utf8"/>
+ 
+ <xsl:choose>
+  <xsl:when test="$have-escape-uri">
+   <xsl:value-of select="escape-uri($str, true())"/>
+  </xsl:when>
+  <xsl:otherwise>
+   <xsl:call-template name="do-escape-uri">
+    <xsl:with-param name="str" select="$str"/>
+    <xsl:with-param name="allow-utf8" select="$allow-utf8"/>
+   </xsl:call-template>
+  </xsl:otherwise>
+ </xsl:choose>
+</xsl:template>
+
 <!-- Format email address -->
 
-<xsl:template name="email-simple">
+<xsl:template name="email-simple" match="email" mode="simple">
  <xsl:choose>
   <xsl:when test="@name"><xsl:value-of select="@name"/></xsl:when>
   <xsl:when test="@address"><xsl:value-of select="@address"/></xsl:when>
@@ -53,21 +128,57 @@
  </xsl:choose>
 </xsl:template>
 
-<xsl:template name="email-cut">
+<xsl:template name="email-mailto" match="email" mode="mailto">
+ <xsl:text>mailto:</xsl:text>
+ <xsl:if test="@name">
+  <xsl:variable name="pure">
+   <xsl:call-template name="my-escape-uri">
+    <xsl:with-param name="str" select="translate(@name, ' ', '')"/>
+   </xsl:call-template>
+  </xsl:variable>
+  <xsl:variable name="uri">
+   <xsl:call-template name="my-escape-uri">
+    <xsl:with-param name="str" select="@name"/>
+   </xsl:call-template>
+  </xsl:variable>
+  
+  <xsl:choose>
+   <xsl:when test="contains($pure, '%')">
+    <xsl:text>%3D%3Futf-8%3FQ%3F</xsl:text>
+    <xsl:call-template name="my-escape-uri">
+     <xsl:with-param name="str" select="translate($uri, '%', '=')"/>
+    </xsl:call-template>
+    <xsl:text>%3F%3D%20</xsl:text>
+   </xsl:when>
+   <xsl:otherwise>
+    <xsl:value-of select="$uri"/>
+    <xsl:text>%20</xsl:text>
+   </xsl:otherwise>
+  </xsl:choose>
+  
+ </xsl:if>
+ 
+ <xsl:text>%3C</xsl:text>
+ <xsl:call-template name="my-escape-uri">
+  <xsl:with-param name="str" select="@address"/>
+ </xsl:call-template>
+ <xsl:text>%3E</xsl:text>
+</xsl:template>
+
+<xsl:template name="email-cut" match="email" mode="cut">
  <xsl:call-template name="truncate">
   <xsl:with-param name="length">20</xsl:with-param>
   <xsl:with-param name="string"><xsl:call-template name="email-simple"/></xsl:with-param>
  </xsl:call-template>
 </xsl:template>
 
-<xsl:template match="email" mode="simple">
- <xsl:call-template name="email-simple"/>
-</xsl:template>
-
 <xsl:template match="email[@address]">
- <a href="mailto:{@address}">
+ <xsl:element name="a">
+  <xsl:attribute name="href">
+   <xsl:call-template name="email-mailto"/>
+  </xsl:attribute>
   <xsl:call-template name="email-cut"/>
- </a>
+ </xsl:element>
 </xsl:template>
 
 <xsl:template match="email">
@@ -76,14 +187,18 @@
 
 <xsl:template match="email[@address]" mode="list">
  <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text><br/></xsl:if>
- <a href="mailto:{@address}">
+
+ <xsl:element name="a">
+  <xsl:attribute name="href">
+   <xsl:call-template name="email-mailto"/>
+  </xsl:attribute>
   <xsl:call-template name="email-simple"/>
- </a>
+ </xsl:element>
 </xsl:template>
 
 <xsl:template match="email" mode="list">
  <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text><br/></xsl:if>
-  <xsl:call-template name="email-simple"/>
+ <xsl:call-template name="email-simple"/>
 </xsl:template>
 
 

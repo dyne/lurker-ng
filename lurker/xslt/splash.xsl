@@ -226,7 +226,15 @@
   <xsl:value-of select="email/@name"/>
   <xsl:if test="email/@address">
    <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
-   <a href="mailto:{email/@address}">(<xsl:value-of select="email/@address"/>)</a>
+   <xsl:element name="a">
+    <xsl:attribute name="href">
+     <xsl:apply-templates select="email" mode="mailto"/>
+    </xsl:attribute>
+
+    <xsl:text>(</xsl:text>
+    <xsl:value-of select="email/@address"/>
+    <xsl:text>)</xsl:text>
+   </xsl:element>
   </xsl:if>
  </dt>
  <dd>
