@@ -1,4 +1,4 @@
-/*  $Id: Search.h,v 1.6 2004-08-19 23:52:51 terpstra Exp $
+/*  $Id: Search.h,v 1.1 2004-08-24 16:11:33 terpstra Exp $
  *  
  *  Search.h - Helper which can intersect keywords
  *  
@@ -25,26 +25,12 @@
 #ifndef SEARCH_H
 #define SEACH_H
 
-#include <list>
+#include <vector>
+#include <esort.h>
+
 #include "Summary.h"
 
 using namespace ESort;
-
-class Searcher
-{
- public:
- 	MessageId next_id; // not correct till first call of skipto
- 	
- 	/* Precoditions:
- 	 *  has never yet returned EOF.
- 	 *  later_than > next_id (wrt. the established direction)
-         * Postconditions:
-         *  Returns false on EOF
-         *  Otherwise, next_id >= later_than (wrt. dir.)
- 	 */
- 	virtual bool skipto(MessageId later_than) = 0;
- 	virtual ~Searcher();
-};
 
 struct Criterea
 {
@@ -64,11 +50,11 @@ class Search
 	bool need_any;
 	
  public:
- 	Search(const Config& cfg_, Reader* db_, Direction dir_, const MessageId& id_);
+ 	Search(const Config& cfg_, Reader* db_, Direction dir_, const MessageId& id_ = MessageId());
  	~Search();
  	
  	void keyword(const string& s);
- 	bool pull(int n, vector<Summary>& o);
+ 	bool pull(int n, std::vector<Summary>& o);
 };
 
 #endif

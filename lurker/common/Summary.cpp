@@ -1,4 +1,4 @@
-/*  $Id: Summary.cpp,v 1.11 2004-01-06 20:02:04 terpstra Exp $
+/*  $Id: Summary.cpp,v 1.1 2004-08-24 16:11:33 terpstra Exp $
  *  
  *  Summary.cpp - Helper which can load a message given MessageId
  *  

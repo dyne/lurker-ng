@@ -53,14 +53,16 @@ libcommon_a_AR = $(AR) $(ARFLAGS)
 libcommon_a_LIBADD =
 am_libcommon_a_OBJECTS = md5.$(OBJEXT) Thread.$(OBJEXT) Keys.$(OBJEXT) \
 	CharsetEscape.$(OBJEXT) ConfigFile.$(OBJEXT) \
-	MessageId.$(OBJEXT) XmlEscape.$(OBJEXT)
+	MessageId.$(OBJEXT) XmlEscape.$(OBJEXT) Search.$(OBJEXT) \
+	Summary.$(OBJEXT)
 libcommon_a_OBJECTS = $(am_libcommon_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/CharsetEscape.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/ConfigFile.Po ./$(DEPDIR)/Keys.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/MessageId.Po ./$(DEPDIR)/Thread.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/MessageId.Po ./$(DEPDIR)/Search.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/Summary.Po ./$(DEPDIR)/Thread.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/XmlEscape.Po ./$(DEPDIR)/md5.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -161,11 +163,13 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 vardir = @vardir@
 wwwdir = @wwwdir@
+AM_CPPFLAGS = -I$(top_srcdir)/libesort
 noinst_LIBRARIES = libcommon.a
 libcommon_a_SOURCES = \
 	md5.cpp	Thread.cpp Keys.cpp CharsetEscape.cpp ConfigFile.cpp  \
-	MessageId.cpp XmlEscape.cpp \
-	CharsetEscape.h ConfigFile.h Keys.h MessageId.h XmlEscape.h md5.h
+	MessageId.cpp XmlEscape.cpp Search.cpp Summary.cpp \
+	CharsetEscape.h ConfigFile.h Keys.h MessageId.h XmlEscape.h md5.h \
+	Search.h Summary.h
 
 all: all-am
 
@@ -218,6 +222,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ConfigFile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Keys.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MessageId.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Search.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Summary.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Thread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/XmlEscape.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/md5.Po@am__quote@

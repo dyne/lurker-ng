@@ -1,4 +1,4 @@
-/*  $Id: Summary.h,v 1.4 2004-01-06 20:02:05 terpstra Exp $
+/*  $Id: Summary.h,v 1.1 2004-08-24 16:11:33 terpstra Exp $
  *  
  *  Summary.h - Helper which can load a message given MessageId
  *  
@@ -25,9 +25,9 @@
 #ifndef SUMMARY_H
 #define SUMMARY_H
 
-#include <MessageId.h>
-#include <ConfigFile.h>
 #include <esort.h>
+#include "MessageId.h"
+#include "ConfigFile.h"
 
 #include <set>
 

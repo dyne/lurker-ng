@@ -68,16 +68,14 @@ am_lurker_cgi_OBJECTS = main.$(OBJEXT) art.$(OBJEXT) url.$(OBJEXT) \
 	mailto.$(OBJEXT) quote.$(OBJEXT) attach.$(OBJEXT) \
 	list.$(OBJEXT) mbox.$(OBJEXT) message.$(OBJEXT) \
 	mindex.$(OBJEXT) search.$(OBJEXT) splash.$(OBJEXT) \
-	thread.$(OBJEXT) Cache.$(OBJEXT) KeyReader.$(OBJEXT) \
-	Summary.$(OBJEXT) Threading.$(OBJEXT)
+	thread.$(OBJEXT) Cache.$(OBJEXT) Threading.$(OBJEXT)
 lurker_cgi_OBJECTS = $(am_lurker_cgi_OBJECTS)
 lurker_cgi_LDADD = $(LDADD)
 lurker_cgi_DEPENDENCIES = ../common/libcommon.a ../libesort/libesort.a
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Cache.Po ./$(DEPDIR)/KeyReader.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/Summary.Po ./$(DEPDIR)/Threading.Po \
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Cache.Po ./$(DEPDIR)/Threading.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/art.Po ./$(DEPDIR)/attach.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/bounce.Po ./$(DEPDIR)/jump.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/keyword.Po ./$(DEPDIR)/list.Po \
@@ -194,9 +192,8 @@ LDADD = ../common/libcommon.a ../libesort/libesort.a
 lurker_cgi_SOURCES = \
 	main.cpp art.cpp url.cpp mailto.cpp quote.cpp attach.cpp list.cpp \
 	mbox.cpp message.cpp mindex.cpp search.cpp splash.cpp thread.cpp \
-	Cache.cpp KeyReader.cpp Summary.cpp Threading.cpp \
-	Cache.h KeyReader.h Search.h Summary.h Threading.h commands.h \
-	error.h parse.h
+	Cache.cpp Threading.cpp \
+	Cache.h Threading.h commands.h error.h parse.h
 
 jump_cgi_SOURCES = parse.cpp jump.cpp
 keyword_cgi_SOURCES = parse.cpp keyword.cpp
@@ -277,8 +274,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Cache.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/KeyReader.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Summary.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Threading.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/art.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/attach.Po@am__quote@
