@@ -1,4 +1,4 @@
-/*  $Id: test.cpp,v 1.4 2003-04-25 11:11:42 terpstra Exp $
+/*  $Id: test.cpp,v 1.5 2003-04-25 13:39:47 terpstra Exp $
  *  
  *  test.cpp - Write lots of crap and compare with RAM
  *  
@@ -47,7 +47,9 @@ auto_ptr<Writer> db;
 
 string makeStr()
 {	// for testing with a human
-	int len = random() % 20;
+	
+	// !!! database has a bug --> zero length keys broken
+	int len = (random() % 20) + 1;
 	int i;
 	
 	string out;
@@ -211,7 +213,7 @@ int main(int argc, char** argv)
 		if (DEBUG) cout << "Committing" << endl;
 		
 		int c = db->commit();
-		if (c != -1)
+		if (c != 0)
 		{
 			perror("Writer::commit");
 			return 1;

@@ -1,4 +1,4 @@
-/*  $Id: File.cpp,v 1.4 2003-04-25 10:46:04 terpstra Exp $
+/*  $Id: File.cpp,v 1.5 2003-04-25 13:39:46 terpstra Exp $
  *  
  *  File.cpp - Disk segment for commit'd inserts
  *  
@@ -35,7 +35,7 @@
 /* #define DEBUG */
 
 #include <cassert>
-#include <cstdio>
+#include <iostream>
 
 namespace ESort
 {
@@ -152,34 +152,34 @@ unsigned char* FileSource::inverseBuffer()
 	for (unsigned int i = 0; i < f->p->keyWidth(); ++i)
 	{
 		thisLength <<= 8;
-		thisLength += *off;
-		++off;
+		thisLength += *r;
+		++r;
 	}
 	if (thisLength == 0) return w; // corrupt!
-	thisDup = *off;
-	++off;
+	thisDup = *r;
+	++r;
 	thisDelta = thisLength - thisDup;
 	if (thisDelta < 0) return w; // corrupt!
 	
 	while (thisLength != 0)
 	{
-		// off points at the unique tail
+		// r points at the unique tail
 		// w point at the last completed record
 		
 		// Read the next record's values
 		nextLength = 0;
-		unsigned char* next = off + thisDelta;
+		unsigned char* nextr = r + thisDelta;
 		for (unsigned int i = 0; i < f->p->keyWidth(); ++i)
 		{
 			nextLength <<= 8;
-			nextLength += *next;
-			++next;
+			nextLength += *nextr;
+			++nextr;
 		}
 		
 		if (nextLength != 0)
 		{
-			nextDup = *next;
-			++next;
+			nextDup = *nextr;
+			++nextr;
 		}
 		else
 		{	// first element has compression 0
@@ -203,14 +203,18 @@ unsigned char* FileSource::inverseBuffer()
 		*(tailw-1) = nextDup;
 		
 		// Now, write out the tail
-		memcpy(scratch+thisDup, off, thisDelta);
+		memcpy(scratch+thisDup, r, thisDelta);
 		memcpy(tailw, scratch+nextDup, wDelta);
+		
+//		std::cout << " SCRATCH: ";
+//		std::cout.write((const char*)scratch, thisDup + thisDelta);
+//		std::cout << std::endl;
 		
 		// move along
 		thisLength = nextLength;
 		thisDup    = nextDup;
 		thisDelta  = nextDelta;
-		off = next;
+		r = nextr;
 		w = nextw;
 	}
 	
@@ -246,6 +250,10 @@ int FileSource::advance()
 	
 	tail = off;
 	off += length - dup;
+	
+//	std::cout << " GET: " << length << ", " << dup << ": ";
+//	std::cout.write((const char*)tail, length-dup);
+//	std::cout << std::endl;
 	
 	return 0;
 }
