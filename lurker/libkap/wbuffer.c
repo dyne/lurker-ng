@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.10 2002-07-19 14:40:34 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.11 2002-07-22 11:04:23 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -351,6 +351,7 @@ static int relocate(Kap k, kptr key)
 	kptr	kscan;
 	aptr	hits;
 	int	swaps;
+	int	out;
 	
 	Keyword* kw = &k->wbuffer->kcache[key];
 	
@@ -396,7 +397,9 @@ static int relocate(Kap k, kptr key)
 		
 		/* Ok, l now points to the largest record with correct hits */
 		kscan = k->wbuffer->scache[l].keyword;
-		swap_slot(k, kscan, key);
+		
+		out = swap_slot(k, kscan, key);
+		if (out) return out;
 	}
 	
 	return 0;
@@ -489,6 +492,7 @@ static int count_hit(Kap k, kptr scan, unsigned char* buf)
 
 static int promote_key(Kap k, const char* key, aptr hits)
 {
+	int	out;
 	sptr	slot = k->wbuffer->kfill-1;
 	kptr	scan = k->wbuffer->scache[slot].keyword;
 	
@@ -501,7 +505,8 @@ static int promote_key(Kap k, const char* key, aptr hits)
 		pentries++;
 #endif
 		
-		flush_buffer(k, scan);
+		out = flush_buffer(k, scan);
+		if (out) return out;
 		
 		k->wbuffer->kroot = 
 			my_avl_wb_remove(k->wbuffer->kcache, k->wbuffer->kroot, 
@@ -729,14 +734,16 @@ int kap_wbuffer_push(Kap k, const char* keyword, unsigned char* buf)
 		out = kap_append_real(k, keyword, buf, 1, &hits);
 		if (out) return out;
 		
-		promote_key(k, keyword, hits);
+		out = promote_key(k, keyword, hits);
+		if (out) return out;
 	}
 	
 	k->wbuffer->count_down++;
 	if (k->wbuffer->count_down == k->wbuffer->next_sync)
 	{
 		k->wbuffer->count_down = 0;
-		calc_storage(k, 1);
+		out = calc_storage(k, 1);
+		if (out) return out;
 		
 		if (k->wbuffer->next_sync < 32 * k->wbuffer->num_appends)
 			k->wbuffer->next_sync <<= 1;
