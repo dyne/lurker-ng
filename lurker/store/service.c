@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.15 2002-02-11 03:45:25 terpstra Exp $
+/*  $Id: service.c,v 1.16 2002-02-12 05:37:14 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -344,7 +344,9 @@ static int my_service_summary(
 	return 0;
 }
 
-static int my_service_getmsg(st_netfd_t fd, const char* request)
+static int my_service_getmsg(
+	st_netfd_t fd, 
+	const char* request)
 {
 	const char*	scan;
 	const char*	last;
@@ -550,7 +552,9 @@ static int my_service_getmsg(st_netfd_t fd, const char* request)
 	return -1;
 }
 
-static int my_service_mindex(st_netfd_t fd, const char* request)
+static int my_service_mindex(
+	st_netfd_t fd, 
+	const char* request)
 {
 	Lu_Breader_Handle	h;
 	Lu_Config_List*		l;
@@ -666,7 +670,9 @@ my_service_mindex_error0:
 	return -1;
 }
 
-static int my_service_search(st_netfd_t fd, const char* request)
+static int my_service_search(
+	st_netfd_t fd, 
+	const char* request)
 {
 	int		i;
 	message_id	out;
@@ -793,6 +799,32 @@ my_service_search_error0:
 	return -1;
 }
 
+static int my_service_lists(
+	st_netfd_t fd, 
+	const char* request)
+{
+	Lu_Config_List*		scan;
+	Lu_Breader_Handle	h;
+	char			key[40];
+	
+	if (my_service_xml_head(fd)                  != 0) return -1;
+	if (my_service_buffer_write(fd, "<lists>\n") != 0) return -1;
+	for (	scan = lu_config_list; 
+		scan != lu_config_list + lu_config_lists; 
+		scan++)
+	{
+		snprintf(&key[0], sizeof(key), "%s%d", LU_KEYWORD_LIST, scan->id);
+		h = lu_breader_new(&key[0]);
+		if (h == 0) continue;
+		if (my_service_list(fd, scan, lu_breader_records(h)) != 0) return -1;
+		lu_breader_free(h);
+		
+	}
+	if (my_service_buffer_write(fd, "</lists>\n") != 0) return -1;
+	
+	return 0;
+}
+
 static int my_service_digest_request(st_netfd_t fd, const char* request)
 {
 	int out = -1;
@@ -810,6 +842,8 @@ static int my_service_digest_request(st_netfd_t fd, const char* request)
 		out = my_service_mindex(fd, request+sizeof(LU_PROTO_MINDEX)-1);
 	if (!memcmp(request, LU_PROTO_SEARCH, sizeof(LU_PROTO_SEARCH)-1)) 
 		out = my_service_search(fd, request+sizeof(LU_PROTO_SEARCH)-1);
+	if (!memcmp(request, LU_PROTO_LISTS, sizeof(LU_PROTO_LISTS)-1)) 
+		out = my_service_lists(fd, request+sizeof(LU_PROTO_LISTS)-1);
 	
 	/* Get rid of any buffering */
 	my_service_buffer_flush(fd);
