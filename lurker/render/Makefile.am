@@ -2,7 +2,8 @@ wwwdir = @wwwdir@
 
 INCLUDES = @RENDER_CFLAGS@ -I${top_srcdir}/common
 
-www_PROGRAMS = @PACKAGE@.cgi @PACKAGE@.xslt @PACKAGE@-search.cgi
+www_PROGRAMS = @PACKAGE@.cgi @PACKAGE@.xslt \
+		@PACKAGE@-search.cgi @PACKAGE@-jump.cgi
 www_DATA = .htaccess
 
 @PACKAGE@_cgi_SOURCES = \
@@ -14,6 +15,10 @@ www_DATA = .htaccess
 
 @PACKAGE@_search_cgi_SOURCES = \
 	search.c \
+	error.h
+
+@PACKAGE@_jump_cgi_SOURCES = \
+	jump.c \
 	error.h
 
 @PACKAGE@_xslt_LDADD = @RENDER_LIBS@
