@@ -1,5 +1,6 @@
 Why are all my dates off by a fixed hour / don't use "From " header?
 Why shouldn't I open the lurker mboxs with a mail reader?
+Why do I get "opening database: Operation not supported" on MacOS?
 I run postfix and lurker doesn't import any new email; why?
 Why not store all the messages as XML instead of rendering them as it?
 How can I delete a mailing list?
@@ -31,6 +32,13 @@ A: Mail readers like to modify the X-Status header by adding or removing
         user (or whatever user appends to the mbox):
           chown mail.youruser lurkers.mbox
           chmod 0640 lurkers.mbox
+
+
+Q: Why do I get "opening database: Operation not supported" on MacOS?
+
+A: You are running the lurker database on a filesystem which does not
+   support file locking. Lurker cannot run safely on such a filesystem and
+   thus refuses to possibly corrupt the database.
 
 
 Q: I run postfix and lurker doesn't import any new email; why?
