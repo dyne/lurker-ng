@@ -147,7 +147,7 @@ autodir = $(perldir)/auto/KW
 
 perl_DATA = KW.pm
 auto_LTLIBRARIES = KW.la
-EXTRA_DIST = KW.xs
+EXTRA_DIST = KW.xs KW.pm
 CLEANFILES = KW.cpp perlxsi.c
 
 nodist_KW_la_SOURCES = KW.cpp
