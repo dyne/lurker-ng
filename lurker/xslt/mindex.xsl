@@ -129,16 +129,16 @@
    <a href="{prev}@{list/id}.{$ext}"><img alt="&lt;-" src="../imgs/prev.png"/></a>
   </xsl:if>
   <xsl:if test="not(prev)">
-   <img src="../imgs/a.png"/>
-   <img src="../imgs/a.png"/>
+   <img src="../imgs/a.png" alt="..."/>
+   <img src="../imgs/a.png" alt=".."/>
   </xsl:if>
   <xsl:if test="next">
    <a href="{next}@{list/id}.{$ext}"><img alt="-&gt;" src="../imgs/next.png"/></a>
    <a href="../lurker-jump.cgi?list={list/id}&amp;year=2038&amp;format={$ext}"><img alt="=&gt;&gt;" src="../imgs/last.png"/></a>
   </xsl:if>
   <xsl:if test="not(next)">
-   <img src="../imgs/a.png"/>
-   <img src="../imgs/a.png"/>
+   <img src="../imgs/a.png" alt=".."/>
+   <img src="../imgs/a.png" alt="..."/>
   </xsl:if>
 
   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
