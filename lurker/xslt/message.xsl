@@ -118,7 +118,11 @@
 
 <xsl:template match="message" mode="body">
  <p/><xsl:apply-templates select="server" mode="header"/>
- <p/><h2><a href="../thread/{thread}.{$ext}">Thread <xsl:value-of select="subject"/></a></h2>
+ <p/><h2><a href="../thread/{thread}.{$ext}">Thread <xsl:value-of select="subject"/></a>
+         <xsl:if test="reply">
+           <a href="mailto:{reply}">(reply)</a>
+         </xsl:if>
+     </h2>
  
  <p/><xsl:apply-templates select="threading/snippet" mode="snippet"/>
 
