@@ -1,4 +1,4 @@
-/*  $Id: flatfile.c,v 1.11 2002-06-18 13:51:59 terpstra Exp $
+/*  $Id: flatfile.c,v 1.12 2002-06-20 23:11:37 terpstra Exp $
  *  
  *  flatfile.c - Knows how to manage the keyword flatfile database
  *  
@@ -204,7 +204,7 @@ static ssize_t my_flatfile_swrite(
 	if (lseek(fd, off, SEEK_SET) != off)
 	{
 		syslog(LOG_ERR, _("%s seeking keyword.flat (%lld): %s\n"),
-			msg, off, strerror(errno));
+			gettext(msg), off, strerror(errno));
 		return -1;
 	}
 	
@@ -223,7 +223,7 @@ static ssize_t my_flatfile_sread(
 	if (lseek(fd, off, SEEK_SET) != off)
 	{
 		syslog(LOG_ERR, _("%s seeking keyword.flat (%lld): %s\n"),
-			msg, off, strerror(errno));
+			gettext(msg), off, strerror(errno));
 		return -1;
 	}
 	
@@ -289,7 +289,7 @@ static int my_flatfile_create_empty_record(
 	ind = where + amount - sizeof(message_id);
 	
 	if (my_flatfile_swrite(my_flatfile_fd, ind, &junk, sizeof(message_id), 
-		_("writing to extend file")) != sizeof(message_id))
+		N_("writing to extend file")) != sizeof(message_id))
 	{
 		return -1;
 	}
@@ -320,7 +320,7 @@ static int my_flatfile_free_cell(
 	{
 		next_count = 0;
 		if (my_flatfile_sread(my_flatfile_fd, which + amount, &next_count, sizeof(message_id),
-			_("detecting fragment on free")) == -1)
+			N_("detecting fragment on free")) == -1)
 		{
 			goto my_flatfile_free_cell_error0;
 		}
@@ -334,19 +334,19 @@ static int my_flatfile_free_cell(
 	
 	where *= sizeof(off_t);
 	if (my_flatfile_sread(my_flatfile_fd, where, &prior, sizeof(off_t),
-		_("reading old free index")) != sizeof(off_t))
+		N_("reading old free index")) != sizeof(off_t))
 	{
 		goto my_flatfile_free_cell_error0;
 	}
 	
 	if (my_flatfile_swrite(my_flatfile_fd, which, &prior, sizeof(off_t),
-		_("writing next free ptr")) != sizeof(off_t))
+		N_("writing next free ptr")) != sizeof(off_t))
 	{
 		goto my_flatfile_free_cell_error0;
 	}
 	
 	if (my_flatfile_swrite(my_flatfile_fd, where, &which, sizeof(off_t),
-		_("reseting free head ptr")) != sizeof(off_t))
+		N_("reseting free head ptr")) != sizeof(off_t))
 	{
 		goto my_flatfile_free_cell_error1;
 	}
@@ -355,7 +355,7 @@ static int my_flatfile_free_cell(
 
 my_flatfile_free_cell_error1:
 	if (my_flatfile_swrite(my_flatfile_fd, which, &msgs, sizeof(off_t),
-		_("LOST SPACE: restoring message counter")) != sizeof(off_t))
+		N_("LOST SPACE: restoring message counter")) != sizeof(off_t))
 	{
 		goto my_flatfile_free_cell_error0;
 	}
@@ -384,7 +384,7 @@ static int my_flatfile_push_fragment_markers(
 	{
 		
 		if (my_flatfile_swrite(my_flatfile_fd, ind + amount, &lu_common_minvalid, sizeof(message_id),
-			_("writing free space fragment marker")) != sizeof(message_id))
+			N_("writing free space fragment marker")) != sizeof(message_id))
 		{
 			return -1;
 		}
@@ -407,7 +407,7 @@ static int my_flatfile_pop_free_list(
 	where *= sizeof(off_t);
 	
 	if (my_flatfile_sread(my_flatfile_fd, where, out, sizeof(off_t),
-		_("reading free record")) != sizeof(off_t))
+		N_("reading free record")) != sizeof(off_t))
 	{
 		return -1;
 	}
@@ -418,13 +418,13 @@ static int my_flatfile_pop_free_list(
 	}
 	
 	if (my_flatfile_sread(my_flatfile_fd, *out, &next, sizeof(off_t),
-		_("reading next free record")) != sizeof(off_t))
+		N_("reading next free record")) != sizeof(off_t))
 	{
 		return -1;
 	}
 	
 	if (my_flatfile_swrite(my_flatfile_fd, where, &next, sizeof(off_t),
-		_("moving next free to head")) != sizeof(off_t))
+		N_("moving next free to head")) != sizeof(off_t))
 	{
 		return -1;
 	}
@@ -626,7 +626,7 @@ message_id lu_flatfile_write_keyword_block(
 		new_records = records + count;
 		
 		if (my_flatfile_swrite(my_flatfile_fd, spot, &records, sizeof(message_id),
-			_("preping space for new keyword")) != sizeof(message_id))
+			N_("preping space for new keyword")) != sizeof(message_id))
 		{
 			if (my_flatfile_free_cell(spot, count) != 0)
 				syslog(LOG_ERR, _("Permanently lost storage\n"));
@@ -647,7 +647,7 @@ message_id lu_flatfile_write_keyword_block(
 	else
 	{	/* Yep, get the old size */
 		if (my_flatfile_sread(my_flatfile_fd, where, &records, sizeof(message_id),
-			_("reading old message count")) != sizeof(message_id))
+			N_("reading old message count")) != sizeof(message_id))
 		{
 			return lu_common_minvalid;
 		}
@@ -678,7 +678,7 @@ message_id lu_flatfile_write_keyword_block(
 			memcpy(&buf[sizeof(message_id)*2], &where, sizeof(off_t));
 			
 			if (my_flatfile_swrite(my_flatfile_fd, spot, &buf[0], sizeof(buf),
-				_("backward reference")) != sizeof(buf))
+				N_("backward reference")) != sizeof(buf))
 			{
 				if (my_flatfile_free_cell(spot, new_records) != 0)
 					syslog(LOG_ERR, _("Permanently lost storage\n"));
@@ -703,13 +703,13 @@ message_id lu_flatfile_write_keyword_block(
 	ind += where;
 	
 	if (my_flatfile_swrite(my_flatfile_fd, ind, buf, count * sizeof(message_id),
-		_("writing new message_id records")) != count * sizeof(message_id))
+		N_("writing new message_id records")) != count * sizeof(message_id))
 	{
 		return lu_common_minvalid;
 	}
 	
 	if (my_flatfile_swrite(my_flatfile_fd, where, &new_records, sizeof(message_id),
-		_("writing new message_id counter")) != sizeof(message_id))
+		N_("writing new message_id counter")) != sizeof(message_id))
 	{
 		return lu_common_minvalid;
 	}
@@ -742,7 +742,7 @@ int lu_flatfile_pop_keyword(
 	}
 	
 	if (my_flatfile_sread(my_flatfile_fd, where, &count, sizeof(message_id),
-		_("reading old message counter")) != sizeof(message_id))
+		N_("reading old message counter")) != sizeof(message_id))
 	{
 		return -1;
 	}
@@ -755,7 +755,7 @@ int lu_flatfile_pop_keyword(
 	amount = count; /* Recall -1 for last, +1 to skip count */
 	amount *= sizeof(message_id);
 	if (my_flatfile_sread(my_flatfile_fd, where + amount, &last, sizeof(message_id),
-		_("reading last record")) != sizeof(message_id))
+		N_("reading last record")) != sizeof(message_id))
 	{	/* need to check last entry */
 		return -1;
 	}
@@ -772,7 +772,7 @@ int lu_flatfile_pop_keyword(
 	
 	count--;
 	if (my_flatfile_swrite(my_flatfile_fd, where, &count, sizeof(message_id),
-		_("pushing popped message counter")) != sizeof(message_id))
+		N_("pushing popped message counter")) != sizeof(message_id))
 	{
 		return -1;
 	}
@@ -822,7 +822,7 @@ Lu_Flatfile_Handle lu_flatfile_open_handle(
 		
 		if (my_flatfile_sread(my_flatfile_fd, scan, 
 			&buf[0], sizeof(buf),
-			_("reading record count")) != sizeof(buf))
+			N_("reading record count")) != sizeof(buf))
 		{
 			free(out);
 			return 0;
@@ -880,7 +880,7 @@ message_id lu_flatfile_records(
 	
 	if (my_flatfile_sread(my_flatfile_fd, scan, 
 		&out, sizeof(out),
-		_("quick reading record count")) != sizeof(out))
+		N_("quick reading record count")) != sizeof(out))
 	{
 		return lu_common_minvalid;
 	}
@@ -918,7 +918,7 @@ int lu_flatfile_handle_read(
 		
 		spot = h->index[where].where + ((index + 1) * sizeof(message_id));
 		if (my_flatfile_sread(my_flatfile_fd, spot, buf, range*sizeof(message_id),
-			_("reading document ids")) != range*sizeof(message_id))
+			N_("reading document ids")) != range*sizeof(message_id))
 		{
 			return -1;
 		}
