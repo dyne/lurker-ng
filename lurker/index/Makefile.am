@@ -10,3 +10,6 @@ lurker_list_SOURCES = list.cpp
 lurker_params_SOURCES = params.cpp
 
 dist_man_MANS = lurker-index.1 lurker-list.1 lurker-params.1
+
+install-data-local:
+	$(mkinstalldirs) $(DESTDIR)$(vardir)

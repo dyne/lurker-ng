@@ -4,8 +4,10 @@ v1.1:
 	Prefer to sort by list name in the list selection
 	Fixed ml: typo in the thread pages
 	Substitute dbdir in lurker.conf
+	Create dbdir during install target
 	Fixed lurker-regenerate for uncompressed databases
 	Newer automake and autoconf used for build
+	Removed obsolete Version.h.in
 
 v1.0:
 	Froze the 1.* series against all changes other than bug fixes

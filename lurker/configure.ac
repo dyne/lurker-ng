@@ -1,7 +1,7 @@
 AC_INIT(lurker.conf.in)
 AC_CONFIG_AUX_DIR(tools)
 AC_PREREQ(2.57)
-AM_INIT_AUTOMAKE(lurker, 1.0)
+AM_INIT_AUTOMAKE(lurker, pre-1.1)
 
 AC_SUBST(VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -76,7 +76,15 @@ else
 fi
 
 wwwdir="${localstatedir}/www/${PACKAGE}"
-vardir="${localstatedir}/lib/${PACKAGE}"
+
+prefix_backup="$prefix"
+exec_prefix_backup="$exec_prefix"
+if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
+if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
+vardir=`eval echo ${localstatedir}/lib/${PACKAGE}`
+prefix="$prefix_backup"
+exec_prefix="$exec_prefix_backup"
+
 AC_SUBST(wwwdir)
 AC_SUBST(vardir)
 
