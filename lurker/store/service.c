@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.11 2002-02-10 21:47:12 terpstra Exp $
+/*  $Id: service.c,v 1.12 2002-02-10 23:44:25 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -53,6 +53,8 @@ static int my_service_buffer_writel(
 	const char* str,
 	size_t len)
 {
+	char buf[20];
+	
 	while (len)
 	{
 		size_t amt = sizeof(my_service_buffer) - my_service_used;
@@ -70,6 +72,16 @@ static int my_service_buffer_writel(
 #ifdef DEBUG
 			write(1, &my_service_buffer[0], sizeof(my_service_buffer));
 #endif
+			
+			/* Tell the caller how big this chunk is */
+			sprintf(&buf[0], "%d\n", sizeof(my_service_buffer));
+			if (st_write(fd, &buf[0], 
+				strlen(&buf[0]), 5000000) !=
+				strlen(&buf[0]))
+			{
+				return -1;
+			}
+			
 			if (st_write(fd, &my_service_buffer[0],
 				sizeof(my_service_buffer), 5000000) !=
 				sizeof(my_service_buffer))
@@ -94,17 +106,41 @@ static int my_service_buffer_write(
 static int my_service_buffer_flush(
 	st_netfd_t fd)
 {
+	char buf[20];
+	
 #ifdef DEBUG
 	write(1, &my_service_buffer[0], my_service_used);
 #endif
 
-	if (st_write(fd, &my_service_buffer[0], my_service_used, 5000000) !=
+	/* Tell the caller how big this chunk is */
+	sprintf(&buf[0], "%d\n", my_service_used);
+	if (st_write(fd, &buf[0],
+		strlen(&buf[0]), 5000000) !=
+		strlen(&buf[0]))
+	{
+		return -1;
+	}
+	
+	if (st_write(fd, &my_service_buffer[0], 
+		my_service_used, 5000000) !=
 		my_service_used)
 	{
 		return -1;
 	}
 	
-	my_service_used = 0;
+	if (my_service_used != 0)
+	{	/* Signal end of reply if we haven't already */
+		sprintf(&buf[0], "%d\n", 0);
+		if (st_write(fd, &buf[0], 
+			strlen(&buf[0]), 5000000) !=
+			strlen(&buf[0]))
+		{
+			return -1;
+		}
+		
+		my_service_used = 0;
+	}
+	
 	return 0;
 }
 
@@ -126,46 +162,73 @@ static int my_service_write_strl(
 	{
 		if (iscntrl(*buf) || (*buf & 0x80) != 0)
 		{
-			my_service_buffer_writel(fd, start, buf - start);
+			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+				return -1;
+			
 			/*!!! Do some sort of unicode craziness */
 			start = buf+1;
 		}
 		else switch (*buf) 
 		{
 		case '\'':
-			my_service_buffer_writel(fd, start, buf - start);
-			my_service_buffer_write(fd, "&apos;");
+			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+				return -1;
+			if (my_service_buffer_write(fd, "&apos;") != 0)
+				return -1;
+			
 			start = buf+1;
 			break;
+			
 		case '<':
-			my_service_buffer_writel(fd, start, buf - start);
-			my_service_buffer_write(fd, "&lt;");
+			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+				return -1;
+			if (my_service_buffer_write(fd, "&lt;") != 0)
+				return -1;
+			
 			start = buf+1;
 			break;
+			
 		case '>':
-			my_service_buffer_writel(fd, start, buf - start);
-			my_service_buffer_write(fd, "&gt;");
+			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+				return -1;
+			if (my_service_buffer_write(fd, "&gt;") != 0)
+				return -1;
+			
 			start = buf+1;
 			break;
+			
 		case '"':
-			my_service_buffer_writel(fd, start, buf - start);
-			my_service_buffer_write(fd, "&quot;");
+			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+				return -1;
+			if (my_service_buffer_write(fd, "&quot;") != 0)
+				return -1;
+			
 			start = buf+1;
 			break;
+		
 		case '&':
-			my_service_buffer_writel(fd, start, buf - start);
-			my_service_buffer_write(fd, "&amp;");
+			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+				return -1;
+			if (my_service_buffer_write(fd, "&amp;") != 0)
+				return -1;
+				
 			start = buf+1;
 			break;
+			
 		case '\n':
-			my_service_buffer_writel(fd, start, buf - start);
-			my_service_buffer_write(fd, "<br/>");
+			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+				return -1;
+			if (my_service_buffer_write(fd, "<br/>") != 0)
+				return -1;
+			
 			start = buf+1;
 			break;
 		}
 	}
 	
-	my_service_buffer_writel(fd, start, buf - start);
+	if (my_service_buffer_writel(fd, start, buf - start) != 0)
+		return -1;
+	
 	return 0;
 }
 
@@ -185,64 +248,68 @@ static int my_service_write_int(
 	return my_service_buffer_write(fd, &buf[0]);
 }
 
-static void my_service_xml_head(
+static int my_service_xml_head(
 	st_netfd_t fd)
 {
-	my_service_buffer_write(fd, 
+	return my_service_buffer_write(fd, 
 		"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
 		"<?xml-stylesheet type=\"text/xml\" href=\"render.xslt\"?>\n"
 		);
 }
 
-static void my_service_error(
+static int my_service_error(
 	st_netfd_t fd,
 	const char* title,
 	const char* error,
 	const char* detail)
 {
-	my_service_xml_head(fd);
-	my_service_buffer_write(fd, "<error>\n <title>");
-	my_service_write_str(fd, title);
-	my_service_buffer_write(fd, "</title>\n <message>");
-	my_service_write_str(fd, error);
-	my_service_buffer_write(fd, "</message>\n <detail>");
-	my_service_write_str(fd, detail);
-	my_service_buffer_write(fd, "</detail>\n</error>\n");
+	if (my_service_xml_head(fd)                              != 0) return -1;
+	if (my_service_buffer_write(fd, "<error>\n <title>")     != 0) return -1;
+	if (my_service_write_str(fd, title)                      != 0) return -1;
+	if (my_service_buffer_write(fd, "</title>\n <message>")  != 0) return -1;
+	if (my_service_write_str(fd, error)                      != 0) return -1;
+	if (my_service_buffer_write(fd, "</message>\n <detail>") != 0) return -1;
+	if (my_service_write_str(fd, detail)                     != 0) return -1;
+	if (my_service_buffer_write(fd, "</detail>\n</error>\n") != 0) return -1;
+	
+	return 0;
 }
 
-static void my_service_list(
+static int my_service_list(
 	st_netfd_t fd,
 	Lu_Config_List* l,
 	message_id msgs)
 {
-	my_service_buffer_write(fd, " <list>\n  <id>");
-	my_service_write_int(fd, l->id);
-	my_service_buffer_write(fd, "</id>\n  <messages>");
-	my_service_write_int(fd, msgs);
-	my_service_buffer_write(fd, "</messages>\n");
+	if (my_service_buffer_write(fd, " <list>\n  <id>")     != 0) return -1;
+	if (my_service_write_int(fd, l->id)                    != 0) return -1;
+	if (my_service_buffer_write(fd, "</id>\n  <messages>") != 0) return -1;
+	if (my_service_write_int(fd, msgs)                     != 0) return -1;
+	if (my_service_buffer_write(fd, "</messages>\n")       != 0) return -1;
 	
 	if (l->name)
 	{
-		my_service_buffer_write(fd, "  <name>");
-		my_service_write_str(fd, l->name);
-		my_service_buffer_write(fd, "</name>\n");
+		if (my_service_buffer_write(fd, "  <name>")  != 0) return -1;
+		if (my_service_write_str(fd, l->name)        != 0) return -1;
+		if (my_service_buffer_write(fd, "</name>\n") != 0) return -1;
 	}
 	
 	if (l->address)
 	{
-		my_service_buffer_write(fd, "  <address>");
-		my_service_write_str(fd, l->address);
-		my_service_buffer_write(fd, "</address>\n");
+		if (my_service_buffer_write(fd, "  <address>")  != 0) return -1;
+		if (my_service_write_str(fd, l->address)        != 0) return -1;
+		if (my_service_buffer_write(fd, "</address>\n") != 0) return -1;
 	}
 	
 	if (l->description)
 	{
-		my_service_buffer_write(fd, "  <desc>");
-		my_service_write_str(fd, l->description);
-		my_service_buffer_write(fd, "</desc>\n");
+		if (my_service_buffer_write(fd, "  <desc>")  != 0) return -1;
+		if (my_service_write_str(fd, l->description) != 0) return -1;
+		if (my_service_buffer_write(fd, "</desc>\n") != 0) return -1;
 	}
 	
-	my_service_buffer_write(fd, " </list>\n");
+	if (my_service_buffer_write(fd, " </list>\n") != 0) return -1;
+	
+	return 0;
 }
 
 static int my_service_getmsg(st_netfd_t fd, const char* request)
@@ -471,7 +538,7 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 			"Lurkerd received an improperly formatted mindex request",
 			request);
 		
-		return -1;
+		goto my_service_mindex_error0;
 	}
 	
 	if ((offset % LU_PROTO_INDEX) != 0)
@@ -481,7 +548,7 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 			"Lurkerd received an unaligned mindex request",
 			request);
 		
-		return -1;
+		goto my_service_mindex_error0;
 	}
 	
 	l = lu_config_find_list(list);
@@ -492,7 +559,7 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 			"Lurkerd received a request for a non-existant list",
 			request);
 		
-		return -1;
+		goto my_service_mindex_error0;
 	}
 	
 	sprintf(&keyword[0], "%s%d", LU_KEYWORD_LIST, list);
@@ -504,7 +571,7 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 			"Lurkerd failed to access the keyword database",
 			"server failure - see log files");
 		
-		return -1;
+		goto my_service_mindex_error0;
 	}
 	
 	if (offset >= lu_breader_records(h))
@@ -514,8 +581,7 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 			"Lurkerd received a mindex request past the end of the list",
 			request);
 		
-		lu_breader_free(h);
-		return -1;
+		goto my_service_mindex_error1;
 	}
 	
 	count = lu_breader_records(h) - offset;
@@ -529,31 +595,29 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 			"Lurkerd failed to retrieve the records from the keyword file",
 			"server failure - see log files");
 		
-		lu_breader_free(h);
-		return -1;
+		goto my_service_mindex_error1;
 	}
 	
-	my_service_xml_head(fd);
-	my_service_buffer_write(fd, "<mindex>\n <offset>");
-	my_service_write_int(fd, offset);
-	my_service_buffer_write(fd, "</offset>\n");
+	if (my_service_xml_head(fd)                            != 0) goto my_service_mindex_error1;
+	if (my_service_buffer_write(fd, "<mindex>\n <offset>") != 0) goto my_service_mindex_error1;
+	if (my_service_write_int(fd, offset)                   != 0) goto my_service_mindex_error1;
+	if (my_service_buffer_write(fd, "</offset>\n")         != 0) goto my_service_mindex_error1;
 	
 	if (offset + count != lu_breader_records(h))
 	{
-		my_service_buffer_write(fd, " <next>");
-		my_service_write_int(fd, offset + LU_PROTO_INDEX);
-		my_service_buffer_write(fd, "</next>\n");
+		if (my_service_buffer_write(fd, " <next>")            != 0) goto my_service_mindex_error1;
+		if (my_service_write_int(fd, offset + LU_PROTO_INDEX) != 0) goto my_service_mindex_error1;
+		if (my_service_buffer_write(fd, "</next>\n")          != 0) goto my_service_mindex_error1;
 	}
 	
 	if (offset != 0)
-	
 	{
-		my_service_buffer_write(fd, " <prev>");
-		my_service_write_int(fd, offset - LU_PROTO_INDEX);
-		my_service_buffer_write(fd, "</prev>\n");
+		if (my_service_buffer_write(fd, " <prev>")            != 0) goto my_service_mindex_error1;
+		if (my_service_write_int(fd, offset - LU_PROTO_INDEX) != 0) goto my_service_mindex_error1;
+		if (my_service_buffer_write(fd, "</prev>\n")          != 0) goto my_service_mindex_error1;
 	}
 	
-	my_service_list(fd, l, lu_breader_records(h));
+	if (my_service_list(fd, l, lu_breader_records(h)) != 0) goto my_service_mindex_error1;
 	lu_breader_free(h);
 	
 	for (i = 0; i < count; i++)
@@ -562,27 +626,38 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 		
 		tm = msg.timestamp;
 		
-		my_service_buffer_write(fd, " <summary>\n  <id>");
-		my_service_write_int(fd, ids[i]);
-		my_service_buffer_write(fd, "</id>\n  <timestamp>");
-		my_service_write_int(fd, msg.timestamp);
-		my_service_buffer_write(fd, "</timestamp>\n  <time>");
-		my_service_write_str(fd, ctime(&tm));
-		my_service_buffer_write(fd, "</time>\n  <thread>");
-		my_service_write_int(fd, msg.thread_parent);
-		my_service_buffer_write(fd, "</thread>\n");
+		if (my_service_buffer_write(fd, " <summary>\n  <id>")     != 0) goto my_service_mindex_error0;
+		if (my_service_write_int(fd, ids[i])                      != 0) goto my_service_mindex_error0;
+		if (my_service_buffer_write(fd, "</id>\n  <timestamp>")   != 0) goto my_service_mindex_error0;
+		if (my_service_write_int(fd, msg.timestamp)               != 0) goto my_service_mindex_error0;
+		if (my_service_buffer_write(fd, "</timestamp>\n  <time>") != 0) goto my_service_mindex_error0;
+		if (my_service_write_str(fd, ctime(&tm))                  != 0) goto my_service_mindex_error0;
+		if (my_service_buffer_write(fd, "</time>\n  <thread>")    != 0) goto my_service_mindex_error0;
+		if (my_service_write_int(fd, msg.thread_parent)           != 0) goto my_service_mindex_error0;
+		if (my_service_buffer_write(fd, "</thread>\n")            != 0) goto my_service_mindex_error0;
 		
-		lu_summary_write_variable(
+		if (lu_summary_write_variable(
 			&my_service_buffer_write,
 			&my_service_write_strl,
 			fd,
-			msg.flat_offset);
+			msg.flat_offset) != 0) goto my_service_mindex_error0;
 		
-		my_service_buffer_write(fd, " </summary>\n");
+		if (my_service_buffer_write(fd, " </summary>\n") != 0) goto my_service_mindex_error0;
 	}
 	
-	my_service_buffer_write(fd, "</mindex>\n");
+	if (my_service_buffer_write(fd, "</mindex>\n") != 0) goto my_service_mindex_error0;
 	
+	return 0;
+	
+my_service_mindex_error1:
+	lu_breader_free(h);
+	
+my_service_mindex_error0:
+	return -1;
+}
+
+static int my_service_search(st_netfd_t fd, const char* request)
+{
 	return -1;
 }
 
@@ -601,6 +676,8 @@ static int my_service_digest_request(st_netfd_t fd, const char* request)
 		out = my_service_getmsg(fd, request+sizeof(LU_PROTO_GETMSG)-1);
 	if (!memcmp(request, LU_PROTO_MINDEX, sizeof(LU_PROTO_MINDEX)-1)) 
 		out = my_service_mindex(fd, request+sizeof(LU_PROTO_MINDEX)-1);
+	if (!memcmp(request, LU_PROTO_SEARCH, sizeof(LU_PROTO_SEARCH)-1)) 
+		out = my_service_search(fd, request+sizeof(LU_PROTO_SEARCH)-1);
 	
 	/* Get rid of any buffering */
 	my_service_buffer_flush(fd);
