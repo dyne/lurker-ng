@@ -60,7 +60,7 @@ lurker-index.1: lurker-index.sgml
       <command>&dhpackage;</command>
       <arg>-c &lt;config-file&gt;</arg>
       <arg>-l &lt;list&gt;</arg>
-      <arg>-v -d -f</arg>
+      <arg>-v -d -n -f</arg>
       <arg>-m | -b &lt;count&gt;</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
@@ -132,6 +132,17 @@ lurker-index.1: lurker-index.sgml
           probably want this option to avoid needless replication. However,
           to generate mailboxes which accurately reflect delivery, leave the
           option off.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-n</option></term>
+        <listitem>
+          <para>Don't compress messages. This will increase the database
+          size and import speed. Lurker can handle a database with mixed
+          compressed and uncompressed messages. However, zcat/gzip and
+          database upgrades cannot. If you need these to function, you
+          should never mix compressed and uncompressed messages within a
+          single mailing list.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

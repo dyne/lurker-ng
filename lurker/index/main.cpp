@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.23 2003-06-06 15:35:02 terpstra Exp $
+/*  $Id: main.cpp,v 1.24 2003-06-08 15:29:34 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -38,6 +38,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <zlib.h>
+
 #include "Index.h"
 
 // Our friendly neighbourhood date parser (getdate.y / getdate.cpp)
@@ -56,7 +58,8 @@ void help(const char* name)
 {
 	cerr << "Lurker-index (v" << VERSION << ") imports messages into the archive.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> -l <list> (-m | -b <count>) [-v -d -f]\n";
+	cerr << "Usage: " << name << " -c <config-file> -l <list> (-m | -b <count>)\n";
+	cerr << "                                              [-v -d -n -f]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-l <list>        Import messages to the named list\n";
@@ -64,6 +67,7 @@ void help(const char* name)
 	cerr << "\t-m               Import a single message\n";
 	cerr << "\t-v               Verbose operation\n";
 	cerr << "\t-d               Drop duplicates per list\n";
+	cout << "\t-n               Don't compress messages\n";
 	cerr << "\t-f               Fast import (but vulnerable to power-failure)\n";
 	cerr << "\n";
 	cerr << "Index messages from standard input and store them in the lurker database.\n";
@@ -101,7 +105,7 @@ int commit()
 	return 0;
 }
 
-int index(const DwString& msg, long batch, bool check)
+int index(const DwString& msg, long batch, bool check, bool compress)
 {
 //	cout << msg.c_str() << endl;
 	static int count = 0;
@@ -151,7 +155,68 @@ int index(const DwString& msg, long batch, bool check)
 	// We have a day's worth of tolerance in case of a timezone issue
 	if (arrival > import + 24*60*60) arrival = import;
 	
-	append.append(msg.c_str(), msg.length());
+	if (compress)
+	{
+		// Write out a gzip header field
+		append.append(string(
+			"\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x0c", 10));
+		
+		// Compress the data (can't use zlib's compress b/c need -WBITS)
+		char buf[4096];
+		z_stream stream;
+		int err;
+		
+		stream.next_in   = (unsigned char*)msg.c_str();
+		stream.avail_in  = msg.length();
+		stream.next_out  = (unsigned char*)buf;
+		stream.avail_out = sizeof(buf);
+		
+		stream.zalloc = 0;
+		stream.zfree  = 0;
+		stream.opaque = 0;
+		
+		// -MAX_WBITS is an undocumented feature needed to omit header
+		err = deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
+			-MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+		
+		do
+		{
+			assert (err == Z_OK);
+			if (stream.avail_out == 0)
+			{
+				append.append(buf, sizeof(buf));
+				stream.next_out  = (unsigned char*)buf;
+				stream.avail_out = sizeof(buf);
+			}
+			err = deflate(&stream, Z_FINISH);
+		} while (err != Z_STREAM_END);
+		
+		err = deflateEnd(&stream);
+		assert (err == Z_OK);
+		
+		append.append(buf, sizeof(buf) - stream.avail_out);
+		
+		// Write out the annoying gzip tail field
+		unsigned long crc = crc32(0, Z_NULL, 0);
+		crc = crc32(crc, (unsigned char*)msg.c_str(), msg.length());
+		int n;
+		for (n = 0; n < 4; ++n)
+		{
+			append.push_back((char)(crc & 0xFF));
+			crc >>= 8;
+		}
+		unsigned long len = msg.length();
+		for (n = 0; n < 4; ++n)
+		{
+			append.push_back((char)(len & 0xFF));
+			len >>= 8;
+		}
+	}
+	else
+	{
+		append.append(msg.c_str(), msg.length());
+	}
+	
 	Index i(msg, db.get(), *list, start, msg.length());
 	
 	bool exist;
@@ -187,10 +252,11 @@ int main(int argc, char** argv)
 	int         verbose = 0;
 	int         dropdup = 0;
 	bool        synced  = true;
+	bool        compress= true;
 	
 	srandom(time(0));
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:l:b:mvdf?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:l:b:mvndf?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -214,6 +280,9 @@ int main(int argc, char** argv)
 			break;
 		case 'f':
 			synced = false;
+			break;
+		case 'n':
+			compress = false;
 			break;
 		default:
 			help(argv[0]);
@@ -298,7 +367,7 @@ int main(int argc, char** argv)
 			
 			if (msg[0] == 'F') // strlen > 1 b/c of eos+1
 			{	// ignore potential leading blanks
-				if (index(msg, batch, dropdup) != 0) return 1;
+				if (index(msg, batch, dropdup, compress) != 0) return 1;
 				++messages;
 				was = 0; 
 			
@@ -314,7 +383,7 @@ int main(int argc, char** argv)
 			{
 				DwString msg(buf.c_str(), buf.length());
 				buf = "";
-				if (index(msg, batch, dropdup) != 0) return 1;
+				if (index(msg, batch, dropdup, compress) != 0) return 1;
 				++messages;
 			}
 			

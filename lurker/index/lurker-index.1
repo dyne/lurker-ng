@@ -58,7 +58,7 @@
 lurker-index \(em imports messages into the archive 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker-index\fP [-c <config-file>]  [-l <list>]  [-v -d -f]  [-m | -b <count>]  
+\fBlurker-index\fP [-c <config-file>]  [-l <list>]  [-v -d -n -f]  [-m | -b <count>]  
 .SH "DESCRIPTION" 
 .PP 
 \fBlurker-index\fP indexes messages from 
@@ -100,6 +100,13 @@ a message twice. If an import failed part-way through, you
 probably want this option to avoid needless replication. However, 
 to generate mailboxes which accurately reflect delivery, leave the 
 option off. 
+.IP "\fB-n\fP" 10 
+Don't compress messages. This will increase the database 
+size and import speed. Lurker can handle a database with mixed 
+compressed and uncompressed messages. However, zcat/gzip and 
+database upgrades cannot. If you need these to function, you 
+should never mix compressed and uncompressed messages within a 
+single mailing list. 
 .IP "\fB-f\fP" 10 
 Fast import (but vulnerable to power-failure). This may 
 improve the lifetime of your hard-disk and increase import speed 
@@ -122,4 +129,4 @@ under the terms of the GNU Free Documentation License, Version 1.1
 or any later version published by the Free Software Foundation; with 
 no Invariant Sections, no Front-Cover Texts and no Back-Cover 
 Texts. 
-...\" created by instant / docbook-to-man, Wed 04 Jun 2003, 16:30 
+...\" created by instant / docbook-to-man, Sun 08 Jun 2003, 17:26 

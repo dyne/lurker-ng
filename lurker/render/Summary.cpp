@@ -1,4 +1,4 @@
-/*  $Id: Summary.cpp,v 1.6 2003-04-26 12:10:14 terpstra Exp $
+/*  $Id: Summary.cpp,v 1.7 2003-06-08 15:29:34 terpstra Exp $
  *  
  *  Summary.cpp - Helper which can load a message given MessageId
  *  
@@ -28,13 +28,16 @@
 
 #include <mimelib/message.h>
 
+#include <zlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+
 #include <Keys.h> 
 #include <XmlEscape.h>
 
 #include <memory>
 #include <cerrno>
 #include <cstring>
-#include <fstream>
 
 #include "Summary.h"
 
@@ -116,13 +119,22 @@ string Summary::load(Reader* r)
 string Summary::message(const string& dbdir, DwMessage& message) const
 {
 	string name = dbdir + "/" + mbox_;
-	ifstream f(name.c_str());
-	if (!f.is_open())
-		return name + ":ifstream::is_open:" + strerror(errno);
+	int fd = ::open(name.c_str(), O_RDONLY);
+	if (fd == -1)
+		return name + ":open:" + strerror(errno);
 	
-	f.seekg(offset_);
-	if (!f.good())
-		return name + ":seekg:" + strerror(errno);
+	if (lseek(fd, offset_, SEEK_SET) != offset_)
+	{
+		::close(fd);
+		return name + ":lseek:" + strerror(errno);
+	}
+	
+	gzFile gzf = gzdopen(fd, "rb");
+	if (gzf == 0)
+	{
+		::close(fd);
+		return name + ":gzdopen:" + strerror(errno);
+	}
 	
 	DwString str;
 	char buf[8192];
@@ -135,14 +147,17 @@ string Summary::message(const string& dbdir, DwMessage& message) const
 			get = want;
 		else	get = sizeof(buf);
 		
-		f.read(buf, get);
-		
-		if (!f.good())
-			return name + ":read:" + strerror(errno);
+		if (gzread(gzf, buf, get) != get)
+		{
+			gzclose(gzf);
+			return name + ":gzread:" + strerror(errno);
+		}
 		
 		str.append(buf, get);
 		want -= get;
 	}
+	
+	gzclose(gzf); // also closes fd
 	
 	message.FromString(str);
 	message.Parse();

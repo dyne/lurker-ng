@@ -16,6 +16,7 @@ v0.9:
 	Parse mailbox dates using GNU date's code
 	Fixed a race condition with multiple writers
 	Fixed a bug which prevented '-f' from actually working
+	Compress mailboxes in a manner compatible with gzip but seekable
 
 v0.8:
 	@ signs are legitimate inside urls
