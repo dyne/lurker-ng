@@ -246,6 +246,31 @@
 <xsl:template match="server" mode="splash-link">
  <a href="../splash/index.{$ext}"><xsl:value-of select="archive"/></a>
 </xsl:template>
+<xsl:template name="java-row-select">
+ <SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript">
+  <xsl:comment>
+   var old = "ffffff";
+   function rollOut(thisItem)
+   {
+    thisItem.style.background=old; 
+    thisItem.style.backgroundColor=old;
+   }
+   function rollIn(thisItem)
+   {
+    if (thisItem.style.background)
+    {
+     old = thisItem.style.background; 
+     thisItem.style.background="5555ff"; 
+    }
+    else
+    {
+     old = thisItem.style.backgroundColor;
+     thisItem.style.backgroundColor="5555ff";
+    }
+   }
+  //</xsl:comment>
+ </SCRIPT>
+</xsl:template>
 
 <xsl:template match="list" mode="list-link">
  <a href="../list/{id}.{$ext}">

@@ -6,6 +6,17 @@
 <!-- Format a message row -->
 <xsl:template match="row" mode="message">
  <xsl:element name="tr">
+  <xsl:attribute name="onClick">
+   <xsl:text>self.location='</xsl:text>
+   <xsl:value-of select="../server/doc-url"/>
+   <xsl:text>/message/</xsl:text>
+   <xsl:value-of select="summary/id"/>
+   <xsl:text>.</xsl:text>
+   <xsl:value-of select="$ext"/>
+   <xsl:text>';</xsl:text>
+  </xsl:attribute>
+  <xsl:attribute name="onMouseOver">rollIn(this);</xsl:attribute>
+  <xsl:attribute name="onMouseOut">rollOut(this);</xsl:attribute>
   <xsl:attribute name="class">
    <xsl:choose>
     <xsl:when test="@selected">lit</xsl:when>
@@ -48,6 +59,7 @@
   <head>
    <link rel="stylesheet" href="../fmt/default.css" type="text/css"/>
    <title><xsl:value-of select="$search"/>: <xsl:value-of select="translate(query,',',' ')"/></title>
+   <xsl:call-template name="java-row-select"/>
   </head>
   <body>
    <div class="header">
