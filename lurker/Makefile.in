@@ -93,7 +93,8 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
 	uninstall-recursive check-recursive installcheck-recursive
 DIST_COMMON = README AUTHORS COPYING ChangeLog INSTALL Makefile.am \
 	Makefile.in NEWS acinclude.m4 aclocal.m4 configure configure.ac \
-	lurker.conf.in tools/depcomp tools/install-sh tools/missing \
+	lurker.conf.in tools/config.guess tools/config.sub \
+	tools/depcomp tools/install-sh tools/missing \
 	tools/mkinstalldirs
 DIST_SUBDIRS = $(SUBDIRS)
 all: all-recursive
