@@ -19,6 +19,9 @@ int main()
 	out = kap_create(&k, KAP_FAST);
 	assert (out == 0);
 	
+	unlink("test-full.btree");
+	unlink("test-full.append");
+	
 	out = kap_open(k, ".", "test-full");
 	assert (out == 0);
 	
@@ -35,12 +38,16 @@ int main()
 	}
 	
 	map<string, vector<int> >::iterator i;
+	c = 0;
 	for (i = tbl.begin(); i != tbl.end(); i++)
 	{
 		KRecord	kr;
 		
 		out = kap_kopen(k, &kr, i->first.c_str());
 		assert (out == 0);
+		
+		c++;
+		cout << c << " " << i->first << endl;
 		
 		vector<int>::size_type j;
 		for (j = 0; j < i->second.size(); j++)
