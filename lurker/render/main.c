@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.23 2002-06-21 18:19:03 terpstra Exp $
+/*  $Id: main.c,v 1.24 2002-07-11 20:27:22 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -56,7 +56,7 @@ const char redirect_error[] =
 "<p><hr>\r\n"
 "</body></html>\r\n";
 
-int lu_forward_data()
+int lu_forward_data(void)
 {
 	char	buf[4096];
 	size_t	got;
@@ -89,7 +89,7 @@ int lu_forward_data()
 	return 0;
 }
 
-int lu_connect_server()
+int lu_connect_server(void)
 {
 	char*	query;
 	
