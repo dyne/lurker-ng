@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.20 2003-05-28 13:20:18 terpstra Exp $
+/*  $Id: main.cpp,v 1.21 2003-05-28 15:14:53 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -198,8 +198,8 @@ void status(off_t did, long messages, time_t start)
 {
 	time_t amt = time(0) - start;
 	if (amt == 0) amt = 1;
-	cout << "Imported " << messages << " messages (" << (did/(1024*1024)) << "Mb)"
-	     << " at " << (messages / amt) << " messages (" << (did/(1024*amt)) << "Kb) / second" << endl;
+	cout << "Imported " << messages << " messages (" << (did/(1024*1024)) << "MB)"
+	     << " at " << (messages / amt) << " messages (" << (did/(1024*amt)) << "KB) / second" << endl;
 }
 
 int main(int argc, char** argv)
