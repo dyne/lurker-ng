@@ -6,8 +6,9 @@ BUGS:
 	Presently we have no keyword write buffer
 	Also we don't check for double append
 	
-	Need HTML parsing for the email that's html
-	Should find urls etc in message bodies
-	
 	Attachments are never cached because we need to tell the browser
 	the content-type and we have no way to record this.
+	
+	If we get an HTML only email, we don't do anything smart - just
+	escape all the tags. This is ok, but it would be nice if we stripped
+	them and discarded contents of <head><style>... for instance.
