@@ -8,6 +8,7 @@ v0.9:
 	Capital bytes
 	Allow up to 32 byte list ids instead of 16
 	Depend on zlib and find it like mimelib
+	Added lurker-list and lurker-params to facilitate script writing
 
 v0.8:
 	@ signs are legitimate inside urls

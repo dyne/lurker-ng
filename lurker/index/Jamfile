@@ -2,14 +2,15 @@ SubDir TOP index ;
 SubDirHdrs $(TOP) libesort ;
 SubDirHdrs $(TOP) common ;
 
-Main lurker-index :
-	Index.cpp
-	main.cpp
-	;
+Main lurker-index  : Index.cpp main.cpp ;
+Main lurker-list   : list.cpp ;
+Main lurker-params : params.cpp ;
 
-LinkLibraries lurker-index : libesort libcommon ;
+LinkLibraries lurker-index  : libcommon libesort ;
+LinkLibraries lurker-list   : libcommon ;
+LinkLibraries lurker-params : libcommon ;
 
-InstallBin $(BINDIR) : lurker-index ;
+InstallBin $(BINDIR) : lurker-index lurker-list lurker-params;
 InstallFile $(VARDIR)/lib/$(PACKAGE) : stub ;
 
 InstallMan $(MANDIR) : lurker-index.1 ;
