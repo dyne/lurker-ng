@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.11 2002-07-02 21:42:11 terpstra Exp $
+/*  $Id: btree.c,v 1.12 2002-07-02 22:41:09 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -579,8 +579,8 @@ static int is_full(Kap k, const unsigned char* sector)
 	
 	for (i = 0; i < count; i++)
 	{
-		while (*scan) scan++;
-		scan++;
+		while (*scan) ++scan;
+		++scan;
 		
 		if (leaf)	scan += 1 + (*scan);
 		else		scan += k->btree->tree_size;
@@ -746,6 +746,7 @@ static int travel_down(Kap k, const char* key, off_t x,
 	ssize_t		dlen, nlen;
 	size_t		remains;
 	int		leaf, hits;
+	const unsigned char*	s;
 	
 	/* Scheme for tree nodes: (-inf, a) <a> [a, b) <b> [b, inf) */
 	
@@ -758,13 +759,20 @@ static int travel_down(Kap k, const char* key, off_t x,
 		
 		for (i = 0, ptr = k->btree->secta + SECTOR_HEADER_SIZE;
 		     i < hits;
-		     i++, ptr = scan + klen + 1)
-		{
+		     i++, ptr = scan+1)
+		{	/* Sorry for the unreadable code, but this is the bottleneck */
 			scan = ptr + k->btree->tree_size;
-			klen = strlen(scan);
 			
-			if (strcmp(key, scan) < 0)
-				break;
+			s = key;
+			while (*scan)
+			{
+				if (*s != *scan) break;
+				++s;
+				++scan;
+			}
+			if (*s < *scan) break;
+			
+			while (*scan) ++scan;
 		}
 		
 		/* Pull the chid off disk */
@@ -806,14 +814,30 @@ static int travel_down(Kap k, const char* key, off_t x,
 	
 	/* Find the first key which is >= the search key */
 	i = 0;
-	out = -1;
+	out = 1;
 	scan = k->btree->secta + SECTOR_HEADER_SIZE;
 	while (i < hits)
-	{
-		out = strcmp(key, scan);
-		if (out <= 0) break;
+	{	/* Sorry for the unreadable code, but this is the bottleneck */
+		s = key;
+		while (*scan)
+		{
+			if (*s != *scan) break;
+			++s;
+			++scan;
+		}
 		
-		scan += strlen(scan)+1;
+		if (*s <= *scan)
+		{
+			out = (*s != *scan);
+			
+			/* rewind now that we are out of the loop */
+			scan -= ((long)s) - ((long)key);
+			break;
+		}
+		
+		while (*scan) ++scan;
+		++scan;
+		
 		scan += 1 + (*scan);
 		i++;
 	}

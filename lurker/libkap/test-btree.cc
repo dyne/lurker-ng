@@ -55,7 +55,7 @@ int main()
 	out = kap_btree_set_sectorsize(k, 512);
 	assert (out == ERANGE);
 	
-	out = kap_btree_set_sectorsize(k, 1024);
+	out = kap_btree_set_sectorsize(k, 2048);
 	assert (out == 0);
 	
 	out = kap_open(k, ".", "test-btree");
