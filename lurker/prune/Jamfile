@@ -1,0 +1,12 @@
+SubDir TOP prune ;
+SubDirHdrs $(TOP) libesort ;
+SubDirHdrs $(TOP) common ;
+
+Main lurker-prune :
+	prune.cpp
+	;
+
+LinkLibraries lurker-prune : libesort libcommon ;
+
+InstallBin $(BINDIR) : lurker-prune ;
+InstallMan $(MANDIR) : lurker-prune.1 ;

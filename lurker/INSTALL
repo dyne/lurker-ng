@@ -67,13 +67,13 @@ Quick start
        messages. Once you have indexed your archive, lurker no longer needs
        as much resources.
     
-6 Setup a cronjob to remove cached files every 15 minutes
- 
-  0,15,30,45 * * * * rm -f /path/to/www/files/*/*.html 
-  0,15,30,45 * * * * rm -f /path/to/www/files/*/*.xml
+6 Setup a cronjob to update the archive every 15 minutes
   
-  ... in a later version this will be handled more intelligently.
-
+  0,15,30,45 * * * * lurker-prune -c /etc/lurker.conf -d /path/to/www/lurker
+  
+  This must be run with the ability to read and delete files from the
+  web-server cache directory.
+  
 7 Configure your webserver.
   
   You must make certain that .xsl and .xml files have type text/xml.
