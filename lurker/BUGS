@@ -12,4 +12,3 @@ BUGS:
 	Need a better way to clean cache.
 	Timezones suck. Need to localize times to the browser.
 	Should symlink default.css and lang.xsl for the user.
-	Need configurable mode for database creation
