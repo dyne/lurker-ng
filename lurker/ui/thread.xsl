@@ -3,6 +3,17 @@
 
 <xsl:import href="common.xsl"/>
 
+<!-- Format the mailing lists -->
+<xsl:template mode="appear-in" match="list">
+ <tr>
+  <td nowrap="NOWRAP" class="padded">
+   <b><xsl:value-of select="email/@name"/></b><br/>
+   <a href="../list/{id}.{$ext}"><xsl:value-of select="$list-info"/></a> |
+   <a href="../mindex/{id}@{../row[position()=1]/summary/id}.{$ext}"><xsl:value-of select="$near-message"/></a>
+  </td>
+  <td><xsl:value-of select="description"/></td>
+ </tr>
+</xsl:template>
 
 <!-- Format a message row -->
 <xsl:template match="row" mode="message">
@@ -26,6 +37,7 @@
    </xsl:choose>
   </xsl:attribute>
   <td nowrap="NOWRAP">
+   <a name="{summary/id}"/>
    <xsl:apply-templates mode="tree" select="tree"/>
   </td>
   <td nowrap="NOWRAP"><xsl:apply-templates mode="email-name" select="summary/email"/></td>
@@ -103,10 +115,14 @@
    
    
    <div class="footer">
-<!-- fixme (have lists)
     <table class="navigation">
+     <tr>
+      <th colspan="2" align="left">
+       <xsl:value-of select="$thread-appears-in"/>
+      </th>
+     </tr>
+     <xsl:apply-templates mode="appear-in" select="list"/>
     </table>
--->
     <xsl:call-template name="lurker-signature"/>
    </div>
   </body>

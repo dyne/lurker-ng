@@ -190,7 +190,7 @@
        <xsl:apply-templates mode="tree" select="threading/snippet/tree[position()=1]"/>
       </td>
       <td align="right">
-       <a href="../thread/{summary/id}.{$ext}">
+       <a href="../thread/{summary/id}.{$ext}#{summary/id}">
         <xsl:value-of select="$full-tree"/>
        </a>
       </td>
@@ -242,7 +242,7 @@
     <table class="navigation">
      <tr>
       <th colspan="5" align="left">
-       <xsl:value-of select="$appears-in"/>
+       <xsl:value-of select="$mail-appears-in"/>
       </th>
      </tr>
      <xsl:apply-templates mode="appear-in" select="mbox"/>
