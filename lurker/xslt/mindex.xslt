@@ -41,7 +41,7 @@
   </title>
  </head>
  <body>
-  <h1>Lurker@<xsl:value-of select="/mindex/server/hostname"/></h1>
+  <h1><a href="../splash/index.html">Lurker@<xsl:value-of select="/mindex/server/hostname"/></a></h1>
   <h2><xsl:apply-templates select="/mindex/list/email"/> - Messages
       <xsl:value-of select="/mindex/offset"/>-<xsl:value-of select="string(number(/mindex/offset)+count(/mindex/summary)-1)"/>
   </h2>

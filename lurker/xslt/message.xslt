@@ -25,6 +25,13 @@
   <xsl:value-of select="@name"/>
 </xsl:template>
 
+<xsl:template match="list">
+  <tr><td><a href="../mindex/{id}@{floor(offset div 20) * 20}.html"><xsl:value-of select="email/@name"/></a><xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>(message<xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>#<xsl:value-of select="offset"/>)</td>
+      <td>- <xsl:value-of select="description"/></td>
+      <td align="right"><xsl:if test="email/@address"><a href="mailto:{email/@address}"><xsl:value-of select="email/@address"/></a></xsl:if></td>
+  </tr>
+</xsl:template>
+
 <xsl:template match="summary">
   <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text></xsl:if>
   <a href="{id}.html">
@@ -66,43 +73,41 @@
  </head>
  <body>
   <h1><a href="../splash/index.html">Lurker@<xsl:value-of select="/message/server/hostname"/></a></h1>
-  <h2><xsl:apply-templates select="/message/list/email"/> - 
-      <xsl:value-of select="/message/subject"/></h2>
+  <h2>Thread <a href="../thread/{/message/thread}.html"><xsl:value-of select="/message/subject"/></a></h2>
 
-  <table>
+  <table width="100%">
+    <col width="1*"/>
+    <col width="100%"/>
     <tr><th align="left">Author:</th>
-         <td width="100%"><xsl:choose>
+         <td><xsl:choose>
            <xsl:when test="/message/reply-to"><xsl:apply-templates select="/message/reply-to"/></xsl:when>
            <xsl:when test="/message/from"><xsl:apply-templates select="/message/from"/></xsl:when>
            <xsl:when test="/message/sender"><xsl:apply-templates select="/message/sender"/></xsl:when>
-         </xsl:choose></td>
-         <td><a href="../mindex/{/message/list/id}@{floor(/message/offset div 20)*20}.html">
-             <xsl:value-of select="/message/list/email/@name"/>
-             </a></td></tr>
-    <tr><th align="left">To:</th><td><xsl:apply-templates select="/message/to"/></td>
-         <td><a href="../thread/{/message/thread}.html">thread view</a></td></tr>
+         </xsl:choose></td></tr>
+    <tr><th align="left">To:</th><td><xsl:apply-templates select="/message/to"/></td></tr>
     <xsl:if test="/message/cc">
-     <tr><th align="left">CC:</th><td><xsl:apply-templates select="/message/cc"/></td>
-         <td><a href="../mbox/{/message/id}.txt">
-             raw mbox <xsl:if test="/message/mbox">(<xsl:value-of select="/message/mbox"/>)</xsl:if>
-             </a></td></tr>
+     <tr><th align="left">CC:</th><td><xsl:apply-templates select="/message/cc"/></td></tr>
      <tr><th align="left">Date:</th><td><xsl:value-of select="/message/time"/></td></tr>
     </xsl:if>
-    <xsl:if test="not(/message/cc)">
-     <tr><th align="left">Date:</th><td><xsl:value-of select="/message/time"/></td>
-         <td><a href="../mbox/{/message/id}.txt">
-             raw mbox <xsl:if test="/message/mbox">(<xsl:value-of select="/message/mbox"/>)</xsl:if>
-             </a></td></tr>
-    </xsl:if>
+    <tr><th align="left">Date:</th><td><xsl:value-of select="/message/time"/></td></tr>
     <xsl:if test="/message/inreplyto">
-      <tr><th aligh="left">In-Reply-To:</th><td><xsl:apply-templates select="/message/inreplyto/summary"/></td></tr>
+      <tr><th align="left">In-Reply-To:</th><td><xsl:apply-templates select="/message/inreplyto/summary"/></td></tr>
     </xsl:if>
     <xsl:if test="/message/replies">
-      <tr><th aligh="left">Follow-Ups:</th><td><xsl:apply-templates select="/message/replies/summary"/></td></tr>
+      <tr><th align="left">Follow-Ups:</th><td><xsl:apply-templates select="/message/replies/summary"/></td></tr>
     </xsl:if>
   </table>
 
   <hr/>
+  <h3>Appears <a href="../mbox/{/message/id}.txt">raw</a> in these mailing lists</h3>
+  <table width="100%">
+   <col width="1*"/>
+   <col width="100%"/>
+   <col width="1*"/>
+   <xsl:apply-templates select="/message/list"/>
+  </table>
+  <hr/>
+
   <blockquote>
     <xsl:apply-templates select="/message/mime"/>
   </blockquote>

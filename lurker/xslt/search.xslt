@@ -40,7 +40,7 @@
   </title>
  </head>
  <body>
-  <h1>Lurker@<xsl:value-of select="/search/server/hostname"/></h1>
+  <h1><a href="../splash/index.html">Lurker@<xsl:value-of select="/search/server/hostname"/></a></h1>
 
   <h2>Messages <xsl:value-of select="/search/offset"/>
       / <xsl:value-of select="/search/hits"/>
@@ -52,8 +52,8 @@
        <a href="{/search/next}%20{/search/queryurl}.html">(next &gt;&gt;)</a>
      </xsl:if>
   </h2>
-  <p><form action="../search/bounce">Query: 
-    <input type="text" name="query" value="{/search/query}"/>
+  <p><form action="../search/bounce">
+    <input type="text" name="query" size="50" value="{/search/query}"/>
     <input type="submit" name="submit" value="Search!"/>
   </form></p>
 
