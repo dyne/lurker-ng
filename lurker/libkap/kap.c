@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.4 2002-07-08 18:22:23 terpstra Exp $
+/*  $Id: kap.c,v 1.5 2002-07-09 00:09:40 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -305,10 +305,12 @@ int kap_kopen(Kap k, KRecord* kr, const char* key)
 {
 	int	out;
 	ssize_t len;
+	size_t	klen;
+	unsigned char buf[256];
 	
 	if (!k->append) return KAP_NO_APPEND;
 	
-	out = kap_btree_read(k, key, (unsigned char*)kr, &len);
+	out = kap_btree_read(k, key, &buf[0], &len);
 	if (out == KAP_NOT_FOUND)
 	{	/* We will rewrite this on calls to write */
 		memset(kr, 0, sizeof(KRecord));
@@ -317,7 +319,8 @@ int kap_kopen(Kap k, KRecord* kr, const char* key)
 	
 	if (out == 0)
 	{
-		assert (len == kap_append_keyspace(kr));
+		klen = kap_decode_krecord(&buf[0], kr);
+		assert (len == klen);
 	}
 	
 	return out;
@@ -337,13 +340,17 @@ int kap_kread(Kap k, const KRecord* kr, const char* key,
 int kap_kwrite(Kap k, KRecord* kr, const char* key,
 	size_t where, void* buf, size_t amt)
 {
-	int sz = kap_append_keyspace(kr);
+	size_t records = kr->records;
 	int out = kap_append_write(k, kr, where, buf, amt);
 	
 	if (out) return out;
-	if (kap_append_keyspace(kr) != sz)
-		out = kap_btree_write(k, key, 
-			(unsigned char*)kr, kap_append_keyspace(kr));
+	if (kr->records != records)
+	{
+		unsigned char buf[256];
+		size_t len = kap_encode_krecord(&buf[0], kr);
+		
+		out = kap_btree_write(k, key, &buf[0], len);
+	}
 	
 	return out;
 }
@@ -361,18 +368,21 @@ static int append_back(void* arg, const char* key, unsigned char* record, ssize_
 {
 	struct AppendBack* nfo = arg;
 	KRecord	kr;
-	int	sz;
+	size_t	klen;
 	
 	if (!strcmp(key, nfo->key))
-		memcpy(&kr, record, *len);
-	else	memset(&kr, 0, sizeof(KRecord));
+	{
+		klen = kap_decode_krecord(record, &kr);
+		assert (klen == *len);
+	}
+	else
+	{
+		memset(&kr, 0, sizeof(KRecord));
+	}
 	
 	nfo->out = kap_append_append(nfo->k, &kr, nfo->data, nfo->len);
 	
-	sz = kap_append_keyspace(&kr);
-	memcpy(record, &kr, sz);
-	*len = sz;
-	
+	*len = kap_encode_krecord(record, &kr);
 	return 1;
 }
 

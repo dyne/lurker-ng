@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.4 2002-07-08 15:30:15 terpstra Exp $
+/*  $Id: append.c,v 1.5 2002-07-09 00:09:38 terpstra Exp $
  *  
  * append.c - Implementation of the append access methods.
  *  
@@ -232,19 +232,40 @@ static off_t allocate_cell(Kap k, int jump)
 	return where;
 }
 
-/* How much of the KRecord needs to be recorded?
- */
-int kap_append_keyspace(const KRecord* kr)
+size_t kap_decode_krecord(const unsigned char* where, KRecord* kr)
 {
-	int out;
+	int recs, i;
+	off_t tmp;
 	
-	assert (sizeof(KRecord) == sizeof(off_t)*32 + sizeof(size_t));
+	kap_decode_offset(where, &tmp, 4);
+	where += 4;
+	kr->records = tmp;
 	
-	out = sizeof(size_t);
-	if (kr->records == 0) return out;
+	recs = offset_to_jump(kr->records-1);
+	for (i = 0; i <= recs; i++)
+	{
+		kap_decode_offset(where, &kr->jumps[i], 5);
+		where += 5;
+	}
 	
-	out += (offset_to_jump(kr->records-1)+1) * sizeof(off_t);
-	return out;
+	return 4 + (i+1)*5;
+}
+
+size_t kap_encode_krecord(unsigned char* where, const KRecord* kr)
+{
+	int recs, i;
+	
+	kap_encode_offset(where, kr->records, 4);
+	where += 4;
+	
+	recs = offset_to_jump(kr->records-1);
+	for (i = 0; i <= recs; i++)
+	{
+		kap_encode_offset(where, kr->jumps[i], 5);
+		where += 5;
+	}
+	
+	return 4 + (i+1)*5;
 }
 
 int kap_append_read(Kap k, const KRecord* kr,

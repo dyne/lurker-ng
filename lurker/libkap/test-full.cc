@@ -33,7 +33,7 @@ int main()
 			key.resize(99);
 			
 		c++;
-		cout << c << " " << key << endl;
+//		cout << c << " " << key << endl;
 		
 		int i = random();
 		tbl[key].push_back(i);
@@ -48,7 +48,7 @@ int main()
 		KRecord	kr;
 		
 		c++;
-		cout << c << " " << i->first << endl;
+//		cout << c << " " << i->first << endl;
 		
 		out = kap_kopen(k, &kr, i->first.c_str());
 		if (out) cerr << kap_strerror(out) << endl;

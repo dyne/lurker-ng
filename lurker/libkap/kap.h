@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.6 2002-07-04 19:24:11 terpstra Exp $
+/*  $Id: kap.h,v 1.7 2002-07-09 00:09:40 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -251,9 +251,6 @@ int	kap_append_read(Kap k, const KRecord* kr,
 int	kap_append_append(Kap k, KRecord* kr, 
 	void* data, size_t len);
 
-/** Return how many bytes of the KRecord need to be stored.
- */
-int	kap_append_keyspace(const KRecord* kr);
 
 
 /****************************************** Combined KAP calls */
