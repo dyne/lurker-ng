@@ -2732,7 +2732,7 @@ prefix_backup="$prefix"
   ac_define_dir_result=""${bindir}""
   if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
   if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
-  while echo "$ac_define_dir_result" | grep -q '\$'; do
+  while echo "$ac_define_dir_result" | grep '\$' >/dev/null; do
     ac_define_dir_result=`eval echo $ac_define_dir_result`
   done
   prefix="${prefix_backup}"
@@ -2745,7 +2745,7 @@ prefix_backup="$prefix"
   ac_define_dir_result=""${libdir}""
   if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
   if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
-  while echo "$ac_define_dir_result" | grep -q '\$'; do
+  while echo "$ac_define_dir_result" | grep '\$' >/dev/null; do
     ac_define_dir_result=`eval echo $ac_define_dir_result`
   done
   prefix="${prefix_backup}"
@@ -2758,7 +2758,7 @@ prefix_backup="$prefix"
   ac_define_dir_result=""${includedir}""
   if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
   if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
-  while echo "$ac_define_dir_result" | grep -q '\$'; do
+  while echo "$ac_define_dir_result" | grep '\$' >/dev/null; do
     ac_define_dir_result=`eval echo $ac_define_dir_result`
   done
   prefix="${prefix_backup}"
@@ -2771,7 +2771,7 @@ prefix_backup="$prefix"
   ac_define_dir_result=""${localstatedir}""
   if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
   if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
-  while echo "$ac_define_dir_result" | grep -q '\$'; do
+  while echo "$ac_define_dir_result" | grep '\$' >/dev/null; do
     ac_define_dir_result=`eval echo $ac_define_dir_result`
   done
   prefix="${prefix_backup}"
@@ -2784,7 +2784,7 @@ prefix_backup="$prefix"
   ac_define_dir_result=""${sysconfdir}""
   if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
   if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
-  while echo "$ac_define_dir_result" | grep -q '\$'; do
+  while echo "$ac_define_dir_result" | grep '\$' >/dev/null; do
     ac_define_dir_result=`eval echo $ac_define_dir_result`
   done
   prefix="${prefix_backup}"
@@ -2797,7 +2797,7 @@ prefix_backup="$prefix"
   ac_define_dir_result=""${datadir}""
   if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
   if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
-  while echo "$ac_define_dir_result" | grep -q '\$'; do
+  while echo "$ac_define_dir_result" | grep '\$' >/dev/null; do
     ac_define_dir_result=`eval echo $ac_define_dir_result`
   done
   prefix="${prefix_backup}"
@@ -2810,7 +2810,7 @@ prefix_backup="$prefix"
   ac_define_dir_result=""${mandir}""
   if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
   if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
-  while echo "$ac_define_dir_result" | grep -q '\$'; do
+  while echo "$ac_define_dir_result" | grep '\$' >/dev/null; do
     ac_define_dir_result=`eval echo $ac_define_dir_result`
   done
   prefix="${prefix_backup}"

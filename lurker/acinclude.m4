@@ -82,7 +82,7 @@ AC_DEFUN([AC_DEFINE_DIR],
   ac_define_dir_result="$2"
   if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
   if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
-  while echo "$ac_define_dir_result" | grep -q '\$'; do
+  while echo "$ac_define_dir_result" | grep '\$' >/dev/null; do
     ac_define_dir_result=`eval echo $ac_define_dir_result`
   done
   prefix="${prefix_backup}"

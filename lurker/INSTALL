@@ -7,7 +7,9 @@ Quick start
    jam                   - ftp://ftp.perforce.com/pub/jam
    mimelib  (kdenetwork) - ftp://download.uk.kde.org/pub/kde/stable/latest/src
    xsltproc (libxslt1)   - http://xmlsoft.org/XSLT/
-
+ 
+ A hint: building jam on Solaris requires that cc -> gcc.
+ 
  If you need to, lurker can be built using only g++ 2.95, however 3.2 is
  recommended as the resulting binaries are much smaller and faster.
  
