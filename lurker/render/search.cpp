@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.6 2003-04-28 00:03:27 terpstra Exp $
+/*  $Id: search.cpp,v 1.7 2003-04-28 00:34:31 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -203,7 +203,12 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	vector<string> tokens;
 	++o;
-	string keys = decipherHalf(param.substr(o, e-o));
+	string raw = decipherHalf(param.substr(o, e-o));
+	string keys(raw);
+	// we need to translate '!' to '/'
+	for (string::size_type es = 0; es < keys.length(); ++es)
+		if (keys[es] == '!') keys[es] = '/';
+		
 	tokenize(keys, tokens, ",");
 	
 	if (tokens.empty())
@@ -223,10 +228,6 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 	for (vector<string>::iterator i = tokens.begin(); i != tokens.end(); ++i)
 	{
 		string& key = *i;
-		// we need to translate '!' to '/'
-		string::size_type j;
-		for (j = 0; j < key.length(); ++j)
-			if (key[j] == '!') key[j] = '/';
 		
 		if ((ok = backwardk.keyword(key)) != "")
 			break;
@@ -301,7 +302,7 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	Cache cache(cfg, "search", 
 		param.substr(0, o) + 
-		keys + 	// this is transformed so the webserver can eat it
+		raw + 	// this is transformed so the webserver can eat it
 		param.substr(e, string::npos));
 	
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
