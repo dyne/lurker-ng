@@ -4,6 +4,9 @@ Ideas:
 		-- human recognizable
 	secured lists? login required?
 	ml:debian-devel instead of ml:#
+	consider mmaping the append file for faster writes
+		-- would restrict us to 6Gb max email on 32bit systems
+		-- would make us much faster
 
 Unfulfilled requirements:
 	Better packing of tree
