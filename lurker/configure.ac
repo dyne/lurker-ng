@@ -1,13 +1,13 @@
 AC_INIT(lurker, 0.1b)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.27 2002-07-01 11:18:09 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.28 2002-07-11 13:27:16 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
 AM_INIT_AUTOMAKE(lurker, 0.1b)
 AM_CONFIG_HEADER(config.h)
-
+AM_MAINTAINER_MODE
 
 # Which languages are supported
 ALL_LINGUAS=""
