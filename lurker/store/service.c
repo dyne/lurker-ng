@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.25 2002-02-25 00:13:30 terpstra Exp $
+/*  $Id: service.c,v 1.26 2002-02-25 00:34:11 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1047,9 +1047,8 @@ static int my_service_getmsg(
 		if (my_service_buffer_write(h, " </inreplyto>\n") != 0) goto my_service_getmsg_error3;
 	}
 	
-	if (b != 0)
+	if (b != 0 && (count = lu_breader_records(b)) != 0)
 	{
- 		count = lu_breader_records(b);
  		ind = 0;
  		
 		if (my_service_buffer_write(h, " <replies>\n") != 0) goto my_service_getmsg_error3;
