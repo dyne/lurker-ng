@@ -1,7 +1,7 @@
-AC_INIT(gtkstone, 0.1)
+AC_INIT(lurker, 0.1)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.2 2002-01-21 01:18:34 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.3 2002-01-21 03:30:45 cbond Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
