@@ -1,4 +1,4 @@
-/*  $Id: Config.h,v 1.2 2003-04-21 18:25:31 terpstra Exp $
+/*  $Id: Config.h,v 1.3 2003-04-22 13:22:05 terpstra Exp $
  *  
  *  Config.h - Knows how to load the config file
  *  
@@ -25,13 +25,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// !!! autoconf
-#define VERSION "0.6"
-
 #include <string>
 #include <sstream>
 #include <map>
 #include <iostream>
+
+#include "Version.h"
 
 using std::string;
 using std::map;

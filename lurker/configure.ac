@@ -1,4 +1,4 @@
-AC_INIT(lurker, 0.6, wesley@terpstra.ca)
+AC_INIT(lurker, pre-0.7, wesley@terpstra.ca)
 AC_CONFIG_SRCDIR(Jamrules.in)
 AC_PREREQ(2.57)
 
@@ -42,5 +42,5 @@ AC_DEFINE_DIR(VARDIR,  "${localstatedir}")
 AC_DEFINE_DIR(ETCDIR,  "${sysconfdir}")
 AC_DEFINE_DIR(DATADIR, "${datadir}")
 
-AC_CONFIG_FILES(Jamrules lurker.conf)
+AC_CONFIG_FILES(Jamrules lurker.conf common/Version.h)
 AC_OUTPUT
