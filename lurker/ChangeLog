@@ -22,6 +22,7 @@ v0.1d:
 	Include version information in pages
 	Added command-line option to output import speed statistics
 	Made error message about direct CGI invocation more informative
+	URLs like www.debian.org with http:// are now non-relative
 	Fixed a bug where adjacent list items in the expiry heap led to
 		a SIGBUS error on swap
 

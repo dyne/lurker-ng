@@ -16,8 +16,8 @@ Unfulfilled requirements:
 	German pot
 
 BUGS:
+	Somehow or another >4k message errors are being reported by people
 	False search negatives
-	Links to www.foo.bar are relative and die
 	Config reloading is broken
 	We no longer support block device operation for append
 	We don't check for double append
