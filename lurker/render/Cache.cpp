@@ -1,4 +1,4 @@
-/*  $Id: Cache.cpp,v 1.10 2003-06-25 17:32:42 terpstra Exp $
+/*  $Id: Cache.cpp,v 1.11 2004-02-18 16:52:35 terpstra Exp $
  *  
  *  Cache.h - Helper which transforms xml -> html and caches files
  *  
@@ -164,6 +164,11 @@ Cache::Cache(const Config& cfg, const string& command, const string& parameter)
 	else if (ext == "txt")
 	{
 		cout <<	"Content-Type: text/plain\r\n\r\n";
+		output = cache;
+	}
+	else if (ext == "rfc822")
+	{
+		cout << "Content-Type: message/rfc822\r\n\r\n";
 		output = cache;
 	}
 	else
