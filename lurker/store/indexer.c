@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.2 2002-02-03 06:05:43 terpstra Exp $
+/*  $Id: indexer.c,v 1.3 2002-02-03 08:25:32 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -33,13 +33,56 @@
 #include "wbuffer.h"
 #include "indexer.h"
 
+#include <stdlib.h>
 #include <ctype.h>
+#include <stdio.h>
+
+/*------------------------------------------------ Constant parameters */
+
+/* A message is not allowed to have more than this many keywords. We simply
+ * start ignoring keywords beyond this limit.
+ */
+#define LU_INDEXER_MAX_KEYS	1024
+
+/* A limit on the amount of dynamic storage we allow for decomposing and
+ * creating extra keywords
+ */
+#define LU_INDEXER_MAX_DYNAMIC	10240
+
+/*------------------------------------------------ Private data types */
+
+typedef struct Lu_Indexer_Tree_T
+{
+	struct Lu_Indexer_Tree_T*	left;
+	struct Lu_Indexer_Tree_T*	right;
+	const char*			keyword;
+	int				weight;
+} Lu_Indexer_Tree;
 
 /*------------------------------------------------ Private global vars */
 
+static Lu_Indexer_Tree*	my_indexer_buf = 0;
+static char*		my_indexer_dyn = 0;
+
+/* These tell us how much of the dynamic vars above have been used by the
+ * current indexer pass.
+ */
+static int		my_indexer_buf_off = 0;
+static int 		my_indexer_dyn_off = 0;
+
+/* The root of the tree for a given import */
+static Lu_Indexer_Tree*	my_indexer_root = 0;
+
+static const char* lu_indexer_mons[12] = { 
+	"jan", "feb", "mar", "apr", "may", "jun", 
+	"jul", "aug", "sep", "oct", "nov", "dev" };
+
+static const char* lu_indexer_dows[7] = {
+	"sun", "mon", "tue", "wed", "thu", "fri", "sat" };
 
 /*------------------------------------------------ Private helper methods */
 
+/* Test the strings for equality - ignoring case */
 static int my_indexer_strcasecmp(
 	const char* a, 
 	const char* b)
@@ -56,36 +99,142 @@ static int my_indexer_strcasecmp(
 	return 0;
 }
 
-/*
- * Determine where to split words, and index the
- * results in the database with lu_push_keyword.
- */
-static void my_indexer_keywords(
-	char *buffer, 
-	int length)
+/* This function finds space in our tree to put the keyword in.
+ * It does not enter it in the tree if we have already seen this key.
+ */ 
+static int my_indexer_push_keyword(
+	const char* keyword)
 {
-	const char* word;
-	const char* adv;
-
-	while (length > 0 && isspace(*buffer))
+	int			len = strlen(keyword);
+	int			dir;
+	Lu_Indexer_Tree**	scan;
+	
+	/* Do we have a record we could fit this keyword in? */
+	if (my_indexer_buf_off >= LU_INDEXER_MAX_KEYS)
 	{
-		++buffer;
-		--length;
+		return -1;
 	}
-
-	printf("%.*s", length, buffer);
-
-	/*
-	 * Words are split based on punctuation (ispunct()) and
-	 * spacing (isspace()).  A word with punctuation in it
-	 * will be split into segments--before and after the
-	 * punctuation occurs--as well as indexed as a whole.
-	 * E.g., `foo_bar' causes `foo,' `bar,' and `foo_bar' to
-	 * be indexed.
-	 *
-	 * !!! Finish this RIGHT NOW.
+	
+	/* Do we have enough dynamic storage space for the string? */
+	if (len + my_indexer_dyn_off >= LU_INDEXER_MAX_DYNAMIC)
+	{
+		return -1;
+	}
+	
+	/* Traverse the tree to see if we already have this word.
+	 * Record where to place it if we don't.
 	 */
-	for (word = adv = buffer; length > 0; ++adv, --length);
+	scan = &my_indexer_root;
+	while (*scan)
+	{
+		dir = strcmp(keyword, (*scan)->keyword);
+		
+		if      (dir < 0) scan = &((*scan)->left);
+		else if (dir > 0) scan = &((*scan)->right);
+		else
+		{	/* The word has already been indexed. */
+			return 0;
+		}
+	}
+	
+	/* Ok, the word is not in the tree and we have where to put it. */
+	*scan = &my_indexer_buf[my_indexer_buf_off];
+	(*scan)->left    = 0;
+	(*scan)->right   = 0;
+	(*scan)->keyword = my_indexer_dyn + my_indexer_dyn_off;
+	
+	memcpy(my_indexer_dyn+my_indexer_dyn_off, keyword, len+1);
+	
+	my_indexer_dyn_off += len + 1;
+	my_indexer_buf_off++;
+	
+	/*!!! I need to implement balancing -> a carefully crafted email
+	 * could make us chew up a ton of stack when we dump.
+	 */
+	
+	return 0;
+}
+
+/* Combine the prefix with the substring */
+static int my_indexer_index_hunk(
+	const char* buf,
+	const char* eos,
+	const char* prefix)
+{
+	char out[200];
+	char* w;
+	char* e;
+	
+	/* A quick check to avoid function calls */
+	if (prefix[0])
+	{
+		strcpy(&out[0], prefix);
+		w = &out[strlen(prefix)];
+	}
+	else
+	{
+		w = &out[0];
+	}
+	
+	e = &out[sizeof(out) - 1];
+	
+	/* Copy the range into the buffer while lower-casing it */
+	while (w != e && buf != eos)
+	{
+		*w++ = tolower(*buf++);
+	}
+	
+	*w = 0;
+	return my_indexer_push_keyword(&out[0]);
+}
+
+/* Look at a section of non-whitespace chars and decide what to do with it. */
+static int my_indexer_digest_hunk(
+	const char* buf, 
+	const char* eos, 
+	const char* prefix)
+{
+	/*!!! Make me do my job */
+	return my_indexer_index_hunk(buf, eos, prefix);
+}
+
+/* Run through a buffer looking for segments of non-whitespace
+ */
+static int my_indexer_keyword_scan(
+	const char* buf, 
+	int len, 
+	const char* prefix)
+{
+	const char* start;
+	const char* scan;
+	const char* eos = buf + len;
+	
+	start = 0;
+	for (scan = buf; scan != eos; scan++)
+	{
+		if (isspace(*scan))
+		{
+			if (start)
+			{
+				my_indexer_digest_hunk(start, scan, prefix);
+				start = 0;
+			}
+		}
+		else
+		{
+			if (!start)
+			{
+				start = scan;
+			}
+		}
+	}
+	
+	if (start)
+	{
+		my_indexer_digest_hunk(start, eos, prefix);
+	}
+	
+	return 0;
 }
 
 /*
@@ -93,12 +242,19 @@ static void my_indexer_keywords(
  * such a part is located, we'll index all of the words
  * it contains.
  */
-static void my_indexer_traverse(struct msg* in, struct mail_bodystruct* body)
+static void my_indexer_traverse(
+	struct msg* in, 
+	struct mail_bodystruct* body)
 {
-	struct mail_body_part *p;		/* Filthy struct. */
+	struct mail_body_part *p;
 	size_t length;
 	char *buffer;
 	int nfree;
+	
+	if (!body)
+	{	/* You never know... */
+		return;
+	}
 
 	switch ((int)body->type)
 	{
@@ -120,7 +276,8 @@ static void my_indexer_traverse(struct msg* in, struct mail_bodystruct* body)
 				break;
 
 			buffer = mail_select(in, body, &length, &nfree);
-			my_indexer_keywords(buffer, length);
+			my_indexer_keyword_scan(buffer, length,
+				LU_KEYWORD_WORD);
 			if (nfree)
 				fs_give((void **)&buffer);
 
@@ -139,10 +296,118 @@ static void my_indexer_traverse(struct msg* in, struct mail_bodystruct* body)
 	}
 }
 
+static const char* my_indexer_cleanup_id(
+	const char* id)
+{
+	static char buf[100];
+	char* w;
+	char* e;
+	
+	while (isspace(*id)) id++;
+	if (*id == '<') id++;
+	
+	w = &buf[0];
+	e = &buf[sizeof(buf) - 1];
+	
+	while (w != e)
+	{
+		if (isspace(*id) || *id == '>') break;
+		*w++ = *id++;
+	}
+	
+	*w = 0;
+	return &buf[0];
+}
+
+static int my_indexer_push_address(
+	ADDRESS* address)
+{
+	static char buf[200];
+	
+	if (address->personal)
+	{
+		my_indexer_keyword_scan(
+			address->personal, 
+			strlen(address->personal),
+			LU_KEYWORD_AUTHOR);
+	}
+	
+	if (address->mailbox && address->host)
+	{
+		snprintf(&buf[0], sizeof(buf),
+			"%s@%s",
+			address->mailbox,
+			address->host);
+	
+		my_indexer_keyword_scan(
+			&buf[0],
+			strlen(&buf[0]),
+			LU_KEYWORD_AUTHOR);
+	}
+	else if (address->mailbox)
+	{
+		my_indexer_keyword_scan(
+			address->mailbox,
+			strlen(address->mailbox),
+			LU_KEYWORD_AUTHOR);
+	}
+	else if (address->host)
+	{
+		my_indexer_keyword_scan(
+			address->host,
+			strlen(address->host),
+			LU_KEYWORD_AUTHOR);
+	}
+	
+	return 0;
+}
+
+static int my_indexer_dump_words(
+	Lu_Indexer_Tree* where, 
+	message_id id)
+{
+	if (!where)
+	{
+		return 0;
+	}
+	
+	if (my_indexer_dump_words(where->left, id) != 0)
+	{
+		return -1;
+	}
+
+#ifdef DEBUG
+	printf("%s ", where->keyword);
+#else
+	lu_wbuffer_append(where->keyword, id);
+#endif
+	
+	if (my_indexer_dump_words(where->right, id) != 0)
+	{
+		return -1;
+	}
+	
+	return 0;
+}
+
 /*------------------------------------------------- Public component methods */
 
 int lu_indexer_init()
 {
+	my_indexer_buf = malloc(sizeof(Lu_Indexer_Tree) * LU_INDEXER_MAX_KEYS);
+	if (!my_indexer_buf)
+	{
+		fprintf(stderr, "Failed to allocate storage for keyword import tree\n");
+		return -1;
+	}
+	
+	my_indexer_dyn = malloc(LU_INDEXER_MAX_DYNAMIC);
+	if (!my_indexer_dyn)
+	{
+		fprintf(stderr, "Failed to allocate storage for keyword import buffer\n");
+		return -1;
+	}
+	
 	return 0;
 }
 
@@ -163,6 +428,18 @@ int lu_indexer_close()
 
 int lu_indexer_quit()
 {
+	if (my_indexer_buf)
+	{
+		free(my_indexer_buf);
+		my_indexer_buf = 0;
+	}
+	
+	if (my_indexer_dyn)
+	{
+		free(my_indexer_dyn);
+		my_indexer_dyn = 0;
+	}
+	
 	return 0;
 }
 
@@ -172,7 +449,107 @@ int lu_indexer_import(
 	struct msg*	body, 
 	lu_word		list,
 	lu_word		mbox,
-	time_t		stamp)
+	time_t		stamp,
+	message_id	id)
 {
+	char buf[100];
+	struct tm* when;
+	
+	/* We have imported no keywords in this pass yet. */
+	my_indexer_root    = 0;
+	my_indexer_buf_off = 0;
+	my_indexer_dyn_off = 0;
+	
+	/* Push the mailing list keyword. */
+	snprintf(&buf[0], sizeof(buf), "%s%d", 
+		LU_KEYWORD_LIST, list);
+	my_indexer_push_keyword(&buf[0]);
+	
+	/* Push the mail box keyword. */
+	snprintf(&buf[0], sizeof(buf), "%s%d:%d", 
+		LU_KEYWORD_MBOX, list, mbox);
+	my_indexer_push_keyword(&buf[0]);
+	
+	/* Start working on the time keywords */
+	when = localtime(&stamp);
+	
+	snprintf(&buf[0], sizeof(buf), "%s%d",
+		LU_KEYWORD_YEAR, when->tm_year + 1900);
+	my_indexer_push_keyword(&buf[0]);
+	
+	snprintf(&buf[0], sizeof(buf), "%s%s", 
+		LU_KEYWORD_MONTH, lu_indexer_mons[when->tm_mon]);
+	my_indexer_push_keyword(&buf[0]);
+	
+	snprintf(&buf[0], sizeof(buf), "%s%d",
+		LU_KEYWORD_DAY_OF_MONTH, when->tm_mday);
+	my_indexer_push_keyword(&buf[0]);
+		
+	snprintf(&buf[0], sizeof(buf), "%s%d", 
+		LU_KEYWORD_HOUR, when->tm_hour);
+	my_indexer_push_keyword(&buf[0]);
+		
+	snprintf(&buf[0], sizeof(buf), "%s%s", 
+		LU_KEYWORD_WEEKDAY, lu_indexer_dows[when->tm_wday]);
+	my_indexer_push_keyword(&buf[0]);
+	
+	/* Now, push keywords for the message id and reply-to */
+	if (body->env->message_id)
+	{
+		snprintf(&buf[0], sizeof(buf), "%s%s", 
+			LU_KEYWORD_MESSAGE_ID, 
+			my_indexer_cleanup_id(body->env->message_id));
+		my_indexer_push_keyword(&buf[0]);
+	}
+	
+	if (body->env->in_reply_to)
+	{
+		snprintf(&buf[0], sizeof(buf), "%s%s",
+			LU_KEYWORD_REPLY_TO, 
+			my_indexer_cleanup_id(body->env->in_reply_to));
+		my_indexer_push_keyword(&buf[0]);
+	}
+	
+	/* Now, push keywords for all source addresses */
+	if (body->env->from)
+	{
+		my_indexer_push_address(body->env->from);
+	}
+	
+	if (body->env->sender)
+	{
+		my_indexer_push_address(body->env->sender);
+	}
+	
+	if (body->env->reply_to)
+	{
+		my_indexer_push_address(body->env->sender);
+	}
+	
+	/* If we have a subject index it as both body and subject */
+	if (body->env->subject)
+	{
+		my_indexer_keyword_scan(
+			body->env->subject, 
+			strlen(body->env->subject),
+			LU_KEYWORD_SUBJECT);
+			
+		my_indexer_keyword_scan(
+			body->env->subject, 
+			strlen(body->env->subject),
+			LU_KEYWORD_WORD);
+	}
+	
+	/* Now, scan all the keywords in the body */
+	my_indexer_traverse(body, body->body);
+	
+	/* Ok, we have all the keyword - dump them. */
+#ifdef DEBUG
+	printf("%d: [ ", id);
+	my_indexer_dump_words(my_indexer_root, id);
+	printf("]\n");
 	return 0;
+#else
+	return my_indexer_dump_words(my_indexer_root, id);
+#endif
 }

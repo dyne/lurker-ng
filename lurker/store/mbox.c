@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.2 2002-02-03 06:05:43 terpstra Exp $
+/*  $Id: mbox.c,v 1.3 2002-02-03 08:25:32 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -185,7 +185,8 @@ static void my_mbox_process_mbox(
 			m, 
 			list->id,
 			mbox->id,
-			stamp);
+			stamp,
+			id);
 		
 		if (error != 0)
 		{
