@@ -1,4 +1,4 @@
-/*  $Id: protocol.h,v 1.4 2002-02-10 23:43:51 terpstra Exp $
+/*  $Id: protocol.h,v 1.5 2002-02-12 05:28:32 terpstra Exp $
  *  
  *  protocol.h - What do we use to communicate
  *  
@@ -26,6 +26,7 @@
 #define LU_PROTO_GETMSG		"getmsg "
 #define LU_PROTO_MINDEX		"mindex "
 #define LU_PROTO_SEARCH		"search "
+#define	LU_PROTO_LISTS		"lists "
 
 typedef struct Lu_Proto_Message_T
 {
