@@ -153,7 +153,7 @@
        </xsl:call-template>
      </select><xsl:value-of select="$date1"/>
      <select name="start-mon">
-       <option value="1" selected="yes"><xsl:value-of select="$jan"/></option>
+       <option value="1" selected="SELECTED"><xsl:value-of select="$jan"/></option>
        <option value="2"><xsl:value-of select="$feb"/></option>
        <option value="3"><xsl:value-of select="$mar"/></option>
        <option value="4"><xsl:value-of select="$apr"/></option>
@@ -198,7 +198,7 @@
        <option value="9"><xsl:value-of select="$sep"/></option>
        <option value="10"><xsl:value-of select="$oct"/></option>
        <option value="11"><xsl:value-of select="$nov"/></option>
-       <option value="12" selected="yes"><xsl:value-of select="$dec"/></option>
+       <option value="12" selected="SELECTED"><xsl:value-of select="$dec"/></option>
      </select><xsl:value-of select="$date2"/>
      <select name="end-year">
        <xsl:call-template name="option-range">

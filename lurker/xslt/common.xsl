@@ -30,7 +30,7 @@
  <xsl:element name="option">
   <xsl:attribute name="value"><xsl:value-of select="$start"/></xsl:attribute>
   <xsl:if test="$start = $select">
-   <xsl:attribute name="selected">yes</xsl:attribute>
+   <xsl:attribute name="selected">SELECTED</xsl:attribute>
   </xsl:if>
   <xsl:value-of select="$start"/>
  </xsl:element>

@@ -10,7 +10,7 @@
  <xsl:element name="option">
   <xsl:attribute name="value"><xsl:value-of select="$start"/></xsl:attribute>
   <xsl:if test="$start = $select">
-   <xsl:attribute name="selected">yes</xsl:attribute>
+   <xsl:attribute name="selected">SELECTED</xsl:attribute>
   </xsl:if>
   <xsl:value-of select="$start"/>:00
  </xsl:element>
@@ -44,62 +44,62 @@
   <select name="mon">
    <xsl:element name="option">
     <xsl:attribute name="value">1</xsl:attribute>
-    <xsl:if test="mon = 1"><xsl:attribute name="selected">yes</xsl:attribute></xsl:if>
+    <xsl:if test="mon = 1"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
     <xsl:value-of select="$jan"/>
    </xsl:element>
    <xsl:element name="option">
     <xsl:attribute name="value">2</xsl:attribute>
-    <xsl:if test="mon = 2"><xsl:attribute name="selected">yes</xsl:attribute></xsl:if>
+    <xsl:if test="mon = 2"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
     <xsl:value-of select="$feb"/>
    </xsl:element>
    <xsl:element name="option">
     <xsl:attribute name="value">3</xsl:attribute>
-    <xsl:if test="mon = 3"><xsl:attribute name="selected">yes</xsl:attribute></xsl:if>
+    <xsl:if test="mon = 3"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
     <xsl:value-of select="$mar"/>
    </xsl:element>
    <xsl:element name="option">
     <xsl:attribute name="value">4</xsl:attribute>
-    <xsl:if test="mon = 4"><xsl:attribute name="selected">yes</xsl:attribute></xsl:if>
+    <xsl:if test="mon = 4"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
     <xsl:value-of select="$apr"/>
    </xsl:element>
    <xsl:element name="option">
     <xsl:attribute name="value">5</xsl:attribute>
-    <xsl:if test="mon = 5"><xsl:attribute name="selected">yes</xsl:attribute></xsl:if>
+    <xsl:if test="mon = 5"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
     <xsl:value-of select="$may"/>
    </xsl:element>
    <xsl:element name="option">
     <xsl:attribute name="value">6</xsl:attribute>
-    <xsl:if test="mon = 6"><xsl:attribute name="selected">yes</xsl:attribute></xsl:if>
+    <xsl:if test="mon = 6"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
     <xsl:value-of select="$jun"/>
    </xsl:element>
    <xsl:element name="option">
     <xsl:attribute name="value">7</xsl:attribute>
-    <xsl:if test="mon = 7"><xsl:attribute name="selected">yes</xsl:attribute></xsl:if>
+    <xsl:if test="mon = 7"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
     <xsl:value-of select="$jul"/>
    </xsl:element>
    <xsl:element name="option">
     <xsl:attribute name="value">8</xsl:attribute>
-    <xsl:if test="mon = 8"><xsl:attribute name="selected">yes</xsl:attribute></xsl:if>
+    <xsl:if test="mon = 8"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
     <xsl:value-of select="$aug"/>
    </xsl:element>
    <xsl:element name="option">
     <xsl:attribute name="value">9</xsl:attribute>
-    <xsl:if test="mon = 9"><xsl:attribute name="selected">yes</xsl:attribute></xsl:if>
+    <xsl:if test="mon = 9"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
     <xsl:value-of select="$sep"/>
    </xsl:element>
    <xsl:element name="option">
     <xsl:attribute name="value">10</xsl:attribute>
-    <xsl:if test="mon = 10"><xsl:attribute name="selected">yes</xsl:attribute></xsl:if>
+    <xsl:if test="mon = 10"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
     <xsl:value-of select="$oct"/>
    </xsl:element>
    <xsl:element name="option">
     <xsl:attribute name="value">11</xsl:attribute>
-    <xsl:if test="mon = 11"><xsl:attribute name="selected">yes</xsl:attribute></xsl:if>
+    <xsl:if test="mon = 11"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
     <xsl:value-of select="$nov"/>
    </xsl:element>
    <xsl:element name="option">
     <xsl:attribute name="value">12</xsl:attribute>
-    <xsl:if test="mon = 12"><xsl:attribute name="selected">yes</xsl:attribute></xsl:if>
+    <xsl:if test="mon = 12"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
     <xsl:value-of select="$dec"/>
    </xsl:element>
   </select>
