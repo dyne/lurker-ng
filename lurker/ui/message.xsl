@@ -222,19 +222,7 @@
      </tr>
      <xsl:apply-templates mode="appear-in" select="mbox"/>
     </table>
-    
-    <table class="external">
-     <tr>
-      <td class="mini">
-       <b><a href="{$lurker-url}">Lurker</a></b>
-       (version <xsl:value-of select="server/version"/>)
-      </td>
-      <td class="mini" align="right">
-       <xsl:value-of select="$admin-by"/>
-       <xsl:apply-templates mode="email-link" select="server/email"/>
-      </td>
-     </tr>
-    </table>
+    <xsl:call-template name="lurker-signature"/>
    </div>
   </body>
  </html>

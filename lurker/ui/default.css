@@ -186,6 +186,29 @@ h1.group {
   margin: 0px;
 }
 
+table.index {
+  border: 1px solid #000;
+  background-color: white;
+}
+
+table.index tr {
+  text-align: left;
+}
+
+table.index th {
+  background-color: #a8a8a8;
+  width: 100%;
+}
+
+td.chart img {
+  vertical-align: bottom;
+  padding: 0px 1px 0px 0px;
+}
+
+td.chart {
+  padding: 1px;
+}
+
 .padded td { padding-bottom:1px }  /* Adds padding to output tables containing Discussion Tree icon */
 
 .na { color:#BBB }  /* used to fade text when link not available, but still has placeholder text */

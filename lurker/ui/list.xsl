@@ -3,6 +3,60 @@
 
 <xsl:import href="common.xsl"/>
 
+<!-- Format a new thread row -->
+<xsl:template name="max">
+ <xsl:param name="args"/>
+ <xsl:variable name="rest"  select="$args[position() &gt; 1]"/>
+ <xsl:variable name="first">
+  <xsl:value-of select="$args[position()=1]"/>
+ </xsl:variable>
+ <xsl:variable name="best">
+  <xsl:choose>
+   <xsl:when test="count($args) &gt; 0">
+    <xsl:call-template name="max">
+     <xsl:with-param name="args" select="$rest"/>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:otherwise>0</xsl:otherwise>
+  </xsl:choose>
+ </xsl:variable>
+ <xsl:choose>
+  <xsl:when test="$best &gt; $first"><xsl:value-of select="$best"/></xsl:when>
+  <xsl:otherwise><xsl:value-of select="$first"/></xsl:otherwise>
+ </xsl:choose>
+</xsl:template>
+<xsl:template match="row" mode="newthreads">
+ <xsl:element name="tr">
+  <xsl:attribute name="class">
+   <xsl:choose>
+    <xsl:when test="@selected">lit</xsl:when>
+    <xsl:when test="(position() mod 2) = 0">row1</xsl:when>
+    <xsl:otherwise>row2</xsl:otherwise>
+   </xsl:choose>
+  </xsl:attribute>
+  <td nowrap="NOWRAP" width="30%">
+   <div style="overflow: hidden; width:400px;">
+   <a name="{id}"/>
+   <a href="../thread/{summary/id}.{$ext}">
+    <xsl:value-of select="summary/subject"/>
+   </a>
+   </div>
+  </td>
+  <td nowrap="NOWRAP" width="30%"><xsl:apply-templates mode="email-link" select="summary/email"/></td>
+  <td nowrap="NOWRAP" class="chart" valign="bottom">
+   <xsl:variable name="maxval">
+    <xsl:call-template name="max">
+     <xsl:with-param name="args" select="day"/>
+    </xsl:call-template>
+   </xsl:variable>
+   <xsl:for-each select="day">
+    <img src="../imgs/bar.png" height="{(number(.)*24 div $maxval)+1}" width="5"/>
+   </xsl:for-each>
+  </td>
+  <td nowrap="NOWRAP" align="right"><xsl:value-of select="sum(day)"/></td>
+ </xsl:element>
+</xsl:template>
+
 
 <!-- Format a list request -->
 <xsl:template match="list">
@@ -49,6 +103,7 @@
      <xsl:value-of select="list/description"/>
     </xsl:if>
     <br/>
+    [ <a href="../mindex/{list/id}@{$last-date}.{$ext}"><xsl:value-of select="$newest-messages"/></a> ]
     <xsl:if test="list/email/@address">
      [ <a href="mailto:{list/email/@address}"><xsl:value-of select="$post-new"/></a> ]
     </xsl:if>
@@ -56,16 +111,16 @@
      [ <a href="{list/link}"><xsl:value-of select="$subscribe"/></a> ]
     </xsl:if>
     
-   </div>
-   <div class="footer"/>
-   <div class="body">
-    <table>
+    <br/><br/>
+    
+    <table class="index">
      <tr>
-      <th><xsl:value-of select="$thread"/></th>
-      <th><xsl:value-of select="$recent-poster"/></th>
-      <th><xsl:value-of select="$post-count"/></th>
+      <th width="30%"><xsl:value-of select="$new-threads"/></th>
+      <th width="30%"><xsl:value-of select="$recent-poster"/></th>
       <th><xsl:value-of select="$activity-chart"/></th>
+      <th><xsl:value-of select="$post-count"/></th>
      </tr>
+     <xsl:apply-templates mode="newthreads" select="row"/>
     </table>
    </div>
    
@@ -85,19 +140,7 @@
       </form>
      </td><td width="50%">&#160;</td></tr>
     </table>
-    
-    <table class="external">
-     <tr>
-      <td class="mini">
-       <b><a href="{$lurker-url}">Lurker</a></b>
-       (version <xsl:value-of select="server/version"/>)
-      </td>
-      <td class="mini" align="right">
-       <xsl:value-of select="$admin-by"/>
-       <xsl:apply-templates mode="email-link" select="server/email"/>
-      </td>
-     </tr>
-    </table>
+    <xsl:call-template name="lurker-signature"/>
    </div>
   </body>
  </html>

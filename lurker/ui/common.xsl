@@ -29,16 +29,18 @@
 <xsl:variable name="all-groups" select="'Any mailing list group'"/>
 <xsl:variable name="search" select="'Search'"/>
 
-<xsl:variable name="jump-to-date" select="'Jump to those messages within this mailing list which are nearest to this date:'"/>
-<xsl:variable name="search-list" select="'Search for messages within this mailing list which contain these keywords:'"/>
+<xsl:variable name="jump-to-date" select="'Jump to those messages within this mailing list which are nearest to the following date:'"/>
+<xsl:variable name="search-list" select="'Search for messages within this mailing list which contain the following keywords:'"/>
 <xsl:variable name="jump" select="'Jump'"/>
 <xsl:variable name="use-special-word-list" select="'Use the keyword '"/>
 <xsl:variable name="to-search-list" select="' to restrict your search to this mailing list.'"/>
-<xsl:variable name="post-new" select="'Post New Thread'"/>
+<xsl:variable name="post-new" select="'Start a New Thread'"/>
 <xsl:variable name="subscribe" select="'Visit Subscription Page'"/>
-<xsl:variable name="recent-poster" select="'Most Recent Poster'"/>
-<xsl:variable name="post-count" select="'# Posts'"/>
-<xsl:variable name="activity-chart" select="'Thread Activity'"/>
+<xsl:variable name="recent-poster" select="'Latest Poster'"/>
+<xsl:variable name="new-threads" select="'Active Threads'"/>
+<xsl:variable name="post-count" select="'Posts'"/>
+<xsl:variable name="activity-chart" select="'Activity'"/>
+<xsl:variable name="newest-messages" select="'View Newest Messages'"/>
 
 <xsl:variable name="jan">January</xsl:variable>
 <xsl:variable name="feb">February</xsl:variable>
@@ -277,6 +279,23 @@
   </xsl:call-template>
  </select>
 </xsl:template> 
+
+
+<!-- Common components -->
+<xsl:template name="lurker-signature">
+ <table class="external">
+  <tr>
+   <td class="mini">
+    <b><a href="{$lurker-url}">Lurker</a></b>
+    (version <xsl:value-of select="server/version"/>)
+   </td>
+   <td class="mini" align="right">
+    <xsl:value-of select="$admin-by"/>
+    <xsl:apply-templates mode="email-link" select="server/email"/>
+   </td>
+  </tr>
+ </table>
+</xsl:template>
 
 
 <!-- Common links -->
