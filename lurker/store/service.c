@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.14 2002-02-11 02:09:50 terpstra Exp $
+/*  $Id: service.c,v 1.15 2002-02-11 03:45:25 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -714,7 +714,7 @@ static int my_service_search(st_netfd_t fd, const char* request)
 		goto my_service_search_error0;
 	}
 	
-	while (offset--)
+	for (i = 0; i < offset; i++)
 	{
 		if (lu_search_result(&out) != 0)
 		{
