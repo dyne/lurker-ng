@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.12 2003-05-07 16:31:13 terpstra Exp $
+/*  $Id: main.cpp,v 1.13 2003-05-07 16:32:00 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -209,7 +209,7 @@ int main(int argc, char** argv)
 	
 	srandom(time(0));
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:l:b:mvd?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:l:b:mvdf?")) != -1)
 	{
 		switch ((char)c)
 		{
