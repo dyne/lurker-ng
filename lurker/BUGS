@@ -16,7 +16,6 @@ Unfulfilled requirements:
 	them and discarded contents of <head><style>... for instance.
 
 BUGS:
-	Honour indenting in email
 	We don't check for double append
 	Presently we have no keyword write buffer
 	

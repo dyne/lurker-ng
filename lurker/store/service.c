@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.69 2002-06-14 11:59:08 terpstra Exp $
+/*  $Id: service.c,v 1.70 2002-06-14 12:22:41 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -82,6 +82,9 @@
 
 #define QUOTE_REG	"(\n" INDENT_REG "[^\n]*\n(" INDENT_REG "[^\n]*\n)*)"
 
+#define ASCII_ART_REG	"[^\n]*([ \t]{3,30}[^\n]*){2,20}"
+#define ASCII_PIC_REG	"(\n" ASCII_ART_REG "\n(" ASCII_ART_REG "\n)*)"
+
 /*------------------------------------------------- Private types */
 
 /* We need one of these for each connection - a global will cause much
@@ -137,6 +140,7 @@ static const char* my_service_mime[] =
 static regex_t	url_reg;
 static regex_t	email_reg;
 static regex_t	quote_reg;
+static regex_t	ascii_pic_reg;
 
 /*------------------------------------------------- Private helper methods */
 
@@ -671,6 +675,41 @@ static int my_service_url(
 	return 0;
 }
 
+static int my_service_pic(
+	My_Service_Handle	h,
+	char*			buf, 
+	long			len)
+{
+	char		bk;
+	regmatch_t	match;
+	int		result;
+	
+	bk = buf[len];
+	buf[len] = 0;
+	
+	while ((result = regexec(&ascii_pic_reg, buf, 1, &match, 0)) == 0)
+	{
+		match.rm_eo -= match.rm_so;
+		
+		if (my_service_url(h, buf, match.rm_so) != 0) return -1;
+		
+		buf += match.rm_so;
+		len -= match.rm_so;
+		
+		if (my_service_buffer_write(h, "<art>")          != 0) return -1;
+		if (my_service_url         (h, buf, match.rm_eo) != 0) return -1;
+		if (my_service_buffer_write(h, "</art>")         != 0) return -1;
+		
+		buf += match.rm_eo;
+		len -= match.rm_eo;
+	}
+	
+	if (my_service_url(h, buf, len) != 0) return -1;
+	
+	buf[len] = bk;
+	return 0;
+}
+
 static int my_service_quote(
 	My_Service_Handle	h,
 	char*			buf, 
@@ -687,20 +726,20 @@ static int my_service_quote(
 	{
 		match.rm_eo -= match.rm_so;
 		
-		if (my_service_url(h, buf, match.rm_so) != 0) return -1;
+		if (my_service_pic(h, buf, match.rm_so) != 0) return -1;
 		
 		buf += match.rm_so;
 		len -= match.rm_so;
 		
 		if (my_service_buffer_write(h, "<quote>")        != 0) return -1;
-		if (my_service_url         (h, buf, match.rm_eo) != 0) return -1;
+		if (my_service_pic         (h, buf, match.rm_eo) != 0) return -1;
 		if (my_service_buffer_write(h, "</quote>")       != 0) return -1;
 		
 		buf += match.rm_eo;
 		len -= match.rm_eo;
 	}
 	
-	if (my_service_url(h, buf, len) != 0) return -1;
+	if (my_service_pic(h, buf, len) != 0) return -1;
 	
 	buf[len] = bk;
 	return 0;
@@ -2579,6 +2618,14 @@ int lu_service_init()
 		exit(1);
 	}
 	
+	if ((error = regcomp(&ascii_pic_reg, ASCII_PIC_REG, REG_EXTENDED)) != 0)
+	{
+		regerror(error, &ascii_pic_reg, &buf[0], sizeof(buf));
+		fprintf(stderr, _("Unable to compile '%s': %s\n"), 
+			ASCII_PIC_REG, &buf[0]);
+		exit(1);
+	}
+	
 	return 0;
 }
 
@@ -2602,6 +2649,7 @@ int lu_service_quit()
 	regfree(&url_reg);
 	regfree(&email_reg);
 	regfree(&quote_reg);
+	regfree(&ascii_pic_reg);
 	
 	return 0;
 }
