@@ -1,4 +1,4 @@
-/*  $Id: flatfile.c,v 1.7 2002-02-24 23:35:51 terpstra Exp $
+/*  $Id: flatfile.c,v 1.8 2002-02-25 08:49:08 terpstra Exp $
  *  
  *  flatfile.c - Knows how to manage the keyword flatfile database
  *  
@@ -858,6 +858,8 @@ message_id lu_flatfile_records(
 {
 	message_id	out;
 	off_t		scan;
+	
+	/*!!! Don't flush; if cached get the answer FROM cache. */
 	
 	if (lu_wbuffer_flush(keyword) != 0)
 	{
