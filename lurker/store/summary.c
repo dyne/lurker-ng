@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.27 2002-07-12 13:32:06 terpstra Exp $
+/*  $Id: summary.c,v 1.28 2002-07-12 13:41:45 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -224,14 +224,14 @@ int my_summary_find_thread(
 	off_t		lasttime;
 	off_t		head;
 	
-	if (!subject || !*subject)
+	/* Get the key for where this thread lies */
+	my_summary_squishy_subject(subject, &thread_key[0]);
+	
+	if (!thread_key[0])
 	{
 		*out = id;
 		return 0;
 	}
-	
-	/* Get the key for where this thread lies */
-	my_summary_squishy_subject(subject, &thread_key[0]);
 	
 	error = kap_btree_read(
 		my_summary_merge_db, 
