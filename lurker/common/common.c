@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.12 2002-02-25 07:41:24 terpstra Exp $
+/*  $Id: common.c,v 1.13 2002-05-06 22:44:43 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -50,8 +50,7 @@ message_id lu_common_minvalid = -1;
 const char* lu_common_cleanup_id(
 	const char* id)
 {
-	/* The prefix and the id must fit within keyword length */
-	static char buf[LU_KEYWORD_LEN+1-sizeof(LU_KEYWORD_MESSAGE_ID)];
+	static char buf[80];
 	char* w;
 	char* e;
 	const char* scan;

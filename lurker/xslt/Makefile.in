@@ -71,11 +71,15 @@ am__include = @am__include@
 am__quote = @am__quote@
 dbdir = @dbdir@
 install_sh = @install_sh@
-
 wwwdir = @wwwdir@
 
-EXTRA_DIST = message.xslt mindex.xslt search.xslt splash.xslt \
-	mbox.xslt attach.xslt
+fmtdir = @wwwdir@/fmt
+
+fmtdir_DATA = \
+	render.xsl render-html.xsl common.xsl \
+	error.xsl \
+	english.xsl \
+	basic.css
 
 subdir = xslt
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
@@ -195,22 +199,13 @@ uninstall-am: uninstall-info-am uninstall-local
 
 
 install-data-local:
-	@list='$(EXTRA_DIST)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|.xslt$$||'`"; \
-	  echo "$(mkinstalldirs) $(DESTDIR)$(wwwdir)/$$f"; \
-	  $(mkinstalldirs) $(DESTDIR)$(wwwdir)/$$f; \
-	  echo "$(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f/render.xslt"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f/render.xslt; \
-	done
+	$(mkinstalldirs) ${fmtdir}
+	ln -s basic.css   ${fmtdir}/default.css
+	ln -s english.xsl ${fmtdir}/lang.xsl
 
 uninstall-local:
-	@list='$(EXTRA_DIST)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|.xslt$$||'`"; \
-	  echo "rm -f $(DESTDIR)$(wwwdir)/$$f/render.xslt"; \
-	  rm -f $(DESTDIR)$(wwwdir)/$$f/render.xslt; \
-	done
+	rm -f ${fmtdir}/default.css
+	rm -f ${fmtdir}/lang.xsl
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

@@ -76,6 +76,8 @@ dbdir = @dbdir@
 
 INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common
 
+REQUESTS = message mindex search splash mbox attach
+
 sbin_PROGRAMS = @PACKAGE@d
 dist_db_DATA = DB_CONFIG
 EXTRA_DIST = Design
@@ -326,7 +328,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-dist_dbDATA
+install-data-am: install-data-local install-dist_dbDATA
 
 install-exec-am: install-sbinPROGRAMS
 
@@ -344,20 +346,35 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-compile mostlyclean-generic
 
-uninstall-am: uninstall-dist_dbDATA uninstall-info-am \
+uninstall-am: uninstall-dist_dbDATA uninstall-info-am uninstall-local \
 	uninstall-sbinPROGRAMS
 
 .PHONY: GTAGS all all-am check check-am clean clean-generic \
 	clean-sbinPROGRAMS distclean distclean-compile distclean-depend \
 	distclean-generic distclean-tags distdir dvi dvi-am info \
 	info-am install install-am install-data install-data-am \
-	install-dist_dbDATA install-exec install-exec-am install-info \
-	install-info-am install-man install-sbinPROGRAMS install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic tags uninstall uninstall-am \
-	uninstall-dist_dbDATA uninstall-info-am uninstall-sbinPROGRAMS
+	install-data-local install-dist_dbDATA install-exec \
+	install-exec-am install-info install-info-am install-man \
+	install-sbinPROGRAMS install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic tags \
+	uninstall uninstall-am uninstall-dist_dbDATA uninstall-info-am \
+	uninstall-local uninstall-sbinPROGRAMS
 
+
+install-data-local:
+	@list='$(REQUESTS)'; for p in $$list; do \
+	  echo "$(mkinstalldirs) $(DESTDIR)$(wwwdir)/$$p"; \
+	  $(mkinstalldirs) $(DESTDIR)$(wwwdir)/$$p; \
+	done
+
+uninstall-local:
+	@list='$(REQUESTS)'; for p in $$list; do \
+	  echo "rm -f $(DESTDIR)$(wwwdir)/$$p/*"; \
+	  rm -f $(DESTDIR)$(wwwdir)/$$p/*; \
+	  echo "rmdir $(DESTDIR)$(wwwdir)/$$p"; \
+	  rmdir $(DESTDIR)$(wwwdir)/$$p; \
+	done
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

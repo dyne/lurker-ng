@@ -1,23 +1,16 @@
-wwwdir = @wwwdir@
+fmtdir = @wwwdir@/fmt
 
-EXTRA_DIST = message.xslt mindex.xslt search.xslt splash.xslt \
-	mbox.xslt attach.xslt
+fmtdir_DATA = \
+	render.xsl render-html.xsl common.xsl \
+	error.xsl \
+	english.xsl \
+	basic.css
 
 install-data-local:
-	@list='$(EXTRA_DIST)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|.xslt$$||'`"; \
-	  echo "$(mkinstalldirs) $(DESTDIR)$(wwwdir)/$$f"; \
-	  $(mkinstalldirs) $(DESTDIR)$(wwwdir)/$$f; \
-	  echo "$(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f/render.xslt"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f/render.xslt; \
-	done
+	$(mkinstalldirs) ${fmtdir}
+	ln -s basic.css   ${fmtdir}/default.css
+	ln -s english.xsl ${fmtdir}/lang.xsl
 
 uninstall-local:
-	@list='$(EXTRA_DIST)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|.xslt$$||'`"; \
-	  echo "rm -f $(DESTDIR)$(wwwdir)/$$f/render.xslt"; \
-	  rm -f $(DESTDIR)$(wwwdir)/$$f/render.xslt; \
-	done
-	
+	rm -f ${fmtdir}/default.css
+	rm -f ${fmtdir}/lang.xsl
