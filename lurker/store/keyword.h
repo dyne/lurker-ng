@@ -1,4 +1,4 @@
-/*  $Id: keyword.h,v 1.3 2002-01-24 23:57:26 terpstra Exp $
+/*  $Id: keyword.h,v 1.4 2002-01-25 07:31:07 terpstra Exp $
  *  
  *  keyword.h - manages a database for keyword searching
  *  
@@ -45,6 +45,7 @@ struct Handle_T;
 typedef struct Handle_T* Handle;
 
 /** Open up a record for reading.
+ *  Returns 0 to mean failure.
  */
 extern Handle lu_open_handle(const char* keyword);
 
@@ -54,11 +55,11 @@ extern message_id lu_handle_records(Handle h);
 
 /** Retrieve the specified range of records.
  */
-extern int lu_handle_read(Handle h, message_id* buf, message_id count);
+extern int lu_handle_read(Handle h, message_id index, message_id* buf, message_id count);
 
 /** Close a record handle.
  */
-extern void lu_close_handle(const char* keyword);
+extern void lu_close_handle(Handle h);
 
 /*-------------------------------------------------- Search methods */
 

@@ -1,4 +1,4 @@
-/*  $Id: keyword.c,v 1.5 2002-01-24 23:57:26 terpstra Exp $
+/*  $Id: keyword.c,v 1.6 2002-01-25 07:31:07 terpstra Exp $
  *  
  *  keyword.c - manages a database for keyword searching
  *  
@@ -30,6 +30,7 @@
 #include "io.h"
 
 #include <string.h>
+#include <stdlib.h>
 #include <db.h>
 
 #ifdef HAVE_ERRNO_H
@@ -96,7 +97,7 @@ DB*	lu_keyword_db;
 /* We don't allow 2^0 or 2^1 sized blocks.
  * We do allow up to 2^2 ... 2^(bits in message_id) sized blocks
  */
-#define TABLE_SIZE	(sizeof(message_id) * 8 - 1)
+#define LU_TABLE_SIZE	(sizeof(message_id) * 8 - 1)
 
 /* Helper method to do a complete write 
  */
@@ -104,6 +105,8 @@ static ssize_t lu_write_full(int fd, const void* buf, size_t count, const char* 
 {
 	ssize_t out;
 	ssize_t did;
+	
+	if (count == 0) return 0;
 	
 	out = 0;
 	while (count)
@@ -131,6 +134,8 @@ static ssize_t lu_read_full(int fd, void* buf, size_t count, const char* msg)
 {
 	ssize_t out;
 	ssize_t did;
+	
+	if (count == 0) return 0;
 	
 	out = 0;
 	while (count)
@@ -190,7 +195,7 @@ int lu_keyword_init()
 	 * Supposing we allow for 0 to bits or bits+1 records.
 	 */
 	
-	off_t records[TABLE_SIZE];
+	off_t records[LU_TABLE_SIZE];
 	off_t off = lseek(lu_keyword_fd, 0, SEEK_END);
 	
 	if (off == -1)
@@ -199,7 +204,7 @@ int lu_keyword_init()
 		return -1;
 	}
 	
-	if (off < sizeof(message_id) * TABLE_SIZE)
+	if (off < sizeof(message_id) * LU_TABLE_SIZE)
 	{	/* It's not got the free tables */
 		if (off != 0)
 		{	/* Wtf there was stuff in it?! - it's not new */
@@ -627,9 +632,189 @@ int lu_pop_keyword(const char* keyword)
  */
 
 /* What is the maximum number of records we'll move to defragment on open?
- * Default: 8Mb
+ * Default: 2Mb
  */
-#define LU_DEFRAGMENT_MAXIMUM	2097152
+#define LU_DEFRAGMENT_MAXIMUM	524288
+
+/* What is the block size we should use for disk I/O?
+ * Default: 16k
+ */
+#define LU_BLOCK_SIZE 16384
+
+struct Handle_T
+{
+	/* Backwards sorted (after gets smaller) */
+	struct IndexReference
+	{
+		/* Records [after, records-after) are at where */
+		
+		message_id	after;
+		message_id	records;
+		off_t		where;
+	} index[LU_TABLE_SIZE+1];
+};
+
+static int lu_defrag_record(Handle h)
+{
+	message_id buf[LU_BLOCK_SIZE / sizeof(message_id)];
+	off_t		target;
+	message_id	count;
+	message_id	fragd;
+	message_id	scan;
+	message_id	hunk;
+	int		where;
+	
+	/* Ok, what's the range we're looking at defragmenting? */
+	if (h->index[0].after > LU_DEFRAGMENT_MAXIMUM)
+	{
+		fragd = h->index[0].after - LU_DEFRAGMENT_MAXIMUM;
+		count = LU_DEFRAGMENT_MAXIMUM;
+	}
+	else
+	{
+		fragd = 0;
+		count = h->index[0].after;
+	}
+	
+	/* Move the data */
+	scan = fragd;
+	target = h->index[0].where + ((1 + fragd) * sizeof(message_id));
+	while (count)
+	{
+		if (sizeof(buf)/sizeof(message_id) < count)
+			hunk = count;
+		else
+			hunk = sizeof(buf)/sizeof(message_id);
+		
+		if (lu_handle_read(h, scan, &buf[0], hunk) == -1)
+		{
+			return -1;
+		}
+		
+		if (lu_swrite(lu_keyword_fd, target, &buf[0], hunk*sizeof(message_id),
+			"defragmenting data") != hunk*sizeof(message_id))
+		{
+			return -1;
+		}
+		
+		count  -= hunk;
+		scan   += hunk;
+		target += hunk * sizeof(message_id);
+	}
+	
+	/*!!! Release the unused records */
+	return 0;
+}
+
+Handle lu_open_handle(const char* keyword)
+{
+	Handle		out;
+	off_t		scan;
+	int		where;
+	message_id	buf[2];
+	message_id	fragment;
+	
+	memset(&fragment, 0xFF, sizeof(message_id));
+	
+	if (lu_locate_keyword(keyword, &scan) != 0)
+	{
+		return 0;
+	}
+	
+	if ((out = malloc(sizeof(struct Handle_T))) == 0)
+	{
+		return 0;
+	}
+	
+	where = -1;
+	do
+	{
+		where++;
+		
+		if (lu_sread(lu_keyword_fd, scan, 
+			&buf[0], sizeof(message_id)*2,
+			"reading record count") != sizeof(message_id)*2)
+		{
+			free(out);
+			return 0;
+		}
+		
+		out->index[where].where   = scan;
+		out->index[where].records = buf[0];
+		
+		if (read(lu_keyword_fd, &scan, sizeof(off_t)) != sizeof(off_t))
+		{
+			free(out);
+			return 0;
+		}
+	} while(buf[1] == fragment);
+	
+	out->index[where].after = 0;
+	for (; where > 0; where--)
+	{
+		out->index[where-1].after = 
+			out->index[where].after + out->index[where].records;
+	}
+	
+	/* Don't really care if it fails */
+	if (lu_defrag_record(out) != 0)
+	{
+		syslog(LOG_WARNING, "Defragmentation of %s failed\n",
+			keyword);
+	}
+	
+	return out;
+}
+
+message_id lu_handle_records(Handle h)
+{
+	return h->index[0].records;
+}
+
+int lu_handle_read(Handle h, message_id index, message_id* buf, message_id count)
+{
+	int		where;
+	message_id	range;
+	off_t		spot;
+	
+	if (index + count > lu_handle_records(h))
+	{	/* Attempt to read out of bounds */
+		return -1;
+	}
+	
+	where = 0;
+	while (h->index[where].after > index)
+	{
+		where++;
+	}
+	
+	while (count)
+	{
+		if (index + count > h->index[where].records)
+			range = h->index[where].records - index;
+		else
+			range = count;
+		
+		spot = h->index[where].where + ((index + 1) * sizeof(message_id));
+		if (lu_sread(lu_keyword_fd, spot, buf, range*sizeof(message_id),
+			"reading document ids") != range*sizeof(message_id))
+		{
+			return -1;
+		}
+		
+		index += range;
+		buf   += range;
+		count -= range;
+		where--;
+	}
+	
+	return 0;
+}
+
+void lu_close_handle(Handle h)
+{
+	free(h);
+}
 
 /* Alright, how do we deal with keyword lookups?
  * 
