@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.22 2002-07-12 19:02:00 terpstra Exp $
+/*  $Id: btree.c,v 1.23 2002-07-15 19:51:27 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -1018,7 +1018,7 @@ static int travel_down(Kap k, const char* key, off_t x,
 		*scan++ = nlen;
 		memcpy(scan, k->btree->scratch, nlen);
 		
-		assert (scan + nlen < k->btree->secta + k->btree->sector_size);
+		assert (scan + nlen <= k->btree->secta + k->btree->sector_size);
 		
 		encode_sector_header(k->btree->secta, leaf, hits+1);
 	}
