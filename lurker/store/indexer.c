@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.24 2002-06-21 18:19:03 terpstra Exp $
+/*  $Id: indexer.c,v 1.25 2002-06-21 21:46:34 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -108,6 +108,8 @@ static int my_indexer_push_keyword(
 	my_indexer_ptr tmp;
 	
 	int len = strlen(keyword) + 1;
+	
+	assert (len > 1);
 	
 	/* Do we have a record we could fit this keyword and the avl tree
 	 * record in our buffer?
