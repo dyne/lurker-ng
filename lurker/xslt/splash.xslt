@@ -65,7 +65,7 @@
     <input type="submit" name="submit" value="Search!"/>
   <p><table>
       <tr><td>Author </td><td><input type="text" name="author" size="50" value=""/></td></tr>
-      <tr><td>Subject</td><td><input type="text" name="author" size="50" value=""/></td></tr>
+      <tr><td>Subject</td><td><input type="text" name="subject" size="50" value=""/></td></tr>
       <tr><td>Date</td><td>
      <select name="weekday">
        <option value="">Sun-Sat</option>
