@@ -17,6 +17,7 @@
   <xsl:apply-templates select="list/email"/> - Messages
   <xsl:value-of select="offset"/>-<xsl:value-of select="string(number(offset)+count(summary)-1)"/>
  </h2>
+ <p/>
  <h2>
   <xsl:if test="prev">
    <a href="{list/id}@{prev}.{$ext}">(&lt;&lt; prev)</a>

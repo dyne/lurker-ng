@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <xsl:stylesheet 
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"                    
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
 
@@ -11,6 +11,7 @@
 <xsl:import href="splash.xsl"/>
 <xsl:import href="message.xsl"/>
 <xsl:import href="mindex.xsl"/>
+<xsl:import href="search.xsl"/>
 
 <!--- The default is to render to xml and use browser -->
 <xsl:variable name="ext">xml</xsl:variable>
