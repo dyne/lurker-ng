@@ -2,6 +2,7 @@
 # Expects: <lurker-index> <config file>
 
 idx=`which $1`
+if echo "$idx" | grep -q '^\.'; then idx=`pwd`"/$idx"; fi
 cfg="$2"
 
 if ! test -x $idx; then echo Cannot execute indexer; exit 1; fi
@@ -12,8 +13,8 @@ dbdir=`echo $dbdir`
 
 cd $dbdir
 
-test -d tmp || mkdir tmp
-cd tmp
+test -d .tmp || mkdir .tmp
+cd .tmp
 mv ../* .
 rm -f db.* db
 
@@ -23,4 +24,4 @@ for l in *; do
 done
 
 cd ..
-rm -rf tmp
+rm -rf .tmp
