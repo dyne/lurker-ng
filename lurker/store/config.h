@@ -1,4 +1,4 @@
-/*  $Id: config.h,v 1.6 2002-02-12 15:36:24 cbond Exp $
+/*  $Id: config.h,v 1.7 2002-02-12 15:39:31 terpstra Exp $
  *  
  *  config.h - Knows how to load the config file
  *  
@@ -75,6 +75,10 @@ extern int		lu_config_lists;
 extern char* lu_config_dbdir;
 extern char* lu_config_wwwdir;
 extern char* lu_config_pidfile;
+
+extern char* lu_config_list_host;
+extern char* lu_config_admin_name;
+extern char* lu_config_admin_address;
 
 extern DB_ENV* lu_config_env;
 
