@@ -1,4 +1,4 @@
-/*  $Id: service.h,v 1.1 2002-02-03 03:13:27 terpstra Exp $
+/*  $Id: service.h,v 1.2 2002-02-04 01:03:12 terpstra Exp $
  *  
  *  service.h - Knows how to deal with request from the cgi
  *  
@@ -22,6 +22,8 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <st.h>
+
 /*------------------------------------------------- Public component methods */
 
 extern int lu_service_init();
@@ -30,3 +32,6 @@ extern int lu_service_sync();
 extern int lu_service_close();
 extern int lu_service_quit();
 
+/*------------------------------------------------- Request handler */
+
+extern int lu_service_connection(st_netfd_t fd);

@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.22 2002-02-03 23:40:23 terpstra Exp $
+/*  $Id: main.c,v 1.23 2002-02-04 01:03:12 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -44,8 +44,6 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <ctype.h>
-
-#include <st.h>
 
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
@@ -136,12 +134,10 @@ static int my_main_quit()
 
 static void* my_main_handle_client(void* arg)
 {
-	/*!!! Should invoke the service routine */
-	
 	st_netfd_t client = (st_netfd_t)arg;
-	printf("c"); fflush(stdout);
-	
+	lu_service_connection(client);
 	st_netfd_close(client);
+	
 	return 0;
 }
 
