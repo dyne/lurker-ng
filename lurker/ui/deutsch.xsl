@@ -9,9 +9,10 @@
 <xsl:variable name="date" select="'Datum'"/>
 <xsl:variable name="to" select="'To'"/>
 <xsl:variable name="cc" select="'CC'"/>
+<xsl:variable name="attachments" select="'Anhänge'"/>
 
 <xsl:variable name="tree-context" select="'Diese Nachricht ist Teil des folgenden Threads:'"/>
-<xsl:variable name="full-tree" select="'Der komplette Thread Baum sortiert nach Datum'"/>
+<xsl:variable name="full-tree" select="'Der komplette Thread sortiert nach Datum'"/>
 <xsl:variable name="mail-appears-in" select="'Diese Nachricht wurde auf der folgenden MailingList gepostet:'"/>
 <xsl:variable name="thread-appears-in" select="'Dieser Thread ist auf der folgenden MailingList aufgetaucht:'"/>
 <xsl:variable name="list-info" select="'MailingList Infos'"/>
@@ -42,7 +43,7 @@
 <xsl:variable name="post-count" select="'&#x2211;'"/>
 <xsl:variable name="activity-chart" select="'Aktivität'"/>
 
-<xsl:variable name="search-thread" select="'Suche nach Nachrichten innerhalb dieses Threads die folgende Schlüsselwörter beinhalten:'"/>
+<xsl:variable name="search-thread" select="'Suche nach Nachrichten innerhalb dieses Threads die folgende Schlüsselwööer benthalten:'"/>
 <xsl:variable name="use-special-word-thread" select="'Benutze das Stichwort '"/>
 <xsl:variable name="to-search-thread" select="' um die Suche auf diesen Thread zu beschränken.'"/>
 
@@ -67,5 +68,5 @@
 <xsl:variable name="unknown-address" select="'Someone'"/>
 <xsl:variable name="posted-at" select="' at '"/>
 <xsl:variable name="admin-by" select="'Administriert von:'"/>
-
+<xsl:variable name="version" select="'Version'"/>
 </xsl:stylesheet>
