@@ -1,6 +1,6 @@
-/*  $Id: keyword.cpp,v 1.3 2003-04-27 18:57:21 terpstra Exp $
+/*  $Id: Keys.cpp,v 1.1 2003-05-02 11:18:39 terpstra Exp $
  *  
- *  prefix.c - Digest a hunk of string into keywords.
+ *  Keys.cpp - Digest a hunk of string into keywords.
  *  
  *  Copyright (C) 2002 - Wesley W. Terpstra
  *  
@@ -28,7 +28,7 @@
 
 /* #define DEBUG 1 */
 
-#include "keyword.h"
+#include "Keys.h"
 
 #include <cstring>
 

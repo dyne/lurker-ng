@@ -16,7 +16,7 @@ Main lurker.cgi :
 	splash.cpp
 	thread.cpp
 	Cache.cpp
-	Keyword.cpp
+	KeyReader.cpp
 	Summary.cpp
 	Threading.cpp
 	;

@@ -1,6 +1,6 @@
-/*  $Id: Keyword.cpp,v 1.5 2003-04-25 20:16:21 terpstra Exp $
+/*  $Id: KeyReader.h,v 1.1 2003-05-02 11:18:41 terpstra Exp $
  *  
- *  Keyword.cpp - Helper which can stream keywords
+ *  KeyReader.h - Helper which can stream keywords
  *  
  *  Copyright (C) 2002 - Wesley W. Terpstra
  *  
@@ -22,32 +22,30 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
  
-#include "Keyword.h"
-#include <Keys.h>
+#ifndef KEYREADEr_H
+#define KEYREADER_H
 
-#include <cerrno>
-#include <cstring>
+#include <esort.h>
+#include <vector>
 
-Keyword::Keyword(Reader* db, Direction dir, const string& kw, const MessageId& id)
- : walker(db->seek(LU_KEYWORD + kw + '\0', id.raw(), dir)),
-   skip(1+kw.length()+1)
+#include "Summary.h"
+
+using std::vector;
+using namespace ESort;
+
+class KeyReader
 {
-}
+ protected:
+ 	auto_ptr<Walker>	walker;
+ 	string::size_type	skip;
+ 	
+ public:
+ 	KeyReader(Reader*          db = 0, 
+ 		  Direction        dir = Forward, 
+ 		  const string&    keyword = "", 
+ 		  const MessageId& id = MessageId());
+ 	
+ 	string pull(int n, vector<Summary>& o);
+};
 
-string Keyword::pull(int n, vector<Summary>& o)
-{
-	int ok = 0;
-	while (n && (ok = walker->advance()) != -1)
-	{
-		if (walker->key.length() != skip + 8)
-			return "corrupt keyword entry";
-		
-		MessageId id(walker->key.c_str() + skip, 1);
-		o.push_back(id);
-		--n;
-	}
-	if (ok == -1 && errno != 0)
-		return string("Walker::advance:") + strerror(errno);
-	
-	return "";
-}
+#endif

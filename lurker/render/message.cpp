@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.4 2003-04-25 16:38:19 terpstra Exp $
+/*  $Id: message.cpp,v 1.5 2003-05-02 11:18:41 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -53,7 +53,7 @@
 
 #include "commands.h"
 #include "Threading.h"
-#include "Keyword.h"
+#include "KeyReader.h"
 #include "Cache.h"
 
 void    art_scan(const unsigned char** s, const unsigned char** e);
@@ -322,7 +322,7 @@ string MBox::load(ESort::Reader* db, const MessageId& rel)
 	string ok;
 	vector<Summary> sum;
 	
-	Keyword n(db, Forward, LU_KEYWORD_LIST + cfg.mbox, rel);
+	KeyReader n(db, Forward, LU_KEYWORD_LIST + cfg.mbox, rel);
 	if ((ok = n.pull(2, sum)) != "") return ok;
 	
 	if (sum.size() < 1 || sum[0].id() != rel)
@@ -336,7 +336,7 @@ string MBox::load(ESort::Reader* db, const MessageId& rel)
 	
 	sum.clear();
 	
-	Keyword p(db, Backward, LU_KEYWORD_LIST + cfg.mbox, rel);
+	KeyReader p(db, Backward, LU_KEYWORD_LIST + cfg.mbox, rel);
 	if ((ok = p.pull(1, sum)) != "") return ok;
 	
 	if (sum.size() >= 1)
@@ -428,7 +428,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		for (mid = mids.begin(); mid != mids.end(); ++mid)
 		{
 			// cout << "MID: " << *mid << "\n";
-			Keyword k(db, Forward, LU_KEYWORD_REPLY_TO + *mid);
+			KeyReader k(db, Forward, LU_KEYWORD_REPLY_TO + *mid);
 			if ((ok = k.pull(1000, sums)) != "")
 				break;
 		}
@@ -468,7 +468,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		
 		for (mid = mids.begin(); mid != mids.end(); ++mid)
 		{
-			Keyword k(db, Forward, LU_KEYWORD_MESSAGE_ID + *mid);
+			KeyReader k(db, Forward, LU_KEYWORD_MESSAGE_ID + *mid);
 			if ((ok = k.pull(1000, sums)) != "")
 				break;
 		}

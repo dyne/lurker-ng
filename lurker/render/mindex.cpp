@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.4 2003-04-25 20:12:32 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.5 2003-05-02 11:18:42 terpstra Exp $
  *  
  *  mindex.cpp - Handle a mindex/ command
  *  
@@ -33,7 +33,7 @@
 #include <Keys.h>
 
 #include "commands.h"
-#include "Keyword.h"
+#include "KeyReader.h"
 #include "Cache.h"
 
 using namespace std;
@@ -80,8 +80,8 @@ int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	vector<Summary> forward, backward, queue;
 	
-	Keyword backwardk(db, Backward, LU_KEYWORD_LIST + list.mbox, id);
-	Keyword forwardk (db, Forward,  LU_KEYWORD_LIST + list.mbox, id);
+	KeyReader backwardk(db, Backward, LU_KEYWORD_LIST + list.mbox, id);
+	KeyReader forwardk (db, Forward,  LU_KEYWORD_LIST + list.mbox, id);
 	
 	string ok;
 	

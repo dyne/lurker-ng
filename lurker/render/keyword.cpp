@@ -1,4 +1,4 @@
-/*  $Id: keyword.cpp,v 1.6 2003-04-28 00:03:27 terpstra Exp $
+/*  $Id: keyword.cpp,v 1.7 2003-05-02 11:18:41 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -26,7 +26,7 @@
 #define _BSD_SOURCE
 #define _ISOC99_SOURCE
 
-#include <keyword.h>
+#include <Keys.h>
 #include "parse.h"
 
 #include <set>

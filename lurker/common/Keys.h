@@ -1,4 +1,4 @@
-/*  $Id: Keys.h,v 1.5 2003-04-26 12:10:13 terpstra Exp $
+/*  $Id: Keys.h,v 1.6 2003-05-02 11:18:39 terpstra Exp $
  *  
  *  Keys.h - What prefixs various database keys
  *  
@@ -25,7 +25,6 @@
 #ifndef KEYS_H
 #define KEYS_H
 
-#include "keyword.h"
 #include <string>
 #include <vector>
 
@@ -41,6 +40,32 @@ using std::vector;
 #define LU_MESSAGE_AUTHOR_NAME	'n'
 #define LU_MESSAGE_SUBJECT	's'
 #define LU_MESSAGE_MBOX		'x'
+
+/* fields indexed early */
+#define LU_KEYWORD_EVERYTHING	"id:any"	/* empty search */
+#define LU_KEYWORD_MESSAGE_ID	"id:"		/* Message id */
+#define LU_KEYWORD_REPLY_TO	"rt:"		/* Reply-to */
+#define LU_KEYWORD_THREAD	"th:"		/* THread */
+
+/* lu_import_message */
+#define	LU_KEYWORD_LIST		"ml:"	/* Mailing List */
+#define LU_KEYWORD_AUTHOR	"au:"	/* AUthor */
+#define LU_KEYWORD_SUBJECT	"sb:"	/* SuBject */
+
+/* import processing */
+#define LU_KEYWORD_WORD		""	/* body keywords */
+
+/* The longest length a keyword can be */
+#define LU_KEYWORD_LEN		80
+
+/* Analyze the string for keywords. */
+extern int my_keyword_digest_string(
+	const char* buf,
+	int         len,
+	const char* prefix,
+	int       (*writefn)(const char* keyword, void* arg),
+	void*       arg,
+	int         do_div);
 
 string subject_hash(const char* subject);
 vector<string> extract_message_ids(const char* str);
