@@ -2,7 +2,7 @@ dbdir = @dbdir@
 
 INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common
 
-REQUESTS = message mindex search splash mbox attach
+REQUESTS = message mindex search splash mbox attach thread
 
 sbin_PROGRAMS = @PACKAGE@d
 dist_db_DATA = DB_CONFIG
