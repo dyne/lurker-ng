@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.3 2003-04-25 14:05:36 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.4 2003-05-03 13:38:53 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -35,6 +35,51 @@
 
 namespace ESort
 {
+
+static int shared_file_lock(int fd)
+{
+#ifdef LOCK_SH
+	if (flock(fd, LOCK_SH) != 0) return -1;
+#else
+#ifdef F_SETLK
+	 struct flock lock;
+	 memset(&lock, 0, sizeof(lock));
+	 lock.l_type = F_RDLCK;
+	 if (fcntl(fd, &lock, F_SETLK) != 0) return -1;
+#endif
+#endif
+	return 0;
+}
+
+static int exclusive_file_lock(int fd)
+{
+#ifdef LOCK_EX
+	if (flock(fd, LOCK_EX) != 0) return -1;
+#else
+#ifdef F_SETLK
+	 struct flock lock;
+	 memset(&lock, 0, sizeof(lock));
+	 lock.l_type = F_WRLCK;
+	 if (fcntl(fd, &lock, F_SETLK) != 0) return -1;
+#endif
+#endif
+	return 0;
+}
+
+static int unlock_file_lock(int fd)
+{
+#ifdef LOCK_UN
+	if (flock(fd, LOCK_UN) != 0) return -1;
+#else
+#ifdef F_SETLK
+	 struct flock lock;
+	 memset(&lock, 0, sizeof(lock));
+	 lock.l_type = F_UNLCK;
+	 if (fcntl(fd, &lock, F_SETLK) != 0) return -1;
+#endif
+#endif
+	return 0;
+}
 
 DbMan::DbMan()
  : dbname(), dbfile(0), cmode(0), dblock(-1)
@@ -155,27 +200,25 @@ int DbMan::open(const string& db, Parameters& p, int mode)
 int DbMan::lock_snapshot_ro()
 {
 	assert (dbfile != 0);
-	if (flock(fileno(dbfile), LOCK_SH) != 0) return -1;
-	return 0;
+	return shared_file_lock(fileno(dbfile));
 }
 
 void DbMan::unlock_snapshot_ro()
 {
 	assert (dbfile != 0);
-	flock(fileno(dbfile), LOCK_UN);
+	unlock_file_lock(fileno(dbfile));
 }
 
 int DbMan::lock_snapshot_rw()
 {
 	assert (dbfile != 0);
-	if (flock(fileno(dbfile), LOCK_EX) != 0) return -1;
-	return 0;
+	return exclusive_file_lock(fileno(dbfile));
 }
 
 void DbMan::unlock_snapshot_rw()
 {
 	assert (dbfile != 0);
-	flock(fileno(dbfile), LOCK_UN);
+	unlock_file_lock(fileno(dbfile));
 }
 
 int DbMan::lock_database_rw()
@@ -184,15 +227,14 @@ int DbMan::lock_database_rw()
 	
 	string name = dbname + ".writer";
 	dblock = ::open(name.c_str(), O_RDWR | O_CREAT, cmode);
-	if (flock(dblock, LOCK_EX) != 0) return -1;
-	return 0;
+	return exclusive_file_lock(dblock);
 }
 
 void DbMan::unlock_database_rw()
 {
 	if (dblock == -1) return;
 	
-	flock(dblock, LOCK_UN);
+	unlock_file_lock(dblock);
 	close(dblock);
 	dblock = -1;
 }
@@ -249,6 +291,7 @@ int DbMan::commit(const View& view)
 		fprintf(dbfile, "%s\n", i->c_str());
 	
 	fflush(dbfile);
+	fsync(fileno(dbfile));
 	
 	unlock_snapshot_rw();
 	return 0;

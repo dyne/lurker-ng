@@ -1,4 +1,4 @@
-/*  $Id: Transaction.cpp,v 1.3 2003-04-25 14:09:15 terpstra Exp $
+/*  $Id: Transaction.cpp,v 1.4 2003-05-03 13:38:53 terpstra Exp $
  *  
  *  Transaction.cpp - Write buffer for a commit
  *  
@@ -115,7 +115,7 @@ int Transaction::finish()
 		if (dump() != 0) return -1;
 	}
 	
-	return 0;
+	return fsync(fd);
 }
 
 }
