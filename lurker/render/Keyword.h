@@ -1,4 +1,4 @@
-/*  $Id: Keyword.h,v 1.2 2003-04-21 18:26:19 terpstra Exp $
+/*  $Id: Keyword.h,v 1.3 2003-04-25 10:13:52 terpstra Exp $
  *  
  *  Keyword.h - Helper which can stream keywords
  *  
@@ -31,12 +31,13 @@
 #include "Summary.h"
 
 using std::vector;
+using namespace ESort;
 
 class Keyword
 {
  protected:
- 	ESort::Reader*	reader;
- 	ESort::Walker*	walker;
+ 	Reader*		reader;
+ 	auto_ptr<Walker> walker;
  	bool		forward;
  	bool		eof;
  	
@@ -44,7 +45,7 @@ class Keyword
  	string		offset;
  	
  public:
- 	Keyword(ESort::Reader* r = 0, bool forward = true, const string& prefix = "", const string& offset = "");
+ 	Keyword(Reader* r = 0, bool forward = true, const string& prefix = "", const string& offset = "");
  	Keyword(const Keyword& o);
  	~Keyword();
  	

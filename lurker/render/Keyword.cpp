@@ -1,4 +1,4 @@
-/*  $Id: Keyword.cpp,v 1.2 2003-04-21 18:26:19 terpstra Exp $
+/*  $Id: Keyword.cpp,v 1.3 2003-04-25 10:13:52 terpstra Exp $
  *  
  *  Keyword.cpp - Helper which can stream keywords
  *  
@@ -27,20 +27,19 @@
 #include <cerrno>
 #include <cstring>
 
-Keyword::Keyword(ESort::Reader* r, bool f, const string& p, const string& o)
+Keyword::Keyword(Reader* r, bool f, const string& p, const string& o)
  : reader(r), walker(0), forward(f), eof(false), prefix(p), offset(o)
 {
 }
 
 Keyword::Keyword(const Keyword& o)
  : reader(o.reader), walker(0), forward(o.forward), eof(o.eof), prefix(o.prefix), 
-   offset(o.walker?o.walker->key:o.offset)
+   offset(o.walker.get()?o.walker->key:o.offset)
 {
 }
 
 Keyword::~Keyword()
 {
-	if (walker) delete walker;
 }
 
 void Keyword::swap(Keyword& o)
@@ -63,40 +62,9 @@ string Keyword::pull(int n, vector<Summary>& o)
 {
 	if (eof || n == 0) return "";
 	
-	if (walker == 0)
-	{
-		walker = reader->seek(prefix + offset);
-		if (walker == 0)
-		{
-			if (errno == 0)
-			{
-				eof = true;
-				return "";
-			}
-			else
-			{
-				return string("Reader::seek:") + strerror(errno);
-			}
-		}
-		else
-		{
-			if (walker->key.substr(0, prefix.length()) != prefix)
-			{
-				eof = true;
-				return "";
-			}
-			else
-			{
-				if (walker->key.length() < prefix.length() + 8)
-					return "corrupt keyword entry";
-				
-				MessageId id(walker->key.c_str() + 
-					prefix.length(), forward);
-				o.push_back(id);
-				--n;
-			}
-		}
-	}
+	if (walker.get() == 0)
+		walker = reader->seek(prefix + offset, true);
+		// always succeeds
 	
 	while (n != 0)
 	{
@@ -104,7 +72,9 @@ string Keyword::pull(int n, vector<Summary>& o)
 		if (j == -1)
 			return string("Walker::advance:") + strerror(errno);
 		
-		if (j < (int)prefix.length())
+		if (j < (int)prefix.length() &&
+			walker->key.substr(0, prefix.length()) != prefix)
+
 		{
 			eof = true;
 			return "";

@@ -1,4 +1,4 @@
-/*  $Id: Summary.cpp,v 1.2 2003-04-21 18:26:19 terpstra Exp $
+/*  $Id: Summary.cpp,v 1.3 2003-04-25 10:13:53 terpstra Exp $
  *  
  *  Summary.cpp - Helper which can load a message given MessageId
  *  
@@ -40,25 +40,20 @@
 
 using namespace std;
 
-string Summary::load(ESort::Reader* r)
+string Summary::load(Reader* r)
 {
 	string prefix = LU_SUMMARY + id_.serialize_forward();
 	
-	auto_ptr<ESort::Walker> w(r->seek(prefix));
-	if (!w.get())
-	{
-		if (errno == 0) return "does not exist? end of database";
-		return string("Reader::seek:") + strerror(errno);
-	}
-	
-	// Does it not exist?
-	if (w->key.substr(0, prefix.length()) != prefix)
-		return "does not exist";
+	auto_ptr<Walker> w(r->seek(prefix, true));
 	
 	int l = prefix.length();
 	int j;
-	for (j = l; j >= l; j = w->advance())
+	while ((j = w->advance()) >= l ||
+		w->key.substr(0, prefix.length()) == prefix)
 	{
+		if (w->key.length() < l + 2)
+			return "invalid mbox entry -- way too short";
+		
 		// We use this for getting an unsigned value below.
 		const unsigned char* k = (const unsigned char*)w->key.c_str() + l;
 		

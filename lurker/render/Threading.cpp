@@ -1,4 +1,4 @@
-/*  $Id: Threading.cpp,v 1.2 2003-04-21 18:26:19 terpstra Exp $
+/*  $Id: Threading.cpp,v 1.3 2003-04-25 10:13:54 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -58,23 +58,15 @@ string Threading::load(ESort::Reader* r, const Summary& sum, Key& out)
 		LU_BACKWARD + 
 		sum.id().serialize_backward();
 	
-	auto_ptr<ESort::Walker> backwards(r->seek(find_start));
-	if (!backwards.get())
-	{
-		if (errno == 0) return "does not exist? end of database";
-		return string("Reader::seek:") + strerror(errno);
-	}
-	
-	// Does it not exist?
-	if (backwards->key.substr(0, find_start.length()) != find_start)
-		return "does not exist";
+	auto_ptr<ESort::Walker> backwards(r->seek(find_start, true));
 	
 	/** Walk backwards until we find step off the subject, or there is
 	 *  a break of more than 40 days between messages.
 	 */
 	int j, l = find_start.length() - 8;
 	MessageId root = sum.id();
-	for (j = l; j >= l; j = backwards->advance())
+	while ((j = backwards->advance()) >= l ||
+	       backwards->key.substr(0, l) == find_start.substr(0, l))
 	{
 		if ((int)backwards->key.length() < l + 8)
 			return "corrupt threading record -- too short";
@@ -100,23 +92,15 @@ string Threading::load(ESort::Reader* r, const Summary& sum, Key& out)
 		LU_FORWARD + 
 		root.serialize_forward();
 	
-	auto_ptr<ESort::Walker> forwards(r->seek(find_end));
-	if (!forwards.get())
-	{
-		if (errno == 0) return "forward does not exist? end of database";
-		return string("Reader::seek:") + strerror(errno);
-	}
-	
-	// Does it not exist?
-	if (forwards->key.substr(0, find_end.length()) != find_end)
-		return "forward does not exist";
+	auto_ptr<ESort::Walker> forwards(r->seek(find_end, true));
 	
 	/** Walk forwards until we find step off the subject, or there is
 	 *  a break of more than 40 days between messages.
 	 */
-	MessageId prev = root;
 	l = find_end.length() - 8;
-	for (j = l; j >= l; j = forwards->advance())
+	MessageId prev = root;
+	while ((j = forwards->advance()) >= l ||
+	       forwards->key.substr(0, l) == find_end.substr(0, l))
 	{
 		if ((int)forwards->key.length() < l + 8)
 			return "corrupt forwardthreading record -- too short";

@@ -1,4 +1,4 @@
-/*  $Id: Summary.h,v 1.2 2003-04-21 18:26:19 terpstra Exp $
+/*  $Id: Summary.h,v 1.3 2003-04-25 10:13:54 terpstra Exp $
  *  
  *  Summary.h - Helper which can load a message given MessageId
  *  
@@ -37,6 +37,7 @@ class DwMessage;
 
 using std::set;
 using std::ostream;
+using namespace ESort;
 
 class Summary
 {
@@ -55,7 +56,7 @@ class Summary
  	Summary() { }
  	Summary(const MessageId& id) : id_(id) { }
  	
- 	string load(ESort::Reader* r); // "" is success
+ 	string load(Reader* r); // "" is success
  	bool loaded() const { return mbox_ != ""; }
  	
  	const MessageId& id() const { return id_; }

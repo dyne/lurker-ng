@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.2 2003-04-21 18:26:21 terpstra Exp $
+/*  $Id: search.cpp,v 1.3 2003-04-25 10:13:54 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -90,6 +90,13 @@ Search::Search(ESort::Reader* db_, const MessageId& laterThan)
 {
 }
 
+Search::~Search()
+{
+	Entries::iterator i;
+	for (i = entries.begin(); i != entries.end(); ++i)
+		delete i->walker;
+}
+
 string Search::keyword(const string& key)
 {
 	// cout << "need: " << key << "\n";
@@ -97,15 +104,13 @@ string Search::keyword(const string& key)
 	string prefix = LU_KEYWORD LU_BACKWARD + key + '\0';
 	entries.push_back(KEntry());
 	entries.back().prefix = prefix;
-	entries.back().walker = db->seek(prefix + start);
+	entries.back().walker = db->seek(prefix + start, true).release();
 	
-	if (entries.back().walker == 0)
-	{
-		eof = true;
-		if (errno != 0)
-			return string("Reader::seek:") + strerror(errno);
-	}
+	assert (entries.back().walker); // always succeeds
 	
+	if (entries.back().walker->advance() != 0)
+		return string("Walker::advance:") + strerror(errno);
+		
 	if (entries.back().walker->key.substr(0, prefix.length()) != prefix)
 		eof = true;
 	
