@@ -1,4 +1,4 @@
-/*  $Id: config.h,v 1.7 2002-02-12 15:39:31 terpstra Exp $
+/*  $Id: config.h,v 1.8 2002-02-21 03:51:38 terpstra Exp $
  *  
  *  config.h - Knows how to load the config file
  *  
@@ -35,16 +35,22 @@ typedef struct Lu_Config_Mbox_T
 	char*	path;
 	int	fd;
 	
+	/* What is the state of the mailbox? If we have next_message 0 it
+	 * that we need to check if the mailbox is longer than mbox_length.
+	 * Otherwise, we decide what to import based solely on the next_message.
+	 */
 	time_t	next_message;
+	off_t	length;
+	
 	int	locked;
-	struct	stat sb;
-	struct	map_info {
-#define		map_off(m, n)	((char *)(m)->map.start + n - (m)->map.off)
-#define		map_end(m)	((char *)(m)->map.addr + (m)->map.size)
-		void*	addr;
-		void*	start;
-		size_t	size;
+	int	mapped;
+	
+	struct	map_info 
+	{
+		void*	base;
+		
 		off_t	off;
+		size_t	size;
 	} map;
 
 	/* only used during load of config */
@@ -109,4 +115,3 @@ extern int lu_config_move_mbox_end(
 	Lu_Config_Mbox* mbox,
 	Lu_Config_List* list,
 	off_t now);
-                        

@@ -1,4 +1,4 @@
-/*  $Id: mbox.h,v 1.3 2002-02-12 07:32:22 cbond Exp $
+/*  $Id: mbox.h,v 1.4 2002-02-21 03:51:38 terpstra Exp $
  *  
  *  mbox.h - Knows how to follow mboxes for appends and import messages
  *  
@@ -28,16 +28,18 @@
 
 /*------------------------------------------------- Public types */
 
-struct	msg {
-	struct	mail_envelope *env;
-	struct	mail_bodystruct *body;
-	STRING	bss;
-	char*	buffer;
+struct Lu_Mbox_Message
+{
+	struct	mail_envelope*		env;
+	struct	mail_bodystruct*	body;
+	STRING				bss;
+	char*				buffer;
 };
 
 /*------------------------------------------------- Public methods */
 
-extern char *mbox_select_body(struct msg *, BODY *, size_t *, int *);
+extern char* lu_mbox_select_body(struct Lu_Mbox_Message *, 
+	BODY *, size_t *, int *);
 
 /*------------------------------------------------- Public component methods */
 

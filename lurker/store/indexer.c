@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.10 2002-02-20 05:08:50 terpstra Exp $
+/*  $Id: indexer.c,v 1.11 2002-02-21 03:51:38 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -306,7 +306,7 @@ static int my_indexer_keyword_scan(
  * it contains.
  */
 static void my_indexer_traverse(
-	struct msg* in, 
+	struct Lu_Mbox_Message* in, 
 	struct mail_bodystruct* body)
 {
 	struct mail_body_part *p;
@@ -338,7 +338,7 @@ static void my_indexer_traverse(
 			if (my_indexer_strcasecmp(body->subtype, "plain"))
 				break;
 
-			buffer = mbox_select_body(in, body, &length, &nfree);
+			buffer = lu_mbox_select_body(in, body, &length, &nfree);
 			my_indexer_keyword_scan(buffer, length,
 				LU_KEYWORD_WORD);
 			if (nfree)
@@ -499,7 +499,7 @@ int lu_indexer_quit()
 /*------------------------------------------------- Indexing algorithm */
 
 int lu_indexer_import(
-	struct msg*	body, 
+	struct Lu_Mbox_Message*	body, 
 	lu_word		list,
 	lu_word		mbox,
 	time_t		stamp,

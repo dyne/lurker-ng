@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.5 2002-02-12 07:16:40 terpstra Exp $
+/*  $Id: config.c,v 1.6 2002-02-21 03:51:38 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -299,6 +299,7 @@ static int my_config_open_mboxs()
 			
 			mbox->next_message = 0;
 			mbox->locked       = 0;
+			mbox->mapped       = 0;
 		}
 	}
 	
@@ -729,7 +730,6 @@ int my_config_sync_mbox()
 	int got;
 	
 	char buf[1024];
-	off_t offset;
 	
 	for (list = lu_config_list; list != lu_config_list + lu_config_lists; list++)
 	{
@@ -750,6 +750,8 @@ int my_config_sync_mbox()
 			
 			error = my_config_mbox_db->get(
 				my_config_mbox_db, 0, &dkey, &dval, 0);
+			
+			mbox->length = 0;
 			
 			if (error == 0)
 			{
@@ -780,14 +782,7 @@ int my_config_sync_mbox()
 					return -1;
 				}
 				
-				offset = val.offset;
-				if (lseek(mbox->fd, offset, SEEK_SET) 
-					!= offset)
-				{
-					fprintf(stderr, "Could not seek %s: %s\n",
-						mbox->path, strerror(errno));
-					return -1;
-				}
+				mbox->length = val.offset;
 			}
 			else if (error != DB_NOTFOUND)
 			{
@@ -959,8 +954,6 @@ int lu_config_move_mbox_end(
 	
 	int error;
 	
-	off_t offset;
-	
 	memset(&dkey, 0, sizeof(DBT));
 	memset(&dval, 0, sizeof(DBT));
 	
@@ -973,11 +966,8 @@ int lu_config_move_mbox_end(
 	key.list = list->id;
 	key.mbox = mbox->id;
 	
-	offset = lseek(mbox->fd, 0, SEEK_CUR);
-	if (offset == -1) return -1;
 	if (lseek(mbox->fd, 0, SEEK_SET) != 0) return -1;
 	if (read(mbox->fd, &val.front[0], sizeof(val.front)) <= 0) return -1;
-	if (lseek(mbox->fd, offset, SEEK_SET) != offset) return -1;
 	
 	val.offset = now;
 	
@@ -985,6 +975,7 @@ int lu_config_move_mbox_end(
 	if (error != 0)
 		return -1;
 	
+	mbox->length = now;
+	
 	return 0;
 }
-
