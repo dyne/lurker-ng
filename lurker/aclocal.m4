@@ -94,8 +94,8 @@ dnl we'll make an attempt at finding it ourselves.  (This is
 dnl especially lame since some linkers don't look in the proper
 dnl places, e.g. FreeBSD.  Not to mention the library seems to
 dnl be called variously `db3' and `db-3.')
-AC_DEFUN(DB3_CHECK, [
-  AC_MSG_CHECKING(for the db3 library)
+AC_DEFUN(DB3_CHECK, 
+[ AC_MSG_CHECKING(for the db3 library)
 
   for id in 'db-3' 'db3'; do
     for search in '' '-L/usr/local/lib'; do
