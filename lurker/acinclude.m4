@@ -46,54 +46,60 @@ AC_DEFUN(XSLT_CHECK, [
   fi
 ])
 
+dnl Since db3 comes with no real way to determine its location,
+dnl we'll make an attempt at finding it ourselves.  (This is
+dnl especially lame since some linkers don't look in the proper
+dnl places, a la FreeBSD.  Not to mention the library seems to
+dnl be called variously `db3' and `db-3.')
 AC_DEFUN(DB3_CHECK, [
-  AC_ARG_WITH(db3_libs, AC_HELP_STRING(
-	[--with-db3-libs],
-	[library options to link against db3]))
-  AC_ARG_WITH(db3_include, AC_HELP_STRING(
-	[--with-db3-include],
-        [compiler flags to compile against db3]))
+  AC_MSG_CHECKING(for the db3 library)
 
-  if test "x$with_db3_libs" = "x"; then
-   AC_CHECK_LIB(db-3, db_env_create,
-    $1_LIBS="$$1_LIBS -ldb-3",
-      AC_MSG_ERROR(Need libdb-3 to compile))
+  for id in 'db-3' 'db3'; do
+    for search in '' '-L/usr/local/lib'; do
+      save="$LIBS"
+      LIBS="$LIBS $search -l$id"
+
+      AC_TRY_LINK([], [db_env_create()],
+	[AC_MSG_RESULT(yes)
+	 break 2],
+	[LIBS="$save"])
+    done
+  done
+
+  if test "$save" = "$LIBS"; then
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR([This requires libdb >= 3.2 to build])
   else
-   db3_LIBS="$with_db3_libs"
-   bak_LIBS="$LIBS"
-   LIBS="$LIBS $db3_LIBS"
-   AC_MSG_CHECKING(for db3 with $db3_LIBS)
-   AC_TRY_LINK(
-    [void db_env_create();],
-    [db_env_create();],
-    [AC_MSG_RESULT(ok)],
-    [AC_MSG_ERROR($with_db3_libs does not seem to be db3+)])
-   LIBS="$bak_LIBS"
+    setvar $1_LIBS "$$1_LIBS $search -l$id"
+    LIBS="$save"
   fi
 
-  db3_CFLAGS="$with_db3_include"
-  if test "x$db3_CFLAGS" = "x"; then
-    AC_MSG_CHECKING([for db.h >= 3.2.x])
-  else
-    AC_MSG_CHECKING([for db.h >= 3.2.x with $db3_CFLAGS])
-  fi
+  AC_MSG_CHECKING(for db3.2 header files)
 
-  bak_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS $db3_CFLAGS"
-  AC_TRY_COMPILE(
-    [#include <db.h>],
-    [#if (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2) || DB_VERSION_MAJOR > 3
-return 0;
+  for search in '' '-I/usr/include/db3' '-I/usr/local/include/db3'; do
+    save="$CFLAGS";
+    CFLAGS="$CFLAGS $search";
+
+    AC_TRY_COMPILE(
+      [#include <db.h>],
+      [
+#if DB_VERSION_MAJOR > 3 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2)
+	return 0;
 #else
-#error The db3 header is too old  
+#error
 #endif],
-    [AC_MSG_RESULT([have it])],
-    [AC_MSG_ERROR([Need libdb >= 3.2.x])])
-CFLAGS="$bak_CFLAGS"
+      [AC_MSG_RESULT(yes)
+       break],
+      [CFLAGS="$save"])
+  done
 
-  $1_LIBS="$$1_LIBS $db3_LIBS"
-  $1_CFLAGS="$$1_CFLAGS $db3_CFLAGS"
+  if test "$save" = "$CFLAGS"; then
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR([Unable to locate libdb >= 3.2 header files])
+  else
+    setvar $1_CFLAGS "$$1_CFLAGS $search"
+    CFLAGS="$save"
+  fi
 
   AC_SUBST($1_LIBS)
-  AC_SUBST($1_CFLAGS)
-])
+  AC_SUBST($1_CFLAGS)])

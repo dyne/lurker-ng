@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.3 2002-01-22 23:10:59 terpstra Exp $
+/*  $Id: main.c,v 1.4 2002-01-23 02:23:35 cbond Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -28,7 +28,6 @@
 
 #include <sys/un.h>
 #include <sys/socket.h>
-#include <popt.h>
 #include <unistd.h>
 #include <st.h>
 
@@ -55,8 +54,7 @@ static void* handle_client(void* arg)
 int main(int argc, const char* argv[])
 {
 	FILE*		pid;
-	char		c;
-	poptContext	optCon;
+	int		c;
 	int		detach = 1;
 	const char*	config = DEFAULT_CONFIG_FILE;
 	
@@ -65,41 +63,27 @@ int main(int argc, const char* argv[])
 	int			sun_len;
 	st_netfd_t		sun_stfd;
 	st_netfd_t		client_fd;
-		
-	struct poptOption optionsTable[] = {
-		{ "config",   'c', POPT_ARG_STRING, &config, 0, "Config file (default: " DEFAULT_CONFIG_FILE ")", "FILE" },
-		{ "nodetach", 'n', POPT_ARG_VAL,    &detach, 0, "Do not run as a daemon", 0 },
-		{ "version",  'v', 0,               0,      'v',"Print version name", 0 },
-		POPT_AUTOHELP
-		{ NULL, 0, 0, NULL, 0 }
-	};
-	
-	optCon = poptGetContext(PACKAGE "d", argc, &argv[0], &optionsTable[0], 0);
-	poptSetOtherOptionHelp(optCon, "[OPTIONS]*");
-	
-	while ((c = poptGetNextOpt(optCon)) >= 0) switch(c)
-	{
-	case 'v':
-		puts(STORAGE " v" VERSION);
-		return 0;
+
+	while ((c = getopt(argc, (char *const *)argv, "vnc:")) != -1) {
+		switch ((char)c) {
+		case 'c':
+			config = optarg;
+			break;
+		case 'n':
+			detach = 0;
+			break;
+		case 'v':
+			fprintf(stderr, STORAGE " v" VERSION "\n");
+			return (0);
+		default:
+			fprintf(stderr, "Usage: %s [OPTIONS]...\n\n", argv[0]);
+			fprintf(stderr, "\t-v\tPrint version information\n");
+			fprintf(stderr, "\t-c file\tUse settings from file\n");
+			fprintf(stderr, "\t-n\tDon't run as a daemon\n");
+			return (1);
+		}
 	}
-	
-	if (c < -1)
-	{
-		fprintf(stderr, "%s: %s\n",
-			poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
-			poptStrerror(c));
-		return 1;
-	}
-	
-	if (poptPeekArg(optCon))
-	{
-		fprintf(stderr, "%s: unknown argument\n", poptGetArg(optCon));
-		return 1;
-	}
-	
-	poptFreeContext(optCon);
-	
+
 	if (lu_load_config(config) != 0)
 		return 1;
 	
