@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.17 2002-05-27 14:51:50 terpstra Exp $
+/*  $Id: common.c,v 1.18 2002-06-09 22:12:47 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -74,7 +74,8 @@ const char* lu_common_cleanup_id(
 	{
 		if (isspace(*id) || *id == '>') break;
 		
-		if (*id == '#')
+		/* We can handle anything in filenames but a / */
+		if (*id == '/')
 		{
 			*w++ = '_';
 			id++;
