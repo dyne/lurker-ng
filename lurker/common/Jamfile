@@ -9,3 +9,5 @@ Library libcommon :
 	MessageId.cpp
 	XmlEscape.cpp
 	;
+
+Clean distclean : Version.h ;
