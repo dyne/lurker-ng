@@ -27,10 +27,21 @@
 
 <!-- Format email message contents -->
 
+<xsl:template match="mailto">
+ <a class="mailto" href="mailto:{.}"><xsl:value-of select="."/></a>
+</xsl:template>
+
+<xsl:template match="url">
+ <a class="url" href="{.}"><xsl:value-of select="."/></a>
+</xsl:template>
+
+<xsl:template match="quote">
+ <i class="quote"><xsl:apply-templates/></i>
+</xsl:template>
+
 <xsl:template match="br"><br/></xsl:template>
 
 <xsl:template match="mime">
- <xsl:if test="not(position()=1)"><hr/></xsl:if>
  <div align="right">
   <xsl:if test="@name">
    <a href="../attach/{@id}@{/message/mid}@{@name}">
