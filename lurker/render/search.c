@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.6 2002-02-12 05:47:29 terpstra Exp $
+/*  $Id: search.c,v 1.7 2002-02-12 06:52:11 terpstra Exp $
  *  
  *  search.c - output results from a search/ lookup
  *  
@@ -94,6 +94,12 @@ int lu_search_handler(
 		extract_keyword(s, &w, e, LU_KEYWORD_SUBJECT, "subject");
 		extract_keyword(s, &w, e, LU_KEYWORD_AUTHOR,  "author");
 		extract_keyword(s, &w, e, LU_KEYWORD_WORD,    "query");
+		
+		extract_keyword(s, &w, e, LU_KEYWORD_WEEKDAY,      "weekday");
+		extract_keyword(s, &w, e, LU_KEYWORD_DAY_OF_MONTH, "dom");
+		extract_keyword(s, &w, e, LU_KEYWORD_MONTH,        "month");
+		extract_keyword(s, &w, e, LU_KEYWORD_YEAR,         "year");
+		extract_keyword(s, &w, e, LU_KEYWORD_LIST,         "list");
 		
 		/*!!! No idea how xml searching will work */
 		for (s = ".html"; w != e && *s; s++)
