@@ -1,14 +1,18 @@
 Ideas:
 	Allow control of ascending/descending sort?
 	Maybe make an effort to mangle emails?
+	Deleted message keyword?
 
 Unfulfilled requirements:
 	Message count estimates
+	New topics
 	Boolean "or" in search
+	Phrase searching
 	Better packing of tree
 	German pot
 
 BUGS:
+	Reordering search terms = bad, pruning leading _ in search = bad
 	Need a better way to clean cache.
 	Timezones suck. Need to localize times to the browser.
 	There is a slight bug in advance() pre-commit post-insert.
