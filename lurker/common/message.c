@@ -1,5 +1,5 @@
 /*
- * $Id: message.c,v 1.7 2002-01-28 08:20:15 cbond Exp $
+ * $Id: message.c,v 1.8 2002-01-28 08:40:37 cbond Exp $
  *  
  *  message.c - parse mail.
  *  
@@ -117,7 +117,7 @@ mail_parse(int fd, off_t offset)
 	off = out->buffer + out->offset;
 	INIT(&out->bss, mail_string, off, (size_t)(end - off));
 	rfc822_parse_msg(&out->env, &out->body, out->buffer,
-		(size_t)(off - buffer), &out->bss, "localhost", 0);
+		(size_t)(off - out->buffer), &out->bss, "localhost", 0);
 
 	/*
 	 * Seek to the end of this message.
