@@ -65,7 +65,7 @@
 </xsl:template>
 
 <xsl:template match="splash" mode="title">
- <xsl:copy-of select="$splash"/>
+ <xsl:value-of select="$splash"/>
 </xsl:template>
 
 <xsl:template match="splash" mode="body">
@@ -111,7 +111,7 @@
  </div>
 
  <br/><br/><hr/>
- <h2>Lurker <xsl:copy-of select="$search"/></h2>
+ <h2>Lurker <xsl:value-of select="$search"/></h2>
 
  <div id="searchBlock">
  <form action ="../lurker-search.cgi">
@@ -120,12 +120,12 @@
   <input type="submit" name="submit" value="{$search}!"/>
  <hr id="searchHr"/>
   <table id="searchTable">
-   <tr><th><xsl:copy-of select="$subject"/></th>
+   <tr><th><xsl:value-of select="$subject"/></th>
        <td><input type="text" name="subject" class="longtext"/></td></tr>
-   <tr><th><xsl:copy-of select="$author"/></th>
+   <tr><th><xsl:value-of select="$author"/></th>
        <td><input type="text" name="author" class="longtext"/></td></tr>
    <tr>
-    <th><xsl:copy-of select="$appearinlist"/></th>
+    <th><xsl:value-of select="$appearinlist"/></th>
     <td>
      <select name="list" id="listdrop">
       <option value=""><xsl:value-of select="$all-li"/></option>
