@@ -1,4 +1,4 @@
-/*  $Id: breader.h,v 1.6 2002-02-10 22:54:06 terpstra Exp $
+/*  $Id: breader.h,v 1.7 2002-02-22 01:18:58 terpstra Exp $
  *  
  *  breader.h - Knows how to use the abstracted read interface for buffered access
  *  
@@ -35,6 +35,11 @@ extern int lu_breader_close(void);
 extern int lu_breader_quit (void);
 
 /*-------------------------------------------------- Reader methods */
+
+/* Quick check the record count in a record -> doesn't spend cache.
+ */
+extern message_id lu_breader_quick_records(
+	const char* keyword);
 
 /* Open a handle to a keyword with which to read.
  */

@@ -1,4 +1,4 @@
-/*  $Id: flatfile.c,v 1.5 2002-02-10 03:24:29 terpstra Exp $
+/*  $Id: flatfile.c,v 1.6 2002-02-22 01:18:58 terpstra Exp $
  *  
  *  flatfile.c - Knows how to manage the keyword flatfile database
  *  
@@ -850,6 +850,32 @@ message_id lu_flatfile_handle_records(
 	Lu_Flatfile_Handle h)
 {
 	return h->index[0].records;
+}
+
+message_id lu_flatfile_records(
+	const char* keyword)
+{
+	message_id	out;
+	off_t		scan;
+	
+	if (lu_wbuffer_flush(keyword) != 0)
+	{
+		return lu_common_minvalid;
+	}
+	
+	if (my_flatfile_locate_keyword(keyword, &scan) != 0)
+	{
+		return lu_common_minvalid;
+	}
+	
+	if (my_flatfile_sread(my_flatfile_fd, scan, 
+		&out, sizeof(out),
+		"quick reading record count") != sizeof(out))
+	{
+		return lu_common_minvalid;
+	}
+	
+	return out;
 }
 
 int lu_flatfile_handle_read(

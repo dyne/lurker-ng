@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.21 2002-02-22 00:51:43 terpstra Exp $
+/*  $Id: service.c,v 1.22 2002-02-22 01:18:58 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -997,7 +997,6 @@ static int my_service_lists(
 	const char* request)
 {
 	Lu_Config_List*		scan;
-	Lu_Breader_Handle	h;
 	char			key[40];
 	
 	if (my_service_xml_head(fd)                  != 0) return -1;
@@ -1009,16 +1008,13 @@ static int my_service_lists(
 		scan++)
 	{
 		snprintf(&key[0], sizeof(key), "%s%d", LU_KEYWORD_LIST, scan->id);
-		h = lu_breader_new(&key[0]);
-		if (h == 0) continue;
-		if (my_service_list(fd, scan, lu_breader_records(h)) != 0)
+		if (my_service_list(fd, scan, 
+			lu_breader_quick_records(&key[0])) != 0)
 		{
-			lu_breader_free(h);
 			return -1;
 		}
-		lu_breader_free(h);
-		
 	}
+	
 	if (my_service_buffer_write(fd, "</lists>\n") != 0) return -1;
 	
 	return 0;

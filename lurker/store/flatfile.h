@@ -1,4 +1,4 @@
-/*  $Id: flatfile.h,v 1.4 2002-02-10 21:50:38 terpstra Exp $
+/*  $Id: flatfile.h,v 1.5 2002-02-22 01:18:58 terpstra Exp $
  *  
  *  flatfile.h - Knows how to manage the keyword flatfile database
  *  
@@ -52,6 +52,11 @@ extern int lu_flatfile_pop_keyword(
  *  Returns 0 to mean failure.
  */
 extern Lu_Flatfile_Handle lu_flatfile_open_handle(
+	const char* keyword);
+
+/** Quickly determine how many records are in a handle without opening.
+ */
+extern message_id lu_flatfile_records(
 	const char* keyword);
 
 /** How many records are in the handle.

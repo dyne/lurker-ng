@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.9 2002-02-20 05:03:57 terpstra Exp $
+/*  $Id: breader.c,v 1.10 2002-02-22 01:18:58 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -589,6 +589,12 @@ message_id lu_breader_records(
 	record = &my_breader_records[h-1];
 	
 	return record->count;
+}
+
+message_id lu_breader_quick_records(
+	const char* keyword)
+{
+	return lu_flatfile_records(keyword);
 }
 
 message_id lu_breader_last(
