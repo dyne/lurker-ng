@@ -1,4 +1,4 @@
-/*  $Id: avl.h,v 1.6 2002-07-19 14:40:34 terpstra Exp $
+/*  $Id: avl.h,v 1.7 2002-07-21 12:33:45 terpstra Exp $
  *  
  *  avl.h - Manage a AVL search tree
  *  
@@ -54,10 +54,10 @@
  *   COMPARE -> a strcmp style compare method
  *
  * This will create the methods: 
- *   RECTYPE my_avl_PREFIX_insert(RECTYPE root, STRUCT* table, RECTYPE recno)
+ *   RECTYPE my_avl_PREFIX_insert(STRUCT* table, RECTYPE root, RECTYPE recno)
  *     -> you must have already set TABLE[recno].key to an appropriate value.
  *     -> INVALID if already in tree, the new root else (ok)
- *   RECTYPE my_avl_PREFIX_remove(RECTYPE root, STRUCT* table, RECTYPE recno)
+ *   RECTYPE my_avl_PREFIX_remove(STRUCT* table, RECTYPE root, RECTYPE recno)
  *     -> INVALID if not in tree, the new root else (ok)
  */
 
