@@ -1,4 +1,4 @@
-/*  $Id: kapmake.c,v 1.10 2002-07-17 10:30:50 terpstra Exp $
+/*  $Id: kapmake.c,v 1.11 2002-08-24 18:11:13 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool from kapdump raw text
  *  
@@ -30,6 +30,7 @@
 #include "../config.h"
 #include "kap.h"
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>	
 

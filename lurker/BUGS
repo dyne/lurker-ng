@@ -1,3 +1,10 @@
+TODO for 0.1e:
+	Detect xf:escape-uri
+	Add FAQ
+	Profile append locations
+	Possibly cache append locations
+	Release
+
 Ideas:
 	errordocument failthrough configable
 	maybe use: message/YYYYMM,email,20chars of subject,goop
@@ -8,7 +15,6 @@ Ideas:
 	Maybe manually cache tail of the append layer
 
 Unfulfilled requirements:
-	Configure check for escape-uri
 	Legend for colours and their meaning
 	Better packing of tree
 	German pot

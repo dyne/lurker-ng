@@ -7,13 +7,13 @@ v0.1e:
 		what the webserver outputs
 	Removed an evil kludge that relies on C calling convention
 	Removed exslt dependency so IE6 xsl works again
-	Support utf-8 mailto if escape-uri available
-	Mangle mailto:s regardless of escape-uri availability
-	Escape URLs entirely in the xslt without C assistence
+	Mangle mailto:s regardless of xf:escape-uri availability
+	Support utf-8 mailto if xf:escape-uri available
 	XSL support detection via javascript added
 	Forward/backward links within a message added
 	Display which replies are thread drift
 	Prettier arrows from Kevin Teague
+	Should compile on BSD again
 
 v0.1d:
 	Fixed an off by one error in btree.c (could assert-fail)

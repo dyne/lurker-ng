@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <xsl:stylesheet 
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xslns:xf="http://www.w3.org/2002/08/xquery-functions"
     xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
-
 
 <!-- Truncate long strings -->
 
@@ -47,6 +47,7 @@
 
 <xsl:variable name="uri-input">The@dog-z went/_&#127;_%ab%zu%c</xsl:variable>
 <xsl:variable name="uri-output">The%40dog-z%20went%2F_%7F_%ab%25zu%25c</xsl:variable>
+
 <xsl:variable name="have-escape-uri" select="false()"/>
 <!-- "escape-uri($uri-input, true()) = $uri-output" -->
 

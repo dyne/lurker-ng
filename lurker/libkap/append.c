@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.19 2002-07-26 13:40:30 terpstra Exp $
+/*  $Id: append.c,v 1.20 2002-08-24 18:11:13 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -30,8 +30,11 @@
 #include "../config.h"
 #include "private.h"
 
+/* #define DEBUG 1 */
+#define PROFILE 1
+
 /* If you need appends larger than 2Gb you must define this: */
-/* #define DISABLE_MMAP */
+/* #define DISABLE_MMAP 1 */
 
 #if defined(HAVE_MMAP) && defined(HAVE_MUNMAP) && !defined(DISABLE_MMAP)
 # define USE_MMAP
@@ -118,6 +121,17 @@ struct Kap_Append
 	char*	mmap;
 #endif
 };
+
+#ifdef PROFILE
+
+#define TRACK_DISTANCE		16384
+#define	TRACK_SIZE		64
+
+int appends[TRACK_DISTANCE][TRACK_SIZE];
+int other_before;
+int other_big;
+
+#endif
 
 /***************************************** Strategies for accessing the disk */
 
@@ -509,6 +523,12 @@ int kap_append_write(Kap k, KRecord* kr,
 		off_t rstart;	/* within disk fragment */
 		off_t amt;	/* amount in this pass */
 		
+		off_t target_off;
+#ifdef PROFILE
+		int   distance;
+		int   size;
+#endif
+				
 		if (jump_to_offset(i) < off)
 		{
 			start  = 0;
@@ -530,9 +550,30 @@ int kap_append_write(Kap k, KRecord* kr,
 			amt = len - start;
 		}
 		
+		target_off = kr->jumps[i] + (rstart*k->append->record_size);
+		
+#ifdef PROFILE
+		distance = (k->append->prealloc - target_off) / k->append->record_size;
+		size     = amt;
+		if (size < TRACK_SIZE)
+		{
+			if (distance < TRACK_DISTANCE)
+			{
+				appends[distance][size]++;
+			}
+			else
+			{
+				other_before++;
+			}
+		}
+		else
+		{
+			other_big++;
+		}
+#endif		
 		if (WRITE_RECORDS(
 			k->append,
-			kr->jumps[i]+(rstart*k->append->record_size), 
+			target_off, 
 			((unsigned char*)data)+(start*k->append->record_size),
 			amt*k->append->record_size) != 0)
 		{
@@ -645,6 +686,12 @@ struct Kap_Append* append_init(void)
 	out->fd          = -1;
 	out->record_size = 4;
 
+#ifdef PROFILE
+	memset(&appends, 0, sizeof(appends));
+	other_big = 0;
+	other_before = 0;
+#endif
+	
 #ifdef USE_MMAP
 	out->mmap = MAP_FAILED;
 #endif
@@ -695,12 +742,33 @@ int kap_append_get_recordsize(Kap k, ssize_t* size)
 int kap_append_close(Kap k)
 {
 	int out, ret;
+#ifdef PROFILE
+	FILE* f;
+	int i, j;
+#endif
 	
 	out = 0;
 	
 	if ((ret = kap_append_sync(k))        != 0) out = ret;
 	if ((ret = kap_unlock(k->append->fd)) != 0) out = ret;
 	if ((ret = close(k->append->fd))      != 0) out = ret;
+	
+#ifdef PROFILE
+	f = fopen("/tmp/append.profile", "w");
+	fprintf(f, "other = %d %d\n", other_big, other_before);
+	
+	for (i = 0; i < TRACK_DISTANCE; i++)
+	{
+		for (j = 0; j < TRACK_SIZE; j++)
+		{
+			fprintf(f, "%d ", appends[i][j]);
+		}
+		
+		fprintf(f, "\n");
+	}
+	
+	fclose(f);
+#endif
 	
 #ifdef USE_MMAP
 	if (k->append->mmap != MAP_FAILED)
