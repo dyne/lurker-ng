@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.4 2002-02-10 09:33:53 terpstra Exp $
+/*  $Id: summary.c,v 1.5 2002-02-10 20:47:42 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -29,6 +29,7 @@
 #include "io.h"
 
 #include "config.h"
+#include "breader.h"
 #include "summary.h"
 
 #include <ctype.h>

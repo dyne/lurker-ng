@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.23 2002-02-04 01:03:12 terpstra Exp $
+/*  $Id: main.c,v 1.24 2002-02-10 20:47:42 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -57,10 +57,10 @@ static int my_main_init(const char* c)
 	if (lu_flatfile_init() != 0) return -1;
 	if (lu_wbuffer_init()  != 0) return -1;
 	if (lu_indexer_init()  != 0) return -1;
-	if (lu_summary_init()  != 0) return -1;
-	if (lu_mbox_init()     != 0) return -1;
 	if (lu_breader_init()  != 0) return -1;
 	if (lu_search_init()   != 0) return -1;
+	if (lu_summary_init()  != 0) return -1;
+	if (lu_mbox_init()     != 0) return -1;
 	if (lu_service_init()  != 0) return -1;
 	
 	return 0;
@@ -72,10 +72,10 @@ static int my_main_open()
 	if (lu_flatfile_open() != 0) return -1;
 	if (lu_wbuffer_open()  != 0) return -1;
 	if (lu_indexer_open()  != 0) return -1;
-	if (lu_summary_open()  != 0) return -1;
-	if (lu_mbox_open()     != 0) return -1;
 	if (lu_breader_open()  != 0) return -1;
 	if (lu_search_open()   != 0) return -1;
+	if (lu_summary_open()  != 0) return -1;
+	if (lu_mbox_open()     != 0) return -1;
 	if (lu_service_open()  != 0) return -1;
 	
 	return 0;
@@ -86,10 +86,10 @@ static int my_main_sync()
 	int fail = 0;
 	
 	if (lu_service_sync()  != 0) fail = -1;
-	if (lu_search_sync()   != 0) fail = -1;
-	if (lu_breader_sync()  != 0) fail = -1;
 	if (lu_mbox_sync()     != 0) return -1;
 	if (lu_summary_sync()  != 0) fail = -1; 
+	if (lu_search_sync()   != 0) fail = -1;
+	if (lu_breader_sync()  != 0) fail = -1;
 	if (lu_indexer_sync()  != 0) fail = -1;
 	if (lu_wbuffer_sync()  != 0) fail = -1;
 	if (lu_flatfile_sync() != 0) fail = -1;
@@ -103,10 +103,10 @@ static int my_main_close()
 	int fail = 0;
 	
 	if (lu_service_close()  != 0) fail = -1;
-	if (lu_search_close()   != 0) fail = -1;
-	if (lu_breader_close()  != 0) fail = -1;
 	if (lu_mbox_close()     != 0) return -1;
 	if (lu_summary_close()  != 0) fail = -1; 
+	if (lu_search_close()   != 0) fail = -1;
+	if (lu_breader_close()  != 0) fail = -1;
 	if (lu_indexer_close()  != 0) fail = -1;
 	if (lu_wbuffer_close()  != 0) fail = -1;
 	if (lu_flatfile_close() != 0) fail = -1;
@@ -120,10 +120,10 @@ static int my_main_quit()
 	int fail = 0;
 	
 	if (lu_service_quit()  != 0) fail = -1;
-	if (lu_search_quit()   != 0) fail = -1;
-	if (lu_breader_quit()  != 0) fail = -1;
 	if (lu_mbox_quit()     != 0) return -1;
 	if (lu_summary_quit()  != 0) fail = -1; 
+	if (lu_search_quit()   != 0) fail = -1;
+	if (lu_breader_quit()  != 0) fail = -1;
 	if (lu_indexer_quit()  != 0) fail = -1;
 	if (lu_wbuffer_quit()  != 0) fail = -1;
 	if (lu_flatfile_quit() != 0) fail = -1;

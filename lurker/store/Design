@@ -47,10 +47,10 @@ load order:
 	flatfile
 	wbuffer
 	indexer
-	summary
-	mbox
 	breader
 	search
+	summary
+	mbox
 	service
 
 main:
