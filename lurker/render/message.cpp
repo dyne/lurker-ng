@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.26 2003-06-25 22:23:40 terpstra Exp $
+/*  $Id: message.cpp,v 1.27 2003-07-01 14:10:29 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -417,7 +417,7 @@ void message_display(ostream& o, DwEntity& e, const string& charset, bool html)
 			else ++start;
 			
 			string::size_type end = utf8.find(OLD_PGP_DIVIDER, start);
-			if (end == string::npos) end == utf8.length();
+			if (end == string::npos) end = utf8.length();
 			
 			// transform the signed body
 			my_service_quote(o, utf8.c_str() + start, end - start);
