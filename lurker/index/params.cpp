@@ -1,4 +1,4 @@
-/*  $Id: params.cpp,v 1.10 2004-08-27 15:04:05 terpstra Exp $
+/*  $Id: params.cpp,v 1.11 2004-08-27 17:53:44 terpstra Exp $
  *  
  *  params.cpp - Parse the config file for helper scripts
  *  
@@ -39,7 +39,7 @@ void help(const char* name)
 	cerr << "Lurker-params (v" << VERSION << ") parses params from the config file.\n";
 	cerr << "\n";
 	cerr << "Usage: " << name << " -c <config-file> -f <locale>\n";
-	cerr << "                         [-d -a -n -e -x -m -i -w -h -r]\n";
+	cerr << "                         [-d -a -n -e -x -m -i -w -h -r -g]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-f <locale>      Output the fields for this locale\n";
@@ -53,6 +53,7 @@ void help(const char* name)
 	cerr << "\t-w               Output only the web_cache state\n";
 	cerr << "\t-h               Output only the hide_email state\n";
 	cerr << "\t-r               Output only the raw_email state\n";
+	cerr << "\t-g               Output only the regroupable state\n";
 	cerr << "\n";
 	cerr << "Output various lurker settings from the config file for use in shell scripts.\n";
 	cerr << "Do not use sed/grep/etc, instead use this as it respects include.\n";
@@ -75,9 +76,10 @@ int main(int argc, char** argv)
 	bool        web_cache     = false;
 	bool        hide_email    = false;
 	bool        raw_email     = false;
+	bool        regroupable   = false;
 	string lc;
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:f:danexmiwhr?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:f:danexmiwhrg?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -127,6 +129,10 @@ int main(int argc, char** argv)
 			++fields;
 			raw_email = true;
 			break;
+		case 'g':
+			++fields;
+			regroupable = true;
+			break;
 		default:
 			help(argv[0]);
 			return 1;
@@ -162,6 +168,7 @@ int main(int argc, char** argv)
 	if (!fields || web_cache)     cout << (cfg.web_cache?"on":"off") << "\n";
 	if (!fields || hide_email)    cout << (cfg.hide_email?"on":"off") << "\n";
 	if (!fields || raw_email)     cout << (cfg.raw_email?"on":"off") << "\n";
+	if (!fields || regroupable)   cout << (cfg.regroupable?"on":"off") << "\n";
 	
 	return 0;
 }

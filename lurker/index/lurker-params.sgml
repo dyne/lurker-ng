@@ -58,7 +58,7 @@ lurker-params.1: lurker-params.sgml
       <command>&dhpackage;</command>
       <arg>\-c &lt;config-file&gt;</arg>
       <arg>\-f &lt;locale&gt;</arg>
-      <arg>\-d \-a \-n \-e \-x \-m \-i \-w \-h \-r</arg>
+      <arg>\-d \-a \-n \-e \-x \-m \-i \-w \-h \-r \-g</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -143,6 +143,12 @@ lurker-params.1: lurker-params.sgml
         <term><option>\-r</option></term>
         <listitem>
           <para>Output only the raw_email state</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>\-g</option></term>
+        <listitem>
+          <para>Output only the regroupable state</para>
         </listitem>
       </varlistentry>
     </variablelist>

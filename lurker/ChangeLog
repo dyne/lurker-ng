@@ -14,7 +14,7 @@ v1.2:
 	Added support for not searching ala google: '-foo', '+' is ignored
 	Searches now internally include a not(deleted) criterea
 	Removed a misguided use of pointers in the ConfigFile class
-	Group searching now uses internal 'or' search of included lists
+	Group searching can now use internal 'or' search of included lists
 	Mailing lists may now be regrouped without reimporting
 	Deny formatting of unknown extensions
 	Include language code in the extension of all pages
@@ -37,6 +37,7 @@ v1.2:
 	Added a '-u' option to lurker-index to trust the user Date header
 	Added support for 3 digit language codes and 2 digit country code
 	Made the config file able to deal with translations in '[]'s
+	Added config file option 'regroupable' for large archives
 
 v1.1:
 	Create mbox and attach directory upon install

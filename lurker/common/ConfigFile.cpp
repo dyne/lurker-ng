@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.11 2004-08-27 15:04:05 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.12 2004-08-27 17:53:44 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -345,6 +345,7 @@ Config::Config()
    web_cache(true),
    hide_email(false),
    raw_email(true),
+   regroupable(true),
    modified(0)
 {
 }
@@ -727,6 +728,23 @@ int Config::process_command(const string& keys, const string& val, const string&
 		else
 		{
 			error << "hide_email must be set to on/off or true/false!" << endl;
+			return -1;
+		}
+	}
+	else if (key == "regroupable")
+	{
+		if (lc != "")
+		{
+			error << "regroupable cannot be localized" << endl;
+			return -1;
+		}
+		if (val == "off" || val == "false")
+			regroupable = false;
+		else if (val == "on" || val == "true")
+			regroupable = true;
+		else
+		{
+			error << "regroupable must be set to on/off or true/false!" << endl;
 			return -1;
 		}
 	}

@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.9 2004-08-27 15:04:05 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.10 2004-08-27 17:53:44 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -138,6 +138,7 @@ class Config
  	bool	web_cache;
  	bool	hide_email;
  	bool	raw_email;
+ 	bool	regroupable;
  	time_t	modified; // the timestamp of modification for the config file
  	
  	// parameters specific for rendering

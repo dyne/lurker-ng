@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.30 2004-08-25 21:39:46 terpstra Exp $
+/*  $Id: Index.cpp,v 1.31 2004-08-27 17:53:44 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -461,9 +461,23 @@ int Index::index_control(time_t import)
 		'\0' + 
 		id.raw()) != 0) ok = false;
 	
-	/* group searching is now done using 'OR' searches internally.
-	 * - this allows changing the groups of lists w/o reimport.
+	/* emulated group and language searches are impossibly slow.
+	 * these keywords are a must for large archives.
+	 * see the regroupable option in the stock lurker.conf
 	 */
+	if (writer->insert(
+		LU_KEYWORD
+		LU_KEYWORD_GROUP +
+		list.group +
+		'\0' +
+		id.raw()) != 0) ok = false;
+	
+	if (writer->insert(
+		LU_KEYWORD
+		LU_KEYWORD_LANGUAGE +
+		list.language +
+		'\0' +
+		id.raw()) != 0) ok = false;
 	
 	MessageId importStamp(import);
 	if (writer->insert(

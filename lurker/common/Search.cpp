@@ -1,4 +1,4 @@
-/*  $Id: Search.cpp,v 1.4 2004-08-25 13:35:11 terpstra Exp $
+/*  $Id: Search.cpp,v 1.5 2004-08-27 17:53:44 terpstra Exp $
  *  
  *  Search.cpp - Execute a keyword search
  *  
@@ -363,7 +363,7 @@ void Search::keyword(const string& key)
 		need_any = false;
 	
 	Searcher* s;
-	if (word.substr(0, sizeof(LU_KEYWORD_GROUP)-1) == LU_KEYWORD_GROUP)
+	if (cfg.regroupable && word.substr(0, sizeof(LU_KEYWORD_GROUP)-1) == LU_KEYWORD_GROUP)
 	{
 		OrSearcher* o = new OrSearcher(criterea.dir);
 		Config::Groups::const_iterator g = 
@@ -376,7 +376,7 @@ void Search::keyword(const string& key)
 		}
 		s = o->simplify();
 	}
-	else if (word.substr(0, sizeof(LU_KEYWORD_LANGUAGE)-1) == LU_KEYWORD_LANGUAGE)
+	else if (cfg.regroupable && word.substr(0, sizeof(LU_KEYWORD_LANGUAGE)-1) == LU_KEYWORD_LANGUAGE)
 	{
 		string lang(word, sizeof(LU_KEYWORD_LANGUAGE)-1, string::npos);
 		OrSearcher* o = new OrSearcher(criterea.dir);
