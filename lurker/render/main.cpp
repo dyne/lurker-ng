@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.12 2004-08-26 16:44:18 terpstra Exp $
+/*  $Id: main.cpp,v 1.13 2004-08-26 16:45:18 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -141,7 +141,7 @@ Request parse_request(const string& param)
 	else
 	{
 		out.options  = param.substr(0, dot2);
-		out.language = param.substr(dot2+1, 2);
+		out.language = param.substr(dot2+1, (dot1-dot2) - 1);
 		out.ext = param.substr(dot1+1, string::npos);
 	}
 	
