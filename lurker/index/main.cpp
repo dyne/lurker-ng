@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.25 2003-06-12 20:37:26 terpstra Exp $
+/*  $Id: main.cpp,v 1.26 2003-06-12 23:47:53 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -201,13 +201,13 @@ int index(const DwString& msg, long batch, bool check, bool compress)
 		int n;
 		for (n = 0; n < 4; ++n)
 		{
-			append.push_back((char)(crc & 0xFF));
+			append += ((char)(crc & 0xFF));
 			crc >>= 8;
 		}
 		unsigned long len = msg.length();
 		for (n = 0; n < 4; ++n)
 		{
-			append.push_back((char)(len & 0xFF));
+			append += ((char)(len & 0xFF));
 			len >>= 8;
 		}
 	}
