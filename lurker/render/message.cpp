@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.19 2003-06-25 16:48:23 terpstra Exp $
+/*  $Id: message.cpp,v 1.20 2003-06-25 17:23:38 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -46,6 +46,8 @@
 #include <Keys.h>
 
 #include <fstream>
+#include <unistd.h>
+#include <cstdio>
 
 #include "commands.h"
 #include "Threading.h"
