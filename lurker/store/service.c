@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.71 2002-06-15 18:18:33 terpstra Exp $
+/*  $Id: service.c,v 1.72 2002-06-15 21:35:31 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -43,7 +43,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <iconv.h>
-#include <regex.h>
 
 #define LU_PROTO_INDEX	20
 
@@ -63,27 +62,10 @@
 #define TOPMESSAGE_DOWN	'j'
 #define TOPMESSAGE_BOTH	'k'
 
-#define TOKEN_REG	"([A-Za-z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9])"
-#define HOST_REG	"((" TOKEN_REG "\\.)*" TOKEN_REG ")"
-#define USER_REG	"([A-Za-z0-9][a-zA-Z0-9._-]*[a-zA-Z0-9]|[a-zA-Z0-9])"
-#define FILE_REG	"([A-Za-z%~0-9:.,_-]*)"
-#define PATH_REG	"((/" FILE_REG ")*)"
-#define POST_REG	"([A-Za-z%~0-9.,_=/:;+\\&-]*)"
-#define PROTO_REG	"([a-zA-Z]+)"
-#define INDENT_REG	"([a-zA-Z]{0,4}[>:] )"
-
-#define URL_REG		"(" PROTO_REG "://" HOST_REG \
-				"("    PATH_REG ")?" \
-				"(#"   FILE_REG ")?" \
-				"(\\?" POST_REG ")?" \
-			")"
-
-#define EMAIL_REG	"(" USER_REG "@" HOST_REG "\\." TOKEN_REG ")"
-
-#define QUOTE_REG	"(\n" INDENT_REG "[^\n]*\n(" INDENT_REG "[^\n]*\n)*)"
-
-#define ASCII_ART_REG	"[^\n]*([ \t]{3,30}[^\n]*){2,20}"
-#define ASCII_PIC_REG	"(\n" ASCII_ART_REG "\n(" ASCII_ART_REG "\n)*)"
+extern void art_scan(const char** s, const char** e);
+extern void url_scan(const char** s, const char** e);
+extern void mailto_scan(const char** s, const char** e);
+extern void quote_scan(const char** s, const char** e);
 
 /*------------------------------------------------- Private types */
 
@@ -137,11 +119,6 @@ static const char* my_service_mime[] =
 	"image", "video", "model", "x-unknown"
 };
 	    
-static regex_t	url_reg;
-static regex_t	email_reg;
-static regex_t	quote_reg;
-static regex_t	ascii_pic_reg;
-
 /*------------------------------------------------- Private helper methods */
 
 static int my_service_buffer_init(
@@ -327,7 +304,7 @@ static int my_service_write_strl(
 			
 			start = buf+1;
 			break;
-			
+		
 		case '<':
 			if (my_service_buffer_writel(h, start, buf - start) != 0)
 				return -1;
@@ -607,141 +584,101 @@ static char* my_service_find_name(
 
 static int my_service_mailto(
 	My_Service_Handle	h,
-	char*			buf, 
+	const char*		buf, 
 	long			len)
 {
-	char		bk;
-	regmatch_t	match;
-	int		result;
+	const char* s = buf;
+	const char* e = buf+len;
 	
-	bk = buf[len];
-	buf[len] = 0;
+	const char* sp;
+	const char* ep;
 	
-	while ((result = regexec(&email_reg, buf, 1, &match, 0)) == 0)
+	while (sp = s, ep = e, mailto_scan(&sp, &ep), sp)
 	{
-		match.rm_eo -= match.rm_so;
+		if (my_service_write_strl   (h, s, sp-s)     != 0) return -1;
+		if (my_service_buffer_write (h, "<mailto>")  != 0) return -1;
+		if (my_service_buffer_writel(h, sp, ep-sp)   != 0) return -1;
+		if (my_service_buffer_write (h, "</mailto>") != 0) return -1;
 		
-		if (my_service_write_strl(h, buf, match.rm_so) != 0) return -1;
-		
-		buf += match.rm_so;
-		len -= match.rm_so;
-		
-		if (my_service_buffer_write (h, "<mailto>")       != 0) return -1;
-		if (my_service_buffer_writel(h, buf, match.rm_eo) != 0) return -1;
-		if (my_service_buffer_write (h, "</mailto>")      != 0) return -1;
-		
-		buf += match.rm_eo;
-		len -= match.rm_eo;
+		s = ep;
 	}
 	
-	if (my_service_write_strl(h, buf, len) != 0) return -1;
-	
-	buf[len] = bk;
+	if (my_service_write_strl(h, s, e-s) != 0) return -1;
 	return 0;
 }
 
 static int my_service_url(
 	My_Service_Handle	h,
-	char*			buf, 
+	const char*		buf, 
 	long			len)
 {
-	char		bk;
-	regmatch_t	match;
-	int		result;
+	const char* s = buf;
+	const char* e = buf+len;
 	
-	bk = buf[len];
-	buf[len] = 0;
+	const char* sp;
+	const char* ep;
 	
-	while ((result = regexec(&url_reg, buf, 1, &match, 0)) == 0)
+	while (sp = s, ep = e, url_scan(&sp, &ep), sp)
 	{
-		match.rm_eo -= match.rm_so;
+		if (my_service_mailto      (h, s, sp-s)   != 0) return -1;
+		if (my_service_buffer_write(h, "<url>")   != 0) return -1;
+		if (my_service_write_strl  (h, sp, ep-sp) != 0) return -1;
+		if (my_service_buffer_write(h, "</url>")  != 0) return -1;
 		
-		if (my_service_mailto(h, buf, match.rm_so) != 0) return -1;
-		
-		buf += match.rm_so;
-		len -= match.rm_so;
-		
-		if (my_service_buffer_write(h, "<url>")          != 0) return -1;
-		if (my_service_write_strl  (h, buf, match.rm_eo) != 0) return -1;
-		if (my_service_buffer_write(h, "</url>")         != 0) return -1;
-		
-		buf += match.rm_eo;
-		len -= match.rm_eo;
+		s = ep;
 	}
 	
-	if (my_service_mailto(h, buf, len) != 0) return -1;
-	
-	buf[len] = bk;
+	if (my_service_mailto(h, s, e-s) != 0) return -1;
 	return 0;
 }
 
 static int my_service_pic(
 	My_Service_Handle	h,
-	char*			buf, 
+	const char*		buf, 
 	long			len)
 {
-	char		bk;
-	regmatch_t	match;
-	int		result;
+	const char* s = buf;
+	const char* e = buf+len;
 	
-	bk = buf[len];
-	buf[len] = 0;
+	const char* sp;
+	const char* ep;
 	
-	while ((result = regexec(&ascii_pic_reg, buf, 1, &match, 0)) == 0)
+	while (sp = s, ep = e, art_scan(&sp, &ep), sp)
 	{
-		match.rm_eo -= match.rm_so;
+		if (my_service_url         (h, s, sp-s)   != 0) return -1;
+		if (my_service_buffer_write(h, "<art>")   != 0) return -1;
+		if (my_service_url         (h, sp, ep-sp) != 0) return -1;
+		if (my_service_buffer_write(h, "</art>")  != 0) return -1;
 		
-		if (my_service_url(h, buf, match.rm_so) != 0) return -1;
-		
-		buf += match.rm_so;
-		len -= match.rm_so;
-		
-		if (my_service_buffer_write(h, "<art>")          != 0) return -1;
-		if (my_service_url         (h, buf, match.rm_eo) != 0) return -1;
-		if (my_service_buffer_write(h, "</art>")         != 0) return -1;
-		
-		buf += match.rm_eo;
-		len -= match.rm_eo;
+		s = ep;
 	}
 	
-	if (my_service_url(h, buf, len) != 0) return -1;
-	
-	buf[len] = bk;
+	if (my_service_url(h, s, e-s) != 0) return -1;
 	return 0;
 }
 
 static int my_service_quote(
 	My_Service_Handle	h,
-	char*			buf, 
+	const char*		buf, 
 	long			len)
 {
-	char		bk;
-	regmatch_t	match;
-	int		result;
+	const char* s = buf;
+	const char* e = buf+len;
 	
-	bk = buf[len];
-	buf[len] = 0;
+	const char* sp;
+	const char* ep;
 	
-	while ((result = regexec(&quote_reg, buf, 1, &match, 0)) == 0)
+	while (sp = s, ep = e, quote_scan(&sp, &ep), sp)
 	{
-		match.rm_eo -= match.rm_so;
+		if (my_service_pic         (h, s, sp-s)    != 0) return -1;
+		if (my_service_buffer_write(h, "<quote>")  != 0) return -1;
+		if (my_service_pic         (h, sp, ep-sp)  != 0) return -1;
+		if (my_service_buffer_write(h, "</quote>") != 0) return -1;
 		
-		if (my_service_pic(h, buf, match.rm_so) != 0) return -1;
-		
-		buf += match.rm_so;
-		len -= match.rm_so;
-		
-		if (my_service_buffer_write(h, "<quote>")        != 0) return -1;
-		if (my_service_pic         (h, buf, match.rm_eo) != 0) return -1;
-		if (my_service_buffer_write(h, "</quote>")       != 0) return -1;
-		
-		buf += match.rm_eo;
-		len -= match.rm_eo;
+		s = ep;
 	}
 	
-	if (my_service_pic(h, buf, len) != 0) return -1;
-	
-	buf[len] = bk;
+	if (my_service_pic(h, s, e-s) != 0) return -1;
 	return 0;
 }
 
@@ -2591,41 +2528,6 @@ static int my_service_splash(
 
 int lu_service_init()
 {
-	int  error;
-	char buf[100];
-	
-	if ((error = regcomp(&url_reg,   URL_REG,   REG_EXTENDED)) != 0)
-	{
-		regerror(error, &url_reg, &buf[0], sizeof(buf));
-		fprintf(stderr, _("Unable to compile '%s': %s\n"), 
-			URL_REG, &buf[0]);
-		exit(1);
-	}
-	
-	if ((error = regcomp(&email_reg, EMAIL_REG, REG_EXTENDED)) != 0)
-	{
-		regerror(error, &email_reg, &buf[0], sizeof(buf));
-		fprintf(stderr, _("Unable to compile '%s': %s\n"), 
-			URL_REG, &buf[0]);
-		exit(1);
-	}
-	
-	if ((error = regcomp(&quote_reg, QUOTE_REG, REG_EXTENDED)) != 0)
-	{
-		regerror(error, &quote_reg, &buf[0], sizeof(buf));
-		fprintf(stderr, _("Unable to compile '%s': %s\n"), 
-			QUOTE_REG, &buf[0]);
-		exit(1);
-	}
-	
-	if ((error = regcomp(&ascii_pic_reg, ASCII_PIC_REG, REG_EXTENDED)) != 0)
-	{
-		regerror(error, &ascii_pic_reg, &buf[0], sizeof(buf));
-		fprintf(stderr, _("Unable to compile '%s': %s\n"), 
-			ASCII_PIC_REG, &buf[0]);
-		exit(1);
-	}
-	
 	return 0;
 }
 
@@ -2646,11 +2548,6 @@ int lu_service_close()
 
 int lu_service_quit()
 {
-	regfree(&url_reg);
-	regfree(&email_reg);
-	regfree(&quote_reg);
-	regfree(&ascii_pic_reg);
-	
 	return 0;
 }
 
