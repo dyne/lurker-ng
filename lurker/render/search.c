@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.18 2002-07-11 20:28:30 terpstra Exp $
+/*  $Id: search.c,v 1.19 2002-07-12 21:28:33 terpstra Exp $
  *  
  *  search.c - redirect search postings
  *  
@@ -40,7 +40,7 @@ const char redirect_error[] =
 "<title>301 Moved Permanently</title>\r\n"
 "</head><body>\r\n"
 "<h1>Moved Permanently</h1>\r\n"
-"The document has moved <a href=\"%s/search/0%%20%s.%s\">here</a>.\r\n"
+"The document has moved <a href=\"%s/search/0%%20%ld%%20%ld%s.%s\">here</a>.\r\n"
 "<p><hr>\r\n"
 "</body></html>\r\n";
 
@@ -141,6 +141,29 @@ static void extract_keyword(
 		&pump_keyword, w, 0);
 }
 
+static int extract_int(
+	const char* parameter, 
+	const char* field)
+{
+	const char* s;
+	
+	s = parameter-1;
+	do s = strstr(s+1, field);
+	while (s && s != parameter && *(s-1) != '&');
+	
+	if (s == 0)
+		return -1;
+	
+	/* skip the field */
+	s += strlen(field); 
+	
+	/* pass the = */
+	if (*s != '=') return -1;
+	s++;
+	
+	return atol(s);
+}
+
 int main(int argc, char** argv)
 {
 	char* uri = getenv("REQUEST_URI");
@@ -150,6 +173,10 @@ int main(int argc, char** argv)
 	char* e;
 	const char* s;
 	char* scratch;
+	int   tmp;
+	
+	time_t		start, end;
+	struct tm	tms;
 	
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -201,6 +228,26 @@ int main(int argc, char** argv)
 	extract_keyword(qs, &w, e, scratch, LU_KEYWORD_YEAR,         "year");
 	extract_keyword(qs, &w, e, scratch, LU_KEYWORD_LIST,         "list");
 	
+	start = time(0);
+	memcpy(&tms, localtime(&start), sizeof(struct tm));
+	tmp = extract_int(qs, "start-sec");  tms.tm_sec  = (tmp==-1)?0:tmp;
+	tmp = extract_int(qs, "start-min");  tms.tm_min  = (tmp==-1)?0:tmp;
+	tmp = extract_int(qs, "start-hour"); tms.tm_hour = (tmp==-1)?0:tmp;
+	tmp = extract_int(qs, "start-mday"); tms.tm_mday = (tmp==-1)?1:tmp;
+	tmp = extract_int(qs, "start-mon");  tms.tm_mon  = (tmp==-1)?0:tmp-1;
+	tmp = extract_int(qs, "start-year"); if (tmp!=-1) tms.tm_year = tmp-1900;
+	start = mktime(&tms);
+	
+	end = time(0);
+	memcpy(&tms, localtime(&end), sizeof(struct tm));
+	tmp = extract_int(qs, "end-sec");  tms.tm_sec  = (tmp==-1)?0:tmp;
+	tmp = extract_int(qs, "end-min");  tms.tm_min  = (tmp==-1)?0:tmp;
+	tmp = extract_int(qs, "end-hour"); tms.tm_hour = (tmp==-1)?0:tmp;
+	tmp = extract_int(qs, "end-mday"); tms.tm_mday = (tmp==-1)?1:tmp;
+	tmp = extract_int(qs, "end-mon");  tms.tm_mon  = (tmp==-1)?0:tmp-1;
+	tmp = extract_int(qs, "end-year"); if (tmp!=-1) tms.tm_year = tmp-1900;
+	end = mktime(&tms);
+	
 	/* Find the format */
 	w = qs-1;
 	do w = strstr(w+1, "format=");
@@ -214,9 +261,11 @@ int main(int argc, char** argv)
 	else	s = "xml";
 	
 	printf("Status: 303 Moved Permanently\r\n");
-	printf("Location: %s/search/0%s.%s\r\n", uri, &buf[0], s);
+	printf("Location: %s/search/0%%20%ld%%20%ld%s.%s\r\n", 
+		uri, (long)start, (long)end, &buf[0], s);
 	printf("Content-type: text/%s\r\n\r\n", s);
-	printf(&redirect_error[0], uri, &buf[3], s);
+	printf(&redirect_error[0], 
+		uri, (long)start, (long)end, &buf[0], s);
 	
 	return 0;
 }
