@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.14 2002-02-22 00:51:43 terpstra Exp $
+/*  $Id: mbox.c,v 1.15 2002-02-25 03:33:18 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -205,8 +205,9 @@ static int my_mbox_process_mbox(
 {
 	message_id		id;
 	struct Lu_Mbox_Message	m;
-	char*			author_name;
-	char			author_email[200];
+	char			decode_subj [200];
+	char			author_name [100];
+	char			author_email[100];
 	int			error;
 	
 	if (lu_mbox_map_message(mbox, &mbox->msg, mbox->length) != 0)
@@ -215,13 +216,33 @@ static int my_mbox_process_mbox(
 	if (lu_mbox_parse_message(&mbox->msg, &m) != 0)
 		return -1;
 	
-	author_name = "";
+	decode_subj [0] = 0;
+	author_name [0] = 0;
 	author_email[0] = 0;
 	
+	/* Ok, we prefer reply-to to from to sender.
+	 * However, often we have people with personal name in the from
+	 * field even though they specified a reply-to. We pick this in
+	 * preference.
+	 */
+	  	           	 		          
 	if (m.env->reply_to)
 	{
 		if (m.env->reply_to->personal)
-			author_name = m.env->reply_to->personal;
+		{
+			lu_common_decode_header(
+				m.env->reply_to->personal,
+				&author_name[0],
+				sizeof(author_name));
+		}
+		else if (m.env->from && m.env->from->personal)
+		{
+			lu_common_decode_header(
+				m.env->from->personal,
+				&author_name[0],
+				sizeof(author_name));
+		}
+		
 		if (m.env->reply_to->mailbox && m.env->reply_to->host)
 		{
 			snprintf(&author_email[0], sizeof(author_email),
@@ -232,7 +253,12 @@ static int my_mbox_process_mbox(
 	else if (m.env->from)
 	{
 		if (m.env->from->personal)
-			author_name = m.env->from->personal;
+		{
+			lu_common_decode_header(
+				m.env->from->personal,
+				&author_name[0],
+				sizeof(author_name));
+		}
 		if (m.env->from->mailbox && m.env->from->host)
 		{
 			snprintf(&author_email[0], sizeof(author_email),
@@ -243,7 +269,12 @@ static int my_mbox_process_mbox(
 	else if (m.env->sender)
 	{
 		if (m.env->sender->personal)
-			author_name = m.env->sender->personal;
+		{
+			lu_common_decode_header(
+				m.env->sender->personal,
+				&author_name[0],
+				sizeof(author_name));
+		}
 		if (m.env->sender->mailbox && m.env->sender->host)
 		{
 			snprintf(&author_email[0], sizeof(author_email),
@@ -251,14 +282,22 @@ static int my_mbox_process_mbox(
 				m.env->sender->host);
 		}
 	}
+	
+	if (m.env->subject)
+	{
+		lu_common_decode_header(
+			m.env->subject,
+			&decode_subj[0],
+			sizeof(decode_subj));
+	}
 		
 	id = lu_summary_import_message(
 		list->id, 
 		mbox->id, 
 		mbox->length, 
 		stamp,
-		m.env->subject, 
-		author_name, 
+		&decode_subj [0], 
+		&author_name [0],
 		&author_email[0]);
 
 	if (id == lu_common_minvalid)
