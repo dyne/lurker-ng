@@ -5,25 +5,50 @@
 <!-- xsl:import href="lang.xsl"/ -->
 <xsl:variable name="lang" select="'en'"/>
 
-<xsl:variable name="tree-context" select="'Thread Context'"/>
-<xsl:variable name="full-tree" select="'the complete thread tree sorted by date'"/>
-<xsl:variable name="appears-in" select="'Message appears on the following lists:'"/>
-<xsl:variable name="list-info" select="'List Info'"/>
-<xsl:variable name="near-message" select="'Messages Nearby'"/>
-<xsl:variable name="post-new" select="'Post New Thread'"/>
+<xsl:variable name="subject" select="'Subject'"/>
 <xsl:variable name="author" select="'Author'"/>
 <xsl:variable name="date" select="'Date'"/>
 <xsl:variable name="to" select="'To'"/>
 <xsl:variable name="cc" select="'CC'"/>
+
+<xsl:variable name="tree-context" select="'Thread Context'"/>
+<xsl:variable name="full-tree" select="'the complete thread tree sorted by date'"/>
+<xsl:variable name="appears-in" select="'Message appears on the following lists:'"/>
+<xsl:variable name="list-info" select="'Mailing List Info'"/>
+<xsl:variable name="near-message" select="'Nearby Messages'"/>
+<xsl:variable name="post-new" select="'Post New Thread'"/>
 <xsl:variable name="old-topics" select="'Old-Topics'"/>
 <xsl:variable name="new-topics" select="'New-Topics'"/>
+<xsl:variable name="raw-email" select="'Entire message'"/>
+
+<xsl:variable name="front-page" select="'Starting Page'"/>
+<xsl:variable name="search-menu" select="'Search the archive for matching messages'"/>
+<xsl:variable name="list" select="'List'"/>
+<xsl:variable name="group" select="'Group'"/>
+<xsl:variable name="all-lists" select="'Any mailing list'"/>
+<xsl:variable name="all-groups" select="'Any mailing list group'"/>
+<xsl:variable name="search" select="'Search'"/>
+
+<xsl:variable name="jan">January</xsl:variable>
+<xsl:variable name="feb">February</xsl:variable>
+<xsl:variable name="mar">March</xsl:variable>
+<xsl:variable name="apr">April</xsl:variable>
+<xsl:variable name="may">May</xsl:variable>
+<xsl:variable name="jun">June</xsl:variable>
+<xsl:variable name="jul">July</xsl:variable>
+<xsl:variable name="aug">August</xsl:variable>
+<xsl:variable name="sep">September</xsl:variable>
+<xsl:variable name="oct">October</xsl:variable>
+<xsl:variable name="nov">November</xsl:variable>
+<xsl:variable name="dec">December</xsl:variable>
 
 <xsl:variable name="unknown-address" select="'Someone'"/>
 <xsl:variable name="posted-at" select="' at '"/>
 <xsl:variable name="admin-by" select="'Administrated by:'"/>
 
 <xsl:variable name="lurker-url" select="'http://lurker.sourceforge.net/'"/>
-
+<xsl:variable name="last-date" select="'20380101.000000.00000000'"/>
+<xsl:variable name="jump-date" select="'20040101.000000.00000000'"/>
 
 <!-- Output control -->
 <xsl:variable name="ext" select="'html'"/>
@@ -115,6 +140,132 @@
 <xsl:template mode="tree" match="i"><xsl:call-template name="tree-link"/></xsl:template>
 <xsl:template mode="tree" match="j"><xsl:call-template name="tree-link"/></xsl:template>  
 <xsl:template mode="tree" match="k"><xsl:call-template name="tree-link"/></xsl:template>  
+
+
+<!-- Date fields -->
+<xsl:template name="option-range">
+ <xsl:param name="start"/>
+ <xsl:param name="last"/>
+ <xsl:param name="select"/>
+ <xsl:element name="option">
+  <xsl:attribute name="value"><xsl:value-of select="$start"/></xsl:attribute>
+  <xsl:if test="number($start) = number($select)">
+   <xsl:attribute name="selected">SELECTED</xsl:attribute>
+  </xsl:if>
+  <xsl:value-of select="$start"/>
+ </xsl:element>
+ <xsl:if test="$start &lt; $last">
+  <xsl:call-template name="option-range">
+   <xsl:with-param name="start"> <xsl:value-of select="$start+1"/></xsl:with-param>
+   <xsl:with-param name="last"> <xsl:value-of select="$last"/></xsl:with-param>
+   <xsl:with-param name="select"><xsl:value-of select="$select"/> </xsl:with-param>
+  </xsl:call-template>
+ </xsl:if>
+</xsl:template>
+<xsl:template name="hour-range">
+ <xsl:param name="start"/>
+ <xsl:param name="select"/>
+ <xsl:element name="option">
+  <xsl:attribute name="value"><xsl:value-of select="$start"/></xsl:attribute>
+  <xsl:if test="number($start) = number($select)">
+   <xsl:attribute name="selected">SELECTED</xsl:attribute>
+  </xsl:if>
+  <xsl:value-of select="$start"/>:00
+ </xsl:element>
+ <xsl:if test="$start &lt; 23">
+  <xsl:call-template name="hour-range">
+   <xsl:with-param name="start"> <xsl:value-of select="$start+1"/></xsl:with-param>
+   <xsl:with-param name="select"><xsl:value-of select="$select"/> </xsl:with-param>
+  </xsl:call-template>
+ </xsl:if>
+</xsl:template>
+<xsl:template name="date-fields">
+ <xsl:param name="date"/>
+ <input type="hidden" name="sec" value="substring($date,14,2)"/>
+ <input type="hidden" name="min" value="substring($date,12,2)"/>
+ <select name="hour">
+  <xsl:call-template name="hour-range">
+   <xsl:with-param name="start">0</xsl:with-param>
+   <xsl:with-param name="select" select="substring($date,10,2)"/>
+  </xsl:call-template>
+ </select>
+ <select name="mday">
+  <xsl:call-template name="option-range">
+   <xsl:with-param name="start">1</xsl:with-param>
+   <xsl:with-param name="last">31</xsl:with-param>
+   <xsl:with-param name="select" select="substring($date,7,2)"/>
+  </xsl:call-template>
+ </select>
+ <select name="mon">
+  <xsl:element name="option">
+   <xsl:attribute name="value">1</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 1"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$jan"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">2</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 2"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$feb"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">3</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 3"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$mar"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">4</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 4"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$apr"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">5</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 5"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$may"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">6</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 6"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$jun"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">7</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 7"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$jul"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">8</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 8"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$aug"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">9</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 9"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$sep"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">10</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 10"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$oct"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">11</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 11"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$nov"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">12</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 12"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+  <xsl:value-of select="$dec"/>
+  </xsl:element>
+ </select>
+ <select name="year">
+  <xsl:call-template name="option-range">
+   <xsl:with-param name="start">1990</xsl:with-param>
+   <xsl:with-param name="last">2004</xsl:with-param>
+   <xsl:with-param name="select" select="substring($date,1,4)"/>
+  </xsl:call-template>
+ </select>
+</xsl:template> 
 
 
 <!-- Common links -->

@@ -13,7 +13,7 @@
   </tr>
   <tr>
    <th nowrap="NOWRAP"><xsl:value-of select="$date"/>:</th>
-   <td><xsl:apply-templates select="summary" mode="date"/> UTC</td>
+   <td><xsl:apply-templates select="summary" mode="date"/>&#160;UTC</td>
   </tr>
   <xsl:if test="to">
    <tr>
@@ -66,7 +66,7 @@
  <table class="attachments">
   <tr><th align="left">Attachments</th></tr>
   <tr><td>
-   <a href="../mbox/{summary/id}.txt">rfc822</a><br/>
+   <a href="../mbox/{summary/id}.txt"><xsl:value-of select="$raw-email"/></a><br/>
    <xsl:apply-templates mode="attach" select="mime"/>
   </td></tr>
  </table>
@@ -103,16 +103,10 @@
 <!-- Format the mailing lists -->
 <xsl:template mode="appear-in" match="mbox">
  <tr>
-  <td nowrap="NOWRAP">
+  <td nowrap="NOWRAP" class="padded">
    <b><a name="{list/id}"><xsl:value-of select="list/email/@name"/></a></b><br/>
    <a href="../list/{list/id}.{$ext}"><xsl:value-of select="$list-info"/></a> |
    <a href="../mindex/{list/id}@{../summary/id}.{$ext}"><xsl:value-of select="$near-message"/></a>
-   <xsl:if test="list/email/@address">
-    |
-    <a href="mailto:{list/email/@address}">
-     <xsl:value-of select="$post-new"/>
-    </a>
-   </xsl:if>
   </td>
   <td align="left" width="50%">
    <xsl:choose>
@@ -144,7 +138,7 @@
 <xsl:template match="message">
  <html lang="{$lang}">
   <head>
-   <link rel="stylesheet" href="message.css" type="text/css"/>
+   <link rel="stylesheet" href="default.css" type="text/css"/>
    <title><xsl:value-of select="summary/subject"/></title>
   </head>
   <body>
@@ -156,7 +150,7 @@
         <xsl:value-of select="summary/subject"/>
        </h1>
       </td>
-      <td>
+      <td nowrap="NOWRAP">
        <h1>
         <xsl:apply-templates mode="splash-link" select="server"/>
        </h1>
@@ -215,7 +209,7 @@
     </table>
    </div>
    
-   <div class="message">
+   <div class="body">
     <table class="header">
      <tr>
       <td><xsl:call-template name="header-fields"/></td>
