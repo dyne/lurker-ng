@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.11 2002-07-22 11:04:23 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.12 2002-08-24 18:42:20 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -261,32 +261,29 @@ static int flush_buffer(Kap k, kptr kp)
 	return 0;
 }
 
+#define SWAP_HUNK(a, b, len, type) \
+while (len >= sizeof(type)) \
+{ \
+	tmp_##type = *((type*)a); \
+	*((type*)a) = *((type*)b); \
+	*((type*)b) = tmp_##type; \
+	\
+	a   += sizeof(type); \
+	b   += sizeof(type); \
+	len -= sizeof(type); \
+}
+
 static void swap_buf(unsigned char* a, unsigned char* b, size_t len)
 {
-	size_t tmp;
-	unsigned char tmp2;
+	long	tmp_long;
+	int	tmp_int;
+	short	tmp_short;
+	char	tmp_char;
 	
-	while (len >= sizeof(size_t))
-	{
-		tmp = *((size_t*)a);
-		*((size_t*)a) = *((size_t*)b);
-		*((size_t*)b) = tmp;
-		
-		len -= sizeof(size_t);
-		a   += sizeof(size_t);
-		b   += sizeof(size_t);
-	}
-	
-	while (len)
-	{
-		tmp2 = *a;
-		*a = *b;
-		*b = tmp2;
-		
-		len--;
-		a++;
-		b++;
-	}
+	SWAP_HUNK(a, b, len, long)
+	SWAP_HUNK(a, b, len, int)
+	SWAP_HUNK(a, b, len, short)
+	SWAP_HUNK(a, b, len, char)
 }
 
 /* Swap two records buffer locations.

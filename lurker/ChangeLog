@@ -14,6 +14,7 @@ v0.1e:
 	Display which replies are thread drift
 	Prettier arrows from Kevin Teague
 	Should compile on BSD again
+	Fixed alignment issue on ia64
 
 v0.1d:
 	Fixed an off by one error in btree.c (could assert-fail)
