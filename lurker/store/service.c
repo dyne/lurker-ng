@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.29 2002-02-25 06:10:38 terpstra Exp $
+/*  $Id: service.c,v 1.30 2002-02-25 07:06:49 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -446,7 +446,12 @@ static int my_service_dump(
 	{
 		/* Don't know this encoding - just dump the data anyways */
 		syslog(LOG_WARNING, "Unknown coding: %s\n", coding);
-		ic = iconv_open("utf-8", "iso-8859-1");
+		coding = "iso-8869-1";
+		ic = iconv_open("utf-8", coding);
+		
+		my_service_write_str(h, "\n*** WARNING: UNKNOWN CHARSET '");
+		my_service_write_str(h, coding);
+		my_service_write_str(h, "' FALLING BACK TO ISO-8869-1 ***\n");
 	}
 	
 	while (len)
@@ -465,7 +470,13 @@ static int my_service_dump(
 	
 	iconv_close(ic);
 	
-	if (len) return -1;
+	if (len)
+	{
+		my_service_write_str(h, "\n*** ERROR: BROKEN CHARSET '");
+		my_service_write_str(h, coding);
+		my_service_write_str(h, "' DURING DECODE ***\n");
+	}
+	
 	return 0;
 }
 
