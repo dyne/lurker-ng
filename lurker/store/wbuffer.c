@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.8 2002-06-24 11:50:44 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.9 2002-06-24 15:44:47 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that delays appends to the flatfile
  *  
@@ -275,9 +275,9 @@ static int my_swap_slot(my_wbuffer_kptr a, my_wbuffer_kptr b)
 	bs = my_wbuffer_kcache[b].slot;
 	
 	/* Make sure they will fit in their new homes */
-	if (my_wbuffer_scache[as].fill > my_wbuffer_scache[bs].size)
+	if (my_wbuffer_scache[as].fill >= my_wbuffer_scache[bs].size)
 		if (my_flush_buffer(a) != 0) return -1;
-	if (my_wbuffer_scache[bs].fill > my_wbuffer_scache[as].size)
+	if (my_wbuffer_scache[bs].fill >= my_wbuffer_scache[as].size)
 		if (my_flush_buffer(b) != 0) return -1;
 	
 	if (my_wbuffer_scache[as].fill > my_wbuffer_scache[bs].fill)
