@@ -25,26 +25,25 @@
  <xsl:variable name="cc">CC</xsl:variable>
  <xsl:variable name="irt">In-Reply-To</xsl:variable>
  <xsl:variable name="fus">Follow-Ups</xsl:variable>
+ <xsl:variable name="futs">New Topics</xsl:variable>
  <xsl:variable name="appearinmbox">Appearing in</xsl:variable>
  <xsl:variable name="mailbox">the mailbox</xsl:variable>
  <xsl:variable name="mailboxof">of</xsl:variable>
- <xsl:variable name="appearinlist">Appearing in</xsl:variable>
+ <xsl:variable name="appearinlist">List</xsl:variable>
  <xsl:variable name="theselists">these mailing lists</xsl:variable>
  <xsl:variable name="reply">reply</xsl:variable>
  
- <xsl:variable name="start-end">to</xsl:variable>
- <xsl:variable name="startdate">Later than</xsl:variable>
- <xsl:variable name="enddate">Earlier than</xsl:variable>
+ <xsl:variable name="startdate">Older than</xsl:variable>
  <xsl:variable name="date1">&#32;</xsl:variable>
  <xsl:variable name="date2">, </xsl:variable>
 
  <xsl:variable name="mess">Messages</xsl:variable>
  <xsl:variable name="message">message</xsl:variable>
- <xsl:variable name="threads">New Topics</xsl:variable>
+ <xsl:variable name="homepage">Home Page</xsl:variable>
 
  <xsl:variable name="splash">Front Page</xsl:variable>
- <xsl:variable name="threading">Discussion Tree</xsl:variable>
- <xsl:variable name="lists">Mailing-Lists Handled</xsl:variable>
+ <xsl:variable name="threading">Tree</xsl:variable>
+ <xsl:variable name="lists">Mailing-Lists</xsl:variable>
  <xsl:variable name="search">Search</xsl:variable>
 
  <xsl:variable name="all-da">Sun-Sat</xsl:variable>

@@ -7,21 +7,13 @@ lurker authors
 
 'Wesley W. Terpstra' <terpstra@users.sourceforge.net>
 	Concept and Design
-	Principal implementor of store/* and render/*
-	Built dependencies: libkap and reg2c
+	Programmer
+	Built dependencies: libesort and reg2c
 	Initial CSS/HTML XSLT
 	Build maintainer
 
 'Maxwell W. Terpstra' <terpstra2@users.sourceforge.net>
 	Fancier CSS/HTML layout
-
-'Maria Rivilis' <maria@users.sourceforge.net>
-	German translation
-	Russian translation (waiting)
-
-'Chris Bond' <cbond@users.sourceforge.net>
-	FreeBSD port
-	C-client integration
 
 'Atsushi Ikeda' <aikeda@users.sourceforge.net>
 	Japanese translation

@@ -1,9 +1,0 @@
-Options +ExecCGI
-AddHandler cgi-script .cgi
-
-AddType text/xml .xsl
-AddType text/xml .xml
-
-AddDefaultCharset utf-8
-
-ErrorDocument 404 @urldir@/lurker.cgi

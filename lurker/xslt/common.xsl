@@ -4,6 +4,11 @@
     xmlns:xf="http://www.w3.org/2002/08/xquery-functions"
     version="1.0">
 
+<!-- Jump to useful dates -->
+<xsl:variable name="last-date">20380101.000000.00000000</xsl:variable>
+<xsl:variable name="jump-date">20040101.000000</xsl:variable>
+<xsl:variable name="first-date">19700101.000001.00000000</xsl:variable>
+
 <!-- Truncate long strings -->
 
 <xsl:template name="truncate">
@@ -28,7 +33,7 @@
  <xsl:param name="select"/>
  <xsl:element name="option">
   <xsl:attribute name="value"><xsl:value-of select="$start"/></xsl:attribute>
-  <xsl:if test="$start = $select">
+  <xsl:if test="number($start) = number($select)">
    <xsl:attribute name="selected">SELECTED</xsl:attribute>
   </xsl:if>
   <xsl:value-of select="$start"/>
@@ -41,6 +46,115 @@
   </xsl:call-template>
  </xsl:if>
 </xsl:template>
+
+<xsl:template name="hour-range">
+ <xsl:param name="start"/>
+ <xsl:param name="select"/>
+ <xsl:element name="option">
+  <xsl:attribute name="value"><xsl:value-of select="$start"/></xsl:attribute>
+  <xsl:if test="$start = $select">
+   <xsl:attribute name="selected">SELECTED</xsl:attribute>
+  </xsl:if>
+  <xsl:value-of select="$start"/>:00
+ </xsl:element>
+ <xsl:if test="$start &lt; 23">
+  <xsl:call-template name="hour-range">
+   <xsl:with-param name="start"> <xsl:value-of select="$start+1"/></xsl:with-param>
+   <xsl:with-param name="select"><xsl:value-of select="$select"/> </xsl:with-param>
+  </xsl:call-template>
+ </xsl:if>
+</xsl:template>
+
+<xsl:template name="date-fields">
+ <xsl:param name="date"/>
+ 
+ <input type="hidden" name="sec" value="59"/>
+ <input type="hidden" name="min" value="59"/>
+ <select name="hour">
+  <xsl:call-template name="hour-range">
+   <xsl:with-param name="start">0</xsl:with-param>
+   <xsl:with-param name="select" select="substring($date,10,2)"/>
+  </xsl:call-template>
+ </select>
+ <select name="mday">
+  <xsl:call-template name="option-range">
+   <xsl:with-param name="start">1</xsl:with-param>
+   <xsl:with-param name="last">31</xsl:with-param>
+   <xsl:with-param name="select" select="substring($date,7,2)"/>
+  </xsl:call-template>
+ </select>
+ <xsl:value-of select="$date1"/>
+ <select name="mon">
+  <xsl:element name="option">
+   <xsl:attribute name="value">1</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 1"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$jan"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">2</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 2"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$feb"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">3</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 3"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$mar"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">4</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 4"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$apr"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">5</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 5"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$may"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">6</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 6"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$jun"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">7</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 7"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$jul"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">8</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 8"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$aug"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">9</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 9"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$sep"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">10</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 10"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$oct"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">11</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 11"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+   <xsl:value-of select="$nov"/>
+  </xsl:element>
+  <xsl:element name="option">
+   <xsl:attribute name="value">12</xsl:attribute>
+   <xsl:if test="substring($date,5,2) = 12"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+  <xsl:value-of select="$dec"/>
+  </xsl:element>
+ </select>
+ <xsl:value-of select="$date2"/>
+ <select name="year">
+  <xsl:call-template name="option-range">
+   <xsl:with-param name="start">1990</xsl:with-param>
+   <xsl:with-param name="last">2004</xsl:with-param>
+   <xsl:with-param name="select" select="substring($date,1,4)"/>
+  </xsl:call-template>
+ </select>
+</xsl:template> 
 
 <!-- Escape URIs -->
 
@@ -215,9 +329,7 @@
   <xsl:call-template name="email-cut"/>
 </xsl:template>
 
-<xsl:template match="email[@address]" mode="list">
- <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text><br/></xsl:if>
-
+<xsl:template match="email[@address]" mode="long">
  <xsl:element name="a">
   <xsl:attribute name="href">
    <xsl:text>mailto:</xsl:text>
@@ -227,36 +339,44 @@
  </xsl:element>
 </xsl:template>
 
+<xsl:template match="email" mode="long">
+  <xsl:call-template name="email-simple"/>
+</xsl:template>
+
 <xsl:template match="email" mode="list">
  <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text><br/></xsl:if>
- <xsl:call-template name="email-simple"/>
+ <xsl:apply-templates select="." mode="long"/>
 </xsl:template>
+
+<!-- Format dates -->
+
+<xsl:template name="summary-date" match="summary" mode="date">
+ <xsl:value-of select="substring(id,1,4)"/>
+ <xsl:text>-</xsl:text>
+ <xsl:value-of select="substring(id,5,2)"/>
+ <xsl:text>-</xsl:text>
+ <xsl:value-of select="substring(id,7,2)"/>
+ <xsl:text>&#160;</xsl:text>
+ <xsl:value-of select="substring(id,10,2)"/>
+ <xsl:text>:</xsl:text>
+ <xsl:value-of select="substring(id,12,2)"/>
+</xsl:template>
+
 
 
 <!-- Format summary lists -->
 
-<xsl:template name="msg-thread">
- <xsl:param name="alt" select="$malt"/>
- 
+<xsl:template name="msg-img">
+ <xsl:param name="alt"/>
+ <xsl:param name="img"/>
+ <xsl:param name="class"/>
+ <xsl:param name="sum"/>
+
  <xsl:element name="a">
   <xsl:attribute name="class">thm</xsl:attribute>
   <xsl:attribute name="href">
    <xsl:text>../message/</xsl:text>
-   <xsl:call-template name="my-escape-uri">
-    <xsl:with-param name="str">
-     <xsl:choose>
-      <xsl:when test="summary">
-       <xsl:value-of select="summary/mid"/>
-      </xsl:when>
-      <xsl:when test="ancestor::snippet">
-       <xsl:value-of select="descendant::snippet/mid"/>
-      </xsl:when>
-      <xsl:when test="ancestor::summary">
-       <xsl:value-of select="ancestor::summary/mid"/>
-      </xsl:when>
-     </xsl:choose>
-    </xsl:with-param>
-   </xsl:call-template>
+   <xsl:apply-templates select="$sum" mode="id"/>
    <xsl:text>.</xsl:text>
    <xsl:value-of select="$ext"/>
   </xsl:attribute>
@@ -267,34 +387,35 @@
    </xsl:attribute>
    
    <xsl:attribute name="title">
-    <xsl:choose>
-     <xsl:when test="summary">
-      <xsl:apply-templates select="summary" mode="post"/>
-     </xsl:when>
-     <xsl:when test="ancestor::snippet">
-      <xsl:apply-templates select="descendant::snippet" mode="post"/>
-     </xsl:when>
-     <xsl:when test="ancestor::summary">
-      <xsl:apply-templates select="ancestor::summary" mode="post"/>
-     </xsl:when>
-    </xsl:choose>
+    <xsl:apply-templates select="$sum" mode="post"/>
    </xsl:attribute>
    
    <xsl:attribute name="src">
     <xsl:text>../imgs/</xsl:text>
-    <xsl:value-of select="local-name(.)"/>
+    <xsl:value-of select="$img"/>
     <xsl:text>.png</xsl:text>
    </xsl:attribute>
    
    <xsl:attribute name="class">
-    <xsl:choose>
-     <xsl:when test="@selected">selected</xsl:when>
-     <xsl:when test="@drift">drift</xsl:when>
-     <xsl:otherwise>normal</xsl:otherwise>
-    </xsl:choose>
+    <xsl:value-of select="$class"/>
    </xsl:attribute>
   </xsl:element>
  </xsl:element>
+</xsl:template>
+
+<xsl:template name="msg-thread">
+ <xsl:variable name="drawid" select="@id"/>
+ <xsl:call-template name="msg-img">
+  <xsl:with-param name="alt" select="$malt"/>
+  <xsl:with-param name="img" select="local-name(.)"/>
+  <xsl:with-param name="class">
+   <xsl:choose>
+    <xsl:when test="@selected">selected</xsl:when>
+    <xsl:otherwise>normal</xsl:otherwise>
+   </xsl:choose>
+  </xsl:with-param>
+  <xsl:with-param name="sum" select="../../summary[id=$drawid]"/>
+ </xsl:call-template>
 </xsl:template>
 
 <xsl:template match="a"><img alt="." src="../imgs/a.png"/></xsl:template>
@@ -310,41 +431,37 @@
 <xsl:template match="k"><xsl:call-template name="msg-thread"/></xsl:template>
 <xsl:template match="br"><xsl:if test="not(ancestor::art)"><br/></xsl:if></xsl:template>
 
-<xsl:template match="summary">
+<xsl:template match="row">
  <xsl:element name="tr">
-  <xsl:if test="(position() mod 2) = 0">
-   <xsl:attribute name="class">row1</xsl:attribute>
-  </xsl:if>
-  <xsl:if test="(position() mod 2) = 1">
-   <xsl:attribute name="class">row2</xsl:attribute>
-  </xsl:if>
+  <xsl:attribute name="class">
+   <xsl:choose>
+    <xsl:when test="@selected">lit</xsl:when>
+    <xsl:when test="(position() mod 2) = 0">row1</xsl:when>
+    <xsl:otherwise>row2</xsl:otherwise>
+   </xsl:choose>
+  </xsl:attribute>
+
   <td nowrap="NOWRAP">
    <a name="{id}"/>
-   <xsl:if test="draw"><xsl:apply-templates select="draw"/></xsl:if>
-   <xsl:if test="not(draw)">
-    <a href="../thread/{thread}.{$ext}">
+   
+   <xsl:if test="tree"><xsl:apply-templates select="tree"/></xsl:if>
+   
+   <xsl:if test="not(tree)">
+    <a href="../thread/{summary/id}.{$ext}">
      <img src="../imgs/tree.png" alt="{$threading}"/>
     </a>
     &#160;
-    <xsl:element name="a">
-     <xsl:attribute name="href">
-      <xsl:text>../message/</xsl:text>
-      <xsl:call-template name="my-escape-uri">
-       <xsl:with-param name="str" select="mid"/>
-      </xsl:call-template>
-      <xsl:text>.</xsl:text>
-      <xsl:value-of select="$ext"/>
-     </xsl:attribute>
-     
-     <xsl:call-template name="truncate">
+    <a href="../message/{summary/id}.{$ext}">
+     <xsl:call-template name="truncate"> 
       <xsl:with-param name="length">50</xsl:with-param>
-      <xsl:with-param name="string"><xsl:value-of select="subject"/></xsl:with-param>
+      <xsl:with-param name="string"><xsl:value-of select="summary/subject"/></xsl:with-param>
      </xsl:call-template>
-    </xsl:element>
+    </a>
    </xsl:if>
   </td>
-  <td nowrap="NOWRAP"><xsl:apply-templates select="email"/></td>
-  <td nowrap="NOWRAP"><xsl:value-of select="time"/></td>
+  
+  <td nowrap="NOWRAP"><xsl:apply-templates select="summary/email"/></td>
+  <td nowrap="NOWRAP"><xsl:apply-templates select="summary" mode="date"/></td>
  </xsl:element>
 </xsl:template>
 
@@ -356,34 +473,22 @@
  <xsl:apply-templates select="email" mode="simple"/>
  <xsl:value-of select="$post2"/>
  <xsl:text> </xsl:text>
- <xsl:value-of select="time"/>
+ <xsl:apply-templates select="." mode="date"/>
 </xsl:template>
 
 <xsl:template match="summary" mode="post">
  <xsl:call-template name="summary-post"/>
 </xsl:template>
 
+<xsl:template match="summary" mode="id">
+ <xsl:value-of select="id"/>
+</xsl:template>
+
 <xsl:template match="summary" mode="list">
  <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text><br/></xsl:if>
- <xsl:element name="a">
-  <xsl:attribute name="href">
-   <xsl:text>../message/</xsl:text>
-   <xsl:call-template name="my-escape-uri">
-    <xsl:with-param name="str" select="mid"/>
-   </xsl:call-template>
-   <xsl:text>.</xsl:text>
-   <xsl:value-of select="$ext"/>
-  </xsl:attribute>
-  
-  <xsl:attribute name="class">
-   <xsl:if test="thread-head">
-    <xsl:text>drift</xsl:text>
-   </xsl:if>
-  </xsl:attribute>
-  
+ <a href="../message/{id}.{$ext}">
   <xsl:call-template name="summary-post"/>
-  <xsl:if test="drift"> (drifted)</xsl:if>
- </xsl:element>
+ </a>
 </xsl:template>
 
 

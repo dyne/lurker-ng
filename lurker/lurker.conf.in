@@ -10,99 +10,27 @@ list_host     = demo-server.org
 admin_name    = Unconfigured
 admin_address = nill@bitbucket.org
 
-
-
-
-####################### These settings probably don't need to be changed.
-
-# These are path settings which will probably have been set correctly to
-# match what lurker was configured with.
-
-# The pid file is written out by lurker if it is run in undetached mode.
-# Lurker does not check to see if another lurker process is running, instead
-# this is left up to programs like start-stop-daemon.
-pidfile = @LOCALSTATEDIR_expand@/run/@PACKAGE@d.pid
+# The command to invoke to transform xml into html.
+# This command is fed xml via stdin and expected to produce on stdout.
+xslt	= xsltproc fmt/render-html.xsl -
 
 # The directory where lurker will keep it's database information.
-# The domain socket used to communicate with the CGI is also placed here.
-# If you change this value from it's default of
-#   @DBDIR_expand@
-#  then you must also add it to the cgi error-document handler in your
-#  .htaccess, like: ErrorDocument 404 lurker.cgi?/the/new/db/dir
-dbdir   = @DBDIR_expand@
+dbdir   = @VARDIR@/lib/@PACKAGE_NAME@
 
-# The directory relative to which lurker finds mailbox files.
-maildir = /
-
-# These are some cache settings that control how web content is cached to
-# minimize CPU utilization and decrease page load times.
-
-# This option specifies what the largest file size (in bytes) we will cache
-# is. Because the purpose of the cache is to reduce CPU usage, and large
-# files consume CPU cycles to serve, there is little savings in caching
-# large files. They would merely be a waste of on-disk storage.
-cache_cutoff = 65536
-
-# These options specify the maximum amount of files and storage lurker is
-# allowed to leave cached in the wwwdir at a given time.
-cache_files = 4096
-cache_size  = 8388608
-
-# These specify the time to live (in seconds) of cache files for various
-# page types. Bear in mind that pages can become invalidated by imports and
-# so should have reasonably short time to live. However, pages recently
-# accessed are quite likely to be hit again (imagine: slashdot). So, cache
-# can pay off quite wonderfully. Index pages should not need to ever be
-# invalidated except for space reclamation since lurker kills them when they
-# change.
-cache_search_ttl  = 600
-cache_message_ttl = 600
-cache_index_ttl   = 604800
-
-
-
-
-
-
-
-#!!!!!!!!!!!!!!!!!!!!!!!!! Change below this point !!!!!!!!!!!!!!!!!!!!!!
-
-# Now comes configuration for the mailing lists lurker is to host.
-#
-# Once lurker has indexed a mailbox, you can never take it away short of
-# reimporting the database. Also, if you want to add a new list, you will
-# not be able to add history without squashing all the timestamps to the
-# current time.
-#
-# What this means: you should give all the history for all the mailing lists
-# you intend to use, then start the import. If you create new mailing lists,
-# no problem---just make sure that you tell lurker about them before they
-# start generating mail or their timestamps may become mangled.
+# Now comes configuration for the mailing lists lurker is host
 # 
-# Finally, each mbox must be given a distinct id which is never changed or
-# reused within the specified list.
+# Once lurker has been configured to use a list, you must never take it
+# away. If you do, you must purge the database (rm -rf) and start over.
 # 
-# You must also ensure that these mboxes are only appended to.
-#
-# The mboxes must never be modified in any other than append.
-# This means you should NEVER OPEN THEM WITH A MAIL READER
-#  --- even just to examine them; mail readers change mailboxs on OPEN.
-#
-# You may move the mboxes as long as you update the path given here.
+# The list 'id' should be short as it occures in urls and the database.
+# The 'id' (devel in the example) will also be the name of the lurker mbox.
 #
 # Here is an example:
 #
-# list = Debian-Devel
-# 	description = Debian Developer Discussion Forum
+# list = devel
+#       title       = Debian-Devel
 # 	address     = debian-devel@lists.debian.org
-#	
-# 	mbox 20101 = /var/mail/history/archive.00020101
-# 	mbox 20102 = /var/mail/history/archive.00020102
-# 	mbox inbox = /var/spool/mail/debian-devel
-
-# Include the lurker documentation
-list = Lurker-Support
-	description = Example mailing list configuration
-	address     = lurker-users@lists.sourceforge.net
-
-	mbox initial = @DATADIR_expand@/doc/@PACKAGE@/lurker.mbox
+#	link        = http://www.debian.org/MailingLists/subscribe
+# 	description = Debian Developer Discussion Forum. Here you can find
+#	              why your favourite package broke. Also, general
+#	              direction is discussed.

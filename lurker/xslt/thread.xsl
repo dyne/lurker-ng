@@ -9,27 +9,27 @@
 
 <xsl:template match="thread" mode="body">
  <h2>
-  <xsl:value-of select="summary/subject"/>
+  <xsl:value-of select="row/summary/subject"/>
  </h2>
  
  <table width="100%" cellspacing="0" cellpadding="0" id="threadOut">
   <tr class="thRow">
    <th align="left"><xsl:value-of select="$threading"/></th>
    <th align="left"><xsl:value-of select="$author"/></th>
-   <th align="left"><xsl:value-of select="$date"/></th>
+   <th align="left"><xsl:value-of select="$date"/> (UTC)</th>
   </tr>
-  <xsl:apply-templates select="summary"/>
+  <xsl:apply-templates select="row"/>
  </table>
 
  <hr/>
  
- <form action="../lurker-search.cgi" id="smSearch">
+ <form action="../keyword.cgi" id="smSearch">
   <input type="hidden" name="format" value="{$ext}"/>
-  <input type="text"   name="query"  value="th:{id} " class="longtext"/>
+  <input type="text"   name="query"  value="th:{hash} " class="longtext"/>
   <input type="submit" name="submit" value="{$search}!"/>
   <br/>
   <xsl:value-of select="$useTh1"/>
-  <b>th:<xsl:value-of select="id"/></b>
+  <b>th:<xsl:value-of select="hash"/></b>
   <xsl:value-of select="$useTh2"/>
  </form> 
 </xsl:template>

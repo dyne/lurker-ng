@@ -1,0 +1,34 @@
+SubDir TOP xslt ;
+
+InstallFile $(VARDIR)/www/$(PACKAGE) : 
+	browserdetect.js
+	index.html
+	;
+
+InstallFile $(VARDIR)/www/$(PACKAGE)/fmt :
+	basic.css
+	common.xsl
+	deutsch.xsl
+	english.xsl
+	error.xsl
+	japanese.xsl
+	message.xsl
+	mindex.xsl
+	redirect.xsl
+	render-html.xsl
+	render.xsl
+	search.xsl
+	splash.xsl
+	thread.xsl
+	;
+
+InstallFile $(VARDIR)/www/$(PACKAGE)/attach  : stub ;
+InstallFile $(VARDIR)/www/$(PACKAGE)/mbox    : stub ;
+InstallFile $(VARDIR)/www/$(PACKAGE)/message : stub ;
+InstallFile $(VARDIR)/www/$(PACKAGE)/mindex  : stub ;
+InstallFile $(VARDIR)/www/$(PACKAGE)/search  : stub ;
+InstallFile $(VARDIR)/www/$(PACKAGE)/splash  : stub ;
+InstallFile $(VARDIR)/www/$(PACKAGE)/thread  : stub ;
+
+#SoftLink $(VARDIR)/www/$(PACKAGE)/xslt/lang.xsl : english.xsl ;
+#SoftLink $(VARDIR)/www/$(PACKAGE)/xslt/default.css : basic.css ;

@@ -5,147 +5,86 @@
 
 <!-- Format the navigation graphics -->
 
-<xsl:template match="prev">
- <xsl:call-template name="msg-thread">
-  <xsl:with-param name="alt" select="'&lt;-'"/>
- </xsl:call-template>
-</xsl:template>
-
-<xsl:template match="next">
- <xsl:call-template name="msg-thread">
-  <xsl:with-param name="alt" select="'-&gt;'"/>
- </xsl:call-template>
-</xsl:template>
-
 <xsl:template name="navigate-fields">
  <div align="right">
 
   <!-- Draw the prev link - otherwise, draw an image with the same size -->
-  <xsl:if test="threading/prev">
-   <xsl:apply-templates select="threading/prev"/>
-  </xsl:if>
-  <xsl:if test="not(threading/prev)">
-   <img src="../imgs/a.png" alt=".."/>
-  </xsl:if>
-
-  &#160;&#160;
-
   <xsl:choose>
-   <xsl:when test="email[@address] or list/email[@address]">
-    <xsl:element name="a">
-     <xsl:attribute name="href">
-      <xsl:text>mailto:</xsl:text>
-      
-      <xsl:choose>
-       <xsl:when test="email[@address]">
-        <xsl:apply-templates select="email" mode="mailto"/>
-        <xsl:text>?</xsl:text>
-        
-        <xsl:if test="list/email[@address]">
-         <xsl:text>CC=</xsl:text>
-         <xsl:for-each select="list/email[@address]">
-          <xsl:call-template name="email-mailto"/>
-          <xsl:if test="position() != last()">%2C%20</xsl:if>
-         </xsl:for-each>
-         <xsl:text>&amp;</xsl:text>
-        </xsl:if>
-       </xsl:when>
-       
-       <xsl:otherwise>
-         <xsl:for-each select="list/email[@address]">
-          <xsl:call-template name="email-mailto"/>
-          <xsl:if test="position() != last()">%2C%20</xsl:if>
-         </xsl:for-each>
-         <xsl:text>?</xsl:text>
-       </xsl:otherwise>
-      </xsl:choose>
-      
-      <xsl:text>Subject=</xsl:text>
-      <xsl:call-template name="my-escape-uri">
-       <xsl:with-param name="str">
-        <xsl:choose>
-         <xsl:when test="subject">
-          <xsl:if test="not(contains(subject, ':'))">
-           <xsl:text>Re: </xsl:text>
-          </xsl:if>
-          <xsl:call-template name="email-header">
-           <xsl:with-param name="str" select="subject"/>
-           <xsl:with-param name="charset" select="$subject-allow"/>
-          </xsl:call-template>
-         </xsl:when>
-         <xsl:otherwise>
-          <xsl:text>Re: No Subject</xsl:text>
-         </xsl:otherwise>
-        </xsl:choose>
-       </xsl:with-param>
-      </xsl:call-template>
-      
-      <xsl:text>&amp;References=</xsl:text>
-      <xsl:call-template name="my-escape-uri">
-       <xsl:with-param name="str" select="mid"/>
-      </xsl:call-template>
-      
-      <xsl:text>&amp;In-Reply-To=</xsl:text>
-      <xsl:call-template name="my-escape-uri">
-       <xsl:with-param name="str" select="mid"/>
-      </xsl:call-template>
-     </xsl:attribute>
-     
-     <xsl:text>(</xsl:text>
-     <xsl:value-of select="$reply"/>
-     <xsl:text>)</xsl:text>
-    </xsl:element>
+   <xsl:when test="threading/prev">
+    <xsl:call-template name="msg-img">
+     <xsl:with-param name="alt" select="'&lt;-'"/>
+     <xsl:with-param name="img" select="'prev'"/>
+     <xsl:with-param name="class" select="'normal'"/>
+     <xsl:with-param name="sum" select="threading/prev/summary"/>
+    </xsl:call-template>
    </xsl:when>
    <xsl:otherwise>
-    <span class="na">(<xsl:value-of select="$reply"/>)</span>
+    <img src="../imgs/a.png" alt=".."/>
    </xsl:otherwise>
   </xsl:choose>
 
   &#160;&#160;
+  <a href="../thread/{summary/id}.{$ext}">(tree)</a>
+  &#160;&#160;
 
   <!-- Draw the next link - otherwise, draw an image with the same size -->
-  <xsl:if test="threading/next">
-   <xsl:apply-templates select="threading/next"/>
-  </xsl:if>
-  <xsl:if test="not(threading/next)">
-   <img src="../imgs/a.png" alt=".."/>
-  </xsl:if>
+  <xsl:choose>
+   <xsl:when test="threading/next">
+    <xsl:call-template name="msg-img">
+     <xsl:with-param name="alt" select="'-&gt;'"/>
+     <xsl:with-param name="img" select="'next'"/>
+     <xsl:with-param name="class" select="'normal'"/>
+     <xsl:with-param name="sum" select="threading/next/summary"/>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:otherwise>
+    <img src="../imgs/a.png" alt=".."/>
+   </xsl:otherwise>
+  </xsl:choose>
  </div>
+ 
  <hr id="snippit"/>
- <xsl:apply-templates select="threading/snippet"/>
+ <xsl:for-each select="threading/snippet/tree">
+  <xsl:apply-templates/><br/>
+ </xsl:for-each>
 </xsl:template>
 
 
 <!-- Format mailing list information -->
 
-<xsl:template match="list" mode="message">
+<xsl:template match="mbox" mode="message">
  <xsl:if test="position() != 1">, </xsl:if>
 
- <a href="../mindex/{string(floor(number(offset) div 20)*20)}@{id}.{$ext}#{../id}">
-  <xsl:value-of select="email/@name"/>
-  <xsl:text>&#160;&#8722;&#160;</xsl:text>
-  <xsl:value-of select="$message"/>
-  <xsl:text>&#160;</xsl:text>
-  <xsl:text>#</xsl:text>
-  <xsl:value-of select="offset"/>
+ <a href="../mindex/{list/id}@{/message/summary/id}.{$ext}">
+  <xsl:value-of select="list/email/@name"/>
  </a>
  <xsl:text>&#160;</xsl:text>
 
  <!-- Draw the prev link - otherwise, draw an image with the same size -->
- <xsl:if test="prev">
-  <xsl:apply-templates select="prev"/>
- </xsl:if>
- <xsl:if test="not(prev)">
-  <img src="../imgs/a.png" alt=".."/>
- </xsl:if>
+ <xsl:choose>
+  <xsl:when test="prev">
+   <xsl:call-template name="msg-img">
+    <xsl:with-param name="alt" select="'&lt;-'"/>
+    <xsl:with-param name="img" select="'prev'"/>
+    <xsl:with-param name="class" select="'normal'"/>
+    <xsl:with-param name="sum" select="prev"/>
+   </xsl:call-template>
+  </xsl:when>
+  <xsl:otherwise><img src="../imgs/a.png" alt=".."/></xsl:otherwise>
+ </xsl:choose>
  
  <!-- Draw the next link - otherwise, draw an image with the same size -->
- <xsl:if test="next">
-  <xsl:apply-templates select="next"/>
- </xsl:if>
- <xsl:if test="not(next)">
-  <img src="../imgs/a.png" alt=".."/>
- </xsl:if>
+ <xsl:choose>
+  <xsl:when test="next">
+   <xsl:call-template name="msg-img">
+    <xsl:with-param name="alt" select="'-&gt;'"/>
+    <xsl:with-param name="img" select="'next'"/>
+    <xsl:with-param name="class" select="'normal'"/>
+    <xsl:with-param name="sum" select="next"/>
+   </xsl:call-template>
+  </xsl:when>
+  <xsl:otherwise><img src="../imgs/a.png" alt=".."/></xsl:otherwise>
+ </xsl:choose>
 </xsl:template>
 
 <!-- Format headers for the message -->
@@ -155,15 +94,13 @@
   <tr>
    <th nowrap="NOWRAP"><xsl:value-of select="$author"/>:</th>
    <td>
-    <xsl:if test="email"><xsl:apply-templates select="email" mode="list"/></xsl:if>
-    <xsl:if test="not(email)"><xsl:value-of select="$unknown"/></xsl:if>
+    <xsl:apply-templates select="summary/email" mode="list"/>
    </td>
   </tr>
   <tr>
    <th nowrap="NOWRAP"><xsl:value-of select="$date"/>:</th>
    <td>
-    <xsl:if test="time"><xsl:value-of select="time"/></xsl:if>
-    <xsl:if test="not(time)"><xsl:value-of select="$unknown"/></xsl:if>
+    <xsl:apply-templates select="summary" mode="date"/> UTC
    </td>
   </tr>
   <tr>
@@ -181,6 +118,9 @@
   </xsl:if>
   <xsl:if test="threading/replies">
    <tr><th nowrap="NOWRAP"><xsl:value-of select="$fus"/>:</th> <td><xsl:apply-templates mode="list" select="threading/replies/summary"/></td></tr>
+  </xsl:if>
+  <xsl:if test="threading/drift">
+   <tr><th nowrap="NOWRAP"><xsl:value-of select="$futs"/>:</th> <td><xsl:apply-templates mode="list" select="threading/drift/summary"/></td></tr>
   </xsl:if>
  </table>
 </xsl:template>
@@ -228,7 +168,7 @@
  <xsl:text>@</xsl:text>
  
  <xsl:call-template name="my-escape-uri">
-  <xsl:with-param name="str" select="/message/mid"/>
+  <xsl:with-param name="str" select="/message/summary/id"/>
  </xsl:call-template>
  
  <xsl:choose>
@@ -272,54 +212,48 @@
 
 
 <xsl:template match="message" mode="title">
- <xsl:value-of select="list/email/@name"/> -
- <xsl:value-of select="subject"/>
+ <xsl:value-of select="mbox/list/email/@name"/> -
+ <xsl:value-of select="summary/subject"/>
 </xsl:template>
 
 <xsl:template match="message" mode="body">
  <h2>
-  <a href="../thread/{thread}.{$ext}#{id}">
+  <a href="../thread/{summary/id}.{$ext}#{summary/id}">
    <img src="../imgs/tree.png" alt="{$threading}:"/>
    <xsl:text>&#160;</xsl:text>
-   <xsl:value-of select="subject"/>
+   <xsl:value-of select="summary/subject"/>
   </a>
  </h2>
 
- <xsl:if test="threading/snippet/@cols &gt; 8">
-  <xsl:call-template name="navigate-fields"/>
-  <hr/>
-  <xsl:call-template name="header-fields"/>
- </xsl:if>
- <xsl:if test="not(threading/snippet/@cols &gt; 8)">
-  <table width="100%">
-   <tr>
-    <td width="100%"><xsl:call-template name="header-fields"/></td>
-    <td id="navlet" nowrap="NOWRAP"><xsl:call-template name="navigate-fields"/></td>
-   </tr>
-  </table>
- </xsl:if>
+ <xsl:choose>
+  <xsl:when test="threading/snippet/@cols &gt; 8">
+   <xsl:call-template name="navigate-fields"/>
+   <hr/>
+   <xsl:call-template name="header-fields"/>
+  </xsl:when>
+  <xsl:otherwise>
+   <table width="100%">
+    <tr>
+     <td width="100%"><xsl:call-template name="header-fields"/></td>
+     <td id="navlet" nowrap="NOWRAP"><xsl:call-template name="navigate-fields"/></td>
+    </tr>
+   </table>
+  </xsl:otherwise>
+ </xsl:choose>
 
  <hr/>
  <div id="boxlist">
   <b>
    <xsl:value-of select="$appearinmbox"/>
    <xsl:text> </xsl:text>
-   <xsl:element name="a">
-    <xsl:attribute name="href">
-     <xsl:text>../mbox/</xsl:text>
-     <xsl:call-template name="my-escape-uri">
-      <xsl:with-param name="str" select="mid"/>
-     </xsl:call-template>
-     <xsl:text>.txt</xsl:text>
-    </xsl:attribute>
-    
+   <a href="../mbox/{summary/id}.txt">
     <xsl:value-of select="$mailbox"/>
-   </xsl:element>
+   </a>
    
    <xsl:text> </xsl:text>
    <xsl:value-of select="$mailboxof"/>:
   </b>
-  <xsl:apply-templates select="list" mode="message"/>
+  <xsl:apply-templates select="mbox" mode="message"/>
  </div>
  <hr/>
 

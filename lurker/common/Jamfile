@@ -1,0 +1,11 @@
+SubDir TOP common ;
+
+Library libcommon :
+	md5.cpp
+	Thread.cpp
+	keyword.cpp
+	CharsetEscape.cpp
+	Config.cpp
+	MessageId.cpp
+	XmlEscape.cpp
+	;

@@ -1,0 +1,20 @@
+SubDir TOP imgs ;
+
+InstallFile $(VARDIR)/www/$(PACKAGE)/imgs :
+	a.png
+	b.png
+	c.png
+	d.png
+	e.png
+	f.png
+	first.png
+	g.png
+	h.png
+	i.png
+	j.png
+	k.png
+	last.png
+	next.png
+	prev.png
+	tree.png
+	;

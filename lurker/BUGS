@@ -1,23 +1,12 @@
 Ideas:
-	errordocument failthrough configable
-	maybe use: message/YYYYMM,email,20chars of subject,goop
-		-- human recognizable
 	secured lists? login required?
-	Sort by other things than time
 	Allow control of ascending/descending sort
-	Maybe manually cache first two levels of btree
-	config'able subscribe/unsubscribe links
 
 Unfulfilled requirements:
-	Legend for colours and their meaning
+	Boolean "or" in search
 	Better packing of tree
 	German pot
 
 BUGS:
-	Config reloading is broken
-	We no longer support block device operation for append
-	We don't check for double append
-	When mmap() does not fit, speed dies - kernel cache problem
-	
-	Attachments are never cached because we need to tell the browser
-	the content-type and we have no way to record this.
+	Need a better way to clean cache.
+	Timezones suck. Need to localize times to the browser.

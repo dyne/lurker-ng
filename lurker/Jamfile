@@ -1,0 +1,13 @@
+SubDir TOP ;
+
+InstallFile $(ETCDIR) : lurker.conf ;
+
+Clean distclean : config.status config.log aclocal.m4 lurker.conf Jamrules ;
+Depends distclean : clean ;
+
+SubInclude TOP libesort ;
+SubInclude TOP common ;
+SubInclude TOP index ;
+SubInclude TOP render ;
+SubInclude TOP xslt ;
+SubInclude TOP imgs ;

@@ -1,4 +1,4 @@
-/*  $Id: keyword.h,v 1.2 2002-07-11 20:39:23 terpstra Exp $
+/*  $Id: keyword.h,v 1.3 2003-04-21 18:25:31 terpstra Exp $
  *  
  *  prefix.h - What to place in front of keywords we search for
  *  
@@ -22,23 +22,15 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/* fields indexed early */
+#define LU_KEYWORD_MESSAGE_ID	"id:"	/* Message id */
+#define LU_KEYWORD_REPLY_TO	"rt:"	/* Reply-to */
+#define LU_KEYWORD_THREAD	"th:"	/* THread */
+
 /* lu_import_message */
 #define	LU_KEYWORD_LIST		"ml:"	/* Mailing List */
-#define LU_KEYWORD_MBOX		"mb:"	/* Mail Box */
-#define LU_KEYWORD_THREAD	"th:"	/* THread */
-#define LU_KEYWORD_LIST_THREADS	"lt:"	/* List of Threads in mailing list */
 #define LU_KEYWORD_AUTHOR	"au:"	/* AUthor */
 #define LU_KEYWORD_SUBJECT	"sb:"	/* SuBject */
-
-/* date related words */
-#define LU_KEYWORD_DAY_OF_MONTH	"dm:"	/* Day of Month */
-#define LU_KEYWORD_MONTH	"mn:"	/* MoNth */
-#define LU_KEYWORD_YEAR		"yr:"	/* YeaR */
-#define LU_KEYWORD_WEEKDAY	"wd:"	/* WeekDay */
-#define LU_KEYWORD_HOUR		"hr:"	/* HouR */
-
-/* lu_reply_to_resolution */
-#define LU_KEYWORD_REPLY_TO	"rt:"	/* Reply To id */
 
 /* import processing */
 #define LU_KEYWORD_WORD		""	/* body keywords */

@@ -25,15 +25,10 @@ img { border:0; margin:0; padding:0 }
 h2 img { vertical-align:middle; padding-top:1px }
 td img { vertical-align:middle }
 .selected { background-color:#AAF }  /* Mark the thread segment as selected */
-.drift    { background-color:#EEA }  /* Mark the thread segment as drifted */
 .normal   { }                        /* Mark the thread segment as normal */
 
 /* The following are used to induce highlighting effects on thread message icons */
 a.thm:hover { background-color:#77F }
-a.thm:visited img.drift:hover { background-color:#7BF !important }
-a.thm:visited img.drift { background-color:#DDB }
-a.thm:hover img.drift:hover { background-color:#7DF }
-a.thm:hover img.drift { background-color:#77F }
 a.thm:visited img.normal:hover { background-color:#77D }
 a.thm:visited img.normal { background-color:#BBB }
 a.thm:hover img.normal { background-color:#77F }
@@ -67,6 +62,7 @@ table { border-collapse:collapse; border:hidden; table-layout:auto }
 
 tr { vertical-align:top; text-align:left; font-family:Arial, sans-serif; padding:0 }
 .thRow { background-color:#DDF }   /* header row for mindex/thread/search tables */
+tr.lit  { background-color:#99F }  /* even rows in mindex/thread/search tables */
 tr.row1 { background-color:#DDD }  /* even rows in mindex/thread/search tables */
 tr.row2 { background-color:#EEE }  /* odd rows in mindex/thread/search tables  */
 

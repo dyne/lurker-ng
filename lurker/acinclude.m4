@@ -1,3 +1,55 @@
+# AC_SEARCH_HEADER_DIRS(HEADER-FILE, SEARCH-DIRS,
+#                        [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND],
+#                        [INCLUDES])
+AC_DEFUN([AC_SEARCH_HEADER_DIRS],
+[AS_VAR_PUSHDEF([ac_Header], [ac_cv_header_$1])dnl
+AC_CACHE_CHECK([for $1], ac_Header,
+[ac_header_search_save_CPPFLAGS=$CPPFLAGS
+AS_VAR_SET(ac_Header, no)
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([AC_INCLUDES_DEFAULT([$5])
+@%:@include <$1>])],
+                  [AS_VAR_SET(ac_Header, standard)])
+if test AS_VAR_GET(ac_Header) = no; then
+  for ac_inc in $2; do
+    CPPFLAGS="-I$ac_inc $ac_header_search_save_CPPFLAGS"
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([AC_INCLUDES_DEFAULT([$5])
+@%:@include <$1>])],
+                      [AS_VAR_SET(ac_Header, -I$ac_inc)
+break])
+  done
+fi
+CPPFLAGS=$ac_header_search_save_CPPFLAGS])
+AS_IF([test AS_VAR_GET(ac_Header) != no],
+  [test AS_VAR_GET(ac_Header) = standard || CPPFLAGS="AS_VAR_GET(ac_Header) $CPPFLAGS"
+  $3],
+      [$4])dnl
+AS_VAR_POPDEF([ac_Header])dnl
+])
+
+# AC_SEARCH_CLASS_LIBS(CLASS, SEARCH-LIBS, [INCLUDES]
+#                       [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND],
+#                       [OTHER-LIBRARIES])
+AC_DEFUN([AC_SEARCH_CLASS_LIBS],
+[AC_CACHE_CHECK([for library containing class $1], [ac_cv_class_$1],
+[ac_class_search_save_LIBS=$LIBS
+ac_cv_class_$1=no
+AC_LINK_IFELSE([AC_LANG_PROGRAM([$3],[$1 foobar])],
+               [ac_cv_class_$1="none required"])
+if test "$ac_cv_class_$1" = no; then
+  for ac_lib in $2; do
+    LIBS="-l$ac_lib $6 $ac_class_search_save_LIBS"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([$3], [$1 foobar])],
+                   [ac_cv_class_$1="-l$ac_lib" 
+break])
+  done
+fi
+LIBS=$ac_class_search_save_LIBS])
+AS_IF([test "$ac_cv_class_$1" != no],
+  [test "$ac_cv_class_$1" = "none required" || LIBS="$ac_cv_class_$1 $LIBS"
+  $4],
+      [$5])dnl
+])
+
 AC_DEFUN([AC_DEFINE_DIR],
  [prefix_backup="$prefix"
   exec_prefix_backup="$exec_prefix"
@@ -9,146 +61,7 @@ AC_DEFUN([AC_DEFINE_DIR],
   done
   prefix="${prefix_backup}"
   exec_prefix="${exec_prefix}"
-  AC_DEFINE_UNQUOTED([$1], "$ac_define_dir_result", [$3])
-  $1_expand="$ac_define_dir_result"
-  AC_SUBST($1_expand)
+  $1="$ac_define_dir_result"
+  AC_SUBST($1)
  ])
 
-AC_DEFUN(ST_CHECK,
-[ AC_MSG_CHECKING(for the st library)
-
-  AC_ARG_WITH(stdir, AC_HELP_STRING(
-	[--with-stdir=DIR], 
-	[st installation directory (default: none)]))
-  if test "x$with_stdir" != "x"; then
-    ST_LTEST="-L$with_stdir/lib -L$with_stdir"
-    ST_ITEST="-I$with_stdir/include -I$with_stdir"
-  fi
-
-  for search in $ST_LTEST '' '-L/usr/local/lib'; do
-    save="$LIBS"
-    LIBS="$LIBS $search -lst"
-    AC_TRY_LINK([], [st_thread_create()],
-	[AC_MSG_RESULT(yes)
-	 break],
-	[LIBS="$save"])
-  done
-
-  if test "$save" = "$LIBS"; then
-    AC_MSG_RESULT(no)
-    AC_MSG_ERROR([This requires libst to build])
-  else
-    $1_LIBS="$$1_LIBS $search -lst"
-    LIBS="$save"
-  fi
-
-  AC_MSG_CHECKING(for st header files)
-
-  for search in $ST_ITEST '' '-I/usr/local/include'; do
-    save="$CFLAGS";
-    CFLAGS="$CFLAGS $search";
-
-    AC_TRY_COMPILE(
-      [#include <st.h>],
-      [ st_sleep(1); return 0;],
-      [AC_MSG_RESULT(yes)
-       break],
-      [CFLAGS="$save"])
-  done
-
-  if test "$save" = "$CFLAGS"; then
-    AC_MSG_RESULT(no)
-    AC_MSG_ERROR([Unable to locate st header files])
-  else
-    $1_CFLAGS="$$1_CFLAGS $search"
-    CFLAGS="$save"
-  fi
-
-  AC_SUBST($1_LIBS)
-  AC_SUBST($1_CFLAGS)])
-
-AC_DEFUN(C_CLIENT_CHECK, 
-[ AC_MSG_CHECKING(for the c-client library)
-  
-  AC_ARG_WITH(cclientdir, AC_HELP_STRING(
-	[--with-cclientdir=DIR], 
-	[c-client installation directory (default: none)]))
-  if test "x$with_cclientdir" != "x"; then
-    CL_LTEST="-L$with_cclientdir/lib -L$with_cclientdir"
-    CL_ITEST="-I$with_cclientdir/include -I$with_cclientdir"
-  fi
-
-  for search in $CL_LTEST '' '-L/usr/local/lib'; do
-    save="$LIBS"
-    LIBS="$LIBS $search -lc-client"
-    AC_TRY_LINK(
-[void mm_expunged() {}
-void mm_diskerror() {}
-void mm_lsub() {}
-void mm_flags() {}
-void mm_fatal() {}
-void mm_nocritical() {}
-void mm_notify() {}
-void mm_searched() {}
-void mm_status() {}
-void mm_login() {}
-void mm_list() {}
-void mm_critical() {}
-void mm_exists() {}
-void mm_log() {}
-void mm_dlog() {}
-extern void rfc822_parse_msg_full();], [rfc822_parse_msg_full(); ],
-	[AC_MSG_RESULT(yes)
-	 break],
-	[LIBS="$save"])
-  done
-  
-  if test "$save" = "$LIBS"; then
-    AC_MSG_RESULT(no)
-    AC_MSG_ERROR([This requires libc-client to build])
-  else
-    $1_LIBS="$$1_LIBS $search -lc-client"
-    LIBS="$save"
-  fi
-
-  AC_MSG_CHECKING(for c-client header files)
-
-  for search in $CL_ITEST '' '-I/usr/local/include'; do
-    save="$CFLAGS";
-    CFLAGS="$CFLAGS $search";
-
-    AC_TRY_COMPILE(
-[
-#include <sys/types.h>
-#include <c-client/mail.h>
-#include <c-client/rfc822.h>
-#include <c-client/fs.h>
-],
-      [ const char* buf;
-       struct mail_envelope* env;
-	struct mail_bodystruct* body;
-	STRING bss;
-        rfc822_parse_msg(
-		&env, 
-		&body, 
-		buf, 
-		(size_t)(23424),
-		&bss, 
-		"localhost", 
-		0);
-	return 0;],
-      [AC_MSG_RESULT(yes)
-       break],
-      [CFLAGS="$save"])
-  done
-
-  if test "$save" = "$CFLAGS"; then
-    AC_MSG_RESULT(no)
-    AC_MSG_ERROR([Unable to locate c-client header files])
-  else
-    $1_CFLAGS="$$1_CFLAGS $search"
-    CFLAGS="$save"
-  fi
-
-  AC_SUBST($1_LIBS)
-  AC_SUBST($1_CFLAGS)])

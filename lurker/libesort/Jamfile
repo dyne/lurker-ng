@@ -1,0 +1,16 @@
+SubDir TOP libesort ;
+
+Library libesort : 
+	Parameters.cpp
+	Memory.cpp 
+	File.cpp
+	Source.cpp
+	Transaction.cpp
+	Merger.cpp
+	View.cpp
+	Master.cpp
+	DbMan.cpp
+	;
+
+# Main dump : dump.cpp ;
+# LinkLibraries dump : libesort ;
