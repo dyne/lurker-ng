@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.36 2002-05-03 20:57:34 terpstra Exp $
+/*  $Id: service.c,v 1.37 2002-05-03 21:09:49 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -23,7 +23,7 @@
  */
 
 #define _GNU_SOURCE
-#define DEBUG 1
+/* #define DEBUG 1 */
 
 #include "common.h"
 #include "io.h"
@@ -873,7 +873,7 @@ static int my_service_getmbox(
 	base += cmsg.headers - cmsg.map.off;
 	len = cmsg.end - cmsg.headers;
 	
-	if (my_service_buffer_init(h, "text/rfc822\n", 1, 
+	if (my_service_buffer_init(h, "text/plain\n", 1, 
 			lu_config_cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
 		goto my_service_getmbox_error1;
 	if (my_service_buffer_writel(h, base, len) != 0)
@@ -894,8 +894,6 @@ static int my_service_attach(
 	const char* request,
 	const char* ext)
 {
-	char*		eptr;
-	char*		next;
 	message_id	id;
 	int		aid;
 	lu_addr		bits;
@@ -927,25 +925,13 @@ static int my_service_attach(
 		goto my_service_attach_error0;
 	}
 	
-	id = strtoul(request, &eptr, 0);
-	if (eptr == request || (*eptr && !isspace(*eptr)))
+	if (sscanf(request, "%d@%d", &id, &aid) != 2)
 	{	/* There was nothing valid, or it did not end in whitespace
 		 * or a null.
 		 */
 		my_service_error(h,
 			"Malformed request",
 			"Lurkerd received a request for a non-numeric message",
-			request);
-		goto my_service_attach_error0;
-	}
-	
-	next = eptr;
-	aid = strtoul(next, &eptr, 0);
-	if (eptr == next || (*eptr && !isspace(*eptr)))
-	{
-		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received a request for a non-numeric attachment",
 			request);
 		goto my_service_attach_error0;
 	}
