@@ -41,12 +41,12 @@
    <input type="hidden" name="doc-url" value="{server/doc-url}"/>
    <input type="hidden" name="format"  value="{$ext}"/>
    <input type="text"   name="query"   value="{translate(query,',',' ')}" class="longtext"/>
-   <input type="hidden" name="sec"  value="substring($sdate,14,2)"/>
-   <input type="hidden" name="min"  value="substring($sdate,12,2)"/>
-   <input type="hidden" name="hour" value="substring($sdate,10,2)"/>
-   <input type="hidden" name="mday" value="substring($sdate,7,2)"/>
-   <input type="hidden" name="mon"  value="substring($sdate,5,2)"/>
-   <input type="hidden" name="year" value="substring($sdate,1,4)"/>
+   <input type="hidden" name="sec"  value="{substring($sdate,14,2)}"/>
+   <input type="hidden" name="min"  value="{substring($sdate,12,2)}"/>
+   <input type="hidden" name="hour" value="{substring($sdate,10,2)}"/>
+   <input type="hidden" name="mday" value="{substring($sdate,7,2)}"/>
+   <input type="hidden" name="mon"  value="{substring($sdate,5,2)}"/>
+   <input type="hidden" name="year" value="{substring($sdate,1,4)}"/>
    <input type="submit" name="submit" value="{$search}"/>
   </form>
  </div>
