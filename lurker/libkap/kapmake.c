@@ -1,4 +1,4 @@
-/*  $Id: kapmake.c,v 1.3 2002-07-04 18:35:11 terpstra Exp $
+/*  $Id: kapmake.c,v 1.4 2002-07-04 19:24:11 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool
  *  
@@ -158,7 +158,7 @@ int main(int argc, char * const * argv)
 	file    = argv[optind];
 	
 	/* Minimize all parameters so we can do the user ones in order */
-	out = kap_create(&k, KAP_BTREE);
+	out = kap_create(&k, mode);
 	if (out != 0) bail(out, "kap_create");
 	
 	out = kap_btree_set_maxkeysize(k, 2);

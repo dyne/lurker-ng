@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.5 2002-07-04 18:35:35 terpstra Exp $
+/*  $Id: kap.h,v 1.6 2002-07-04 19:24:11 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -267,23 +267,23 @@ int	kap_append_keyspace(const KRecord* kr);
 int	kap_kopen(Kap k, KRecord* kr, const char* key);
 
 /** Close a KRecord by keyword name.
- *  This requires only the append layer.
  */
-int	kap_kclose(Kap k, KRecord* kr);
+int	kap_kclose(Kap k, KRecord* kr, const char* key);
 
 /** Read from a KRecord.
  *  This is simply an alias for kap_append_read. However, at some point this
  *  may change. So a stub function is provided.
  */
-int	kap_kread(Kap k, const KRecord* kr, 
-	off_t where, void* buf, size_t amt);
+int	kap_kread(Kap k, const KRecord* kr, const char* key,
+	size_t where, void* buf, size_t amt);
 
 /** Write to a KRecord.
- *  This is simply an alias for kap_append_write. However, at some point this
- *  may change. So a stub function is provided.
+ *  This looks after the details of writing the KRecord back into the BTree.
+ *  No buffering is performed.
+ *  Errors: All kap_append_write(..), and kap_btree_write(..)
  */
-int	kap_kwrite(Kap k, KRecord* kr, 
-	off_t where, void* buf, size_t amt);
+int	kap_kwrite(Kap k, KRecord* kr, const char* key,
+	size_t where, void* buf, size_t amt);
 
 /** Do a full-fledged kap append operation possibly using the write buffer.
  *  This is probably the interface most people will want to use.

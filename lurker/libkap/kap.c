@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.1 2002-07-04 18:33:55 terpstra Exp $
+/*  $Id: kap.c,v 1.2 2002-07-04 19:24:11 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -64,6 +64,14 @@
 #include <libintl.h>
 #else
 #include "../intl/libgnuintl.h"
+#endif
+
+#ifdef HAVE_ASSERT_H
+# include <assert.h> 
+#endif
+
+#ifndef assert
+# define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FI
 #endif
 
 #define _(String) gettext (String)
@@ -291,4 +299,100 @@ void kap_encode_offset(unsigned char* where, off_t rec, short len)
 		*where++ = rec;
 		rec >>= 8;
 	}
+}
+
+int kap_kopen(Kap k, KRecord* kr, const char* key)
+{
+	int	out;
+	ssize_t len;
+	
+	if (!k->append) return KAP_NO_APPEND;
+	
+	out = kap_btree_read(k, key, (unsigned char*)kr, &len);
+	if (out == KAP_NOT_FOUND)
+	{	/* We will rewrite this on calls to write */
+		memset(kr, 0, sizeof(KRecord));
+		return 0;
+	}
+	
+	if (out == 0)
+	{
+		assert (len == kap_append_keyspace(kr));
+	}
+	
+	return out;
+}
+
+int kap_kclose(Kap k, KRecord* kr,  const char* key)
+{	/* do nothing (but don't tell! - people should still call this!) */
+	return 0;
+}
+
+int kap_kread(Kap k, const KRecord* kr, const char* key,
+	size_t where, void* buf, size_t amt)
+{
+	return kap_append_read(k, kr, where, buf, amt);
+}
+
+int kap_kwrite(Kap k, KRecord* kr, const char* key,
+	size_t where, void* buf, size_t amt)
+{
+	int sz = kap_append_keyspace(kr);
+	int out = kap_append_write(k, kr, where, buf, amt);
+	
+	if (out) return out;
+	if (kap_append_keyspace(kr) != sz)
+		out = kap_btree_write(k, key, 
+			(unsigned char*)kr, kap_append_keyspace(kr));
+	
+	return out;
+}
+
+struct AppendBack
+{
+	Kap		k;
+	const char*	key;
+	void*		data;
+	size_t		len;
+	int		out;
+};
+
+static int append_back(void* arg, const char* key, unsigned char* record, ssize_t* len)
+{
+	struct AppendBack* nfo = arg;
+	KRecord	kr;
+	int	sz;
+	
+	if (!strcmp(key, nfo->key))
+		memcpy(&kr, record, *len);
+	else	memset(&kr, 0, sizeof(KRecord));
+	
+	sz = kap_append_keyspace(&kr);
+	nfo->out = kap_append_append(nfo->k, &kr, nfo->data, nfo->len);
+	
+	if (kap_append_keyspace(&kr) != sz)
+	{
+		memcpy(record, &kr, sz);
+		*len = sz;
+		return 1;
+	}
+	
+	return 0;
+}
+
+int kap_append(Kap k, const char* key, void* data, size_t len)
+{
+	struct AppendBack nfo;
+	int out;
+	
+	nfo.k		= k;
+	nfo.key		= key;
+	nfo.data	= data;
+	nfo.len		= len;
+	nfo.out		= 0;
+	
+	out = kap_btree_op(k, key, &append_back, &nfo);
+	
+	if (nfo.out) return nfo.out;
+	return out;
 }
