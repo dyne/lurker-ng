@@ -152,24 +152,6 @@
 <!-- Format headers for the message -->
 
 <xsl:template name="header-fields">
- <div id="js">
-  <form>
-   <u><xsl:value-of select="$headdet"/></u>
-   <div id="radio">
-    <input type="radio" disabled="1" name="min" title="{$minimum}"/>
-    <xsl:text disable-output-escaping="yes"> &amp;#8211; </xsl:text>
-    <input type="radio" disabled="1" name="norm" title="{$normal}"/>
-    <xsl:text disable-output-escaping="yes"> &amp;#8211; </xsl:text>
-    <input type="radio" disabled="1" name="full" title="{$maximum}"/>
-   </div>
-   <div id="label">
-    <xsl:value-of select="$less"/>
-    <xsl:text disable-output-escaping="yes"> &amp;#8212;&amp;#8211 </xsl:text>
-    <xsl:value-of select="$more"/>
-   </div>
-   <span>(<xsl:value-of select="$javas"/>)</span>
-  </form>
- </div>
  <table id="h-fields">
   <tr>
    <th nowrap="NOWRAP"><xsl:value-of select="$author"/>:</th>
