@@ -1,2 +1,0 @@
-# Increase the amount of cache memory available to db3
-set_cachesize 0 4194304 8
