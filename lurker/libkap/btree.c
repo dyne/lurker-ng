@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.28 2002-08-25 15:59:12 terpstra Exp $
+/*  $Id: btree.c,v 1.29 2002-08-27 22:11:44 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -207,14 +207,8 @@ inline int WRITE_SECTOR(struct Kap_Btree* k, off_t sector, const void* buf)
 
 static size_t round_mmap_up(size_t amt)
 {
-	size_t out = 0xC000; /* Can't quite map 2Gb- so use 110000... */
+	size_t out = 0x8000;
 	while (out < amt) out <<= 1;
-	
-	if (sizeof(void*) == 4 && out > 512*1024*1024)
-	{
-		/* Intentionally fail; greedy is bad */
-		return 0xFFFFFFFFUL;
-	}
 	
 	return out;
 }

@@ -17,9 +17,8 @@ v0.1e:
 	Prettier arrows from Kevin Teague
 	Should compile on BSD again
 	Fixed alignment issue on ia64
+	Better decisions about how much to mmap
 	Added a FAQ
-	Made mmap of >512M always fail (on 32bit) to prevent address space
-		hoarding which prevents smaller mmaps from working
 	Added tail caching to libkap
 
 v0.1d:

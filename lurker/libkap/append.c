@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.24 2002-08-27 17:15:09 terpstra Exp $
+/*  $Id: append.c,v 1.25 2002-08-27 22:11:44 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -146,14 +146,8 @@ int other_big;
 #ifdef USE_MMAP
 static size_t round_mmap_up(size_t amt)
 {
-	size_t out = 0xC000; /* Can't quite map 2Gb- so use 110000... */
+	size_t out = 0x8000;
 	while (out < amt) out <<= 1;
-	
-	if (sizeof(void*) == 4 && out > 512*1024*1024)
-	{
-		/* Intentionally fail; gre6edy is bad */
-		return 0xFFFFFFFFUL;
-	}
 	
 	return out;
 }
