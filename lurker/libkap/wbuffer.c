@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.16 2002-08-27 16:48:44 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.17 2002-08-27 21:30:41 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -591,7 +591,7 @@ static int calc_storage(Kap k, int yield)
 	{
 		kw = k->wbuffer->scache[scan].keyword;
 		val = sqrt(k->wbuffer->kcache[kw].hits);
-		size = lrint(k->wbuffer->num_appends * val / accum);
+		size = (k->wbuffer->num_appends * val / accum);
 		
 		if (size < 2) size = 2;
 		
