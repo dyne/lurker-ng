@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.21 2002-06-10 12:25:58 terpstra Exp $
+/*  $Id: summary.c,v 1.22 2002-06-14 11:16:59 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -265,7 +265,7 @@ int my_summary_find_thread(
 	error = my_summary_merge_db->cursor(my_summary_merge_db, 0, &cursor, 0);
 	if (error)
 	{
-		syslog(LOG_ERR, "Unable to create thread DB cursor: %s\n",
+		syslog(LOG_ERR, _("Unable to create thread DB cursor: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
@@ -285,7 +285,7 @@ int my_summary_find_thread(
 	error = cursor->c_get(cursor, &key, &val, DB_SET_RANGE);
 	if (error && error != DB_NOTFOUND)
 	{
-		syslog(LOG_ERR, "Unable to find next thread record: %s\n",
+		syslog(LOG_ERR, _("Unable to find next thread record: %s\n"),
 			db_strerror(error));
 		cursor->c_close(cursor);
 		return -1;
@@ -299,7 +299,7 @@ int my_summary_find_thread(
 	
 	if (error && error != DB_NOTFOUND)
 	{
-		syslog(LOG_ERR, "Unable to find prev thread record: %s\n",
+		syslog(LOG_ERR, _("Unable to find prev thread record: %s\n"),
 			db_strerror(error));
 		cursor->c_close(cursor);
 		return -1;
@@ -323,7 +323,7 @@ int my_summary_find_thread(
 		     timestamp < squishy_val.end_time ||
 		     val.size != sizeof(My_Summary_SquishyVal))
 		{
-			syslog(LOG_ERR, "Corrupt thread database - prior (%d %d %d)\n",
+			syslog(LOG_ERR, _("Corrupt thread database - prior (%d %d %d)\n"),
 				prior_time, squishy_val.end_time, (int)timestamp);
 			cursor->c_close(cursor);
 			return -1;
@@ -333,7 +333,7 @@ int my_summary_find_thread(
 	error = cursor->c_close(cursor);
 	if (error)
 	{
-		syslog(LOG_ERR, "Unable to close thread cursor: %s\n",
+		syslog(LOG_ERR, _("Unable to close thread cursor: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
@@ -354,7 +354,7 @@ int my_summary_find_thread(
 		my_summary_merge_db, 0, &key, &val, 0);
 	if (error)
 	{
-		syslog(LOG_ERR, "Unable to write message squishy: %s\n",
+		syslog(LOG_ERR, _("Unable to write message squishy: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
@@ -391,7 +391,7 @@ static int my_summary_reply_link(
 	    	sizeof(Lu_Summary_Message))
 	{
 		syslog(LOG_WARNING, 
-			"Could not store in-reply-to link: %d -> %d\n",
+			_("Could not store in-reply-to link: %d -> %d\n"),
 			src, dest);
 		return -1;
 	}
@@ -402,7 +402,7 @@ static int my_summary_reply_link(
 	    	sizeof(Lu_Summary_Message))
 	{
 		syslog(LOG_WARNING, 
-			"Could increment replies: %d -> %d\n",
+			_("Could increment replies: %d -> %d\n"),
 			src, dest);
 		return -1;
 	}
@@ -618,7 +618,7 @@ int lu_summary_write_lists(
 		my_summary_offset_db, 0, &key, &val, 0);
 	if (error && error != DB_NOTFOUND)
 	{
-		syslog(LOG_ERR, "Could not read occurance db: %s\n",
+		syslog(LOG_ERR, _("Could not read occurance db: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
@@ -725,7 +725,7 @@ int lu_summary_import_message(
 	}
 	if (error)
 	{
-		syslog(LOG_ERR, "Checking message-id db for duplicate: %s\n",
+		syslog(LOG_ERR, _("Checking message-id db for duplicate: %s\n"),
 			db_strerror(errno));
 		goto lu_summary_import_message_error0;
 	}
@@ -742,7 +742,7 @@ int lu_summary_import_message(
 		my_summary_offset_db, 0, &key, &val, 0);
 	if (error && error != DB_NOTFOUND)
 	{
-		syslog(LOG_ERR, "Could not read occurance db: %s\n",
+		syslog(LOG_ERR, _("Could not read occurance db: %s\n"),
 			db_strerror(error));
 		goto lu_summary_import_message_error0;
 	}
@@ -753,7 +753,7 @@ int lu_summary_import_message(
 	
 	if (i == sizeof(offsets)/sizeof(My_Summary_Offset))
 	{
-		syslog(LOG_WARNING, "Ridiculous number of list occurances in message: %s (%d)",
+		syslog(LOG_WARNING, _("Ridiculous number of list occurances in message: %s (%d)"),
 			mmessage_id, id);
 	}
 	else if (i == val.size/sizeof(My_Summary_Offset))
@@ -772,7 +772,7 @@ int lu_summary_import_message(
 		
 		if (error)
 		{
-			syslog(LOG_ERR, "Could not write occurance db: %s\n",
+			syslog(LOG_ERR, _("Could not write occurance db: %s\n"),
 				db_strerror(error));
 			goto lu_summary_import_message_error0;
 		}
@@ -799,7 +799,7 @@ int lu_summary_import_message(
 	var_off = lseek(my_summary_variable_fd, 0, SEEK_END);
 	if (var_off == -1)
 	{
-		syslog(LOG_ERR, "Could not seek to end of variable.flat: %s\n",
+		syslog(LOG_ERR, _("Could not seek to end of variable.flat: %s\n"),
 			strerror(errno));
 		goto lu_summary_import_message_error0;
 	}
@@ -807,7 +807,7 @@ int lu_summary_import_message(
 	mid_len = strlen(mmessage_id) + 1;
 	if (write(my_summary_variable_fd, mmessage_id, mid_len) != mid_len)
 	{
-		syslog(LOG_ERR, "Could not write message id to end of variable.flat: %s\n",
+		syslog(LOG_ERR, _("Could not write message id to end of variable.flat: %s\n"),
 			strerror(errno));
 		goto lu_summary_import_message_error1;
 	}
@@ -815,7 +815,7 @@ int lu_summary_import_message(
 	sub_len = strlen(subject) + 1;
 	if (write(my_summary_variable_fd, subject, sub_len) != sub_len)
 	{
-		syslog(LOG_ERR, "Could not write subject to end of variable.flat: %s\n",
+		syslog(LOG_ERR, _("Could not write subject to end of variable.flat: %s\n"),
 			strerror(errno));
 		goto lu_summary_import_message_error1;
 	}
@@ -823,7 +823,7 @@ int lu_summary_import_message(
 	aun_len = strlen(author_name) + 1;
 	if (write(my_summary_variable_fd, author_name, aun_len) != aun_len)
 	{
-		syslog(LOG_ERR, "Could not write author name to end of variable.flat: %s\n",
+		syslog(LOG_ERR, _("Could not write author name to end of variable.flat: %s\n"),
 			strerror(errno));
 		goto lu_summary_import_message_error1;
 	}
@@ -831,7 +831,7 @@ int lu_summary_import_message(
 	aue_len = strlen(author_email) + 1;
 	if (write(my_summary_variable_fd, author_email, aue_len) != aue_len)
 	{
-		syslog(LOG_ERR, "Could not write author email to end of variable.flat: %s\n",
+		syslog(LOG_ERR, _("Could not write author email to end of variable.flat: %s\n"),
 			strerror(errno));
 		goto lu_summary_import_message_error1;
 	}
@@ -855,7 +855,7 @@ int lu_summary_import_message(
 	sum_off *= sizeof(Lu_Summary_Message);
 	if (lseek(my_summary_message_fd, sum_off, SEEK_SET) != sum_off)
 	{
-		syslog(LOG_ERR, "Seeking for write of message summary: %s\n",
+		syslog(LOG_ERR, _("Seeking for write of message summary: %s\n"),
 			strerror(errno));
 		goto lu_summary_import_message_error1;
 	}
@@ -863,7 +863,7 @@ int lu_summary_import_message(
 	if (write(my_summary_message_fd, &sum, sizeof(Lu_Summary_Message)) != 
 		sizeof(Lu_Summary_Message))
 	{
-		syslog(LOG_ERR, "Writing message summary: %s\n",
+		syslog(LOG_ERR, _("Writing message summary: %s\n"),
 			strerror(errno));
 		goto lu_summary_import_message_error2;
 	}
@@ -879,14 +879,14 @@ lu_summary_import_message_error2:
 	sum_off *= sizeof(Lu_Summary_Message);
 	if (ftruncate(my_summary_message_fd, sum_off) != 0)
 	{
-		syslog(LOG_ERR, "Unable to reclaim space in summary.flat on failed lu_summary_import_message: %s\n",
+		syslog(LOG_ERR, _("Unable to reclaim space in summary.flat on failed lu_summary_import_message: %s\n"),
 			strerror(errno));
 	}
 	
 lu_summary_import_message_error1:
 	if (ftruncate(my_summary_variable_fd, var_off) != 0)
 	{
-		syslog(LOG_ERR, "Unable to reclaim space in variable.flat on failed lu_summary_import_message: %s\n",
+		syslog(LOG_ERR, _("Unable to reclaim space in variable.flat on failed lu_summary_import_message: %s\n"),
 			strerror(errno));
 	}
 	
@@ -1004,21 +1004,21 @@ int lu_summary_open()
 	
 	if ((error = db_create(&my_summary_merge_db, lu_config_env, 0)) != 0)
 	{
-		fprintf(stderr, "Creating a db3 database: %s\n",
+		fprintf(stderr, _("Creating a db3 database: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
 	
 	if ((error = db_create(&my_summary_mid_db, lu_config_env, 0)) != 0)
 	{
-		fprintf(stderr, "Creating a db3 database: %s\n",
+		fprintf(stderr, _("Creating a db3 database: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
 	
 	if ((error = db_create(&my_summary_offset_db, lu_config_env, 0)) != 0)
 	{
-		fprintf(stderr, "Creating a db3 database: %s\n",
+		fprintf(stderr, _("Creating a db3 database: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
@@ -1027,7 +1027,7 @@ int lu_summary_open()
 		my_summary_merge_db, "merge.btree", 0,
 		DB_BTREE, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
 	{
-		fprintf(stderr, "Opening db3 database: merge.btree: %s\n",
+		fprintf(stderr, _("Opening db3 database: merge.btree: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
@@ -1036,7 +1036,7 @@ int lu_summary_open()
 		my_summary_mid_db, "mid.hash", 0,
 		DB_HASH, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
 	{
-		fprintf(stderr, "Opening db3 database: mid.hash: %s\n",
+		fprintf(stderr, _("Opening db3 database: mid.hash: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
@@ -1045,14 +1045,14 @@ int lu_summary_open()
 		my_summary_offset_db, "offset.hash", 0,
 		DB_HASH, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
 	{
-		fprintf(stderr, "Opening db3 database: offset.hash: %s\n",
+		fprintf(stderr, _("Opening db3 database: offset.hash: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
 	
 	if ((offset = lseek(my_summary_message_fd, 0, SEEK_END)) == -1)
 	{
-		fprintf(stderr, "Determining last message id: merge.btree: %s\n",
+		fprintf(stderr, _("Determining last message id: merge.btree: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
@@ -1071,7 +1071,7 @@ int lu_summary_open()
 			my_summary_msg_free - 1);
 		if (sum.timestamp == 0)
 		{
-			perror("Grabbing last summary block");
+			perror(_("Grabbing last summary block"));
 			return -1;
 		}
 		
@@ -1088,21 +1088,21 @@ int lu_summary_sync()
 	if ((error = my_summary_merge_db->sync(
 		my_summary_merge_db, 0)) != 0)
 	{
-		syslog(LOG_ERR, "Syncing db3 database: merge.btree: %s\n",
+		syslog(LOG_ERR, _("Syncing db3 database: merge.btree: %s\n"),
 			db_strerror(error));
 	}
 	
 	if ((error = my_summary_mid_db->sync(
 		my_summary_mid_db, 0)) != 0)
 	{
-		syslog(LOG_ERR, "Syncing db3 database: mid.hash: %s\n",
+		syslog(LOG_ERR, _("Syncing db3 database: mid.hash: %s\n"),
 			db_strerror(error));
 	}
 	
 	if ((error = my_summary_offset_db->sync(
 		my_summary_offset_db, 0)) != 0)
 	{
-		syslog(LOG_ERR, "Syncing db3 database: offset.hash: %s\n",
+		syslog(LOG_ERR, _("Syncing db3 database: offset.hash: %s\n"),
 			db_strerror(error));
 	}
 	
@@ -1117,7 +1117,7 @@ int lu_summary_close()
 	if ((error = my_summary_merge_db->close(
 		my_summary_merge_db, 0)) != 0)
 	{
-		syslog(LOG_ERR, "Closing db3 database: merge.btree: %s\n",
+		syslog(LOG_ERR, _("Closing db3 database: merge.btree: %s\n"),
 			db_strerror(error));
 		fail = -1;
 	}
@@ -1125,7 +1125,7 @@ int lu_summary_close()
 	if ((error = my_summary_mid_db->close(
 		my_summary_mid_db, 0)) != 0)
 	{
-		syslog(LOG_ERR, "Closing db3 database: mid.hash: %s\n",
+		syslog(LOG_ERR, _("Closing db3 database: mid.hash: %s\n"),
 			db_strerror(error));
 		fail = -1;
 	}
@@ -1133,7 +1133,7 @@ int lu_summary_close()
 	if ((error = my_summary_offset_db->close(
 		my_summary_offset_db, 0)) != 0)
 	{
-		syslog(LOG_ERR, "Closing db3 database: offset.hash: %s\n",
+		syslog(LOG_ERR, _("Closing db3 database: offset.hash: %s\n"),
 			db_strerror(error));
 		fail = -1;
 	}

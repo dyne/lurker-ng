@@ -1,4 +1,10 @@
-SUBDIRS = common store xslt render imgs doc
+SUBDIRS = intl common store xslt render imgs doc po
 
 sysconf_DATA = lurker.conf
-EXTRA_DIST = tools/install-sh tools/depcomp tools/missing tools/mkinstalldirs
+EXTRA_DIST = ABOUT-NLS \
+	tools/install-sh \
+	tools/depcomp \
+	tools/missing \
+	tools/mkinstalldirs \
+	tools/config.guess \
+	tools/config.sub

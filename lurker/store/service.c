@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.67 2002-06-12 22:50:47 terpstra Exp $
+/*  $Id: service.c,v 1.68 2002-06-14 11:16:59 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -724,10 +724,10 @@ static int my_service_dump(
 	if (ic == (iconv_t)-1)
 	{
 		/* Don't know this encoding - just dump the data anyways */
-		syslog(LOG_WARNING, "Unknown coding: %s\n", coding);
-		my_service_write_str(h, "\n*** WARNING: UNKNOWN CHARSET '");
+		syslog(LOG_WARNING, _("Unknown coding: %s\n"), coding);
+		my_service_write_str(h, _("\n*** WARNING: UNKNOWN CHARSET '"));
 		my_service_write_str(h, coding);
-		my_service_write_str(h, "' FALLING BACK TO ISO-8869-1 ***\n");
+		my_service_write_str(h, _("' FALLING BACK TO ISO-8869-1 ***\n"));
 		
 		coding = "iso-8869-1";
 		ic = iconv_open("utf-8", coding);
@@ -751,9 +751,9 @@ static int my_service_dump(
 	
 	if (len)
 	{
-		my_service_write_str(h, "\n*** ERROR: BROKEN CHARSET '");
+		my_service_write_str(h, _("\n*** ERROR: BROKEN CHARSET '"));
 		my_service_write_str(h, coding);
-		my_service_write_str(h, "' DURING DECODE ***\n");
+		my_service_write_str(h, _("' DURING DECODE ***\n"));
 	}
 	
 	return 0;
@@ -1069,8 +1069,8 @@ static int my_service_thread_load(
 	if (b == 0)
 	{
 		my_service_error(h,
-			"Internal Server Error",
-			"Lurkerd failed to open a breader for thread",
+			_("Internal Server Error"),
+			_("Lurkerd failed to open a breader for thread"),
 			&key[0]);
 		
 		goto my_service_thread_load_error0;
@@ -1079,8 +1079,8 @@ static int my_service_thread_load(
 	if (lu_breader_records(b) == 0)
 	{
 		my_service_error(h,
-			"Thread Not Found",
-			"Lurkerd received a request for a non-existant thread",
+			_("Thread Not Found"),
+			_("Lurkerd received a request for a non-existant thread"),
 			&key[0]);
 		
 		goto my_service_thread_load_error1;
@@ -1091,8 +1091,8 @@ static int my_service_thread_load(
 	if (!tree)
 	{
 		my_service_error(h,
-			"Out of Memory",
-			"Lurkerd ran out of memory processing this thread",
+			_("Out of Memory"),
+			_("Lurkerd ran out of memory processing this thread"),
 			&key[0]);
 		
 		goto my_service_thread_load_error1;
@@ -1103,8 +1103,8 @@ static int my_service_thread_load(
 		if (lu_breader_read(b, i, 1, &tree[i].id) != 0)
 		{
 			my_service_error(h,
-				"Internal Server Error",
-				"Lurkerd was unable to read a breader",
+				_("Internal Server Error"),
+				_("Lurkerd was unable to read a breader"),
 				&key[0]);
 		
 			goto my_service_thread_load_error2;
@@ -1114,8 +1114,8 @@ static int my_service_thread_load(
 		if (tree[i].summary.timestamp == 0)
 		{
 			my_service_error(h,
-				"Internal Server Error",
-				"Lurkerd was unable to read a summary record",
+				_("Internal Server Error"),
+				_("Lurkerd was unable to read a summary record"),
 				&key[0]);
 		
 			goto my_service_thread_load_error2;
@@ -1344,8 +1344,8 @@ static int my_service_mbox(
 	if (strcmp(ext, "txt"))
 	{
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received a request for a non-textual mbox",
+			_("Malformed request"),
+			_("Lurkerd received a request for a non-textual mbox"),
 			request);
 		goto my_service_mbox_error0;
 	}
@@ -1354,8 +1354,8 @@ static int my_service_mbox(
 	if (id == lu_common_minvalid)
 	{
 		my_service_error(h,
-			"Message does not exist",
-			"Lurkerd received a request for a non-existant message",
+			_("Message does not exist"),
+			_("Lurkerd received a request for a non-existant message"),
 			request);
 		goto my_service_mbox_error0;
 	}
@@ -1364,8 +1364,8 @@ static int my_service_mbox(
 	if (msg.timestamp == 0)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd failed to retrieve the summary for the named message",
+			_("Internal Error"),
+			_("Lurkerd failed to retrieve the summary for the named message"),
 			request);
 		goto my_service_mbox_error0;
 	}
@@ -1386,8 +1386,8 @@ static int my_service_mbox(
 	if (!list)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd has a message which refers to a missing mailing list",
+			_("Internal Error"),
+			_("Lurkerd has a message which refers to a missing mailing list"),
 			request);
 		goto my_service_mbox_error0;
 	}
@@ -1396,8 +1396,8 @@ static int my_service_mbox(
 	if (!mbox)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd has a message which refers to a missing mailbox",
+			_("Internal Error"),
+			_("Lurkerd has a message which refers to a missing mailbox"),
 			request);
 		goto my_service_mbox_error0;
 	}
@@ -1405,8 +1405,8 @@ static int my_service_mbox(
 	if (lu_mbox_map_message(mbox, &cmsg, offset) != 0)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd was unable to mmap the message into memory",
+			_("Internal Error"),
+			_("Lurkerd was unable to mmap the message into memory"),
 			request);
 		goto my_service_mbox_error0;
 	}
@@ -1461,8 +1461,8 @@ static int my_service_attach(
 	if (strcmp(ext, "attach"))
 	{
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received an attachment request for non .attach",
+			_("Malformed request"),
+			_("Lurkerd received an attachment request for non .attach"),
 			ext);
 		
 		goto my_service_attach_error0;
@@ -1474,8 +1474,8 @@ static int my_service_attach(
 		 * or a null.
 		 */
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received a request for a non-numeric attachment",
+			_("Malformed request"),
+			_("Lurkerd received a request for a non-numeric attachment"),
 			request);
 		goto my_service_attach_error0;
 	}
@@ -1485,8 +1485,8 @@ static int my_service_attach(
 	if (id == lu_common_minvalid)
 	{
 		my_service_error(h,
-			"Message does not exist",
-			"Lurkerd received a request for a non-existant message",
+			_("Message does not exist"),
+			_("Lurkerd received a request for a non-existant message"),
 			mid);
 		goto my_service_attach_error0;
 	}
@@ -1495,8 +1495,8 @@ static int my_service_attach(
 	if (msg.timestamp == 0)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd failed to retrieve the summary for the named message",
+			_("Internal Error"),
+			_("Lurkerd failed to retrieve the summary for the named message"),
 			request);
 		goto my_service_attach_error0;
 	}
@@ -1517,8 +1517,8 @@ static int my_service_attach(
 	if (!list)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd has a message which refers to a missing mailing list",
+			_("Internal Error"),
+			_("Lurkerd has a message which refers to a missing mailing list"),
 			request);
 		goto my_service_attach_error0;
 	}
@@ -1527,8 +1527,8 @@ static int my_service_attach(
 	if (!mbox)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd has a message which refers to a missing mailbox",
+			_("Internal Error"),
+			_("Lurkerd has a message which refers to a missing mailbox"),
 			request);
 		goto my_service_attach_error0;
 	}
@@ -1536,8 +1536,8 @@ static int my_service_attach(
 	if (lu_mbox_map_message(mbox, &cmsg, offset) != 0)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd was unable to mmap the message into memory",
+			_("Internal Error"),
+			_("Lurkerd was unable to mmap the message into memory"),
 			request);
 		goto my_service_attach_error0;
 	}
@@ -1545,8 +1545,8 @@ static int my_service_attach(
 	if (lu_mbox_parse_message(&cmsg, &mmsg) != 0)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd was unable to parse the message",
+			_("Internal Error"),
+			_("Lurkerd was unable to parse the message"),
 			request);
 		goto my_service_attach_error1;
 	}
@@ -1556,8 +1556,8 @@ static int my_service_attach(
 	if (!attach)
 	{
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received a request for a non-existant attachment",
+			_("Malformed request"),
+			_("Lurkerd received a request for a non-existant attachment"),
 			request);
 		goto my_service_attach_error2;
 	}
@@ -1695,8 +1695,8 @@ static int my_service_message(
 	if (strcmp(ext, "xml") && strcmp(ext, "html"))
 	{
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received a message request for non html/xml",
+			_("Malformed request"),
+			_("Lurkerd received a message request for non html/xml"),
 			ext);
 		
 		goto my_service_message_error0;
@@ -1706,8 +1706,8 @@ static int my_service_message(
 	if (id == lu_common_minvalid)
 	{
 		my_service_error(h,
-			"Message does not exist",
-			"Lurkerd received a request for a non-existant message",
+			_("Message does not exist"),
+			_("Lurkerd received a request for a non-existant message"),
 			request);
 		goto my_service_message_error0;
 	}
@@ -1716,8 +1716,8 @@ static int my_service_message(
 	if (msg.timestamp == 0)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd failed to retrieve the summary for the named message",
+			_("Internal Error"),
+			_("Lurkerd failed to retrieve the summary for the named message"),
 			request);
 		goto my_service_message_error0;
 	}
@@ -1738,8 +1738,8 @@ static int my_service_message(
 	if (!list)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd has a message which refers to a missing mailing list",
+			_("Internal Error"),
+			_("Lurkerd has a message which refers to a missing mailing list"),
 			request);
 		goto my_service_message_error0;
 	}
@@ -1748,8 +1748,8 @@ static int my_service_message(
 	if (!mbox)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd has a message which refers to a missing mailbox",
+			_("Internal Error"),
+			_("Lurkerd has a message which refers to a missing mailbox"),
 			request);
 		goto my_service_message_error0;
 	}
@@ -1757,8 +1757,8 @@ static int my_service_message(
 	if (lu_mbox_map_message(mbox, &cmsg, offset) != 0)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd was unable to mmap the message into memory",
+			_("Internal Error"),
+			_("Lurkerd was unable to mmap the message into memory"),
 			request);
 		goto my_service_message_error0;
 	}
@@ -1766,8 +1766,8 @@ static int my_service_message(
 	if (lu_mbox_parse_message(&cmsg, &mmsg) != 0)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd was unable to parse the map'd message",
+			_("Internal Error"),
+			_("Lurkerd was unable to parse the map'd message"),
 			request);
 		goto my_service_message_error1;
 	}
@@ -1782,8 +1782,8 @@ static int my_service_message(
 		if (b == 0)
 		{
 			my_service_error(h,
-				"Internal Error",
-				"Lurkerd was unable to access the reply-to keyword",
+				_("Internal Error"),
+				_("Lurkerd was unable to access the reply-to keyword"),
 				request);
 			goto my_service_message_error2;
 		}
@@ -1806,8 +1806,8 @@ static int my_service_message(
 	if (n == tree_size)
 	{
 		my_service_error(h,
-			"Internal Error",
-			"Lurkerd cannot find a message in its own thread",
+			_("Internal Error"),
+			_("Lurkerd cannot find a message in its own thread"),
 			request);
 		goto my_service_message_error3;
 	}
@@ -1952,8 +1952,8 @@ static int my_service_jump(
 	if (sscanf(request, "%d@%d", &list, &tm) != 2)
 	{	/* They did something funny. */
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received an improperly formatted jump request",
+			_("Malformed request"),
+			_("Lurkerd received an improperly formatted jump request"),
 			request);
 		
 		goto my_service_jump_error0;
@@ -1962,8 +1962,8 @@ static int my_service_jump(
 	if (strcmp(ext, "xml") && strcmp(ext, "html"))
 	{
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received a jump request for non html/xml",
+			_("Malformed request"),
+			_("Lurkerd received a jump request for non html/xml"),
 			ext);
 		
 		goto my_service_jump_error0;
@@ -1974,9 +1974,9 @@ static int my_service_jump(
 	if (b == 0)
 	{
 		my_service_error(h,
-			"Internal error",
-			"Lurkerd failed to access the keyword database",
-			"server failure - see log files");
+			_("Internal error"),
+			_("Lurkerd failed to access the keyword database"),
+			_("server failure - see log files"));
 		
 		goto my_service_jump_error0;
 	}
@@ -1984,9 +1984,9 @@ static int my_service_jump(
 	if (lu_breader_offset(b, &my_service_earlier_than, &tm, &offset) != 0)
 	{
 		my_service_error(h,
-			"Internal error",
-			"Lurkerd failed to find a jump record",
-			"server failure - see log files");
+			_("Internal error"),
+			_("Lurkerd failed to find a jump record"),
+			_("server failure - see log files"));
 		
 		goto my_service_jump_error1;
 	}
@@ -2045,8 +2045,8 @@ static int my_service_mindex(
 	if (sscanf(request, "%d@%d", &list, &offset) != 2)
 	{	/* They did something funny. */
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received an improperly formatted mindex request",
+			_("Malformed request"),
+			_("Lurkerd received an improperly formatted mindex request"),
 			request);
 		
 		goto my_service_mindex_error0;
@@ -2055,8 +2055,8 @@ static int my_service_mindex(
 	if (strcmp(ext, "xml") && strcmp(ext, "html"))
 	{
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received an index request for non html/xml",
+			_("Malformed request"),
+			_("Lurkerd received an index request for non html/xml"),
 			ext);
 		
 		goto my_service_mindex_error0;
@@ -2065,8 +2065,8 @@ static int my_service_mindex(
 	if ((offset % LU_PROTO_INDEX) != 0)
 	{	/* Must be a multiple of the index */
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received an unaligned mindex request",
+			_("Malformed request"),
+			_("Lurkerd received an unaligned mindex request"),
 			request);
 		
 		goto my_service_mindex_error0;
@@ -2076,8 +2076,8 @@ static int my_service_mindex(
 	if (l == 0)
 	{
 		my_service_error(h,
-			"Invalid request",
-			"Lurkerd received a request for a non-existant list",
+			_("Invalid request"),
+			_("Lurkerd received a request for a non-existant list"),
 			request);
 		
 		goto my_service_mindex_error0;
@@ -2088,9 +2088,9 @@ static int my_service_mindex(
 	if (b == 0)
 	{
 		my_service_error(h,
-			"Internal error",
-			"Lurkerd failed to access the keyword database",
-			"server failure - see log files");
+			_("Internal error"),
+			_("Lurkerd failed to access the keyword database"),
+			_("server failure - see log files"));
 		
 		goto my_service_mindex_error0;
 	}
@@ -2098,8 +2098,8 @@ static int my_service_mindex(
 	if (offset >= lu_breader_records(b))
 	{
 		my_service_error(h,
-			"Invalid request",
-			"Lurkerd received a mindex request past the end of the list",
+			_("Invalid request"),
+			_("Lurkerd received a mindex request past the end of the list"),
 			request);
 		
 		goto my_service_mindex_error1;
@@ -2112,9 +2112,9 @@ static int my_service_mindex(
 	if (lu_breader_read(b, offset, count, &ids[0]) != 0)
 	{
 		my_service_error(h,
-			"Internal error",
-			"Lurkerd failed to retrieve the records from the keyword file",
-			"server failure - see log files");
+			_("Internal error"),
+			_("Lurkerd failed to retrieve the records from the keyword file"),
+			_("server failure - see log files"));
 		
 		goto my_service_mindex_error1;
 	}
@@ -2283,8 +2283,8 @@ static int my_service_thread(
 	if (strcmp(ext, "xml") && strcmp(ext, "html"))
 	{
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received a thread request for non html/xml",
+			_("Malformed request"),
+			_("Lurkerd received a thread request for non html/xml"),
 			ext);
 		
 		goto my_service_thread_error0;
@@ -2293,8 +2293,8 @@ static int my_service_thread(
 	if (sscanf(request, "%d", &id) != 1)
 	{	/* They did something funny. */
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received an improperly formatted thread request",
+			_("Malformed request"),
+			_("Lurkerd received an improperly formatted thread request"),
 			request);
 		
 		goto my_service_thread_error0;
@@ -2362,8 +2362,8 @@ static int my_service_search(
 	if (delim == 0)
 	{
 		my_service_error(h,
-			"Invalid request",
-			"Lurkerd received a search request with no offset",
+			_("Invalid request"),
+			_("Lurkerd received a search request with no offset"),
 			request);
 		goto my_service_search_error0;
 	}
@@ -2372,8 +2372,8 @@ static int my_service_search(
 	if ((offset % LU_PROTO_INDEX) != 0)
 	{	/* Must be a multiple of the index */
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received an unaligned search request",
+			_("Malformed request"),
+			_("Lurkerd received an unaligned search request"),
 			request);
 		
 		goto my_service_search_error0;
@@ -2382,8 +2382,8 @@ static int my_service_search(
 	if (offset > 1000)
 	{
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received a search request for too large an offset",
+			_("Malformed request"),
+			_("Lurkerd received a search request for too large an offset"),
 			request);
 		goto my_service_search_error0;
 	}
@@ -2396,8 +2396,8 @@ static int my_service_search(
 	if (lu_search_start(delim, &detail) != 0)
 	{
 		my_service_error(h,
-			"Search failed",
-			"The lurkerd server rejected this search",
+			_("Search failed"),
+			_("The lurkerd server rejected this search"),
 			detail);
 		goto my_service_search_error0;
 	}
@@ -2407,18 +2407,18 @@ static int my_service_search(
 		if (lu_search_result(&out) != 0)
 		{
 			my_service_error(h,
-				"Internal error",
-				"The lurkerd server failed to search",
-				"lu_search_result failure - see logs");
+				_("Internal error"),
+				_("The lurkerd server failed to search"),
+				_("lu_search_result failure - see logs"));
 			goto my_service_search_error1;
 		}
 		
 		if (out == lu_common_minvalid)
 		{
 			my_service_error(h,
-				"Search failed",
-				"The lurkerd server rejected this search",
-				"There are not that many search results");
+				_("Search failed"),
+				_("The lurkerd server rejected this search"),
+				_("There are not that many search results"));
 			goto my_service_search_error1;
 		}
 	}
@@ -2506,8 +2506,8 @@ static int my_service_splash(
 	if (strcmp(request, "index"))
 	{
 		my_service_error(h,
-			"Request error",
-			"You requested an invalid splash - must be index",
+			_("Request error"),
+			_("You requested an invalid splash - must be index"),
 			request);
 		return -1;
 	}
@@ -2515,8 +2515,8 @@ static int my_service_splash(
 	if (strcmp(ext, "html") && strcmp(ext, "xml"))
 	{
 		my_service_error(h,
-			"Request error",
-			"You requested an invalid splash extension - must be xml or html",
+			_("Request error"),
+			_("You requested an invalid splash extension - must be xml or html"),
 			ext);
 		return -1;
 	}
@@ -2558,7 +2558,7 @@ int lu_service_init()
 	if ((error = regcomp(&url_reg,   URL_REG,   REG_EXTENDED)) != 0)
 	{
 		regerror(error, &url_reg, &buf[0], sizeof(buf));
-		fprintf(stderr, "Unable to compile '%s': %s\n", 
+		fprintf(stderr, _("Unable to compile '%s': %s\n"), 
 			URL_REG, &buf[0]);
 		exit(1);
 	}
@@ -2566,7 +2566,7 @@ int lu_service_init()
 	if ((error = regcomp(&email_reg, EMAIL_REG, REG_EXTENDED)) != 0)
 	{
 		regerror(error, &email_reg, &buf[0], sizeof(buf));
-		fprintf(stderr, "Unable to compile '%s': %s\n", 
+		fprintf(stderr, _("Unable to compile '%s': %s\n"), 
 			URL_REG, &buf[0]);
 		exit(1);
 	}
@@ -2574,7 +2574,7 @@ int lu_service_init()
 	if ((error = regcomp(&quote_reg, QUOTE_REG, REG_EXTENDED)) != 0)
 	{
 		regerror(error, &quote_reg, &buf[0], sizeof(buf));
-		fprintf(stderr, "Unable to compile '%s': %s\n", 
+		fprintf(stderr, _("Unable to compile '%s': %s\n"), 
 			QUOTE_REG, &buf[0]);
 		exit(1);
 	}
@@ -2680,8 +2680,8 @@ extern int lu_service_connection(st_netfd_t fd)
 	else
 	{
 		my_service_error(&h,
-			"Request error",
-			"You requested an invalid module",
+			_("Request error"),
+			_("You requested an invalid module"),
 			mod);
 	}
 	

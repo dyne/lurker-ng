@@ -55,35 +55,64 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+host_alias = @host_alias@
+host_triplet = @host@
 AMTAR = @AMTAR@
 AWK = @AWK@
+BUILD_INCLUDED_LIBINTL = @BUILD_INCLUDED_LIBINTL@
+CATALOGS = @CATALOGS@
+CATOBJEXT = @CATOBJEXT@
 CC = @CC@
+DATADIRNAME = @DATADIRNAME@
 DEPDIR = @DEPDIR@
 EXEEXT = @EXEEXT@
+GENCAT = @GENCAT@
+GLIBC21 = @GLIBC21@
+GMOFILES = @GMOFILES@
+GMSGFMT = @GMSGFMT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+INSTOBJEXT = @INSTOBJEXT@
+INTLBISON = @INTLBISON@
+INTLLIBS = @INTLLIBS@
+INTLOBJS = @INTLOBJS@
+INTL_LIBTOOL_SUFFIX_PREFIX = @INTL_LIBTOOL_SUFFIX_PREFIX@
 LIBICONV = @LIBICONV@
+MKINSTALLDIRS = @MKINSTALLDIRS@
+MSGFMT = @MSGFMT@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PKG_CONFIG = @PKG_CONFIG@
+POFILES = @POFILES@
+POSUB = @POSUB@
 RANLIB = @RANLIB@
+USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
+USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 XSLT_CONFIG = @XSLT_CONFIG@
 am__include = @am__include@
 am__quote = @am__quote@
 dbdir = @dbdir@
 install_sh = @install_sh@
+localedir = @localedir@
 urldir = @urldir@
 wwwdir = @wwwdir@
 
-SUBDIRS = common store xslt render imgs doc
+SUBDIRS = intl common store xslt render imgs doc po
 
 sysconf_DATA = lurker.conf
-EXTRA_DIST = tools/install-sh tools/depcomp tools/missing tools/mkinstalldirs
+EXTRA_DIST = ABOUT-NLS \
+	tools/install-sh \
+	tools/depcomp \
+	tools/missing \
+	tools/mkinstalldirs \
+	tools/config.guess \
+	tools/config.sub
+
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
-CONFIG_HEADER = $(top_builddir)/common/system.h
-CONFIG_CLEAN_FILES = lurker.conf
+CONFIG_HEADER = config.h
+CONFIG_CLEAN_FILES = intl/Makefile lurker.conf
 DIST_SOURCES =
 DATA = $(sysconf_DATA)
 
@@ -92,12 +121,14 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
 	uninstall-info-recursive all-recursive install-data-recursive \
 	install-exec-recursive installdirs-recursive install-recursive \
 	uninstall-recursive check-recursive installcheck-recursive
-DIST_COMMON = README AUTHORS COPYING ChangeLog INSTALL Makefile.am \
-	Makefile.in NEWS acinclude.m4 aclocal.m4 configure configure.ac \
-	lurker.conf.in tools/depcomp tools/install-sh tools/missing \
-	tools/mkinstalldirs
+DIST_COMMON = README ./stamp-h.in ABOUT-NLS AUTHORS COPYING ChangeLog \
+	INSTALL Makefile.am Makefile.in NEWS acinclude.m4 aclocal.m4 \
+	config.h.in configure configure.ac lurker.conf.in \
+	tools/config.guess tools/config.sub tools/depcomp \
+	tools/install-sh tools/missing tools/mkinstalldirs
 DIST_SUBDIRS = $(SUBDIRS)
-all: all-recursive
+all: config.h
+	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
 $(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
@@ -115,6 +146,33 @@ $(srcdir)/configure:  $(srcdir)/configure.ac $(ACLOCAL_M4) $(CONFIGURE_DEPENDENC
 
 $(ACLOCAL_M4):  configure.ac acinclude.m4
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
+config.h: stamp-h
+	@if test ! -f $@; then \
+		rm -f stamp-h; \
+		$(MAKE) stamp-h; \
+	else :; fi
+stamp-h: $(srcdir)/config.h.in $(top_builddir)/config.status
+	@rm -f stamp-h stamp-hT
+	@echo timestamp > stamp-hT 2> /dev/null
+	cd $(top_builddir) \
+	  && CONFIG_FILES= CONFIG_HEADERS=config.h \
+	     $(SHELL) ./config.status
+	@mv stamp-hT stamp-h
+$(srcdir)/config.h.in:  $(srcdir)/./stamp-h.in
+	@if test ! -f $@; then \
+		rm -f $(srcdir)/./stamp-h.in; \
+		$(MAKE) $(srcdir)/./stamp-h.in; \
+	else :; fi
+$(srcdir)/./stamp-h.in: $(top_srcdir)/configure.ac $(ACLOCAL_M4) 
+	@rm -f $(srcdir)/./stamp-h.in $(srcdir)/./stamp-h.inT
+	@echo timestamp > $(srcdir)/./stamp-h.inT 2> /dev/null
+	cd $(top_srcdir) && $(AUTOHEADER)
+	@mv $(srcdir)/./stamp-h.inT $(srcdir)/./stamp-h.in
+
+distclean-hdr:
+	-rm -f config.h
+intl/Makefile: $(top_builddir)/config.status $(top_srcdir)/intl/Makefile.in
+	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= CONFIG_LINKS= $(SHELL) ./config.status
 lurker.conf: $(top_builddir)/config.status lurker.conf.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= CONFIG_LINKS= $(SHELL) ./config.status
 uninstall-info-am:
@@ -202,7 +260,7 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	       END { for (i in files) print i; }'`; \
 	mkid -fID $$unique $(LISP)
 
-TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+TAGS: tags-recursive $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	tags=; \
 	here=`pwd`; \
@@ -217,8 +275,8 @@ TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 	  done | \
 	  $(AWK) '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
-	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
-	  || etags $(ETAGS_ARGS) $$tags  $$unique $(LISP)
+	test -z "$(ETAGS_ARGS)config.h.in$$unique$(LISP)$$tags" \
+	  || etags $(ETAGS_ARGS) $$tags config.h.in $$unique $(LISP)
 
 GTAGS:
 	here=`CDPATH=: && cd $(top_builddir) && pwd` \
@@ -239,7 +297,7 @@ GZIP_ENV = --best
 distdir: $(DISTFILES)
 	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
 	mkdir $(distdir)
-	$(mkinstalldirs) $(distdir)/. $(distdir)/doc $(distdir)/render $(distdir)/tools
+	$(mkinstalldirs) $(distdir)/. $(distdir)/doc $(distdir)/intl $(distdir)/po $(distdir)/render $(distdir)/tools
 	@for file in $(DISTFILES); do \
 	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \
@@ -290,6 +348,7 @@ distcheck: dist
 	dc_install_base=`CDPATH=: && cd $(distdir)/=inst && pwd` \
 	  && cd $(distdir)/=build \
 	  && ../configure --srcdir=.. --prefix=$$dc_install_base \
+	    --with-included-gettext \
 	  && $(MAKE) $(AM_MAKEFLAGS) \
 	  && $(MAKE) $(AM_MAKEFLAGS) dvi \
 	  && $(MAKE) $(AM_MAKEFLAGS) check \
@@ -310,7 +369,7 @@ distcheck: dist
 	  sed 'h;s/./=/g;p;x;p;x'
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(DATA)
+all-am: Makefile $(DATA) config.h
 installdirs: installdirs-recursive
 installdirs-am:
 	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)
@@ -347,7 +406,7 @@ dist-all: distdir
 	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
 distclean: distclean-recursive
 	-rm -f config.status config.cache config.log
-distclean-am: clean-am distclean-generic distclean-tags
+distclean-am: clean-am distclean-generic distclean-hdr distclean-tags
 
 dvi: dvi-recursive
 
@@ -381,14 +440,15 @@ uninstall-info: uninstall-info-recursive
 
 .PHONY: $(RECURSIVE_TARGETS) GTAGS all all-am check check-am clean \
 	clean-generic clean-recursive dist dist-all distcheck distclean \
-	distclean-generic distclean-recursive distclean-tags distdir \
-	dvi dvi-am dvi-recursive info info-am info-recursive install \
-	install-am install-data install-data-am install-data-recursive \
-	install-exec install-exec-am install-exec-recursive \
-	install-info install-info-am install-info-recursive install-man \
-	install-recursive install-strip install-sysconfDATA \
-	installcheck installcheck-am installdirs installdirs-am \
-	installdirs-recursive maintainer-clean maintainer-clean-generic \
+	distclean-generic distclean-hdr distclean-recursive \
+	distclean-tags distdir dvi dvi-am dvi-recursive info info-am \
+	info-recursive install install-am install-data install-data-am \
+	install-data-recursive install-exec install-exec-am \
+	install-exec-recursive install-info install-info-am \
+	install-info-recursive install-man install-recursive \
+	install-strip install-sysconfDATA installcheck installcheck-am \
+	installdirs installdirs-am installdirs-recursive \
+	maintainer-clean maintainer-clean-generic \
 	maintainer-clean-recursive mostlyclean mostlyclean-generic \
 	mostlyclean-recursive tags tags-recursive uninstall \
 	uninstall-am uninstall-info-am uninstall-info-recursive \

@@ -93,6 +93,7 @@ am__include = @am__include@
 am__quote = @am__quote@
 dbdir = @dbdir@
 install_sh = @install_sh@
+localedir = @localedir@
 urldir = @urldir@
 wwwdir = @wwwdir@
 
@@ -112,7 +113,7 @@ www_DATA = ${INDEX}
 EXTRA_DIST = ${XSL} ${INDEX}
 subdir = xslt
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
-CONFIG_HEADER = $(top_builddir)/common/system.h
+CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 DIST_SOURCES =
 DATA = $(fmt_DATA) $(www_DATA)

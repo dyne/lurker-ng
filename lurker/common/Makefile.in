@@ -55,28 +55,50 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+host_alias = @host_alias@
+host_triplet = @host@
 AMTAR = @AMTAR@
 AWK = @AWK@
+BUILD_INCLUDED_LIBINTL = @BUILD_INCLUDED_LIBINTL@
+CATALOGS = @CATALOGS@
+CATOBJEXT = @CATOBJEXT@
 CC = @CC@
+DATADIRNAME = @DATADIRNAME@
 DEPDIR = @DEPDIR@
 EXEEXT = @EXEEXT@
+GENCAT = @GENCAT@
+GLIBC21 = @GLIBC21@
+GMOFILES = @GMOFILES@
+GMSGFMT = @GMSGFMT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+INSTOBJEXT = @INSTOBJEXT@
+INTLBISON = @INTLBISON@
+INTLLIBS = @INTLLIBS@
+INTLOBJS = @INTLOBJS@
+INTL_LIBTOOL_SUFFIX_PREFIX = @INTL_LIBTOOL_SUFFIX_PREFIX@
 LIBICONV = @LIBICONV@
+MKINSTALLDIRS = @MKINSTALLDIRS@
+MSGFMT = @MSGFMT@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PKG_CONFIG = @PKG_CONFIG@
+POFILES = @POFILES@
+POSUB = @POSUB@
 RANLIB = @RANLIB@
+USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
+USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 XSLT_CONFIG = @XSLT_CONFIG@
 am__include = @am__include@
 am__quote = @am__quote@
 dbdir = @dbdir@
 install_sh = @install_sh@
+localedir = @localedir@
 urldir = @urldir@
 wwwdir = @wwwdir@
 
 noinst_LIBRARIES = libcommon.a
-EXTRA_DIST = system.h.in io.h
+EXTRA_DIST = io.h
 
 libcommon_a_SOURCES = \
 	keyword.c keyword.h \
@@ -84,7 +106,7 @@ libcommon_a_SOURCES = \
 
 subdir = common
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
-CONFIG_HEADER = system.h
+CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
 
@@ -94,7 +116,7 @@ am_libcommon_a_OBJECTS = keyword.$(OBJEXT) common.$(OBJEXT)
 libcommon_a_OBJECTS = $(am_libcommon_a_OBJECTS)
 
 DEFS = @DEFS@
-DEFAULT_INCLUDES =  -I. -I$(srcdir) -I.
+DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
@@ -106,11 +128,10 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
 DIST_SOURCES = $(libcommon_a_SOURCES)
-DIST_COMMON = ./stamp-h.in Makefile.am Makefile.in system.h.in
+DIST_COMMON = Makefile.am Makefile.in
 SOURCES = $(libcommon_a_SOURCES)
 
-all: system.h
-	$(MAKE) $(AM_MAKEFLAGS) all-am
+all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .o .obj
@@ -121,31 +142,6 @@ Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && \
 	  CONFIG_HEADERS= CONFIG_LINKS= \
 	  CONFIG_FILES=$(subdir)/$@ $(SHELL) ./config.status
-system.h: stamp-h
-	@if test ! -f $@; then \
-		rm -f stamp-h; \
-		$(MAKE) stamp-h; \
-	else :; fi
-stamp-h: $(srcdir)/system.h.in $(top_builddir)/config.status
-	@rm -f stamp-h stamp-hT
-	@echo timestamp > stamp-hT 2> /dev/null
-	cd $(top_builddir) \
-	  && CONFIG_FILES= CONFIG_HEADERS=common/system.h \
-	     $(SHELL) ./config.status
-	@mv stamp-hT stamp-h
-$(srcdir)/system.h.in:  $(srcdir)/./stamp-h.in
-	@if test ! -f $@; then \
-		rm -f $(srcdir)/./stamp-h.in; \
-		$(MAKE) $(srcdir)/./stamp-h.in; \
-	else :; fi
-$(srcdir)/./stamp-h.in: $(top_srcdir)/configure.ac $(ACLOCAL_M4) 
-	@rm -f $(srcdir)/./stamp-h.in $(srcdir)/./stamp-h.inT
-	@echo timestamp > $(srcdir)/./stamp-h.inT 2> /dev/null
-	cd $(top_srcdir) && $(AUTOHEADER)
-	@mv $(srcdir)/./stamp-h.inT $(srcdir)/./stamp-h.in
-
-distclean-hdr:
-	-rm -f system.h
 
 AR = ar
 
@@ -193,7 +189,7 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	       END { for (i in files) print i; }'`; \
 	mkid -fID $$unique $(LISP)
 
-TAGS:  $(HEADERS) $(SOURCES) system.h.in $(TAGS_DEPENDENCIES) \
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	tags=; \
 	here=`pwd`; \
@@ -203,8 +199,8 @@ TAGS:  $(HEADERS) $(SOURCES) system.h.in $(TAGS_DEPENDENCIES) \
 	  done | \
 	  $(AWK) '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
-	test -z "$(ETAGS_ARGS)system.h.in$$unique$(LISP)$$tags" \
-	  || etags $(ETAGS_ARGS) $$tags system.h.in $$unique $(LISP)
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || etags $(ETAGS_ARGS) $$tags  $$unique $(LISP)
 
 GTAGS:
 	here=`CDPATH=: && cd $(top_builddir) && pwd` \
@@ -237,7 +233,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LIBRARIES) system.h
+all-am: Makefile $(LIBRARIES)
 
 installdirs:
 
@@ -271,7 +267,7 @@ clean-am: clean-generic clean-noinstLIBRARIES mostlyclean-am
 distclean: distclean-am
 
 distclean-am: clean-am distclean-compile distclean-depend \
-	distclean-generic distclean-hdr distclean-tags
+	distclean-generic distclean-tags
 
 dvi: dvi-am
 
@@ -303,8 +299,8 @@ uninstall-am: uninstall-info-am
 
 .PHONY: GTAGS all all-am check check-am clean clean-generic \
 	clean-noinstLIBRARIES distclean distclean-compile \
-	distclean-depend distclean-generic distclean-hdr distclean-tags \
-	distdir dvi dvi-am info info-am install install-am install-data \
+	distclean-depend distclean-generic distclean-tags distdir dvi \
+	dvi-am info info-am install install-am install-data \
 	install-data-am install-exec install-exec-am install-info \
 	install-info-am install-man install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \

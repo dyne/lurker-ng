@@ -1,4 +1,4 @@
-/*  $Id: decode.c,v 1.2 2002-06-12 22:50:47 terpstra Exp $
+/*  $Id: decode.c,v 1.3 2002-06-14 11:16:58 terpstra Exp $
  *  
  *  decode.c - decode definitions and types for all tools
  *  
@@ -377,7 +377,8 @@ void lu_decode_header(
 		/* Is this charset supported? */
 		if (ic == (iconv_t)-1)
 		{
-			syslog(LOG_WARNING, "Unknown header coding: %s\n", &charset[0]);
+			syslog(LOG_WARNING, _("Unknown header coding: %s\n"), 
+				&charset[0]);
 			ic = iconv_open("utf-8", "iso-8859-1");
 		}
 		

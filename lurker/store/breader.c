@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.16 2002-06-11 13:48:34 terpstra Exp $
+/*  $Id: breader.c,v 1.17 2002-06-14 11:16:58 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -494,7 +494,8 @@ int lu_breader_init()
 	my_breader_records = malloc(sizeof(My_Breader_Record)*LU_MAX_HANDLES);
 	if (!my_breader_records)
 	{
-		fprintf(stderr, "Failed to allocate storage for breader buffers\n");
+		fputs(("Failed to allocate storage for breader buffers\n"), 
+			stderr);
 		return -1;
 	}
 	

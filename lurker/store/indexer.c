@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.21 2002-06-10 12:25:58 terpstra Exp $
+/*  $Id: indexer.c,v 1.22 2002-06-14 11:16:58 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -271,7 +271,8 @@ int lu_indexer_init()
 				LU_INDEXER_MAX_DYNAMIC);
 	if (!my_indexer_buf)
 	{
-		fprintf(stderr, "Failed to allocate storage for keyword import tree\n");
+		fputs(_("Failed to allocate storage for keyword import tree\n"),
+			stderr);
 		return -1;
 	}
 	

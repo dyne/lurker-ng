@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.20 2002-05-21 13:23:06 terpstra Exp $
+/*  $Id: main.c,v 1.21 2002-06-14 11:16:58 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -100,9 +100,9 @@ int lu_connect_server()
 	{
 		printf("Content-Type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
-			"Not invoked as a get cgi", 
-			"Possibly a shell invokation or post",
-			"The .htaccess file must be modified");
+			_("Not invoked as a get cgi"), 
+			_("Possibly a shell invokation or post"),
+			_("The .htaccess file must be modified"));
 		return -1;
 	}
 	
@@ -110,8 +110,8 @@ int lu_connect_server()
 	{
 		printf("Content-Type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
-			"Unable to connect to server", 
-			"opening socket",
+			_("Unable to connect to server"), 
+			_("opening socket"),
 			strerror(errno));
 		return -1;
 	}
@@ -125,7 +125,7 @@ int lu_connect_server()
 	{
 		printf("Content-Type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
-			"Unable to connect to server - chdir failed", 
+			_("Unable to connect to server - chdir failed"), 
 			*query?query:DBDIR,
 			strerror(errno));
 		return -1;
@@ -135,7 +135,7 @@ int lu_connect_server()
 	{
 		printf("Content-Type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
-			"Unable to connect to server", 
+			_("Unable to connect to server"), 
 			"connect",
 			strerror(errno));
 		return -1;
@@ -145,7 +145,7 @@ int lu_connect_server()
 	{
 		printf("Content-Type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
-			"Restoring location of cgi", 
+			_("Restoring location of cgi"), 
 			"chdir",
 			strerror(errno));
 		return -1;
@@ -155,7 +155,7 @@ int lu_connect_server()
 	{
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
-			"Unable to connect to server", 
+			_("Unable to connect to server"), 
 			"fdopen",
 			strerror(errno));
 		return 1;
@@ -180,15 +180,20 @@ int main(int argc, char* argv[])
 	int	fd;
 	int	got;
 	
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
+	bind_textdomain_codeset(PACKAGE, "utf-8");
+	
 	/* What URL are we rendering? */
 	if ((uri = getenv("REQUEST_URI")) == 0)
 	{
 		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
-			"Not invoked as an ErrorDocument", 
-			"either shell or normal cgi invokation",
-			"The .htaccess file must be modified");
+			_("Not invoked as an ErrorDocument"), 
+			_("either shell or normal cgi invokation"),
+			_("The .htaccess file must be modified"));
 		return 1;
 	}
 	
@@ -201,9 +206,9 @@ int main(int argc, char* argv[])
 		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0],
-			"Improper request",
-			"Malformed REQUSET_URI",
-			"Missing an extension");
+			_("Improper request"),
+			_("Malformed REQUSET_URI"),
+			_("Missing an extension"));
 		return 1;
 	}
 	
@@ -216,9 +221,9 @@ int main(int argc, char* argv[])
 		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0],
-			"Improper request",
-			"Malformed REQUSET_URI",
-			"Missing the request directory");
+			_("Improper request"),
+			_("Malformed REQUSET_URI"),
+			_("Missing the request directory"));
 		return 1;
 	}
 	*mod++ = 0;
@@ -253,7 +258,7 @@ int main(int argc, char* argv[])
 		printf("Status: 200 OK\r\n");
 		printf("Content-Type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
-			"Saving location of cgi", 
+			_("Saving location of cgi"), 
 			"getcwd",
 			strerror(errno));
 		return 1;
@@ -264,7 +269,7 @@ int main(int argc, char* argv[])
 		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
-			"Invalid request", 
+			_("Invalid request"), 
 			"chdir&access",
 			strerror(errno));
 		return 1;
@@ -289,7 +294,7 @@ int main(int argc, char* argv[])
 		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0],
-			"Unable to create cache file",
+			_("Unable to create cache file"),
 			&buf[0],
 			strerror(errno));
 		return 1;
@@ -372,8 +377,8 @@ int main(int argc, char* argv[])
 	if (lseek(fd, 0, SEEK_SET) == -1)
 	{
 		printf(&basic_error[0], 
-			"Unable to rewind to start of output",
-			"reseek cache file",
+			_("Unable to rewind to start of output"),
+			_("reseek cache file"),
 			strerror(errno));
 		return 1;
 	}

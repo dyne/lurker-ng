@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.15 2002-06-10 12:28:38 terpstra Exp $
+/*  $Id: search.c,v 1.16 2002-06-14 11:16:58 terpstra Exp $
  *  
  *  search.c - redirect search postings
  *  
@@ -149,6 +149,11 @@ int main(int argc, char** argv)
 	char* e;
 	char* s;
 	char* scratch;
+	
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
+	bind_textdomain_codeset(PACKAGE, "utf-8");
 	
 	if (!uri)
 	{

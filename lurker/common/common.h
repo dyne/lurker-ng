@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.13 2002-06-12 22:50:47 terpstra Exp $
+/*  $Id: common.h,v 1.14 2002-06-14 11:16:58 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -24,7 +24,7 @@
 
 /*------------------------------------------------ System setup methods */
 
-#include "system.h"
+#include "../config.h"
 
 #define STORAGE			PACKAGE "d"
 #define RENDER			PACKAGE ".cgi"
@@ -98,6 +98,18 @@ typedef long time_t;
 #ifndef assert
 #define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
 #endif
+
+/*------------------------------------------------ Internationalization */
+
+#ifdef HAVE_GETTEXT
+#include <libintl.h>
+#else
+#include "../intl/libgnuintl.h"
+#endif
+
+#define _(String) gettext (String)
+#define gettext_noop(String) (String)
+#define N_(String) gettext_noop (String)
 
 /*------------------------------------------------ Public types */
 

@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.28 2002-06-04 13:47:14 terpstra Exp $
+/*  $Id: main.c,v 1.29 2002-06-14 11:16:59 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -163,7 +163,7 @@ static void* lu_sched_sync(void* die)
 	my_main_close();
 	my_main_quit();
 	
-	syslog(LOG_NOTICE, "shutting down ...\n");
+	syslog(LOG_NOTICE, _("shutting down ...\n"));
 	exit(0);
 }
 
@@ -191,7 +191,12 @@ int main(int argc, const char* argv[])
 	int			sun_len;
 	st_netfd_t		sun_stfd;
 	st_netfd_t		client_fd;
-
+	
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
+	bind_textdomain_codeset(PACKAGE, "utf-8");
+	
 	while ((c = getopt(argc, (char *const *)argv, "vnc:")) != -1) {
 		switch ((char)c) {
 		case 'c':
@@ -204,11 +209,13 @@ int main(int argc, const char* argv[])
 			fprintf(stderr, STORAGE " v" VERSION "\n");
 			return (0);
 		default:
-			fprintf(stderr, "Usage: %s [OPTIONS]...\n\n", argv[0]);
-			fprintf(stderr, "\t-v\tPrint version information\n");
-			fprintf(stderr, "\t-c file\tUse settings from file\n");
-			fprintf(stderr, "\t-n\tDon't run as a daemon\n");
-			return (1);
+			fprintf(stderr, _("Usage: %s [OPTIONS]...\n\n"), argv[0]);
+			
+			fputs(_("\t-v\tPrint version information\n"),   stderr);
+			fputs(_("\t-c file\tUse settings from file\n"), stderr);
+			fputs(_("\t-n\tDon't run as a daemon\n"),       stderr);
+			
+			return 1;
 		}
 	}
 	
@@ -216,7 +223,7 @@ int main(int argc, const char* argv[])
 	
 	if (st_init() != 0)
 	{
-		fprintf(stderr, "Could not initialize st threading library\n");
+		fputs(_("Could not initialize st threading library\n"), stderr);
 		return 1;
 	}
 	
@@ -225,7 +232,7 @@ int main(int argc, const char* argv[])
 	
 	if ((sun_fd = socket(PF_UNIX, SOCK_STREAM, 0)) == -1)
 	{
-		perror("opening domain socket");
+		perror(_("opening domain socket"));
 		return 1;
 	}
 	
@@ -238,20 +245,20 @@ int main(int argc, const char* argv[])
 	/* First try connecting to see if lurker is already running */
 	if (connect(sun_fd, (struct sockaddr*)&sun_addr, sun_len) == 0)
 	{
-		fprintf(stderr, "Lurker is already running on this db\n");
+		fputs(_("Lurker is already running on this db\n"), stderr);
 		return 1;
 	}
 	
 	unlink(&sun_addr.sun_path[0]);
 	if (bind(sun_fd, (struct sockaddr*)&sun_addr, sun_len) < 0)
 	{
-		perror("Could not bind abstract domain socket");
+		perror(_("Could not bind abstract domain socket"));
 		return 1;
 	}
 	
 	if (listen(sun_fd, 10) < 0)
 	{
-		perror("Could not listen on abstract domain socket");
+		perror(_("Could not listen on domain socket"));
 		return 1;
 	}
 	
@@ -259,7 +266,7 @@ int main(int argc, const char* argv[])
 	
 	if ((sun_stfd = st_netfd_open(sun_fd)) == 0)
 	{
-		perror("Passing domain socket to libst");
+		perror(_("Passing domain socket to libst"));
 		return 1;
 	}
 	
@@ -302,7 +309,7 @@ int main(int argc, const char* argv[])
 		/* Detach from session */
 		if (setsid() == -1)
 		{
-			perror("Could not detech from terminal");
+			perror(_("Could not detech from terminal"));
 			return 1;
 		}
 #endif

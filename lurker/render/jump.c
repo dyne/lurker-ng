@@ -1,4 +1,4 @@
-/*  $Id: jump.c,v 1.1 2002-06-10 22:35:31 terpstra Exp $
+/*  $Id: jump.c,v 1.2 2002-06-14 11:16:58 terpstra Exp $
  *  
  *  jump.c - redirect mindex jumps
  *  
@@ -77,14 +77,19 @@ int main(int argc, char** argv)
 	time_t		tmt;
 	struct tm	tms;
 	
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
+	bind_textdomain_codeset(PACKAGE, "utf-8");
+	
 	if (!uri)
 	{
 		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0],
-			"Not invoked as a GET cgi",
-			"REQUEST_URI invalid",
-			"environment variable missing");
+			_("Not invoked as a GET cgi"),
+			_("REQUEST_URI invalid"),
+			_("environment variable missing"));
 		return 0;
 	}
 	
@@ -93,9 +98,9 @@ int main(int argc, char** argv)
 		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0],
-			"Not invoked as a GET cgi",
-			"QUERY_STRING invalid",
-			"environment variable missing");
+			_("Not invoked as a GET cgi"),
+			_("QUERY_STRING invalid"),
+			_("environment variable missing"));
 		return 0;
 	}
 	

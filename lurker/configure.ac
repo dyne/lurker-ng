@@ -1,12 +1,17 @@
 AC_INIT(lurker, 0.1a)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.23 2002-06-09 22:16:35 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.24 2002-06-14 11:16:58 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
 AM_INIT_AUTOMAKE(lurker, 0.1a)
-AM_CONFIG_HEADER(common/system.h)
+AM_CONFIG_HEADER(config.h)
+
+
+# Which languages are supported
+ALL_LINGUAS=""
+
 
 AC_ARG_WITH(wwwdir, AC_HELP_STRING(
 	[--with-wwwdir], 
@@ -27,6 +32,16 @@ else
   urldir=$with_urldir
 fi
 AC_SUBST(urldir)
+
+AC_ARG_WITH(localedir, AC_HELP_STRING(
+	[--with-localedir], 
+	[locale directory (default: DATADIR/locale)]))
+if test "x$with_localedir" = "x"; then
+  localedir="\${datadir}/locale"
+else
+  localedir=$with_localedir
+fi
+AC_SUBST(localedir)
 
 AC_ARG_WITH(dbdir, AC_HELP_STRING(
 	[--with-dbdir], 
@@ -70,6 +85,7 @@ AC_TRY_COMPILE(
 [AC_MSG_RESULT(no)])
 
 AC_SYS_LARGEFILE
+AM_GNU_GETTEXT
 AM_ICONV
 
 if test "x$am_cv_func_iconv" != "xyes"; then
@@ -116,6 +132,7 @@ AC_DEFINE_DIR(DATADIR,       "${datadir}",       [Where do we find our documenta
 AC_DEFINE_DIR(WWWDIR,        "${wwwdir}",        [Where do we put the web files?])
 AC_DEFINE_DIR(LOCALSTATEDIR, "${localstatedir}", [Where do we keep our pid?])
 AC_DEFINE_DIR(DBDIR,         "${dbdir}",         [Where do we put our database files?])
+AC_DEFINE_DIR(LOCALEDIR,     "${localedir}",     [Where do we put out .mo files?])
 
 AC_OUTPUT([
  Makefile 
@@ -123,8 +140,10 @@ AC_OUTPUT([
   store/Makefile 
   render/Makefile 
   xslt/Makefile 
-  imgs/Makefile
-  doc/Makefile
+  imgs/Makefile 
+  doc/Makefile 
+  intl/Makefile 
+  po/Makefile.in 
  lurker.conf 
   doc/lurker.mbox 
   render/.htaccess])

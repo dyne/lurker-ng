@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.7 2002-06-10 12:25:58 terpstra Exp $
+/*  $Id: search.c,v 1.8 2002-06-14 11:16:59 terpstra Exp $
  *  
  *  search.h - Uses the breader to execute a given search
  *  
@@ -142,7 +142,7 @@ int lu_search_start(
 	
 	if (my_search_handles != 0)
 	{
-		*error = "Already executing a search";
+		*error = _("Already executing a search");
 		return -1;
 	}
 	
@@ -161,7 +161,7 @@ int lu_search_start(
 		
 		if (*keywords && !isspace(*keywords))
 		{
-			*error = "Keyword truncated";
+			*error = _("Keyword truncated");
 		
 			/* Skip over the overflow */
 			while (*keywords && !isspace(*keywords)) keywords++;
@@ -172,7 +172,7 @@ int lu_search_start(
 		{
 			if (my_search_handles == LU_MAX_TERMS)
 			{
-				*error = "Too many search terms";
+				*error = _("Too many search terms");
 				continue;
 			}
 			

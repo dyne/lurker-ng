@@ -1,4 +1,4 @@
-/*  $Id: expiry.c,v 1.9 2002-06-10 12:25:58 terpstra Exp $
+/*  $Id: expiry.c,v 1.10 2002-06-14 11:16:58 terpstra Exp $
  *  
  *  expiry.c - Record when pages should be destroyed
  *  
@@ -158,7 +158,7 @@ static int my_expiry_pop(lu_word x)
 		my_expiry_names_db, 0, &key, &val, 0);
 	if (error != 0)
 	{
-		syslog(LOG_ERR, "Finding a record to delete for %d: %s\n",
+		syslog(LOG_ERR, _("Finding a record to delete for %d: %s\n"),
 			my_expiry_heap[x].id,
 			db_strerror(error));
 		return -1;
@@ -167,7 +167,7 @@ static int my_expiry_pop(lu_word x)
 		my_expiry_names_db, 0, &key, 0);
 	if (error != 0)
 	{
-		syslog(LOG_ERR, "Deleting a cache record for %s: %s\n",
+		syslog(LOG_ERR, _("Deleting a cache record for %s: %s\n"),
 			&file[0],
 			strerror(errno));
 		return -1;
@@ -178,7 +178,7 @@ static int my_expiry_pop(lu_word x)
 	/* Ignore the case that it's already been killed */
 	if (unlink(&file[0]) && errno != ENOENT)
 	{
-		syslog(LOG_ERR, "Deleting file '%s' failed: %s\n",
+		syslog(LOG_ERR, _("Deleting file '%s' failed: %s\n"),
 			&file[0],
 			strerror(errno));
 	}
@@ -212,7 +212,7 @@ static int my_expiry_pop(lu_word x)
 	if (ftruncate(my_expiry_heap_fd, 
 		sizeof(My_Expiry_Heap) * my_expiry_heaps) != 0)
 	{
-		syslog(LOG_ERR, "Unable to reduce disk space cache heap: %s\n",
+		syslog(LOG_ERR, _("Unable to reduce disk space cache heap: %s\n"),
 			strerror(errno));
 	}
 	
@@ -288,7 +288,7 @@ int lu_expiry_record_file(
 		if (error == 0) break;
 		if (error != DB_KEYEXIST)
 		{
-			syslog(LOG_ERR, "Failed to write filename '%s' to cache db: %s\n",
+			syslog(LOG_ERR, _("Failed to write filename '%s' to cache db: %s\n"),
 				path, db_strerror(error));
 			return 1;
 		}
@@ -421,7 +421,7 @@ int lu_expiry_open()
 		PROT_READ | PROT_WRITE, MAP_SHARED, my_expiry_heap_fd, 0);
 	if (my_expiry_heap == MAP_FAILED)
 	{
-		perror("mmap'ing the expiry heap");
+		perror(_("mmap'ing the expiry heap"));
 		return -1;
 	}
 	my_expiry_heap--; /* So we can address it from 1 */
@@ -430,7 +430,7 @@ int lu_expiry_open()
 	error = read(my_expiry_list_fd, &head[0], sizeof(My_Expiry_List)*2);
 	if (error == -1)
 	{
-		perror("reading the expiry head");
+		perror(_("reading the expiry head"));
 		return -1;
 	}
 	
@@ -443,7 +443,7 @@ int lu_expiry_open()
 		if (write(my_expiry_list_fd, &head[0], sizeof(My_Expiry_List)*2)
 			!= sizeof(My_Expiry_List)*2)
 		{
-			perror("writing the expiry head");
+			perror(_("writing the expiry head"));
 			return -1;
 		}
 	}
@@ -460,7 +460,7 @@ int lu_expiry_open()
 		
 		if (error == -1)
 		{
-			perror("reading the expiry list");
+			perror(_("reading the expiry list"));
 			return -1;
 		}
 	}
@@ -475,7 +475,7 @@ int lu_expiry_open()
 			if (write(my_expiry_list_fd, &list, sizeof(My_Expiry_List))
 				!= sizeof(My_Expiry_List))
 			{
-				perror("writing new records to expiry list");
+				perror(_("writing new records to expiry list"));
 				return -1;
 			}
 		}
@@ -486,13 +486,13 @@ int lu_expiry_open()
 		PROT_READ | PROT_WRITE, MAP_SHARED, my_expiry_list_fd, 0);
 	if (my_expiry_list == MAP_FAILED)
 	{
-		perror("mmap'ing the expiry list");
+		perror(_("mmap'ing the expiry list"));
 		return -1;
 	}
 	
 	if ((error = db_create(&my_expiry_names_db, lu_config_env, 0)) != 0)
 	{
-		fprintf(stderr, "Creating a db3 database: %s\n",
+		fprintf(stderr, _("Creating a db3 database: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
@@ -501,7 +501,7 @@ int lu_expiry_open()
 		my_expiry_names_db, "expiry.hash", 0,
 		DB_HASH, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
 	{
-		fprintf(stderr, "Opening db3 database: expiry.hash: %s\n",
+		fprintf(stderr, _("Opening db3 database: expiry.hash: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
@@ -518,7 +518,7 @@ int lu_expiry_sync()
 	if ((error = my_expiry_names_db->sync(
 		my_expiry_names_db, 0)) != 0)
 	{
-		syslog(LOG_ERR, "Syncing db3 database: expiry.hash: %s\n",
+		syslog(LOG_ERR, _("Syncing db3 database: expiry.hash: %s\n"),
 			db_strerror(error));
 	}
 	
@@ -526,7 +526,7 @@ int lu_expiry_sync()
 		lu_config_cache_files * sizeof(My_Expiry_Heap),
 		MS_SYNC) != 0)
 	{
-		syslog(LOG_ERR, "Syncing the file heap map: %s\n",
+		syslog(LOG_ERR, _("Syncing the file heap map: %s\n"),
 			strerror(errno));
 	}
 	
@@ -534,7 +534,7 @@ int lu_expiry_sync()
 		my_expiry_lists * sizeof(My_Expiry_List),
 		MS_SYNC) != 0)
 	{
-		syslog(LOG_ERR, "Syncing the file list map: %s\n",
+		syslog(LOG_ERR, _("Syncing the file list map: %s\n"),
 			strerror(errno));
 	}
 	
@@ -551,7 +551,7 @@ int lu_expiry_close()
 	if ((error = my_expiry_names_db->close(
 		my_expiry_names_db, 0)) != 0)
 	{
-		syslog(LOG_ERR, "Closing db3 database: expiry.hash: %s\n",
+		syslog(LOG_ERR, _("Closing db3 database: expiry.hash: %s\n"),
 			db_strerror(error));
 		fail = -1;
 	}
@@ -559,14 +559,14 @@ int lu_expiry_close()
 	if (munmap(my_expiry_heap+1, 
 		lu_config_cache_files * sizeof(My_Expiry_Heap)) != 0)
 	{
-		syslog(LOG_ERR, "Closing the file heap mmap: %s\n",
+		syslog(LOG_ERR, _("Closing the file heap mmap: %s\n"),
 			db_strerror(errno));
 	}
 	
 	if (munmap(my_expiry_list,
 		my_expiry_lists * sizeof(My_Expiry_List)) != 0)
 	{
-		syslog(LOG_ERR, "Closing the file list mmap: %s\n",
+		syslog(LOG_ERR, _("Closing the file list mmap: %s\n"),
 			db_strerror(errno));
 	}
 	

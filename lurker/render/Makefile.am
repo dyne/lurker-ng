@@ -21,5 +21,6 @@ lurker_jump_cgi_SOURCES = \
 	jump.c \
 	error.h
 
-lurker_xslt_LDADD = @RENDER_LIBS@
-lurker_search_cgi_LDADD = ../common/libcommon.a
+lurker_xslt_LDADD = @RENDER_LIBS@ @INTLLIBS@
+lurker_search_cgi_LDADD = ../common/libcommon.a @INTLLIBS@
+lurker_jump_cgi_LDADD = @INTLLIBS@

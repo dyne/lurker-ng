@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.30 2002-06-10 12:25:58 terpstra Exp $
+/*  $Id: mbox.c,v 1.31 2002-06-14 11:16:59 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -25,7 +25,7 @@
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
 
-/* #define DEBUG 1 */
+#define DEBUG 1
 
 #include "common.h"
 #include "io.h"
@@ -342,7 +342,7 @@ static int my_mbox_process_mbox(
 	
 	if (!decode_subj[0])
 	{
-		strcpy(&decode_subj[0], "No subject");
+		strcpy(&decode_subj[0], _("No subject"));
 	}
 		
 	/* Empty fields initially */
@@ -570,7 +570,7 @@ static time_t my_mbox_extract_timestamp(
 		s = my_mbox_strnstr(buf, "From ", e - buf);
 		if (s == 0)
 		{
-			syslog(LOG_ERR, "Discovered >=4k more to a message after we had already processed it.\n");
+			syslog(LOG_ERR, _("Discovered >=4k more to a message after we had already processed it.\n"));
 			lu_config_move_mbox_end(mbox, list, mbox->length + (e - buf));
 			
 			/* Try again */
@@ -579,7 +579,7 @@ static time_t my_mbox_extract_timestamp(
 		
 		if (s != buf)
 		{
-			syslog(LOG_ERR, "Discovered <4k more to a message after we had already processed it.\n");
+			syslog(LOG_ERR, _("Discovered <4k more to a message after we had already processed it.\n"));
 			lu_config_move_mbox_end(mbox, list, mbox->length + (s - buf));
 			
 			continue;
@@ -598,7 +598,7 @@ static time_t my_mbox_extract_timestamp(
 		if (!timestamp[0])
 		{	/* Not a valid From line.
 			 */
-			syslog(LOG_ERR, "Discovered an invalid From line - must be prior message continued.\n");
+			syslog(LOG_ERR, _("Discovered an invalid From line - must be prior message continued.\n"));
 			
 			lu_config_move_mbox_end(mbox, list, mbox->length + (s - buf) + 1);
 			continue;

@@ -24,7 +24,7 @@ lurkerd_SOURCES = \
 	main.c     btree.h    \
 	expiry.c   expiry.h
 
-lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV}
+lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV} @INTLLIBS@
 
 install-data-local:
 	@list='$(REQUESTS)'; for p in $$list; do \

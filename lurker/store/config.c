@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.14 2002-06-04 13:44:38 terpstra Exp $
+/*  $Id: config.c,v 1.15 2002-06-14 11:16:58 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -132,7 +132,7 @@ static int my_config_sort_mboxs(
 	list->mbox = malloc(sizeof(Lu_Config_Mbox) * list->mboxs);
 	if (!list->mbox)
 	{
-		fprintf(stderr, "%s: error: out of memory\n", cfg);
+		fprintf(stderr, _("%s: error: out of memory\n"), cfg);
 		return -1;
 	}
 	
@@ -159,8 +159,8 @@ static int my_config_sort_mboxs(
 		{
 			if (scan->id == (scan-1)->id)
 			{
-				fprintf(stderr, "%s: error: "
-					"duplicated mbox id: %d (%s)\n", 
+				fprintf(stderr, 
+					_("%s: error: duplicated mbox id: %d (%s)\n"), 
 					cfg, scan->id, list->name);
 				ok = -1;
 			}
@@ -190,7 +190,7 @@ static int my_config_sort_configuration(
 	
 	if (lu_config_lists == 0)
 	{
-		fprintf(stderr, "%s: error: no lists defined\n", cfg);
+		fprintf(stderr, _("%s: error: no lists defined\n"), cfg);
 		return -1;
 	}
 	
@@ -198,7 +198,7 @@ static int my_config_sort_configuration(
 	lu_config_list = malloc(sizeof(Lu_Config_List) * lu_config_lists);
 	if (!lu_config_list)
 	{
-		fprintf(stderr, "%s: error: out of memory\n", cfg);
+		fprintf(stderr, _("%s: error: out of memory\n"), cfg);
 		return -1;
 	}
 	
@@ -217,8 +217,8 @@ static int my_config_sort_configuration(
 		{
 			if (scan->id == (scan-1)->id)
 			{
-				fprintf(stderr, "%s: error: "
-					"duplicated list id: %d\n", 
+				fprintf(stderr, 
+					_("%s: error: duplicated list id: %d\n"), 
 					cfg, scan->id);
 				ok = -1;
 			}
@@ -244,7 +244,7 @@ static char* my_config_find_after(
 	
 	if (!*str)
 	{
-		fprintf(stderr, "%s:%d: error: missing '='\n", cfg, lines);
+		fprintf(stderr, _("%s:%d: error: missing '='\n"), cfg, lines);
 		return 0;
 	}
 	
@@ -257,20 +257,20 @@ static char* my_config_find_after(
 	
 	if (!*str)
 	{
-		fprintf(stderr, "%s:%d: error: missing value after '='\n", cfg, lines);
+		fprintf(stderr, _("%s:%d: error: missing value after '='\n"), cfg, lines);
 		return 0;
 	}
 	
 	out = strdup(str);
 	if (!out)
 	{
-		fprintf(stderr, "%s:%d: error: out of memory\n", cfg, lines);
+		fprintf(stderr, _("%s:%d: error: out of memory\n"), cfg, lines);
 		return 0;
 	}
 	
 	if (strlen(out) == 0)
 	{
-		fprintf(stderr, "%s:%d: error: empty value\n", cfg, lines);
+		fprintf(stderr, _("%s:%d: error: empty value\n"), cfg, lines);
 		free(out);
 		return 0;
 	}
@@ -282,7 +282,7 @@ static char* my_config_find_after(
 	
 	if (strlen(out) == 0)
 	{
-		fprintf(stderr, "%s:%d: error: empty value\n", cfg, lines);
+		fprintf(stderr, _("%s:%d: error: empty value\n"), cfg, lines);
 		free(out);
 		return 0;
 	}
@@ -303,7 +303,9 @@ static long my_config_number_after(
 		out = atol(num);
 		if (!out)
 		{
-			fprintf(stderr, "%s:%d: error: invalid value - must be positive integer\n", cfg, lines);
+			fprintf(stderr, 
+				_("%s:%d: error: invalid value - must be positive integer\n"), 
+				cfg, lines);
 		}
 		free(num);
 	}
@@ -331,7 +333,7 @@ static int my_config_open_mboxs()
 			mbox->fd = open(mbox->path, O_RDONLY);
 			if (mbox->fd == -1)
 			{
-				fprintf(stderr, "opening mailbox for %s: ", list->name);
+				fprintf(stderr, _("opening mailbox for %s: "), list->name);
 				perror(mbox->path);
 				ok = -1;
 			}
@@ -352,7 +354,7 @@ if (!strcmp(&keyword[0], key)) \
 { \
 	if (what) \
 	{ \
-		fprintf(stderr, "%s:%d: error: %s in list scope\n", \
+		fprintf(stderr, _("%s:%d: error: %s in list scope\n"), \
 			my_config_file, lines, key); \
 		ok = -1; \
 		continue; \
@@ -360,7 +362,7 @@ if (!strcmp(&keyword[0], key)) \
 	\
 	if (var) \
 	{ \
-		fprintf(stderr, "%s:%d: warning: %s reset\n", \
+		fprintf(stderr, _("%s:%d: warning: %s reset\n"), \
 			my_config_file, lines, key); \
 		free(var); \
 	} \
@@ -374,7 +376,7 @@ if (!strcmp(&keyword[0], key)) \
 { \
 	if (what) \
 	{ \
-		fprintf(stderr, "%s:%d: error: %s in list scope\n", \
+		fprintf(stderr, _("%s:%d: error: %s in list scope\n"), \
 			my_config_file, lines, key); \
 		ok = -1; \
 		continue; \
@@ -382,7 +384,7 @@ if (!strcmp(&keyword[0], key)) \
 	\
 	if (var) \
 	{ \
-		fprintf(stderr, "%s:%d: warning: %s reset\n", \
+		fprintf(stderr, _("%s:%d: warning: %s reset\n"), \
 			my_config_file, lines, key); \
 	} \
 	\
@@ -395,7 +397,7 @@ if (!strcmp(&keyword[0], key)) \
 { \
 	if (!what) \
 	{ \
-		fprintf(stderr, "%s:%d: error: %s outside list scope\n", \
+		fprintf(stderr, _("%s:%d: error: %s outside list scope\n"), \
 			my_config_file, lines, key); \
 		ok = -1; \
 		continue; \
@@ -403,7 +405,7 @@ if (!strcmp(&keyword[0], key)) \
 	\
 	if (what->var) \
 	{ \
-		fprintf(stderr, "%s:%d: warning: %s reset\n", \
+		fprintf(stderr, _("%s:%d: warning: %s reset\n"), \
 			my_config_file, lines, key); \
 		free(what->var); \
 	} \
@@ -415,16 +417,16 @@ if (!strcmp(&keyword[0], key)) \
 #define DEF_STR(key, var, val) \
 if (!var) \
 { \
-	fprintf(stderr, "%s: warning: %s not declared - " \
-		"using: %s\n", my_config_file, key, val); \
+	fprintf(stderr, _("%s: warning: %s not declared - using: %s\n"), \
+		my_config_file, key, val); \
 	var = strdup(val); \
 }
 
 #define DEF_NUM(key, var, val) \
 if (!var) \
 { \
-	fprintf(stderr, "%s: warning: %s not declared - " \
-		"using: %d\n", my_config_file, key, val); \
+	fprintf(stderr, _("%s: warning: %s not declared - using: %d\n"), \
+		my_config_file, key, val); \
 	var = val; \
 }
 
@@ -480,8 +482,8 @@ static int my_config_load_config()
 		{
 			if (sscanf(&line[0], "%19s %d = ", &keyword[0], &i) != 2)
 			{
-				fprintf(stderr, "%s:%d: error: "
-					"missing numeric tag for list\n",
+				fprintf(stderr, 
+					_("%s:%d: error: missing numeric tag for list\n"),
 					my_config_file, lines);
 				ok = -1;
 				continue;
@@ -489,8 +491,8 @@ static int my_config_load_config()
 			
 			if (i < 0 || i >= 0xFFFEUL)
 			{
-				fprintf(stderr, "%s:%d: error: "
-					"id is not within bounds\n",
+				fprintf(stderr, 
+					_("%s:%d: error: id is not within bounds\n"),
 					my_config_file, lines);
 				ok = -1;
 				continue;
@@ -506,8 +508,8 @@ static int my_config_load_config()
 			what = *target_list = malloc(sizeof(Lu_Config_List));
 			if (!*target_list)
 			{
-				fprintf(stderr, "%s:%d: error: "
-					"out of memory\n",
+				fprintf(stderr, 
+					_("%s:%d: error: out of memory\n"),
 					my_config_file, lines);
 				free(tmp);
 				ok = -1;
@@ -530,8 +532,8 @@ static int my_config_load_config()
 		{
 			if (!what)
 			{
-				fprintf(stderr, "%s:%d: error: "
-					"mbox outside list scope\n",
+				fprintf(stderr, 
+					_("%s:%d: error: mbox outside list scope\n"),
 					my_config_file, lines);
 				ok = -1;
 				continue;
@@ -539,8 +541,8 @@ static int my_config_load_config()
 			
 			if (i < 0 || i >= 0xFFFFUL)
 			{
-				fprintf(stderr, "%s:%d: error: "
-					"id is not within bounds\n",
+				fprintf(stderr, 
+					_("%s:%d: error: id is not within bounds\n"),
 					my_config_file, lines);
 				ok = -1;
 				continue;
@@ -548,8 +550,8 @@ static int my_config_load_config()
 			
 			if (sscanf(&line[0], "%19s %d = ", &keyword[0], &i) != 2)
 			{
-				fprintf(stderr, "%s:%d: error: "
-					"missing numeric tag for mbox\n",
+				fprintf(stderr, 
+					_("%s:%d: error: missing numeric tag for mbox\n"),
 					my_config_file, lines);
 				ok = -1;
 				continue;
@@ -566,8 +568,8 @@ static int my_config_load_config()
 			*target_mbox = malloc(sizeof(Lu_Config_Mbox));
 			if (!*target_mbox)
 			{
-				fprintf(stderr, "%s:%d: error: "
-					"out of memory\n",
+				fprintf(stderr, 
+					_("%s:%d: error: out of memory\n"),
 					my_config_file, lines);
 				free(tmp);
 				ok = -1;
@@ -597,7 +599,7 @@ static int my_config_load_config()
 		else AFT_LIST_STR("address",           address)
 		else
 		{
-			fprintf(stderr, "%s:%d: error: unknown keyword '%s'\n",
+			fprintf(stderr, _("%s:%d: error: unknown keyword '%s'\n"),
 				my_config_file, lines, &keyword[0]);
 			ok = -1;
 		}
@@ -681,14 +683,14 @@ int my_config_sync_mbox()
 				got = read(mbox->fd, &buf[0], sizeof(buf));
 				if (got < 0)
 				{
-					fprintf(stderr, "Couldn't read mbox %s: %s\n",
+					fprintf(stderr, _("Couldn't read mbox %s: %s\n"),
 							mbox->path, strerror(errno));
 					return -1;
 				}
 				
 				if (got < sizeof(buf) && got < val.offset)
 				{	/* They switched mboxs on us -- too small */
-					fprintf(stderr, "Mbox id does not match prior version %s\n",
+					fprintf(stderr, _("Mbox id does not match prior version %s\n"),
 						mbox->path);
 					return -1;
 				}
@@ -700,7 +702,7 @@ int my_config_sync_mbox()
 				
 				if (memcmp(&val.front[0], &buf[0], got))
 				{	/* The contents are changed */
-					fprintf(stderr, "Mbox id does not match prior version %s\n",
+					fprintf(stderr, _("Mbox id does not match prior version %s\n"),
 						mbox->path);
 					return -1;
 				}
@@ -709,7 +711,7 @@ int my_config_sync_mbox()
 			}
 			else if (error != DB_NOTFOUND)
 			{
-				fprintf(stderr, "Database failure mbox.btree: %s\n",
+				fprintf(stderr, _("Database failure mbox.btree: %s\n"),
 					db_strerror(error));
 			}
 		}
@@ -745,7 +747,7 @@ int lu_config_open()
 	
 	if ((error = db_env_create(&lu_config_env, 0)) != 0)
 	{
-		fprintf(stderr, "Creating db3 environment: %s\n", 
+		fprintf(stderr, _("Creating db3 environment: %s\n"), 
 			db_strerror(error));
 		return -1;
 	}
@@ -762,7 +764,7 @@ int lu_config_open()
 	if ((error = lu_config_env->set_shm_key(
 		lu_config_env, *(long*)&digest[0])) != 0)
 	{
-		fprintf(stderr, "Setting db3 shared memory key: %s\n", 
+		fprintf(stderr, _("Setting db3 shared memory key: %s\n"), 
 			db_strerror(error));
 		return -1;
 	}
@@ -773,14 +775,14 @@ int lu_config_open()
 		DB_CREATE | DB_SYSTEM_MEM,
 		LU_S_READ | LU_S_WRITE)) != 0)
 	{
-		fprintf(stderr, "Opening the db3 environment: %s\n",
+		fprintf(stderr, _("Opening the db3 environment: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
 	
 	if ((error = db_create(&my_config_mbox_db, lu_config_env, 0)) != 0)
 	{
-		fprintf(stderr, "Creating a db3 database: %s\n",
+		fprintf(stderr, _("Creating a db3 database: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
@@ -788,7 +790,7 @@ int lu_config_open()
 	if ((error = my_config_mbox_db->open(my_config_mbox_db, "mbox.btree", 0,
 		DB_BTREE, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
 	{
-		fprintf(stderr, "Opening db3 database: mbox.btree: %s\n",
+		fprintf(stderr, _("Opening db3 database: mbox.btree: %s\n"),
 			db_strerror(error));
 		return -1;
 	}
@@ -808,7 +810,7 @@ int lu_config_sync()
 	
 	if ((error = my_config_mbox_db->sync(my_config_mbox_db, 0)) != 0)
 	{
-		syslog(LOG_ERR, "Syncing db3 database: mbox.btree: %s\n",
+		syslog(LOG_ERR, _("Syncing db3 database: mbox.btree: %s\n"),
 			db_strerror(error));
 		fail = -1;
 	}
@@ -823,14 +825,14 @@ int lu_config_close()
 	
 	if ((error = my_config_mbox_db->close(my_config_mbox_db, 0)) != 0)
 	{
-		syslog(LOG_ERR, "Closing db3 database: mbox.btree: %s\n",
+		syslog(LOG_ERR, _("Closing db3 database: mbox.btree: %s\n"),
 			db_strerror(error));
 		fail = -1;
 	}
 	
 	if ((error = lu_config_env->close(lu_config_env, 0)) != 0)
 	{
-		syslog(LOG_ERR, "Closing db3 environment: %s\n",
+		syslog(LOG_ERR, _("Closing db3 environment: %s\n"),
 			db_strerror(error));
 		fail = -1;
 	}
