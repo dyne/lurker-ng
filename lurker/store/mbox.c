@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.43 2002-08-12 14:21:04 terpstra Exp $
+/*  $Id: mbox.c,v 1.44 2002-08-14 10:14:20 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -586,6 +586,7 @@ static time_t my_mbox_extract_timestamp(
 	char*	w;
 	
 	const char*	buf;
+	const char*	ws;
 	const char*	e;
 	const char*	s;
 	const char*	he;
@@ -643,8 +644,19 @@ static time_t my_mbox_extract_timestamp(
 		
 		if (s != buf)
 		{
-			syslog(LOG_ERR, _("Discovered <4k more to a message after we had already processed it (%ld bytes).\n"),
-				((long)s) - ((long)buf));
+			ws = buf;
+			if (*ws == '\r') ws++;
+			if (*ws == '\n') ws++;
+			if (*ws == '\r') ws++;
+			if (*ws == '\n') ws++;
+		
+			if (s != ws)
+			{
+				syslog(LOG_ERR, 
+					_("Discovered <4k more to a message after we had already processed it (%ld bytes).\n"),
+					((long)s) - ((long)buf));
+			}
+			
 			lu_config_move_mbox_end(mbox, list, mbox->length + (s - buf));
 			
 			continue;

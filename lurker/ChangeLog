@@ -1,3 +1,6 @@
+v0.1e:
+	Don't warn if a maildrop adds whitespace before "From ..."
+
 v0.1d:
 	Fixed an off by one error in btree.c (could assert-fail)
 	Kap allowed wbuffers w/o append, which could consume a lot of RAM

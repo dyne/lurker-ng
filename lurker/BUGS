@@ -15,7 +15,6 @@ Unfulfilled requirements:
 	German pot
 
 BUGS:
-	Somehow or another <4k message errors are being reported by people
 	Config reloading is broken
 	We no longer support block device operation for append
 	We don't check for double append
