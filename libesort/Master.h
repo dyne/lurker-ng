@@ -1,4 +1,4 @@
-/*  $Id: Master.h,v 1.1.1.1 2003-08-15 13:59:07 terpstra Exp $
+/*  $Id: Master.h,v 1.2 2003-08-16 18:29:06 terpstra Exp $
  *  
  *  Master.h - Coordinate commit+read interface
  *  
@@ -48,6 +48,7 @@ class Master : public Writer
  	
  	int init(const string& db, int mode);
  	
+ 	int rollback();
  	int commit();
  	int insert(const string& k);
 

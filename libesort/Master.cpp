@@ -1,4 +1,4 @@
-/*  $Id: Master.cpp,v 1.1.1.1 2003-08-15 13:59:07 terpstra Exp $
+/*  $Id: Master.cpp,v 1.2 2003-08-16 18:29:05 terpstra Exp $
  *  
  *  Master.cpp - Coordinate commit+read interface
  *  
@@ -73,6 +73,12 @@ struct CleanupHelper
  		}
  	}
 };
+
+int Master::rollback()
+{
+	memory.flush();
+	return 0;
+}
 
 int Master::commit()
 {

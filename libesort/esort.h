@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.3 2003-08-16 17:48:05 terpstra Exp $
+/*  $Id: esort.h,v 1.4 2003-08-16 18:29:06 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -170,9 +170,10 @@ class Reader
 /** The Writer object allows you to insert keys.
  *
  *  The Writer is atomic. When a key is inserted, it immediately becomes
- *  available in all Walkers & Readers obtained from the Writer. However,
- *  all open Readers never see the inserted keys, and new Readers do not
- *  see them until the Writer calls commit.
+ *  available in all Walkers & Readers obtained from the Writer.
+ *  
+ *  However, all pre-opened non-Writer Readers never see the inserted keys,
+ *  and new Readers do not see them unless the Writer has called commit.
  */
 class Writer : public Reader
 {
@@ -184,9 +185,17 @@ class Writer : public Reader
  	virtual int insert(const string& k) = 0;
  	
  	/** Commit the changes to the database.
+ 	 *  On success invalidates all Walkers obtained prior to the call.
+ 	 *  It is possible to retry the commit without rolling back.
  	 *  If an error occures, -1 is returned and errno set, else 0.
  	 */
  	virtual int commit() = 0;
+ 	
+ 	/** Rollback changes made since last successful commit.
+ 	 *  On success invalidates all Walkers obtained prior to the call.
+ 	 *  If an error occures, -1 is returned and errno set, else 0.
+ 	 */
+ 	virtual int rollback() = 0;
  	
  	/** Open a database for writing.
  	 *  It is created if it did not exist.
