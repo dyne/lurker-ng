@@ -19,7 +19,7 @@
 <xsl:variable name="near-message" select="'Nearby Messages'"/>
 <xsl:variable name="old-topics" select="'Old-Topics'"/>
 <xsl:variable name="new-topics" select="'New-Topics'"/>
-<xsl:variable name="raw-email" select="'Entire message'"/>
+<xsl:variable name="raw-email" select="'Message as email'"/>
 
 <xsl:variable name="front-page" select="'Starting Page'"/>
 <xsl:variable name="search-menu" select="'Search the archive for matching messages'"/>

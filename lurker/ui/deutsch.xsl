@@ -19,7 +19,7 @@
 <xsl:variable name="near-message" select="'Nachrichten um die Zeit'"/>
 <xsl:variable name="old-topics" select="'Alte Treads'"/>
 <xsl:variable name="new-topics" select="'Neue Treads'"/>
-<xsl:variable name="raw-email" select="'Komplette Nachricht'"/>
+<xsl:variable name="raw-email" select="'Nachricht'"/>
 
 <xsl:variable name="front-page" select="'Start Seite'"/>
 <xsl:variable name="search-menu" select="'Durchsuche das Archiv nach passenden Nachrichten'"/>

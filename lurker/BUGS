@@ -12,7 +12,6 @@ Ideas:
 	Re-add optional lurkerd to watch mboxs?
 
 BUGS:
-	Reply to in messages?
 	There is a slight bug in advance() pre-commit post-insert.
 		(you don't always see fresh keys if partially past it)
 		(... but this doesn't affect lurker, so not priority)

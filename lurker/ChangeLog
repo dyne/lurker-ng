@@ -6,7 +6,6 @@ v1.1:
 	Substitute dbdir in lurker.conf
 	Create dbdir during install target
 	Fixed lurker-regenerate for uncompressed databases
-	Newer automake and autoconf used for build
 	Removed obsolete Version.h.in
 	Spell checked lurker.conf.in
 	Added hide_email config option
@@ -19,6 +18,8 @@ v1.1:
 	Include and build dump for help debugging databases
 	Added a work-around for mozilla 1.5 uri parsing bug (searchs with .)
 	Changed widths to work-around latest Safari table layout change
+	Set Content-Type for raw messages to message/rfc822 to allow reply
+	Newer automake and autoconf used for build
 
 v1.0:
 	Froze the 1.* series against all changes other than bug fixes

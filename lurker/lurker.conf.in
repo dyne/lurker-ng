@@ -100,8 +100,12 @@ dbdir = @vardir@
 # Normally, lurker includes all email addresses in the source email message.
 # Some people feel that this helps spammers with email address harvesting.
 # However, removing addresses makes your archive less useful to visitors.
+# 
 # This will also try to obscure email addresses found in message bodies.
 # This option will not affect display of mailing list or admin addresses.
+# You probably also want to disable attachments, reply, and full text.
+# Removing the attach/ and mbox/ directories will turn these off.
+# Then remove '<xsl:call-template name="attachments"/>' from message.xsl.
 #
 # hide_email = off
 

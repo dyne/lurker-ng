@@ -72,7 +72,7 @@
  <table class="attachments">
   <tr><th align="left"><xsl:value-of select="$attachments"/></th></tr>
   <tr><td>
-   <a href="../mbox/{summary/id}.txt"><xsl:value-of select="$raw-email"/></a><br/>
+   <a href="../mbox/{summary/id}.rfc822"><xsl:value-of select="$raw-email"/></a><br/>
    <xsl:apply-templates mode="attach" select="mime"/>
   </td></tr>
  </table>
