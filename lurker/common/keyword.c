@@ -1,4 +1,4 @@
-/*  $Id: keyword.c,v 1.5 2002-07-11 20:39:23 terpstra Exp $
+/*  $Id: keyword.c,v 1.6 2003-03-30 14:02:45 terpstra Exp $
  *  
  *  prefix.c - Digest a hunk of string into keywords.
  *  
@@ -30,6 +30,8 @@
 
 #include "common.h"
 #include "keyword.h"
+
+#include <string.h>
 
 /*------------------------------------------------ Private global vars */
 

@@ -1,4 +1,4 @@
-/*  $Id: kapdump.c,v 1.11 2002-08-24 18:11:13 terpstra Exp $
+/*  $Id: kapdump.c,v 1.12 2003-03-30 14:04:27 terpstra Exp $
  *  
  *  kapdump.c - Export a kap database to a human readable flat text file
  *  
@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>	
+#include <string.h>
 
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
