@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.8 2002-02-12 09:15:31 terpstra Exp $
+/*  $Id: summary.c,v 1.9 2002-02-24 23:40:12 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -1322,26 +1322,19 @@ int lu_summary_reply_to_resolution(
 	 	h = lu_breader_new(&key[0]);
 	 	if (h != 0)
 	 	{
-	 		count = lu_breader_records(h);
-	 		ind = 0;
-	 		
-	 		while (count)
-	 		{
-	 			get = count;
-	 			if (get > sizeof(buf)/sizeof(message_id))
-	 				get = sizeof(buf)/sizeof(message_id);
-	 			
-	 			if (lu_breader_read(h, ind, get, &buf[0]) != 0)
+	 		if (lu_breader_records(h) >= 1)
+	 		{	/* We will mark ourselves as only replying
+	 			 * to the first message with a given message
+	 			 * id. -- It DOES happen. *grumble*
+	 			 */
+	 			 
+	 			if (lu_breader_read(h, 0, 1, &buf[0]) != 0)
 	 			{
 	 				lu_breader_free(h);
 	 				return -1;
 	 			}
 	 			
-	 			for (i = 0; i < get; i++)
-	 				my_summary_reply_link(id, buf[i]);
-	 			
-	 			ind   += get;
-	 			count -= get;
+	 			my_summary_reply_link(id, buf[0]);
 	 		}
 	 		
 	 		lu_breader_free(h);
