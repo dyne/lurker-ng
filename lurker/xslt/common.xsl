@@ -4,6 +4,8 @@
     xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
 
+<!-- Format email address -->
+
 <xsl:template match="email[@address]">
  <a href="mailto:{@address}">
   <xsl:if test="@name">&quot;<xsl:value-of select="@name"/>&quot;</xsl:if>
@@ -18,13 +20,55 @@
  <xsl:value-of select="@name"/>
 </xsl:template>
 
+<xsl:template match="email[@address]" mode="list">
+  <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text></xsl:if>
+  <xsl:apply-templates select="."/>
+</xsl:template>
+
+<!-- Format email message contents -->
+
+<xsl:template match="br"><br/></xsl:template>
+
+<xsl:template match="mime">
+ <xsl:if test="not(position()=1)"><hr/></xsl:if>
+ <div align="right">
+  <xsl:if test="@name">
+   <a href="../attach/{@id}@{/message/mid}@{@name}">
+    <xsl:value-of select="@name"/> (<xsl:value-of select="@type"/>)
+   </a>
+   </xsl:if>
+   <xsl:if test="not(@name)">
+    <a href="../attach/{@id}@{/message/mid}.attach">
+     (<xsl:value-of select="@type"/>)
+    </a>
+   </xsl:if>
+  </div>
+ <xsl:apply-templates/>
+</xsl:template>
+
+<!-- Format summary lists -->
+
 <xsl:template match="summary">
  <tr>
-  <td><a href="../message/{id}.html"><xsl:value-of select="subject"/></a></td>
+  <td><a href="../message/{mid}.{$ext}"><xsl:value-of select="subject"/></a></td>
   <td><xsl:apply-templates select="email"/></td>
   <td><xsl:value-of select="time"/></td>
  </tr>
 </xsl:template>
+
+<xsl:template match="summary" mode="list">
+  <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text></xsl:if>
+  <a href="{mid}.{$ext}">
+    <xsl:choose>
+      <xsl:when test="email/@name"><xsl:value-of select="email/@name"/></xsl:when>
+      <xsl:when test="email/@address"><xsl:value-of select="email/@address"/></xsl:when>
+      <xsl:otherwise>SomeOne</xsl:otherwise>
+    </xsl:choose>'s post on
+    <xsl:value-of select="time"/>
+  </a>
+</xsl:template>
+
+<!-- Format server information segments -->
 
 <xsl:template match="server" mode="title">
   Lurker@<xsl:value-of select="hostname"/> 

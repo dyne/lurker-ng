@@ -9,6 +9,7 @@
 <xsl:import href="error.xsl"/>
 
 <xsl:import href="splash.xsl"/>
+<xsl:import href="message.xsl"/>
 
 <!--- The default is to render to xml and use browser -->
 <xsl:variable name="ext">xml</xsl:variable>
