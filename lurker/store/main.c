@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.14 2002-01-28 08:32:13 terpstra Exp $
+/*  $Id: main.c,v 1.15 2002-01-28 08:43:31 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -246,11 +246,9 @@ static void process_mbox(Mbox* mbox, List* list, time_t stamp)
 		return;
 	}
 	
-	printf("PARSE!\n");
 	m = mail_parse(mbox->fd, old);
 	if (m)
 	{
-		printf("Find!\n");
 		author_name = "";
 		author_email[0] = 0;
 		
