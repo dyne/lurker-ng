@@ -30,7 +30,10 @@
   <xsl:attribute name="onClick">
    <xsl:text>self.location='</xsl:text>
    <xsl:value-of select="../server/doc-url"/>
-   <xsl:text>/thread/</xsl:text>
+   <xsl:choose>
+    <xsl:when test="sum(day) &lt;= 1"><xsl:text>/message/</xsl:text></xsl:when>
+    <xsl:otherwise><xsl:text>/thread/</xsl:text></xsl:otherwise>
+   </xsl:choose>
    <xsl:value-of select="summary/id"/>
    <xsl:text>.</xsl:text>
    <xsl:value-of select="$ext"/>
@@ -56,9 +59,14 @@
   </xsl:attribute>
   <td nowrap="NOWRAP">
    <div class="squash" onclick="this.firstChild.removeAttribute('href');">
-    <a href="../thread/{summary/id}.{$ext}">
-     <xsl:value-of select="title"/>
-    </a>
+   <xsl:choose>
+    <xsl:when test="sum(day) &lt;= 1">
+     <a href="../message/{summary/id}.{$ext}"><xsl:value-of select="title"/></a>
+    </xsl:when>
+    <xsl:otherwise>
+     <a href="../thread/{summary/id}.{$ext}"><xsl:value-of select="title"/></a>
+    </xsl:otherwise>
+   </xsl:choose>
    </div>
   </td>
   <td nowrap="NOWRAP">

@@ -5,7 +5,7 @@
 
 <xsl:variable name="lurker-url" select="'http://lurker.sourceforge.net/'"/>
 <xsl:variable name="last-date" select="'20380101.000000.00000000'"/>
-<xsl:variable name="jump-date" select="'20040101.000000.00000000'"/>
+<xsl:variable name="jump-date" select="'20050101.000000.00000000'"/>
 
 <!-- Output control -->
 <xsl:variable name="ext" select="'html'"/>
@@ -238,7 +238,7 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
  <select name="year">
   <xsl:call-template name="option-range">
    <xsl:with-param name="start">1990</xsl:with-param>
-   <xsl:with-param name="last">2004</xsl:with-param>
+   <xsl:with-param name="last">2005</xsl:with-param>
    <xsl:with-param name="select" select="substring($date,1,4)"/>
   </xsl:call-template>
  </select>
