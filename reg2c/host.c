@@ -1,4 +1,4 @@
-/*  $Id: host.c,v 1.9 2003-04-28 19:05:22 terpstra Exp $
+/*  $Id: host.c,v 1.10 2003-06-11 15:02:23 terpstra Exp $
  *  
  *  host.c - collection of useful web regexps for reg2c
  *  
@@ -29,7 +29,7 @@
 #define INT_REG		"([0-9]+)"
 #define HOST_REG	"((" TOKEN_REG "\\.)*" TOKEN_REG ")"
 #define USER_REG	"([A-Za-z0-9][a-zA-Z0-9._=\\-]*[a-zA-Z0-9]|[a-zA-Z0-9])"
-#define FILE_REG        "([A-Za-z@!%~0-9:.,_\\-]*[A-Za-z0-9]|#|\\.\\.)"
+#define FILE_REG        "([A-Za-z@!%~0-9:.,_\\-+]*[A-Za-z0-9]|#|\\.\\.)"
 #define PATH_REG	"((/" FILE_REG ")+)"
 #define POST_REG   	"([A-Za-z%~0-9.,_=/:;+\\&\\-]+)"
 #define PROTO_REG   	"(([a-zA-Z]-?)*[a-zA-Z])"
