@@ -20,6 +20,7 @@
   <td nowrap="NOWRAP"><xsl:apply-templates mode="email-link" select="summary/email"/></td>
   <td nowrap="NOWRAP"><xsl:apply-templates mode="date" select="summary"/></td>
  </xsl:element>
+ <xsl:text>&#10;</xsl:text>
 </xsl:template>
 
 

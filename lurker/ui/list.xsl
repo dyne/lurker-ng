@@ -60,6 +60,7 @@
    <xsl:value-of select="sum(day)"/>
   </td>
  </xsl:element>
+ <xsl:text>&#10;</xsl:text>
 </xsl:template>
 
 
@@ -127,7 +128,7 @@
       <th><xsl:value-of select="$new-threads"/></th>
       <th><xsl:value-of select="$recent-poster"/></th>
       <th><xsl:value-of select="$activity-chart"/></th>
-      <th><xsl:value-of select="$post-count"/></th>
+      <th align="right"><xsl:value-of select="$post-count"/></th>
      </tr>
      <xsl:apply-templates mode="newthreads" select="row"/>
     </table>

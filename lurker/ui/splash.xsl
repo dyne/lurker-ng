@@ -28,9 +28,9 @@
 <!-- Format mailing list groups -->
 <xsl:template match="list" mode="list-sections">
  <li>
-  <b><a href="../list/{id}.{$ext}"><xsl:value-of select="email/@name"/></a></b>
-  &#8212; <i><xsl:value-of select="description"/></i>
+  <b><a href="../list/{id}.{$ext}"><xsl:value-of select="email/@name"/></a></b>  &#8212; <i><xsl:value-of select="description"/></i>
  </li>
+ <xsl:text>&#10;</xsl:text>
 </xsl:template>
 <xsl:template match="group" mode="group-sections">
  <xsl:if test="position()!=1">

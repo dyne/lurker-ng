@@ -31,6 +31,7 @@
    <xsl:apply-templates mode="date" select="summary"/>
   </td>
  </xsl:element>
+ <xsl:text>&#10;</xsl:text>
 </xsl:template>
 
 
