@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.5 2002-02-04 23:02:17 terpstra Exp $
+/*  $Id: service.c,v 1.6 2002-02-05 00:13:38 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -175,35 +175,69 @@ static int my_service_getmsg(st_netfd_t fd, const char* request)
 				break;
 			}
 			
+			/* Recall: for loops test at the top. Therefore, if
+			 * we hit seen == 6, eom has been moved past the char
+			 * which did it already.
+			 */
 			had_seen = seen;
 			for (eom = &buf[0]; seen != 6 && eom != &buf[got]; eom++)
 			{
-				switch (seen)
+				switch (*eom)
 				{
-				case 0: if (*eom == '\n') seen++; break;
-				case 1: if (*eom == 'F') seen++; else seen = 0; break;
-				case 2: if (*eom == 'r') seen++; else seen = 0; break;
-				case 3: if (*eom == 'o') seen++; else seen = 0; break;
-				case 4: if (*eom == 'm') seen++; else seen = 0; break;
-				case 5: if (*eom == ' ') seen++; else seen = 0; break;
+				case '\n':
+					seen = 1;
+					break;
+				case 'F':
+					if (seen == 1) seen++; else seen = 0;
+					break;
+				case 'r':
+					if (seen == 2) seen++; else seen = 0;
+					break;
+				case 'o':
+					if (seen == 3) seen++; else seen = 0;
+					break;
+				case 'm':
+					if (seen == 4) seen++; else seen = 0;
+					break;
+				case ' ':
+					if (seen == 5) seen++; else seen = 0;
+					break;
+				default:
+					seen = 0;
+					break;
 				}
 			}
 			
-			/* If the stuff rolled over from last time was not
-			 * part of the next message.
+			/* There are three cases.
+			 * Case 1: we found an end of a message marker that
+			 *         crossed our buffer boundaries.
+			 * Case 2: we found an end of message marker in this
+			 *         message.
+			 * Case 3: we did not find an end of message marker,
+			 *         but the last 'seen' bytes might be the start
+			 *         of one.
 			 */
-			if (eom - &buf[0] + had_seen != 6-1)
-			{	/* Push whatever we defered. */
-				st_write(fd, "\nFrom ", had_seen, 5000000);
-			}
 			
-			/* Write all of what we got that wasn't potentially
-			 * the start of the next message
-			 */
-			if (st_write(fd, &buf[0], eom - &buf[0] - seen + 1, 5000000) 
-				!= eom - &buf[0] - seen + 1)
-			{
-				break;
+			/* Is this case 1? */
+			if (eom - &buf[0] + had_seen == 6)
+			{	/* Case 1. */
+				/* do nothing. */
+			}
+			else
+			{	/* Case 2 / 3. */
+				
+				/* Push whatever we defered as suspect. */
+				st_write(fd, "\nFrom ", had_seen, 5000000);
+			
+				/* Write all of what we got that wasn't potentially
+				 * the start of the next message. This works
+				 * for both cases 2&3
+				 */
+				if (st_write(fd, &buf[0], eom - &buf[0] - seen,
+					 5000000) != eom - &buf[0] - seen)
+				{
+					break;
+				}
 			}
 		}
 		
