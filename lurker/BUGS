@@ -1,5 +1,6 @@
 Ideas:
 	Reorder threads by reply-to?
+	Gzip output?
 	Link to mailing lists from complete thread view?
 	More robust detection of 'From ' lines? Too many people screw it up.
 		(Content-Length could help or maybe @ needed in email)
@@ -22,4 +23,4 @@ BUGS:
 		(... but this doesn't affect lurker, so not priority)
 	Escape 'From ' in messages we store with -m
 	Sometimes we get blank pages until reload
-	Can't use nbsp for dates; hover text is bad
+	Jump / search are in UTC ...
