@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.5 2003-05-02 11:18:42 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.6 2003-05-18 20:15:48 terpstra Exp $
  *  
  *  mindex.cpp - Handle a mindex/ command
  *  
@@ -28,6 +28,7 @@
 
 #include <iostream>
 #include <cerrno>
+#include <cassert>
 
 #include <MessageId.h>
 #include <Keys.h>

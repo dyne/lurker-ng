@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.13 2003-05-14 12:37:21 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.14 2003-05-18 20:15:48 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -32,6 +32,7 @@
 #include "View.h"
 
 #include <cstdlib>
+#include <cassert>
 
 namespace ESort
 {

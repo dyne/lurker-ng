@@ -1,4 +1,4 @@
-/*  $Id: Master.cpp,v 1.7 2003-05-07 16:15:32 terpstra Exp $
+/*  $Id: Master.cpp,v 1.8 2003-05-18 20:15:48 terpstra Exp $
  *  
  *  Master.cpp - Coordinate commit+read interface
  *  
@@ -36,6 +36,7 @@
 #include <list>
 #include <iostream>
 #include <cerrno>
+#include <cassert>
 
 namespace ESort
 {

@@ -1,4 +1,4 @@
-/*  $Id: Parameters.cpp,v 1.5 2003-05-07 16:01:13 terpstra Exp $
+/*  $Id: Parameters.cpp,v 1.6 2003-05-18 20:15:48 terpstra Exp $
  *  
  *  Parameters.cpp - Control how the database is stored
  *  
@@ -27,7 +27,9 @@
 #define _ISOC99_SOURCE
 
 #include "esort.h"
+
 #include <cmath>
+#include <cassert>
 
 namespace ESort
 {

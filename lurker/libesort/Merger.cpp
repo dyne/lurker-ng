@@ -1,4 +1,4 @@
-/*  $Id: Merger.cpp,v 1.8 2003-04-26 12:10:14 terpstra Exp $
+/*  $Id: Merger.cpp,v 1.9 2003-05-18 20:15:48 terpstra Exp $
  *  
  *  Merger.cpp - Combine segments to obtain a database view
  *  
@@ -32,6 +32,7 @@
 #include "Source.h"
 
 #include <iostream>
+#include <cassert>
 
 namespace ESort
 {

@@ -1,4 +1,4 @@
-/*  $Id: View.cpp,v 1.9 2003-05-07 16:01:13 terpstra Exp $
+/*  $Id: View.cpp,v 1.10 2003-05-18 20:15:48 terpstra Exp $
  *  
  *  View.cpp - Snapshot of commit state
  *  
@@ -36,6 +36,7 @@
 #include "Failer.h"
 
 #include <cerrno>
+#include <cassert>
 
 namespace ESort
 {

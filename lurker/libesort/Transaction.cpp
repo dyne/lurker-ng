@@ -1,4 +1,4 @@
-/*  $Id: Transaction.cpp,v 1.5 2003-05-07 15:43:13 terpstra Exp $
+/*  $Id: Transaction.cpp,v 1.6 2003-05-18 20:15:48 terpstra Exp $
  *  
  *  Transaction.cpp - Write buffer for a commit
  *  
@@ -31,6 +31,7 @@
 #include "esort.h"
 
 #include <iostream>
+#include <cassert>
 
 /* #define DEBUG */
 
