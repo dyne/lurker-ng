@@ -2,8 +2,9 @@
 #include "perl.h"
 #include "XSUB.h"
 
+#include "esort.h"
 
-MODULE = KW		PACKAGE = KW		
+MODULE = KW		PACKAGE = KW
 
 void
 hello()
