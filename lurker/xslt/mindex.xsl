@@ -148,9 +148,9 @@
   <xsl:value-of select="offset"/>-<xsl:value-of select="string(number(offset)+count(summary)-1)"/>
  </h2>
  
- <div class="jumpto"><xsl:apply-templates select="time"/></div>
+ <div id="jumpTo"><xsl:apply-templates select="time"/></div>
 
- <table width="100%" cellpadding="0" cellspacing="0" id="padded">
+ <table width="100%" cellpadding="0" cellspacing="0" class="padded" id="mindexOut">
   <tr class="thRow">
    <th align="left"><xsl:value-of select="$subject"/></th>
    <th align="left"><xsl:value-of select="$author"/></th>
@@ -160,7 +160,7 @@
 
  <hr/>
 
- <form action="../lurker-search.cgi" id="smsearch">
+ <form action="../lurker-search.cgi" id="smSearch">
   <input type="hidden" name="format" value="{$ext}"/>
   <input type="text"   name="query"  value="ml:{list/id} " class="longtext"/>
   <input type="submit" name="submit" value="{$search}!"/><br/>

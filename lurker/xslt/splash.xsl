@@ -52,10 +52,9 @@
 </xsl:template>
 
 <xsl:template match="splash" mode="body">
- <table class="listtable0" width="100%">
-  <tr class="header">
-   <th colspan="4" width="35%"><xsl:value-of select="$lin-h"/></th>
-  </tr>
+ <div id="listBlock">
+ <table id="listTable">
+  <tr><caption><xsl:value-of select="$lists"/></caption></tr>
   
   <xsl:variable name="size1" select="round((count(list)+3) div 4)"/>
   <xsl:variable name="size2" select="round((count(list)+2) div 4)"/>
@@ -75,41 +74,38 @@
    <xsl:with-param name="col4" select="list[position() &gt; $off4 and position() &lt;= $off5]"/>
   </xsl:call-template>
  </table>
+ </div>
 
  <br/><br/><hr/>
  <h2>Lurker <xsl:copy-of select="$search"/></h2>
 
+ <div id="searchBlock">
  <form action ="../lurker-search.cgi">
   <input type="hidden" name="format" value="{$ext}"/>
-  <div class="center">
-   <input type="text"   name="query"  value="" size="50"/>
-   <input type="submit" name="submit" value="{$search}!"/>
-  </div>
-  <hr class="search"/>
-  <table class="search">
+  <input type="text" name="query" class="longtext"/>
+  <input type="submit" name="submit" value="{$search}!"/>
+ <hr id="searchHr"/>
+  <table id="searchTable">
    <tr><th><xsl:copy-of select="$author"/></th>
-       <td class="center"><input type="text" name="author"  size="53" value=""/></td></tr>
+       <td><input type="text" name="author" class="longtext"/></td></tr>
    <tr><th><xsl:copy-of select="$subject"/></th>
-       <td class="center"><input type="text" name="subject" size="53" value=""/></td></tr>
+       <td><input type="text" name="subject" class="longtext"/></td></tr>
+   <tr>
+    <th><xsl:copy-of select="$appearinlist"/></th>
+    <td>
+     <select name="list">
+      <option value=""><xsl:value-of select="$all-li"/></option>
+      <xsl:apply-templates mode="select" select="list"/>
+     </select>
+    </td>
+   </tr>
    <tr><th><xsl:copy-of select="$startdate"/></th>
     <td>
      <input type="hidden" name="start-sec" value="0"/>
      <input type="hidden" name="start-min" value="0"/>
      <input type="hidden" name="start-hour" value="0"/>
-     <xsl:value-of select="$thedate"/>
-     <xsl:text> </xsl:text>
-     <select name="start-mday">
-       <xsl:call-template name="option-range">
-         <xsl:with-param name="start">1</xsl:with-param>
-         <xsl:with-param name="last">31</xsl:with-param>
-         <xsl:with-param name="select">1</xsl:with-param>
-       </xsl:call-template>
-     </select>
-     <xsl:text> </xsl:text>
-     <xsl:value-of select="$ofdate"/>
-     <xsl:text> </xsl:text>
      <select name="start-mon">
-       <option value="1"><xsl:value-of select="$jan"/></option>
+       <option value="1" selected="yes"><xsl:value-of select="$jan"/></option>
        <option value="2"><xsl:value-of select="$feb"/></option>
        <option value="3"><xsl:value-of select="$mar"/></option>
        <option value="4"><xsl:value-of select="$apr"/></option>
@@ -121,10 +117,14 @@
        <option value="10"><xsl:value-of select="$oct"/></option>
        <option value="11"><xsl:value-of select="$nov"/></option>
        <option value="12"><xsl:value-of select="$dec"/></option>
-     </select>
-     <xsl:text> </xsl:text>
-     <xsl:value-of select="$datedivide"/>
-     <xsl:text> </xsl:text>
+     </select><xsl:value-of select="$date1"/>
+     <select name="start-mday">
+       <xsl:call-template name="option-range">
+         <xsl:with-param name="start">1</xsl:with-param>
+         <xsl:with-param name="last">31</xsl:with-param>
+         <xsl:with-param name="select">1</xsl:with-param>
+       </xsl:call-template>
+     </select><xsl:value-of select="$date2"/>
      <select name="start-year">
        <xsl:call-template name="option-range">
          <xsl:with-param name="start">1980</xsl:with-param>
@@ -139,18 +139,6 @@
      <input type="hidden" name="end-sec" value="59"/>
      <input type="hidden" name="end-min" value="59"/>
      <input type="hidden" name="end-hour" value="23"/>
-     <xsl:value-of select="$thedate"/>
-     <xsl:text> </xsl:text>
-     <select name="end-mday">
-       <xsl:call-template name="option-range">
-         <xsl:with-param name="start">1</xsl:with-param>
-         <xsl:with-param name="last">31</xsl:with-param>
-         <xsl:with-param name="select">31</xsl:with-param>
-       </xsl:call-template>
-     </select>
-     <xsl:text> </xsl:text>
-     <xsl:value-of select="$ofdate"/>
-     <xsl:text> </xsl:text>
      <select name="end-mon">
        <option value="1"><xsl:value-of select="$jan"/></option>
        <option value="2"><xsl:value-of select="$feb"/></option>
@@ -164,10 +152,14 @@
        <option value="10"><xsl:value-of select="$oct"/></option>
        <option value="11"><xsl:value-of select="$nov"/></option>
        <option value="12" selected="yes"><xsl:value-of select="$dec"/></option>
-     </select>
-     <xsl:text> </xsl:text>
-     <xsl:value-of select="$datedivide"/>
-     <xsl:text> </xsl:text>
+     </select><xsl:value-of select="$date1"/>
+     <select name="end-mday">
+       <xsl:call-template name="option-range">
+         <xsl:with-param name="start">1</xsl:with-param>
+         <xsl:with-param name="last">31</xsl:with-param>
+         <xsl:with-param name="select">31</xsl:with-param>
+       </xsl:call-template>
+     </select><xsl:value-of select="$date2"/>
      <select name="end-year">
        <xsl:call-template name="option-range">
          <xsl:with-param name="start">1980</xsl:with-param>
@@ -177,17 +169,9 @@
      </select>
     </td>
    </tr>
-   <tr>
-    <th><xsl:copy-of select="$appearinlist"/></th>
-    <td>
-     <select name="list">
-      <option value=""><xsl:value-of select="$all-li"/></option>
-      <xsl:apply-templates mode="select" select="list"/>
-     </select>
-    </td>
-   </tr>
   </table>
  </form>
+ </div>
 
  <br/><hr/>
 
@@ -199,29 +183,32 @@
 
 <xsl:template match="list" mode="longdesc">
  <dt>
-  <b><xsl:value-of select="email/@name"/></b>
-  <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
+  <xsl:value-of select="email/@name"/>
   <xsl:if test="email/@address">
+   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
    <a href="mailto:{email/@address}">(<xsl:value-of select="email/@address"/>)</a>
   </xsl:if>
  </dt>
- <dd><xsl:if test="number(messages) &gt; 0">
-      [ <a href="../mindex/{id}@{offset}.{$ext}">
-         <xsl:value-of select="messages"/>
-         <xsl:text> </xsl:text>
-         <xsl:value-of select="$mess"/>
-        </a>
-      ]
-      [ <a href="../lurker-search.cgi?query=lt%3A{id}&amp;format={$ext}">
-         <xsl:value-of select="$threads"/>
-        </a>
-      ]
-     </xsl:if>
-     <xsl:if test="number(messages) = 0">
-      [ 0 <xsl:value-of select="$mess"/> ]
-     </xsl:if>
-     <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;--&amp;nbsp;&amp;nbsp;</xsl:text>
-     <I><xsl:value-of select="description"/></I></dd>
+ <dd>
+  <xsl:if test="number(messages) &gt; 0">
+   [ <a href="../mindex/{id}@{offset}.{$ext}">
+      <xsl:value-of select="messages"/>
+      <xsl:text> </xsl:text>
+      <xsl:value-of select="$mess"/>
+     </a>
+   ]
+   [ <a href="../lurker-search.cgi?query=lt%3A{id}&amp;format={$ext}">
+      <xsl:value-of select="$threads"/>
+     </a>
+   ]
+  </xsl:if>
+  <xsl:if test="number(messages) = 0">[ 0 <xsl:value-of select="$mess"/> ]</xsl:if>
+
+  <xsl:text> -- </xsl:text>
+
+  <xsl:if test="description"><span class="desc"><xsl:value-of select="description"/></span></xsl:if>
+  <xsl:if test="not(description)"><span class="desc"><xsl:value-of select="$nodesc"/></span></xsl:if>
+ </dd>
 </xsl:template>
 
 </xsl:stylesheet>

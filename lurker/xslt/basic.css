@@ -1,36 +1,16 @@
 body { padding:10px; margin:0 }
 
-h1 { text-align:center; font-family:HoratioDMed, Tahoma, Arial, sans-serif; font-size:200% }
-h2 { width:100%; text-indent:8%; background-color:#BBF; font-size:140%; margin-top:0;
-     margin-bottom:1.2em; font-family:Times New Roman, serif; padding-bottom:2px }
-
-hr { color:black; clear:both; width:100% }
-hr.search { width:500px; color:#66B; height:3px }  /* search component seperator */
-
-table { border-collapse:collapse; border:hidden }
-
-tr { vertical-align:top; text-align:left; font-family:Arial, sans-serif; padding:0 }
-tr.row1 { background-color:#DDD }
-tr.row2 { background-color:#EEE }
-tr.header { background-color:#BBF; font-size:120% }  /* headers for splash page list table */
-.thRow { background-color:#DDF }
-
-th { vertical-align:middle; text-align:left; text-indent:.5em;
-     font-weight:bold; font-family:Times New Roman, serif; font-size:105% }
-tr.header th { text-align:center; text-indent:0 }
-.h-fields th { text-align:right; padding-right:3px; vertical-align:top }
-
-td { padding:0 2px 0px 2px; text-align:left; vertical-align:middle }
-.h-fields td { vertical-align:top }
-#padded td { padding-bottom:1px }
-
-dd { margin-left:2em; margin-right:3em }
+/* h1 used only for lurker@server header */
+h1 { text-align:center; font-family:HoratioDMed, Tahoma, Arial, sans-serif; font-size:200%; font-weight:bold }
+h2 { width:100%; text-indent:8%; background-color:#BBF; margin-top:0; margin-bottom:1.2em;
+     font-family:Times New Roman, serif; font-size:140%; font-weight:bold; padding-bottom:2px }
 
 a:link    { color:#11F }
 a:visited { color:#00B }
 a:hover   { color:#F00 }
 a:active  { color:#A00 }
 h1 a:visited { color:#11F }
+dt a { font-weight:normal }
 .mime-label a { background-color:#DDF; padding:3px; font-weight:bold }
 
 img { border:0; margin:0; padding:0 }
@@ -39,28 +19,63 @@ td img { vertical-align:middle }
 .selected { background-color:#77F }  /* Mark the image as selected */
 .drift    { background-color:#DDD }  /* Mark the image as drifted */
 
-.center { text-align:center }
+dl { }                                    /* Definition list used for splash page list info */
+dt { font-weight:bold }                   /* includes list name and email address */
+dd { margin-left:2em; margin-right:3em }  /* includes message count, "new topics" link, and description */
+.desc { font-style:oblique }              /* list description texts in splash */
 
-#listblock { width:100%; text-align:center }  /* contains splash page list tables */
-.listtable { border:2px solid black }
+hr { color:black; background-color:black; clear:both; width:100% }
+#searchHr { width:500px; color:#66B; height:3px }  /* search component seperator */
+#snippit { }  /* horizontal rule in message navigation snippit */
 
-.na { color:#BBB }
 
-.mime-label { text-align:right; padding:4px }
+table { border-collapse:collapse; border:hidden; table-layout:auto }
+#listTable { }    /* layout table for list names at top of splash */
+#searchTable { }  /* layout table for splash page search tool (below hr only) */
+#searchOut { }    /* search page output table */
+#mindexOut { }    /* mindex page output table */
+#threadOut { }    /* thread page output table */
+#h-fields { }     /* layout table for header fields in message */
 
-#footer { background-color:#BBF; text-align:center; padding-bottom:1px }
+#listTable caption { background-color:#BBF; font-size:140%; margin-top:0; margin-bottom:1.2em;
+                     font-family:Times New Roman, serif; font-weight:bold; padding-bottom:2px }
 
-.boxlist { margin:-5px; padding:0; text-align:center; width:100% }
+tr { vertical-align:top; text-align:left; font-family:Arial, sans-serif; padding:0 }
+.thRow { background-color:#DDF }   /* header row for mindex/thread/search tables */
+tr.row1 { background-color:#DDD }  /* even rows in mindex/thread/search tables */
+tr.row2 { background-color:#EEE }  /* odd rows in mindex/thread/search tables  */
 
-.js { float:right; width:9em; margin-left:20px; margin-bottom:10px; padding:4px;
+th { vertical-align:middle; text-align:left; text-indent:.5em;
+     font-weight:bold; font-family:Times New Roman, serif; font-size:105% }
+#searchTable th { text-indent:0; font-size:100% }  /* input Field labels */
+#h-fields th { vertical-align:top; text-align:right; text-indent:0; padding-right:3px }
+
+td { padding:0 2px 0px 2px; text-align:left; vertical-align:middle;
+     font-family:Arial, sans-serif; font-size:100% }
+#listTable td { padding:0 10px 0 10px }
+#searchTable td { text-align:center }  /* input fields */
+#h-fields td { vertical-align:top }
+.padded td { padding-bottom:1px }  /* Adds padding to output tables containing Discussion Tree icon */
+
+
+#footer { background-color:#BBF; text-align:center; padding-bottom:1px }  /* Admin footer which appears on every page */
+#boxlist { margin:-5px; padding:0; text-align:center; width:100% }  /* contains list information in message */
+#searchBlock { text-align:center }  /* contains splash page search tool */
+
+#listBlock { width:100%; text-align:center }  /* contains listTable */
+
+/* javascript Header Detail tool */
+#js { float:right; width:9em; margin-left:20px; margin-bottom:10px; padding:4px;
       text-align:center; font-size:85%; background-color:#EEE; color:#BBB }
-.js form { padding:0; margin:0 }
-.js div { margin:0; padding:0px; text-align:left }
-.js span { font-size:65%; color:#666 }
+#js form { padding:0; margin:0 }
+#js div { margin:0; padding:0px; text-align:left }  /* contains radio buttons and descriptors */
+#js span { font-size:65%; color:#666 }  /* "javascript required" string */
 
-.navlet { padding-left:20px; vertical-align:top }
+#navlet { padding-left:20px; vertical-align:top }   /* Navigation snippet in message */
+#smSearch { text-align:center }                     /* Seach tool for mindex/thread/search pages */
+#jumpTo { text-align:center; margin-bottom:1.6em }  /* Time jump tool on mindex */
 
-#smsearch { text-align:center }
-.longtext  { width:400px }
 
-.jumpto { text-align:center; margin-bottom:1.6em }
+.na { color:#BBB }  /* used to fade text when link not available, but still has placeholder text */
+.mime-label { text-align:right; padding:4px }  /* Mime labels in message contents */
+.longtext  { width:400px }  /* sets width of text entry fields */

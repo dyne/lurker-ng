@@ -9,7 +9,7 @@
 </xsl:template>
 
 <xsl:template match="error" mode="body">
- <p/><h2><xsl:value-of select="title"/>:</h2>
+ <h2><xsl:value-of select="title"/>:</h2>
  <p/><xsl:value-of select="message"/>
  <p/><xsl:value-of select="detail"/>
 </xsl:template>

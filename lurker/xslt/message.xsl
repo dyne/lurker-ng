@@ -59,7 +59,7 @@
 
 <xsl:template name="navigate-fields">
  <div align="right">
-  
+
   <!-- Draw the prev link - otherwise, draw an image with the same size -->
   <xsl:if test="threading/prev">
    <xsl:apply-templates select="threading/prev" mode="snippet"/>
@@ -76,6 +76,7 @@
   <xsl:if test="not(reply)">
    <span class="na">(<xsl:value-of select="$reply"/>)</span>
   </xsl:if>
+
   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
 
   <!-- Draw the next link - otherwise, draw an image with the same size -->
@@ -86,7 +87,7 @@
    <img src="../imgs/a.png" alt="."/>
   </xsl:if>
  </div>
- <hr/>
+ <hr id="snippit"/>
  <xsl:apply-templates select="threading/snippet" mode="snippet"/>
 </xsl:template>
 
@@ -107,7 +108,7 @@
 <!-- Format headers for the message -->
 
 <xsl:template name="header-fields">
- <div class="js">
+ <div id="js">
   <form>
    <u><xsl:value-of select="$headdet"/></u>
    <div><input type="radio" disabled="1" name="min"/><label for="min"><xsl:value-of select="$min"/></label></div>
@@ -116,7 +117,7 @@
    <span>(<xsl:value-of select="$javas"/>)</span>
   </form>
  </div>
- <table class="h-fields">
+ <table id="h-fields">
   <tr>
    <th nowrap="1"><xsl:value-of select="$author"/>:</th>
    <td>
@@ -221,13 +222,13 @@
   <table width="100%">
    <tr>
     <td width="100%"><xsl:call-template name="header-fields"/></td>
-    <td class="navlet" nowrap="1"><xsl:call-template name="navigate-fields"/></td>
+    <td id="navlet" nowrap="1"><xsl:call-template name="navigate-fields"/></td>
    </tr>
   </table>
  </xsl:if>
 
  <hr/>
- <div class="boxlist">
+ <div id="boxlist">
   <b>
    <xsl:value-of select="$appearinmbox"/>
    <xsl:text> </xsl:text>

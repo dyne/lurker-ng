@@ -9,7 +9,7 @@
 </xsl:template>
 
 <xsl:template match="redirect" mode="body">
- <p/><h2>Lurker <xsl:value-of select="$redirect"/></h2>
+ <h2>Lurker <xsl:value-of select="$redirect"/></h2>
  <p/><xsl:value-of select="$redirect"/>
  <a href="../{url}.{$ext}">
    ../<xsl:value-of select="url"/>.<xsl:value-of select="$ext"/>

@@ -9,7 +9,6 @@
 </xsl:template>
 
 <xsl:template match="search" mode="body">
- <p/>
  <h2>
   <xsl:if test="prev">
    <a href="{prev}%20{queryurl}.{$ext}"><img border="0" src="../imgs/prev.png"/></a>
@@ -32,21 +31,24 @@
   / ~<xsl:value-of select="hits"/>
  </h2>
  
- <p/>
- <form action="../lurker-search.cgi">
-  <input type="hidden" name="format" value="{$ext}"/>
-  <input type="text"   name="query"  value="{query}" size="50"/>
-  <input type="submit" name="submit" value="{$search}!"/>
- </form> 
+ <div id="smSearch">
+  <form action="../lurker-search.cgi">
+   <input type="hidden" name="format" value="{$ext}"/>
+   <input type="text"   name="query"  value="{query}" class="longtext"/>
+   <input type="submit" name="submit" value="{$search}!"/>
+  </form>
+ </div>
 
- <p/>
- <table width="100%" cellspacing="0" cellpadding="0" id="padded">
+ <table width="100%" cellspacing="0" cellpadding="0" class="padded" id="searchOut">
   <tr class="thRow">
    <th align="left"><xsl:value-of select="$subject"/></th>
    <th align="left"><xsl:value-of select="$author"/></th>
    <th align="left"><xsl:value-of select="$date"/></th></tr>
   <xsl:apply-templates select="summary"/>
  </table>
+
+ <br/>
+
 </xsl:template>
 
 </xsl:stylesheet>

@@ -15,11 +15,11 @@
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
   <meta content="1;URL=splash/index.xml" http-equiv="Refresh"/>
   
-  <title>Your browser supports XSL</title>
+  <title><xsl:value-of select="$support1"/></title>
  </head>
  <body>
-  <p/>Your web browser appears to support XSL.
-     <a href="splash/index.xml">Try the xml version.</a>
+  <p/><xsl:value-of select="$support2"/>
+     <a href="splash/index.xml"><xsl:value-of select="$tryXML"/></a>
  </body>
 </html>
 </xsl:template>

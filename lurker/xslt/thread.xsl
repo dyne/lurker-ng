@@ -9,13 +9,11 @@
 </xsl:template>
 
 <xsl:template match="thread" mode="body">
- <p/>
  <h2>
   <xsl:value-of select="summary/subject"/>
  </h2>
  
- <p/>
- <table width="100%" cellspacing="0" cellpadding="0">
+ <table width="100%" cellspacing="0" cellpadding="0" id="threadOut">
   <tr class="thRow">
    <th align="left"><xsl:value-of select="$threading"/></th>
    <th align="left"><xsl:value-of select="$author"/></th>
@@ -26,7 +24,7 @@
 
  <hr/>
  
- <form action="../lurker-search.cgi" id="smsearch">
+ <form action="../lurker-search.cgi" id="smSearch">
   <input type="hidden" name="format" value="{$ext}"/>
   <input type="text"   name="query"  value="th:{id} " class="longtext"/>
   <input type="submit" name="submit" value="{$search}!"/>

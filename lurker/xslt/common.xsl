@@ -131,7 +131,7 @@
   <xsl:if test="(position() mod 2) = 1">
    <xsl:attribute name="class">row2</xsl:attribute>
   </xsl:if>
-  <td width="60%" nowrap="1">
+  <td nowrap="1">
    <a name="{id}"/>
    <xsl:if test="draw"><xsl:apply-templates select="draw"/></xsl:if>
    <xsl:if test="not(draw)">
@@ -147,8 +147,8 @@
     </a>
    </xsl:if>
   </td>
-  <td width="25%" nowrap="1"><xsl:apply-templates select="email"/></td>
-  <td width="15%" nowrap="1"><xsl:value-of select="time"/></td>
+  <td nowrap="1"><xsl:apply-templates select="email"/></td>
+  <td nowrap="1"><xsl:value-of select="time"/></td>
  </xsl:element>
 </xsl:template>
 

@@ -9,11 +9,15 @@
  <xsl:variable name="error">There was an error with your request</xsl:variable>
  <xsl:variable name="redirect">Redirect</xsl:variable>
  <xsl:variable name="mredirect">Your browser should load this location:</xsl:variable>
+ <xsl:variable name="support1">Your Browser Supports XSL</xsl:variable>
+ <xsl:variable name="support2">Your web browser appears to support XSL.</xsl:variable>
+ <xsl:variable name="tryXML">Try the XML version of our site.</xsl:variable>
  
  <xsl:variable name="someone">Someone</xsl:variable>
  <xsl:variable name="post1"></xsl:variable>
  <xsl:variable name="post2">'s post on</xsl:variable>
  <xsl:variable name="unknown">Unknown</xsl:variable>
+ <xsl:variable name="nodesc">No Description</xsl:variable>
  
  <xsl:variable name="subject">Subject</xsl:variable>
  <xsl:variable name="date">Date</xsl:variable>
@@ -25,24 +29,22 @@
  <xsl:variable name="appearinmbox">Appearing in</xsl:variable>
  <xsl:variable name="mailbox">the mailbox</xsl:variable>
  <xsl:variable name="mailboxof">of</xsl:variable>
+ <xsl:variable name="appearinlist">Appearing in</xsl:variable>
  <xsl:variable name="theselists">these mailing lists</xsl:variable>
  <xsl:variable name="reply">reply</xsl:variable>
  
  <xsl:variable name="startdate">Later than</xsl:variable>
  <xsl:variable name="enddate">Earlier than</xsl:variable>
- <xsl:variable name="thedate">the</xsl:variable>
- <xsl:variable name="ofdate">of</xsl:variable>
- <xsl:variable name="datedivide">/</xsl:variable>
+ <xsl:variable name="date1">&#32;</xsl:variable>
+ <xsl:variable name="date2">, </xsl:variable>
 
- <xsl:variable name="appearinlist">Appearing in</xsl:variable>
  <xsl:variable name="mess">Messages</xsl:variable>
  <xsl:variable name="message">message</xsl:variable>
  <xsl:variable name="threads">New Topics</xsl:variable>
 
  <xsl:variable name="splash">Front Page</xsl:variable>
  <xsl:variable name="threading">Discussion Tree</xsl:variable>
- <xsl:variable name="lin-h">Mailing-List</xsl:variable>
- <xsl:variable name="des-h">Description</xsl:variable>
+ <xsl:variable name="lists">Mailing-Lists Handled</xsl:variable>
  <xsl:variable name="search">Search</xsl:variable>
 
  <xsl:variable name="all-da">Sun-Sat</xsl:variable>
