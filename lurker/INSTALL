@@ -21,17 +21,24 @@ Quick start
  
  For debian: apt-get install xsltproc libmimelib1-dev jam g++
  
-1 ./configure
+1 [flags] ./configure [options]
 
-  If you need to specify dependency locations these options might help:
-  --with-mimelib-local    Use internal lurker/mimelib/*
-  --with-mimelib-include  Location of mimelib/message.h
-  --with-mimelib-libname  Try an alternative library name
+  To control the mimelib location, setting these options may help:
+  --with-mimelib-local        Use internal lurker/mimelib/*
+  --with-mimelib-include=DIR  Location of mimelib/message.h
+  --with-mimelib-libname=LIB  Try an alternative library name
+
+  To control the environment, variants of these flags may help:
+  LDFLAGS="-L/sw/lib"
+  CPPFLAGS="-I/sw/include -DDW_UNIX"
+  JAM="/sw/bin/jam"
 
 2 jam
 
 3 jam install	(as root if you don't have permission)
 		(DESTDIR=/tmp/lurker jam install -- also works)
+  
+  You may want to strip the binaries as they can be quite large.
 
 4 Setup delivery of new mail to lurker-index
   
