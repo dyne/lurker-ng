@@ -13,6 +13,3 @@ BUGS:
 	
 	-> control chars in utf-8 xml seem to break as invalid charset?
 	   odd since they are low bit ascii and thus valid utf-8
-	-> folded header lines from email break apache
-	   stream the header without \r\n, replace with spaces
-

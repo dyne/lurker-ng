@@ -1,5 +1,6 @@
 v0.7:
 	Fixed a bug where mailing list names were kept from Reply-To
+	Unfold folder email headers for http; broke some attachments.
 
 v0.6:
 	Jam replaces automake + overkill autoconf madness; hooray!
