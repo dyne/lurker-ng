@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.8 2002-02-12 07:32:22 cbond Exp $
+/*  $Id: indexer.c,v 1.9 2002-02-20 03:43:12 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -69,13 +69,12 @@ typedef struct My_Indexer_Tree_T
 /*------------------------------------------------ Private global vars */
 
 static My_Indexer_Tree*	my_indexer_buf = 0;
-static char*		my_indexer_dyn = 0;
 
 /* These tell us how much of the dynamic vars above have been used by the
  * current indexer pass.
  */
-static int		my_indexer_buf_off = 0;
-static int 		my_indexer_dyn_off = 0;
+static char*		my_indexer_dyn_off = 0;
+static int		my_indexer_avl_off = 0;
 
 static const char* lu_indexer_mons[12] = { 
 	"jan", "feb", "mar", "apr", "may", "jun", 
@@ -117,36 +116,29 @@ static int my_indexer_strcasecmp(
 static int my_indexer_push_keyword(
 	const char* keyword)
 {
-	int len = strlen(keyword);
+	int len = strlen(keyword) + 1;
 	
-	/* Do we have a record we could fit this keyword in? */
-	if (my_indexer_buf_off >= LU_INDEXER_MAX_KEYS)
+	/* Do we have a record we could fit this keyword and the avl tree
+	 * record in our buffer?
+	 */
+	if (((char*)&my_indexer_buf[my_indexer_avl_off+1]) + len > my_indexer_dyn_off)
 	{
 		return -1;
 	}
 	
-	/* Do we have enough dynamic storage space for the string? */
-	if (len + my_indexer_dyn_off >= LU_INDEXER_MAX_DYNAMIC)
-	{
-		return -1;
-	}
-	
-	my_indexer_buf[my_indexer_buf_off].key = keyword;
+	my_indexer_buf[my_indexer_avl_off].key = keyword;
 	
 	/* Use the avl insert method to insert the key balanced. */
-	if (my_btree_indexer_insert(my_indexer_buf_off) != 0)
+	if (my_btree_indexer_insert(my_indexer_avl_off) ==
+		LU_BTREE_ALREADY_THERE)
 	{	/* It was already indexed */
 		return 0;
 	}
 	
 	/* The record was not there and has been added. Finalize it. */
-	
-	my_indexer_buf[my_indexer_buf_off].key = 
-		my_indexer_dyn + my_indexer_dyn_off;
-	memcpy(my_indexer_dyn+my_indexer_dyn_off, keyword, len+1);
-	
-	my_indexer_dyn_off += len + 1;
-	my_indexer_buf_off++;
+	my_indexer_dyn_off -= len;
+	my_indexer_buf[my_indexer_avl_off++].key = my_indexer_dyn_off;
+	memcpy(my_indexer_dyn_off, keyword, len);
 	
 	return 0;
 }
@@ -367,17 +359,11 @@ static int my_indexer_dump_words(
 
 int lu_indexer_init()
 {
-	my_indexer_buf = malloc(sizeof(My_Indexer_Tree) * LU_INDEXER_MAX_KEYS);
+	my_indexer_buf = malloc(LU_INDEXER_MAX_KEYS * sizeof(My_Indexer_Tree) +
+				LU_INDEXER_MAX_DYNAMIC);
 	if (!my_indexer_buf)
 	{
 		fprintf(stderr, "Failed to allocate storage for keyword import tree\n");
-		return -1;
-	}
-	
-	my_indexer_dyn = malloc(LU_INDEXER_MAX_DYNAMIC);
-	if (!my_indexer_dyn)
-	{
-		fprintf(stderr, "Failed to allocate storage for keyword import buffer\n");
 		return -1;
 	}
 	
@@ -407,12 +393,6 @@ int lu_indexer_quit()
 		my_indexer_buf = 0;
 	}
 	
-	if (my_indexer_dyn)
-	{
-		free(my_indexer_dyn);
-		my_indexer_dyn = 0;
-	}
-	
 	return 0;
 }
 
@@ -429,8 +409,10 @@ int lu_indexer_import(
 	struct tm* when;
 	
 	/* We have imported no keywords in this pass yet. */
-	my_indexer_buf_off = 0;
-	my_indexer_dyn_off = 0;
+	my_indexer_dyn_off = ((char*)my_indexer_buf) + 
+		LU_INDEXER_MAX_KEYS * sizeof(My_Indexer_Tree) +
+		LU_INDEXER_MAX_DYNAMIC;
+	my_indexer_avl_off = 0;
 	
 	/* Push the mailing list keyword. */
 	snprintf(&buf[0], sizeof(buf), "%s%d", 
