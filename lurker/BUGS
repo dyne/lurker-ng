@@ -1,7 +1,3 @@
-TODO for 0.1e:
-	Possibly cache append locations
-	Release
-
 Ideas:
 	errordocument failthrough configable
 	maybe use: message/YYYYMM,email,20chars of subject,goop
@@ -9,7 +5,6 @@ Ideas:
 	secured lists? login required?
 	Sort by other things than time
 	Maybe manually cache first two levels of btree
-	Maybe manually cache tail of the append layer
 
 Unfulfilled requirements:
 	Legend for colours and their meaning

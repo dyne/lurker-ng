@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.23 2002-08-25 15:59:12 terpstra Exp $
+/*  $Id: append.c,v 1.24 2002-08-27 17:15:09 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -99,7 +99,7 @@
  * 
  * Also, on a block device, we allocate cells from the end of the file rather
  * from the start. This is so that we can coexist with a btree on the same
- * device.
+ * device. **** THIS IS DISABLED FOR NOW ***
  */
 
 
@@ -109,6 +109,9 @@
 #define LIBKAP_APPEND_HEAD	"libkap append v0.1\n\377"
 #define LIBKAP_APPEND_HEAD_LEN	21
 
+#define	BLOCK_SIZE	8192
+#define BLOCK_MASK	~0x2000
+
 struct Kap_Append
 {
 	int	fd;
@@ -116,6 +119,8 @@ struct Kap_Append
 	size_t	record_size;
 	off_t	eof;
 	off_t	prealloc;
+	
+	off_t	cache_off;
 	
 	size_t		tail_size;
 	unsigned char*	tail_cache;
@@ -146,7 +151,7 @@ static size_t round_mmap_up(size_t amt)
 	
 	if (sizeof(void*) == 4 && out > 512*1024*1024)
 	{
-		/* Intentionally fail; greedy is bad */
+		/* Intentionally fail; gre6edy is bad */
 		return 0xFFFFFFFFUL;
 	}
 	
@@ -156,6 +161,52 @@ static size_t round_mmap_up(size_t amt)
 
 static int WRITE_RECORDS(struct Kap_Append* k, off_t sector, const void* buf, size_t amount)
 {
+	off_t	cache_cut;
+	size_t	cache_amt;
+
+#if DEBUG	
+	if (k->tail_cache) if (amount > 4) printf("B%d", amount);
+#endif
+	
+	if (k->tail_cache &&
+	    sector + amount > k->cache_off)
+	{	/* Cache this write */
+		if (sector > k->cache_off)
+		{
+			cache_cut = sector;
+			cache_amt = amount;
+		}
+		else
+		{
+			cache_cut = k->cache_off;
+			cache_amt = sector + amount - k->cache_off;
+		}
+		
+		memcpy(	&k->tail_cache[cache_cut - k->cache_off],
+			&((unsigned char*)buf)[cache_cut - sector],
+			cache_amt);
+		
+#ifdef DEBUG
+		if (sector + amount == k->eof)	printf("."); 
+		else				printf(",");
+		fflush(stdout);
+#endif
+		
+		amount -= cache_amt;
+	}
+	
+	if (amount == 0) return 0;
+	
+#ifdef DEBUG
+	if (k->tail_cache)
+	{
+		if (sector + (k->tail_size*k->record_size) >= k->eof)
+			printf("X");
+		else	printf("x");
+		fflush(stdout);
+	}
+#endif
+	
 #ifdef USE_MMAP
 	if (k->mmap != MAP_FAILED)
 	{
@@ -181,6 +232,32 @@ static int WRITE_RECORDS(struct Kap_Append* k, off_t sector, const void* buf, si
 
 static int READ_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t amount)
 {
+	off_t	cache_cut;
+	size_t	cache_amt;
+	
+	if (k->tail_cache &&
+	    sector + amount > k->cache_off)
+	{	/* Read from cache */
+		if (sector > k->cache_off)
+		{
+			cache_cut = sector;
+			cache_amt = amount;
+		}
+		else
+		{
+			cache_cut = k->cache_off;
+			cache_amt = sector + amount - k->cache_off;
+		}
+		
+		memcpy(	&((unsigned char*)buf)[cache_cut - sector],
+			&k->tail_cache[cache_cut - k->cache_off],
+			cache_amt);
+		
+		amount -= cache_amt;
+	}
+	
+	if (amount == 0) return 0;
+	
 #ifdef USE_MMAP
 	if (k->mmap != MAP_FAILED)
 	{
@@ -198,6 +275,53 @@ static int READ_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t am
 	if (kap_read_full(k->fd, buf, amount) != 0)
 	{
 		if (errno == 0) errno = EINTR;
+		return -1;
+	}
+	
+	return 0;
+}
+
+static int flush_tail(struct Kap_Append* k)
+{
+	unsigned char	out[sizeof(off_t)];
+	size_t		amt;
+	
+	if (k->tail_cache)
+	{
+#ifdef DEBUG
+		printf("F"); fflush(stdout);
+#endif
+		
+		if (lseek(k->fd, k->cache_off, SEEK_SET) != k->cache_off)
+		{
+			if (errno == 0) errno = EINTR;
+			return -1;
+		}
+		
+		if (k->eof - k->cache_off > k->tail_size * k->record_size)
+			amt = k->tail_size * k->record_size;
+		else	amt = k->eof - k->cache_off;
+		
+		if (kap_write_full(k->fd, k->tail_cache, amt) != 0)
+		{
+			if (errno == 0) errno = EINTR;
+			return -1;
+		}
+		
+		k->cache_off = k->eof & BLOCK_MASK; /* 8k aligned */
+		memset(k->tail_cache, 0, k->tail_size * k->record_size);
+#ifdef DEBUG
+		printf("\n\n\nCACHE OFF: %ld\n\n", k->cache_off);
+#endif
+	}
+	
+	kap_encode_offset(&out[0], k->eof, sizeof(off_t));
+	if (WRITE_RECORDS(
+		k, 
+		LIBKAP_APPEND_HEAD_LEN,
+		&out[0], 
+		sizeof(off_t)) != 0)
+	{
 		return -1;
 	}
 	
@@ -288,8 +412,7 @@ static off_t allocate_cell(Kap k, int jump)
 	void*	tmp;
 #endif
 	
-	unsigned char	buf[8192];
-	unsigned char	out[sizeof(off_t)];
+	unsigned char	buf[BLOCK_SIZE];
 	
 	/* Calculate the buffer information */
 	
@@ -370,14 +493,15 @@ static off_t allocate_cell(Kap k, int jump)
 	
 	/* Okay, we seem to have the storage, update the eof marker */
 	k->append->eof = eof;
-	kap_encode_offset(&out[0], eof, sizeof(off_t));
-	if (WRITE_RECORDS(
-		k->append, 
-		LIBKAP_APPEND_HEAD_LEN,
-		&out[0], 
-		sizeof(off_t)) != 0)
+	
+	if (!k->append->tail_cache ||
+	    k->append->eof >= k->append->cache_off + 
+	    		      k->append->tail_size * k->append->record_size)
 	{
-		return 0;
+		if (flush_tail(k->append) != 0)
+		{
+			return 0;
+		}
 	}
 	
 	return where;
@@ -690,6 +814,11 @@ struct Kap_Append* append_init(Kap k)
 
 int kap_append_sync(Kap k)
 {
+	if (flush_tail(k->append) != 0)
+	{
+		return errno;
+	}
+	
 #ifdef USE_MMAP
 	if (k->append->mmap != MAP_FAILED && msync(
 		k->append->mmap,
@@ -714,6 +843,7 @@ int kap_append_set_tail_cache(Kap k, ssize_t size)
 	if (k->append->fd != -1) return KAP_ALREADY_OPEN;
 	
 	if (size > 32*1024*1024) return ERANGE;
+	if ((size * k->append->record_size) % BLOCK_SIZE != 0) return ERANGE;
 	
 	k->append->tail_size = size;
 	return 0;
@@ -841,24 +971,7 @@ int kap_append_open(Kap k, const char* dir, const char* prefix)
 
 	if (block_device)
 	{
-#if 1
 		assert(0);
-#else
-		k->append->grow_dir = GROW_DOWN;
-		k->append->eof = lseek(k->append->fd, LIBKAP_APPEND_HEAD_LEN+sizeof(off_t), SEEK_END);
-		
-		if (kap_read_full(k->append->fd, &header[0], LIBKAP_APPEND_HEAD_LEN) != 0)
-		{
-			out = KAP_APPEND_CORRUPT;
-			goto kap_append_open_error2;
-		}
-
-		if (memcmp(&header[0], LIBKAP_APPEND_HEAD, LIBKAP_APPEND_HEAD_LEN))
-		{
-			init = 1;
-			lseek(k->append->fd, LIBKAP_APPEND_HEAD_LEN+sizeof(off_t), SEEK_END);
-		}
-#endif
 	}
 	else
 	{
@@ -929,15 +1042,34 @@ int kap_append_open(Kap k, const char* dir, const char* prefix)
 	
 	if (k->append->tail_size)
 	{
-		k->append->tail_cache = malloc(k->append->tail_size*k->append->record_size);
+		k->append->tail_cache = calloc(k->append->tail_size, k->append->record_size);
 		if (!k->append->tail_cache)
 		{
 			if (errno)	out = errno;
 			else		out = ENOMEM;
 			goto kap_append_open_error3;
 		}
-	}
 		
+		k->append->cache_off = k->append->eof & BLOCK_MASK;
+		
+		if (lseek(k->append->fd, k->append->cache_off, SEEK_SET)
+			!= k->append->cache_off)
+		{
+			if (errno == 0) errno = EINTR;
+			return -1;
+		}
+		
+		if (kap_write_full(
+			k->append->fd,
+			k->append->tail_cache, 
+			k->append->eof - k->append->cache_off) != 0)
+		{
+			if (errno == 0) errno = EINTR;
+			return -1;
+		}
+		
+	}
+	
 	return 0;
 
 kap_append_open_error3:
