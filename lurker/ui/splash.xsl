@@ -65,7 +65,7 @@
     <table class="external">
      <tr>
       <td align="left"><h1><xsl:value-of select="server/archive"/></h1></td>
-      <td nowrap="NOWRAP" align="right"><xsl:call-template name="language-dropdown"/></td>
+      <td align="right"><xsl:call-template name="navbar"/></td>
      </tr>
     </table>
     

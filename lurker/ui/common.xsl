@@ -268,6 +268,12 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
  </table>
 </xsl:template>
 
+<xsl:template name="link-to-top">
+ <a class="root" href="../splash/index.{$ext}">
+  <img src="../imgs/root.png" width="48" height="48" alt="{$front-page}"/>
+ </a>
+</xsl:template>
+
 <xsl:template name="language-dropdown">
  <form action="{server/cgi-url}/bounce.cgi">
   <select name="url" onchange="self.location=value;">
@@ -295,6 +301,15 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
   </select>
   <input type="submit" value="X"/>
  </form>
+</xsl:template>
+
+<xsl:template name="navbar">
+ <table>
+  <tr>
+   <td><xsl:call-template name="link-to-top"/></td>
+   <td nowrap="NOWRAP"><xsl:call-template name="language-dropdown"/></td>
+  </tr>
+ </table>
 </xsl:template>
 
 <!-- Common links -->

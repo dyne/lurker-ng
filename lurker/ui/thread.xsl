@@ -65,7 +65,7 @@
         <xsl:if test="string-length(row[position()=1]/summary/subject) &gt; 60">&#x2026;</xsl:if>
        </h1>
       </td>
-      <td nowrap="NOWRAP" align="right"><xsl:call-template name="language-dropdown"/></td>
+      <td align="right"><xsl:call-template name="navbar"/></td>
      </tr>
     </table>
     

@@ -65,6 +65,7 @@ dt a { font-weight: normal }
 .mime-label a { background-color:#DDF; padding:3px; font-weight:bold }
 
 img { border: 0; margin: 0; padding: 0; }
+
 h2 img { vertical-align:middle; padding-top:1px }
 table.navigation td img { vertical-align:middle }
 .selected { background-color:#AAF }  /* Mark the thread segment as selected */
@@ -75,6 +76,9 @@ a img.selected { background-color:#77F }
 a:visited img { background-color:#BBB }
 a:visited img.selected { background-color:#77F }
 a img:hover { background-color:#55F }
+
+/* the link to the archive top */
+a.root img { background-color: transparent }
 
 table {
   border-collapse: collapse;
