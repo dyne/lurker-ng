@@ -103,9 +103,8 @@ INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common -I${top_srcdir}/libkap
 REQUESTS = message mindex search splash mbox attach thread jump
 
 sbin_PROGRAMS = lurkerd
-db_DATA = DB_CONFIG
 
-EXTRA_DIST = Design DB_CONFIG
+EXTRA_DIST = Design
 
 lurkerd_SOURCES = \
 	config.h   config.c   \
@@ -157,8 +156,6 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
 DIST_SOURCES = $(lurkerd_SOURCES)
-DATA = $(db_DATA)
-
 DIST_COMMON = Makefile.am Makefile.in
 SOURCES = $(lurkerd_SOURCES)
 
@@ -237,23 +234,6 @@ distclean-depend:
 	$(COMPILE) -c `cygpath -w $<`
 CCDEPMODE = @CCDEPMODE@
 uninstall-info-am:
-install-dbDATA: $(db_DATA)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(dbdir)
-	@list='$(db_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(dbdir)/$$f"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(dbdir)/$$f; \
-	done
-
-uninstall-dbDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(db_DATA)'; for p in $$list; do \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(dbdir)/$$f"; \
-	  rm -f $(DESTDIR)$(dbdir)/$$f; \
-	done
 
 tags: TAGS
 
@@ -310,10 +290,10 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS) $(DATA)
+all-am: Makefile $(PROGRAMS)
 
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(sbindir) $(DESTDIR)$(dbdir)
+	$(mkinstalldirs) $(DESTDIR)$(sbindir)
 
 install: install-am
 install-exec: install-exec-am
@@ -355,7 +335,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-data-local install-dbDATA
+install-data-am: install-data-local
 
 install-exec-am: install-sbinPROGRAMS
 
@@ -373,20 +353,18 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-compile mostlyclean-generic
 
-uninstall-am: uninstall-dbDATA uninstall-info-am uninstall-local \
-	uninstall-sbinPROGRAMS
+uninstall-am: uninstall-info-am uninstall-local uninstall-sbinPROGRAMS
 
 .PHONY: GTAGS all all-am check check-am clean clean-generic \
 	clean-sbinPROGRAMS distclean distclean-compile distclean-depend \
 	distclean-generic distclean-tags distdir dvi dvi-am info \
 	info-am install install-am install-data install-data-am \
-	install-data-local install-dbDATA install-exec install-exec-am \
-	install-info install-info-am install-man install-sbinPROGRAMS \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic tags uninstall \
-	uninstall-am uninstall-dbDATA uninstall-info-am uninstall-local \
-	uninstall-sbinPROGRAMS
+	install-data-local install-exec install-exec-am install-info \
+	install-info-am install-man install-sbinPROGRAMS install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic tags uninstall uninstall-am \
+	uninstall-info-am uninstall-local uninstall-sbinPROGRAMS
 
 
 install-data-local:
