@@ -70,8 +70,8 @@
     </table>
     
     <table class="navigation">
-     <tr><th colspan="3"><xsl:value-of select="$search-menu"/></th></tr>
-     <tr><td width="50%">&#160;</td><td nowrap="NOWRAP">
+     <tr><th><xsl:value-of select="$search-menu"/></th></tr>
+     <tr><td nowrap="NOWRAP" align="center">
       <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">
        <input type="hidden" name="doc-url" value="{server/doc-url}"/>
        <input type="hidden" name="format" value="{$ext}"/>
@@ -121,7 +121,7 @@
         </tr>
        </table>
       </form>
-     </td><td width="50%">&#160;</td></tr>
+     </td></tr>
     </table>
    </div>
    
