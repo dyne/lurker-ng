@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.6 2002-07-09 01:12:34 terpstra Exp $
+/*  $Id: append.c,v 1.7 2002-07-09 13:56:08 terpstra Exp $
  *  
  * append.c - Implementation of the append access methods.
  *  
@@ -436,6 +436,14 @@ int kap_append_set_recordsize(Kap k, ssize_t size)
 	if (size > 16384) return ERANGE;
 	
 	k->append->record_size = size;
+	return 0;
+}
+
+int kap_append_get_recordsize(Kap k, ssize_t* size)
+{
+	if (!k->append) return KAP_NO_APPEND;
+	
+	*size = k->append->record_size;
 	return 0;
 }
 

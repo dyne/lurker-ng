@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.8 2002-07-09 00:52:43 terpstra Exp $
+/*  $Id: kap.h,v 1.9 2002-07-09 13:56:08 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -171,7 +171,7 @@ int	kap_btree_set_leafsize(Kap k, ssize_t bytes);
  *  Errors: ERANGE, KAP_ALREADY_OPEN, KAP_NO_APPEND
  */
 int	kap_append_set_recordsize(Kap k, ssize_t size);
-
+int	kap_append_get_recordsize(Kap k, ssize_t* size);
 
 
 /****************************************** Btree specific DB calls */
