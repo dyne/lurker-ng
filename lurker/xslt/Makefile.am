@@ -1,6 +1,6 @@
 fmtdir = @wwwdir@/fmt
 
-fmtdir_DATA = \
+fmt_DATA = \
 	render.xsl render-html.xsl common.xsl \
 	error.xsl \
 	english.xsl \
@@ -8,8 +8,8 @@ fmtdir_DATA = \
 
 install-data-local:
 	$(mkinstalldirs) ${fmtdir}
-	ln -s basic.css   ${fmtdir}/default.css
-	ln -s english.xsl ${fmtdir}/lang.xsl
+	ln -fs basic.css   ${fmtdir}/default.css
+	ln -fs english.xsl ${fmtdir}/lang.xsl
 
 uninstall-local:
 	rm -f ${fmtdir}/default.css
