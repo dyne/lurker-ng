@@ -1,4 +1,4 @@
-/*  $Id: breader.h,v 1.3 2002-02-10 06:34:24 terpstra Exp $
+/*  $Id: breader.h,v 1.4 2002-02-10 08:20:44 terpstra Exp $
  *  
  *  breader.h - Knows how to use the abstracted read interface for buffered access
  *  
@@ -58,6 +58,11 @@ extern int lu_breader_read(
 	message_id index,
 	message_id count,
 	message_id* out);
+
+/* How many records are there?
+ */
+extern message_id lu_breader_records(
+	Lu_Breader_Handle h);
 
 /* Close the handle.
  */

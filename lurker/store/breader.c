@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.3 2002-02-10 06:34:24 terpstra Exp $
+/*  $Id: breader.c,v 1.4 2002-02-10 08:20:44 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -431,6 +431,19 @@ int lu_breader_offset(
 	record = &my_breader_records[h-1];
 	
 	return my_breader_find(record, id, index);
+}
+
+message_id lu_breader_records(
+	Lu_Breader_Handle h)
+{
+	My_Breader_Record* record;
+	
+	assert (h <= LU_MAX_HANDLES && h > 0);
+	assert (my_breader_records[h-1].usage > 0);
+	
+	record = &my_breader_records[h-1];
+	
+	return record->count;
 }
 
 int lu_breader_read(

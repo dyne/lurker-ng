@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.6 2002-02-05 00:13:38 terpstra Exp $
+/*  $Id: service.c,v 1.7 2002-02-10 08:20:44 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -28,6 +28,7 @@
 #include "common.h"
 #include "io.h"
 #include "protocol.h"
+#include "prefix.h"
 
 #include "config.h"
 #include "summary.h"
@@ -39,7 +40,167 @@
 #include <string.h>
 #include <stdlib.h>
 
+/*------------------------------------------------- Private global vars */
+
+/* A write buffer for output */
+static char my_service_buffer[10240];
+static int  my_service_used;
+
 /*------------------------------------------------- Private helper methods */
+
+static int my_service_buffer_writel(
+	st_netfd_t fd, 
+	const char* str,
+	int len)
+{
+	while (len)
+	{
+		int amt = sizeof(my_service_buffer) - my_service_used;
+		if (amt > len)
+			amt = len;
+		
+		memcpy(&my_service_buffer[my_service_used], str, amt);
+		
+		str += amt;
+		len -= amt;
+		my_service_used += amt;
+		
+		if (my_service_used == sizeof(my_service_buffer))
+		{
+			if (st_write(fd, &my_service_buffer[0],
+				sizeof(my_service_buffer), 5000000) !=
+				sizeof(my_service_buffer))
+			{
+				return -1;
+			}
+			
+			my_service_used = 0;
+		}
+	}
+	
+	return 0;
+}
+
+static int my_service_buffer_write(
+	st_netfd_t fd, 
+	const char* str)
+{
+	return my_service_buffer_writel(fd, str, strlen(str));
+}
+
+static int my_service_buffer_flush(
+	st_netfd_t fd)
+{
+	if (st_write(fd, &my_service_buffer[0], my_service_used, 5000000) !=
+		my_service_used)
+	{
+		return -1;
+	}
+	
+	my_service_used = 0;
+	return 0;
+}
+
+static void my_service_write_strl(
+	st_netfd_t fd,
+	const char* buf,
+	size_t length)
+{
+	const char* end;
+	const char* start;
+
+	/*
+	 * Read the buffer, looking for XML symbols that need
+	 * to be escaped with predefined entities.  Write in
+	 * segments.
+	 */
+	end = buf + length;
+	for (start = buf; buf != end; ++buf)
+	{
+		if (iscntrl(*buf) || (*buf & 0x80) != 0)
+		{
+			my_service_buffer_writel(fd, start, buf - start);
+			/*!!! Do some sort of unicode craziness */
+			start = buf+1;
+		}
+		else switch (*buf) 
+		{
+		case '\'':
+			my_service_buffer_writel(fd, start, buf - start);
+			my_service_buffer_write(fd, "&apos;");
+			start = buf+1;
+			break;
+		case '<':
+			my_service_buffer_writel(fd, start, buf - start);
+			my_service_buffer_write(fd, "&lt;");
+			start = buf+1;
+			break;
+		case '>':
+			my_service_buffer_writel(fd, start, buf - start);
+			my_service_buffer_write(fd, "&gt;");
+			start = buf+1;
+			break;
+		case '"':
+			my_service_buffer_writel(fd, start, buf - start);
+			my_service_buffer_write(fd, "&quot;");
+			start = buf+1;
+			break;
+		case '&':
+			my_service_buffer_writel(fd, start, buf - start);
+			my_service_buffer_write(fd, "&amp;");
+			start = buf+1;
+			break;
+		case '\n':
+			my_service_buffer_writel(fd, start, buf - start);
+			my_service_buffer_write(fd, "<br/>");
+			start = buf+1;
+			break;
+		}
+	}
+	
+	my_service_buffer_writel(fd, start, buf - start);
+}
+
+static void my_service_write_str(
+	st_netfd_t fd,
+	const char* buf)
+{
+	return my_service_write_strl(fd, buf, strlen(buf));
+}
+
+static int my_service_write_int(
+	st_netfd_t fd, 
+	message_id id)
+{
+	char buf[20];
+	sprintf(&buf[0], "%d", id);
+	return my_service_buffer_write(fd, &buf[0]);
+}
+
+static void my_service_xml_head(
+	st_netfd_t fd)
+{
+	my_service_buffer_write(fd, 
+		"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
+		"<?xml-stylesheet type=\"text/xml\" href=\"render.xslt\"?>\n"
+		);
+}
+
+static void my_service_error(
+	st_netfd_t fd,
+	const char* title,
+	const char* error,
+	const char* detail)
+{
+	my_service_xml_head(fd);
+	my_service_buffer_write(fd, "<error>\n <title>");
+	my_service_write_str(fd, title);
+	my_service_buffer_write(fd, "</title>\n <message>");
+	my_service_write_str(fd, error);
+	my_service_buffer_write(fd, "</message>\n <detail>");
+	my_service_write_str(fd, detail);
+	my_service_buffer_write(fd, "</detail>\n</error>\n");
+}
 
 static int my_service_getmsg(st_netfd_t fd, const char* request)
 {
@@ -247,13 +408,110 @@ static int my_service_getmsg(st_netfd_t fd, const char* request)
 	return -1;
 }
 
+static int my_service_mindex(st_netfd_t fd, const char* request)
+{
+	Lu_Breader_Handle	h;
+	Lu_Summary_Message	msg;
+	message_id		offset;
+	int			list;
+	char			keyword[40];
+	message_id		ids[LU_PROTO_INDEX];
+	int			i;
+	message_id		count;
+	
+	if (sscanf(request, "%d %d", &list, &offset) != 2)
+	{	/* They did something funny. */
+		my_service_error(fd,
+			"Malformed request",
+			"Lurkerd received an improperly formatted mindex request",
+			request);
+		
+		return -1;
+	}
+	
+	if ((offset % LU_PROTO_INDEX) != 0)
+	{	/* Must be a multiple of the index */
+		my_service_error(fd,
+			"Malformed request",
+			"Lurkerd received an unaligned mindex request",
+			request);
+		
+		return -1;
+	}
+	
+	sprintf(&keyword[0], "%s%d", LU_KEYWORD_LIST, list);
+	h = lu_breader_new(&keyword[0]);
+	if (h == 0)
+	{
+		my_service_error(fd,
+			"Internal error",
+			"Lurkerd failed to access the keyword database",
+			"server failure - see log files");
+		
+		return -1;
+	}
+	
+	if (offset >= lu_breader_records(h))
+	{
+		my_service_error(fd,
+			"Malformed request",
+			"Lurkerd received a mindex request past the end of the list",
+			request);
+		
+		return -1;
+	}
+	
+	count = lu_breader_records(h) - offset;
+	if (count > LU_PROTO_INDEX)
+		count = LU_PROTO_INDEX;
+	
+	if (lu_breader_read(h, offset, count, &ids[0]) != 0)
+	{
+		my_service_error(fd,
+			"Internal error",
+			"Lurkerd failed to retrieve the records from the keyword file",
+			"server failure - see log files");
+		
+		return -1;
+	}
+	
+	my_service_xml_head(fd);
+	my_service_buffer_write(fd, "<mindex>\n");
+	
+	for (i = 0; i < count; i++)
+	{
+		msg = lu_summary_read_msummary(ids[i]);
+		
+		my_service_buffer_write(fd, " <summary>\n  <id>");
+		my_service_write_int(fd, ids[i]);
+		my_service_buffer_write(fd, "</id>\n <timestamp>");
+		my_service_write_int(fd, msg.timestamp);
+		my_service_buffer_write(fd, "</timestamp>\n <thread>");
+		my_service_write_int(fd, msg.thread_parent);
+		my_service_buffer_write(fd, "</thread>\n");
+	}
+	
+	my_service_buffer_write(fd, "</mindex>\n");
+	
+	return 0;
+}
+
 static int my_service_digest_request(st_netfd_t fd, const char* request)
 {
+	int out = -1;
+	
+	my_service_used = 0;
+	
 	/* Determine what to do with the request */
 	if (memcmp(request, LU_PROTO_GETMSG, sizeof(LU_PROTO_GETMSG))) 
-		return my_service_getmsg(fd, request+sizeof(LU_PROTO_GETMSG)-1);
+		out = my_service_getmsg(fd, request+sizeof(LU_PROTO_GETMSG)-1);
+	if (memcmp(request, LU_PROTO_MINDEX, sizeof(LU_PROTO_MINDEX))) 
+		out = my_service_mindex(fd, request+sizeof(LU_PROTO_MINDEX)-1);
 	
-	return -1;
+	/* Get rid of any buffering */
+	my_service_buffer_flush(fd);
+	
+	return out;
 }
 
 /*------------------------------------------------- Public component methods */
