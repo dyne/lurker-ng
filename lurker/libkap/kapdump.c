@@ -1,4 +1,4 @@
-/*  $Id: kapdump.c,v 1.5 2002-07-09 01:24:38 terpstra Exp $
+/*  $Id: kapdump.c,v 1.6 2002-07-09 09:09:00 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool
  *  
@@ -30,8 +30,6 @@
 #include "../config.h"
 #include "kap.h"
 
-#include <unistd.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>	
 
@@ -48,6 +46,8 @@
 #define _(String) gettext (String)
 #define gettext_noop(String) (String)
 #define N_(String) gettext_noop (String)
+
+#define BLOCK	4096
 
 void help()
 {
@@ -88,7 +88,8 @@ int main(int argc, char * const * argv)
 	KRecord		kr;
 	ssize_t		len;
 	size_t		klen;
-	size_t		i;
+	size_t		i, amt;
+	char*		buf;
 	
 	ssize_t	sector_size	= 8192;
 	ssize_t	max_key_size	= 100;
@@ -194,6 +195,13 @@ int main(int argc, char * const * argv)
 	{
 		out = kap_append_set_recordsize(k, record_size);
 		if (out != 0) bail(out, "kap_append_set_recordsize");
+		
+		buf = malloc(record_size * BLOCK);
+		if (!buf) bail(ENOMEM, "malloc");
+	}
+	else
+	{
+		buf = 0;
 	}
 	
 	key  = malloc(max_key_size);
@@ -213,16 +221,24 @@ int main(int argc, char * const * argv)
 		if ((mode & KAP_APPEND) == KAP_APPEND)
 		{
 			klen = kap_decode_krecord(data, &kr);
-			assert (klen == len);
+			if (klen != len) bail(ERANGE, _("metadata missized"));
+			
 			printf("+%d,%d->%s", strlen(key), kr.records, key);
 			
 			if (!content_only)
 			{
 				fputs(",", stdout);
-				for (i = 0; i < kr.records; i++)
+				for (i = 0; i < kr.records; i += amt)
 				{
-					kap_kread(k, &kr, key, i, data, 1);
-					fwrite(data, record_size, 1, stdout);
+					if (kr.records > i+BLOCK)
+						amt = BLOCK;
+					else
+						amt = kr.records-i;
+					
+					out = kap_kread(k, &kr, key, i, buf, amt);
+					if (out) bail(out, "kap_kread");
+					if (fwrite(buf, record_size, amt, stdout) != amt)
+						bail(errno, "fwrite");
 				}
 			}
 			
