@@ -1,4 +1,4 @@
-/*  $Id: private.h,v 1.4 2002-07-09 00:09:40 terpstra Exp $
+/*  $Id: private.h,v 1.5 2002-07-09 00:52:43 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -48,12 +48,6 @@ int kap_btree_close(Kap k);
 int kap_append_open(Kap k, const char* dir, const char* prefix);
 int kap_append_sync(Kap k);
 int kap_append_close(Kap k);
-
-/* Encode the offset information for a KRecord into a buffer 
- * Return number of bytes processed.
- */
-size_t kap_decode_krecord(const unsigned char* where,       KRecord* kr);
-size_t kap_encode_krecord(      unsigned char* where, const KRecord* kr);
 
 /* Convenient methods */
 int kap_write_full(int fd, const unsigned char* buf, size_t dat);

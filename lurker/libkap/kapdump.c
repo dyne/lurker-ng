@@ -1,4 +1,4 @@
-/*  $Id: kapdump.c,v 1.3 2002-07-04 13:19:32 terpstra Exp $
+/*  $Id: kapdump.c,v 1.4 2002-07-09 00:52:43 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool
  *  
@@ -58,6 +58,7 @@ void help()
 	fputs(_("\t-v        \tDisplay version information and exit\n"), stderr);
 	fputs(_("\t-h        \tDisplay this message and exit\n"), stderr);
 	fputs(_("\t-b        \tUse only the btree layer\n"), stderr);
+	fputs(_("\t-c        \tDo not display record contents\n"), stderr);
 	fputs(_("\t-s <bytes>\tSector size for the btree                   (8096)\n"), stderr);
 	fputs(_("\t-k <bytes>\tMaximum size of input key                    (100)\n"), stderr);
 	fputs(_("\t-t <bytes>\tNumber of bytes used in tree pointers          (3)\n"), stderr);
@@ -84,23 +85,26 @@ int main(int argc, char * const * argv)
 	const char*	file;
 	char*		key;
 	char*		data;
-	KRecord*	kr;
+	KRecord		kr;
 	ssize_t		len;
+	size_t		klen;
+	size_t		i;
 	
 	ssize_t	sector_size	= 8192;
 	ssize_t	max_key_size	= 100;
 	short	tree_size	= 3;
 	ssize_t	leaf_size	= 252;
 	ssize_t	record_size	= 4;
+	int	content_only	= 0;
 	
-	int mode = KAP_BTREE | KAP_APPEND;
+ 	int mode = KAP_FAST;
 	
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	bind_textdomain_codeset(PACKAGE, "utf-8");
 	
-	while ((c = getopt(argc, argv, "hvbs:k:t:l:r:")) != -1)
+	while ((c = getopt(argc, argv, "hvbcs:k:t:l:r:")) != -1)
 	{
 		switch (c)
 		{
@@ -121,6 +125,10 @@ int main(int argc, char * const * argv)
 			
 		case 'b':
 			mode &= ~KAP_APPEND;
+			break;
+		
+		case 'c':
+			content_only = 1;
 			break;
 		
 		case 's':
@@ -158,7 +166,7 @@ int main(int argc, char * const * argv)
 	file    = argv[optind];
 	
 	/* Minimize all parameters so we can do the user ones in order */
-	out = kap_create(&k, KAP_BTREE);
+	out = kap_create(&k, mode);
 	if (out != 0) bail(out, "kap_create");
 	
 	out = kap_btree_set_maxkeysize(k, 2);
@@ -182,16 +190,15 @@ int main(int argc, char * const * argv)
 	out = kap_btree_set_treesize(k, tree_size);
 	if (out != 0) bail(out, "kap_btree_set_treesize");
 	
-/*
-	out = kap_append_set_recordsize(k, record_size);
-	if (out != 0) bail(out, "kap_append_set_recordsize");
-*/
+	if ((mode & KAP_APPEND) == KAP_APPEND)
+	{
+		out = kap_append_set_recordsize(k, record_size);
+		if (out != 0) bail(out, "kap_append_set_recordsize");
+	}
 	
 	key  = malloc(max_key_size);
 	data = malloc(leaf_size);
 	if (!key || !data) bail(ENOMEM, "malloc");
-	
-	kr = (KRecord*)data;
 	
 	out = kap_open(k, ".", file);
 	if (out != 0) bail(out, "kap_open");
@@ -203,12 +210,37 @@ int main(int argc, char * const * argv)
 	{
 		if (out) bail(out, "kap_btree_read_next");
 		
-		printf("+%d,%d->%s,", strlen(key), len, key);
-		fflush(stdout);
-		write(1, data, len);
-		printf("\n"); 
-		
-		/*!!! do stuff for non-btree only */
+		if ((mode & KAP_APPEND) == KAP_APPEND)
+		{
+			klen = kap_decode_krecord(data, &kr);
+			assert (klen == len);
+			printf("+%d,%d->%s", strlen(key), kr.records, key);
+			
+			if (!content_only)
+			{
+				fputs(",", stdout);
+				fflush(stdout);
+				for (i = 0; i < kr.records; i++)
+				{
+					kap_kread(k, &kr, key, i, data, 1);
+					write(1, data, record_size);
+				}
+			}
+			
+			fputs("\n", stdout);
+		}
+		else
+		{
+			printf("+%d,%d->%s", strlen(key), len, key);
+			if (!content_only)
+			{
+				fputs(",", stdout);
+				fflush(stdout);
+				write(1, data, len);
+			}
+			
+			fputs("\n", stdout); 
+		}
 	}
 	
 	

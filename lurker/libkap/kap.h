@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.7 2002-07-09 00:09:40 terpstra Exp $
+/*  $Id: kap.h,v 1.8 2002-07-09 00:52:43 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -250,6 +250,13 @@ int	kap_append_read(Kap k, const KRecord* kr,
  */
 int	kap_append_append(Kap k, KRecord* kr, 
 	void* data, size_t len);
+
+/* Encode the offset information for a KRecord into a buffer 
+ * Return number of bytes processed.
+ */
+size_t kap_decode_krecord(const unsigned char* where,       KRecord* kr);
+size_t kap_encode_krecord(      unsigned char* where, const KRecord* kr);
+
 
 
 
