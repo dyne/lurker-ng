@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.12 2002-07-12 11:42:48 terpstra Exp $
+/*  $Id: append.c,v 1.13 2002-07-12 12:50:36 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -486,6 +486,7 @@ int kap_append_find(
 		*offset = -1;
 		
 		assert(l == 0);
+		return KAP_NOT_FOUND;
 	}
 	
 	return 0;
