@@ -1,4 +1,4 @@
-/*  $Id: Config.h,v 1.14 2003-06-30 14:28:57 terpstra Exp $
+/*  $Id: Config.h,v 1.15 2003-07-01 13:15:30 terpstra Exp $
  *  
  *  Config.h - Knows how to load the config file
  *  
@@ -35,7 +35,8 @@
 #include <sstream>
 #endif
 
-#include "../tools/config.h"
+// get VERSION
+#include "../config.h"
 
 using std::string;
 using std::map;
