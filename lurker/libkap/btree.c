@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.3 2002-07-01 14:25:31 terpstra Exp $
+/*  $Id: btree.c,v 1.4 2002-07-01 15:22:42 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -96,6 +96,9 @@ struct Kap_Btree
 	unsigned char*	sectb;
 	unsigned char*	sectc;
 	
+	/* Buffer for callback */
+	unsigned char*	scratch;
+	
 #ifdef USE_MMAP
 	char*	mmap;
 #endif
@@ -126,11 +129,17 @@ static int READ_SECTOR(struct Kap_Btree* k, off_t sector, void* buf)
 {
 	if (lseek(k->fd, sector*k->sector_size, SEEK_SET) != 
 	    sector*k->sector_size)
+	{
+		if (errno == 0) errno = EINTR;
 		return -1;
+	}
 	
 	if (read(k->fd, buf, k->sector_size) !=
 	    k->sector_size)
+	{
+		if (errno == 0) errno = EINTR;
 		return -1;
+	}
 	
 	return 0;
 }
@@ -139,11 +148,17 @@ static int WRITE_SECTOR(struct Kap_Btree* k, off_t sector, void* buf)
 {
 	if (lseek(k->fd, sector*k->sector_size, SEEK_SET) != 
 	    sector*k->sector_size)
+	{
+		if (errno == 0) errno = EINTR;
 		return -1;
+	}
 	
 	if (write(k->fd, buf, k->sector_size) !=
 	    k->sector_size)
+	{
+		if (errno == 0) errno = EINTR;
 		return -1;
+	}
 	
 	return 0;
 }
@@ -237,6 +252,7 @@ struct Kap_Btree* btree_init(void)
 	btree->secta = 0;
 	btree->sectb = 0;
 	btree->sectc = 0;
+	btree->scratch = 0;
 	
 	return btree;
 }
@@ -330,8 +346,10 @@ int kap_btree_open(Kap k, const char* dir, const char* prefix)
 	k->btree->secta = malloc(k->btree->sector_size);
 	k->btree->sectb = malloc(k->btree->sector_size);
 	k->btree->sectc = malloc(k->btree->sector_size);
+	k->btree->scratch = malloc(k->btree->leaf_size);
 	
-	if (!k->btree->secta || !k->btree->sectb || !k->btree->sectc)
+	if (!k->btree->secta || !k->btree->sectb || !k->btree->sectc ||
+		!k->btree->scratch)
 		return ENOMEM;
 	
 	snprintf(&buf[0], sizeof(buf),
@@ -427,6 +445,7 @@ int kap_btree_close(Kap k)
 	if (k->btree->secta) free(k->btree->secta);
 	if (k->btree->sectb) free(k->btree->sectb);
 	if (k->btree->sectc) free(k->btree->sectc);
+	if (k->btree->scratch) free(k->btree->scratch);
 	
 #ifdef USE_MMAP
 	if (k->btree->mmap != MAP_FAILED)
@@ -529,8 +548,8 @@ static int is_full(Kap k, const unsigned char* sector)
 	size = scan - sector;
 	remain = k->btree->sector_size - size;
 	
-	return	remain < 1 + k->btree->leaf_size + k->btree->max_key_size ||
-		remain <   2*k->btree->tree_size + k->btree->max_key_size;
+	if (leaf) return remain < 1 + k->btree->leaf_size + k->btree->max_key_size;
+	else      return remain <   2*k->btree->tree_size + k->btree->max_key_size;
 }
 
 /***************************************** Btree insertion code */
@@ -665,28 +684,33 @@ static int travel_down(Kap k, const char* key, off_t x,
 	int (*decide)(void* arg, unsigned char* record, ssize_t* len),
 	void* arg)
 {
+	int i, out, put;
+	
+	unsigned char*	ptr;
+	unsigned char*	scan;
+	size_t		klen;
+	off_t		child;
+	off_t		split;
+	unsigned char*	swap;
+	ssize_t		dlen, nlen;
+	size_t		remains;
+	
 	while (!((struct Sector_Header*)k->btree->secta)->leaf)
 	{
 		/* Find the first address (ptr) such that the following
 		 * key (scan) obeys: key <= scan
 		 */
 		
-		int i;
-		
-		unsigned char*	ptr;
-		unsigned char*	scan;
-		size_t		klen;
-		off_t		child;
-		unsigned char*	swap;
-		
-		for (i = 0, ptr = k->btree->secta + sizeof(struct Sector_Header);
+		for (i = 0, 
+			ptr = k->btree->secta + sizeof(struct Sector_Header),
+			scan = ptr + k->btree->tree_size;
 		     i < ((struct Sector_Header*)k->btree->secta)->count;
 		     i++, ptr = scan + klen + 1)
 		{
 			scan = ptr + k->btree->tree_size;
 			klen = strlen(scan);
 			
-			if (memcmp(key, scan, klen+1) <= 0)
+			if (strcmp(key, scan) <= 0)
 				break;
 		}
 		
@@ -698,6 +722,23 @@ static int travel_down(Kap k, const char* key, off_t x,
 		
 		if (is_full(k, k->btree->sectb))
 		{	/* Preserve the "not full" precondition */
+			out = split_child(k, x, child, &split, ptr);
+			if (out != 0) return out;
+			
+			if (WRITE_SECTOR(k->btree, split, k->btree->sectc))
+				return errno;
+			if (WRITE_SECTOR(k->btree, x, k->btree->secta))
+				return errno;
+			if (WRITE_SECTOR(k->btree, child, k->btree->sectb))
+				return errno;
+			
+			if (strcmp(key, scan) > 0)
+			{	/* We want to recurse to split instead */
+				child = split;
+				swap = k->btree->sectc;
+				k->btree->sectc = k->btree->sectb;
+				k->btree->sectb = swap;
+			}
 		}
 		
 		/* Continue scanning, but make the child the position */
@@ -709,6 +750,77 @@ static int travel_down(Kap k, const char* key, off_t x,
 	}
 	
 	/* Okay, we have reached the leaf */
+	
+	/* Find the first key which is >= the search key */
+	i = 0;
+	out = -1;
+	scan = k->btree->secta + sizeof(struct Sector_Header);
+	while (i < ((struct Sector_Header*)k->btree->secta)->count)
+	{
+		out = strcmp(key, scan);
+		if (out <= 0) break;
+		
+		scan += strlen(scan);
+		scan += 1 + (*scan);
+		i++;
+	}
+	
+	if (out == 0)
+	{	/* key exists */
+		ptr = scan + strlen(scan);
+		dlen = *ptr++;
+		
+		memcpy(k->btree->scratch, ptr, dlen);
+		memset(k->btree->scratch+dlen, 0, k->btree->leaf_size-dlen);
+	}
+	else
+	{	/* key dne */
+		memset(k->btree->scratch, 0, k->btree->leaf_size);
+		dlen = -1;
+	}
+	
+	nlen = dlen;
+	put = decide(arg, k->btree->scratch, &nlen);
+	
+	/* If we aren't writing; just return */
+	if (!put) return 0;
+	
+	/* If we are deleting a non-existant record, just return */
+	if (nlen == -1 && dlen == -1) return 0;
+	
+	/*!!! Don't delete for now 
+	 * Concern is about case where the record becomes empty.
+	 */
+	assert (nlen != -1);
+	
+	if (out == 0)
+	{	/* key already exists; just new data. */
+		/* Shift remains */
+		klen = strlen(scan);
+		ptr = scan + klen + 1;
+		remains = k->btree->secta + k->btree->sector_size - ptr;
+		
+		if (dlen < nlen)
+			memmove(ptr+nlen, ptr+dlen, remains - nlen);
+		else
+			memmove(ptr+nlen, ptr+dlen, remains - dlen);
+		memcpy(ptr, k->btree->scratch, nlen);
+	}
+	else
+	{	/* Key did not exist */
+		klen = strlen(key);
+		ptr = scan+klen+1+nlen;
+		remains = k->btree->secta + k->btree->sector_size - ptr;
+		memmove(ptr, scan, remains);
+		memcpy(scan, key, klen+1);
+		scan += klen+1;
+		memcpy(scan, k->btree->scratch, nlen);
+	}
+	
+	if (WRITE_SECTOR(k->btree, x, k->btree->secta) != 0)
+		return errno;
+	
+	return 0;
 }
 
 /***************************************** Module entry point */
