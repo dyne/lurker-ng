@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.2 2002-07-08 15:15:32 terpstra Exp $
+/*  $Id: append.c,v 1.3 2002-07-08 15:21:37 terpstra Exp $
  *  
  * append.c - Implementation of the append access methods.
  *  
@@ -255,8 +255,11 @@ int kap_append_read(Kap k, const KRecord* kr,
 	if (!k->append) return KAP_NO_APPEND;
 	if (k->append->fd == -1) return KAP_NOT_OPEN;
 	
+	/* We assume below that this is >= 1 */
+	if (len == 0) return 0;
+	
 	recs = offset_to_jump(off+len-1); /* we need this cell */
-	assert (off + len < kr->records);
+	assert (off + len <= kr->records);
 	
 	/* Now, begin reading the data in */
 	for (i = offset_to_jump(off); i <= recs; i++)
