@@ -1,3 +1,5 @@
+v0.9:
+	
 v0.8:
 	@ signs are legitimate inside urls
 	Support iconv #define's used on MacOS
