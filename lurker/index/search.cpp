@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.1 2004-08-24 16:14:27 terpstra Exp $
+/*  $Id: search.cpp,v 1.2 2004-08-24 19:28:44 terpstra Exp $
  *  
  *  search.cpp - Search for messages in lurker database (optionally delete)
  *  
@@ -108,6 +108,12 @@ int main(int argc, char** argv)
 	}
 	
 	auto_ptr<ESort::Writer> db(ESort::Writer::opendb(cfg.dbdir + "/db"));
+	if (!db.get())
+	{
+		perror("opening database");
+		return 1;
+	}
+	
 	Search s(cfg, db.get(), ESort::Forward);
 	
 	while (optind < argc) s.keyword(argv[optind++]);
