@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.19 2003-05-28 13:16:29 terpstra Exp $
+/*  $Id: main.cpp,v 1.20 2003-05-28 13:20:18 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -173,7 +173,8 @@ int index(const DwString& msg, long batch, bool check)
 	}
 	
 	// Err, messages from the future? I don't think so.
-	if (arrival > import) arrival = import;
+	// We have a day's worth of tolerance in case of a timezone issue
+	if (arrival > import + 24*60*60) arrival = import;
 	
 	append.append(msg.c_str(), msg.length());
 	Index i(msg, db.get(), *list, start, msg.length());
