@@ -1,4 +1,4 @@
-/*  $Id: db.c,v 1.8 2002-01-28 06:55:40 terpstra Exp $
+/*  $Id: db.c,v 1.9 2002-01-28 07:14:44 terpstra Exp $
  *  
  *  db.c - manage the databases
  *  
@@ -446,16 +446,16 @@ int lu_sync_mbox()
 			
 			error = lu_mbox_db->get(lu_mbox_db, 0, &dkey, &dval, 0);
 			
-			got = read(mbox->fd, &buf[0], sizeof(buf));
-			if (got < 0)
-			{
-				fprintf(stderr, "Couldn't read mbox %s: %s\n",
-					mbox->path, strerror(errno));
-				return -1;
-			}
-			
 			if (error == 0)
 			{
+				got = read(mbox->fd, &buf[0], sizeof(buf));
+				if (got < 0)
+				{
+					fprintf(stderr, "Couldn't read mbox %s: %s\n",
+							mbox->path, strerror(errno));
+					return -1;
+				}
+				
 				if (got < sizeof(buf) && got < val.offset)
 				{	/* They switched mboxs on us -- too small */
 					fprintf(stderr, "Mbox id does not match prior version %s\n",
