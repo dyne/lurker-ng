@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.8 2002-05-03 01:29:16 terpstra Exp $
+/*  $Id: config.c,v 1.9 2002-05-04 03:41:21 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -60,7 +60,6 @@ static const char*	my_config_file;
 /*------------------------------------------------ Public global vars */
 
 char*	lu_config_dbdir   = 0;
-char*	lu_config_wwwdir  = 0;
 char*	lu_config_pidfile = 0;
 
 char*	lu_config_list_host	= 0;
@@ -572,7 +571,6 @@ static int my_config_load_config()
 			target_mbox = &(*target_mbox)->next;
 		}
 		else PRE_LIST_STR("dbdir",             lu_config_dbdir)
-		else PRE_LIST_STR("wwwdir",            lu_config_wwwdir)
 		else PRE_LIST_STR("pidfile",           lu_config_pidfile)
 		else PRE_LIST_STR("list_host",         lu_config_list_host)
 		else PRE_LIST_STR("admin_name",        lu_config_admin_name)
@@ -596,7 +594,6 @@ static int my_config_load_config()
 	fclose(c);
 	
 	DEF_STR("dbdir",         lu_config_dbdir,         DBDIR)
-	DEF_STR("wwwdir",        lu_config_wwwdir,        WWWDIR)
 	DEF_STR("pidfile",       lu_config_pidfile,       DEFAULT_PID_FILE)
 	DEF_STR("list_host",     lu_config_list_host,     "somewhere.org")
 	DEF_STR("admin_name",    lu_config_admin_name,    "unconfigured")
