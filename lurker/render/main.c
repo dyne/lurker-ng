@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.11 2002-05-03 18:56:40 terpstra Exp $
+/*  $Id: main.c,v 1.12 2002-05-03 19:32:21 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -180,12 +180,9 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	
-	ext = strrchr(uri, ',');
+	ext = strrchr(uri, '.');
 	qs = strrchr(uri, '/');
-	if (qs && qs != uri)	mod = strrchr(qs-1, '/');
-	else			mod = 0;
-	
-	if (ext > qs)	*ext++ = 0;
+	if (qs && ext > qs)	*ext++ = 0;
 	else
 	{
 		printf("Content-type: text/html\r\n\r\n");
@@ -195,6 +192,10 @@ int main(int argc, char* argv[])
 			"Missing an extension");
 		return 1;
 	}
+	
+	*qs = 0;
+	mod = strrchr(uri, '/');
+	*qs = '/';
 	
 	if (!mod)
 	{
@@ -263,8 +264,8 @@ int main(int argc, char* argv[])
 	fflush(lu_server_link);
 	
 	/* Read back server processing directions */
-	fgets(&cache[0], sizeof(cache), lu_server_link);
 	fgets(&type [0], sizeof(type),  lu_server_link);
+	fgets(&cache[0], sizeof(cache), lu_server_link);
 	
 	if (strlen(type) > 1) type[strlen(type)-1] = 0;
 	
