@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.3 2003-04-25 10:13:54 terpstra Exp $
+/*  $Id: search.cpp,v 1.4 2003-04-25 16:38:19 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -85,15 +85,14 @@ string decipherHalf(const string& str)
 	return out;
 }
 
-Search::Search(ESort::Reader* db_, const MessageId& laterThan)
- : db(db_), start(laterThan.serialize_backward()), eof(false)
+Search::Search(ESort::Reader* db_, Direction dir_, const MessageId& id_)
+ : db(db_), dir(dir_), id(id_), eof(false)
 {
 }
 
 Search::~Search()
 {
-	Entries::iterator i;
-	for (i = entries.begin(); i != entries.end(); ++i)
+	for (Entries::iterator i = entries.begin(); i != entries.end(); ++i)
 		delete i->walker;
 }
 
@@ -101,45 +100,45 @@ string Search::keyword(const string& key)
 {
 	// cout << "need: " << key << "\n";
 	
-	string prefix = LU_KEYWORD LU_BACKWARD + key + '\0';
 	entries.push_back(KEntry());
-	entries.back().prefix = prefix;
-	entries.back().walker = db->seek(prefix + start, true).release();
+	entries.back().skip = 1 + key.length() + 1;
+	entries.back().walker = db->seek(LU_KEYWORD + key + '\0', id.raw(), dir).release();
 	
 	assert (entries.back().walker); // always succeeds
 	
 	if (entries.back().walker->advance() != 0)
-		return string("Walker::advance:") + strerror(errno);
-		
-	if (entries.back().walker->key.substr(0, prefix.length()) != prefix)
+	{
 		eof = true;
+		if (errno == 0) return "";
+		return string("Walker::advance:") + strerror(errno);
+	}
+		
+	if (entries.back().walker->key.length() != entries.back().skip + 8)
+	{
+		eof = true;
+		return string("corrupt keyword entry");
+	}
 	
 	return "";
 }
 
 MessageId Search::top(Entries::iterator i)
 {
-	assert (i->walker->key.length() == i->prefix.length() + 8);
-	MessageId id(i->walker->key.c_str()+i->prefix.length(), false);
+	assert (i->walker->key.length() == i->skip + 8);
+	MessageId id(i->walker->key.c_str()+i->skip, 1);
 	return id;
 }
 
 string Search::advance(Entries::iterator i)
 {
-	int j = i->walker->advance();
-	if (j == -1)
+	if (i->walker->advance() == -1)
 	{
 		eof = true;
+		if (errno == 0) return "";
 		return string("Walker::advance:") + strerror(errno);
 	}
 	
-	if (j < i->prefix.length())
-	{
-		eof = true;
-		return "";
-	}
-	
-	if (i->walker->key.length() != i->prefix.length() + 8)
+	if (i->walker->key.length() != i->skip + 8)
 	{
 		eof = true;
 		return string("corrupt keyword entry");
@@ -174,7 +173,14 @@ string Search::pull(int n, vector<Summary>& o)
 			--n;
 		}
 		
-		if ((ok = advance(big)) != "") return ok;
+		if (dir == Forward)
+		{
+			if ((ok = advance(big)) != "") return ok;
+		}
+		else
+		{
+			if ((ok = advance(small)) != "") return ok;
+		}
 	}
 	
 	return "";
@@ -200,17 +206,27 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 	string keys = decipherHalf(param.substr(o, e-o));
 	tokenize(keys, tokens, ",");
 	
-	// !!! this is actually somewhat ok, find a good base-case
 	if (tokens.empty())
-		return search_format_error(param);
+	{	// Search for everything!
+		tokens.push_back("id:any");
+	}
 	
 	// Right! Everything the user did is ok.
+	
+	vector<Summary> forward, backward, queue;
+	
+	Search backwardk(db, Backward, id);
+	Search forwardk (db, Forward,  id);
+	
 	string ok;
 	
-	Search s(db, id);
 	for (vector<string>::iterator i = tokens.begin(); i != tokens.end(); ++i)
-		if ((ok = s.keyword(*i)) != "")
+	{
+		if ((ok = backwardk.keyword(*i)) != "")
 			break;
+		if ((ok = forwardk.keyword(*i)) != "")
+			break;
+	}
 	
 	if (ok != "")
 	{
@@ -223,20 +239,45 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
-	vector<Summary> queue;
-	
-	if ((ok = s.pull(21, queue)) != "")
+	if ((ok = forwardk .pull(35, forward )) != "" ||
+	    (ok = backwardk.pull(35, backward)) != "")
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database search isect failure"), ok,
+		cout << error(_("Database search seek failure"), strerror(errno),
 			_("Something internal to the database failed. "
 			  "Please contact the lurker user mailing list for "
-			  "further assistence."));
+			  "furth assistence."));
 		return 1;
 	}
 	
-	vector<Summary>::size_type i;
+	vector<Summary>::size_type left, right, i;
+	if (forward.size() + backward.size() < 20)
+	{
+		left = backward.size();
+		right = forward.size();
+	}
+	else if (forward.size() < 10)
+	{
+		right = forward.size();
+		left = 20 - right;
+	}
+	else if (backward.size() < 10)
+	{
+		left = backward.size();
+		right = 20 - left;
+	}
+	else
+	{
+		left = right = 10;
+	}
+	
+	assert (left  <= backward.size());
+	assert (right <= forward .size());
+	
+	for (i = left; i > 0; --i)  queue.push_back(backward[i-1]);
+	for (i = 0; i < right; ++i) queue.push_back(forward[i]);
+	
 	for (i = 0; i < queue.size(); ++i)
 		if ((ok = queue[i].load(db)) != "")
 			break;
@@ -260,15 +301,23 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 		<< " " << cfg << "\n"
 		<< " <query>" << xmlEscape << keys << "</query>\n";
 	
-	vector<Summary>::size_type eof;
-	if (queue.size() == 21)
-	{
-		eof = 20;
-		cache.o << " <next>" << queue[20] << "</next>\n";
+	if (right < forward.size())
+	{	// we need a next link
+		i = min(right+9, forward.size()-1);
+		MessageId nd(forward[i].id());
+		nd.increment(); // hope that it doesn't exist (-> skips one)
+		cache.o << " <next>" << nd.serialize() << "</next>\n";
 	}
-	else	eof = queue.size();
 	
-	for (i = 0; i < eof; ++i)
+	if (left < backward.size())
+	{	// we need a prev link
+		i = min(left+10, backward.size()-1);
+		MessageId pd(backward[i].id());
+		pd.increment();
+		cache.o << " <prev>" << pd.serialize() << "</prev>\n";
+	}
+	
+	for (i = 0; i < queue.size(); ++i)
 		cache.o << " <row>" << queue[i] << "</row>\n";
 	
 	cache.o << "</search>\n";

@@ -1,4 +1,4 @@
-/*  $Id: Keys.h,v 1.3 2003-04-25 15:12:21 terpstra Exp $
+/*  $Id: Keys.h,v 1.4 2003-04-25 16:38:17 terpstra Exp $
  *  
  *  Keys.h - What prefixs various database keys
  *  
@@ -32,6 +32,7 @@
 using std::string;
 using std::vector;
 
+// These must have length 1
 #define LU_THREADING	"t"
 #define LU_KEYWORD	"k"
 #define LU_SUMMARY	"s"

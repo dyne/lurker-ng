@@ -1,4 +1,4 @@
-/*  $Id: Summary.cpp,v 1.3 2003-04-25 10:13:53 terpstra Exp $
+/*  $Id: Summary.cpp,v 1.4 2003-04-25 16:38:18 terpstra Exp $
  *  
  *  Summary.cpp - Helper which can load a message given MessageId
  *  
@@ -42,38 +42,36 @@ using namespace std;
 
 string Summary::load(Reader* r)
 {
-	string prefix = LU_SUMMARY + id_.serialize_forward();
+	// Use the prefix limited search
+	auto_ptr<Walker> w(r->seek(LU_SUMMARY + id_.raw(), "", Forward));
 	
-	auto_ptr<Walker> w(r->seek(prefix, true));
-	
-	int l = prefix.length();
-	int j;
-	while ((j = w->advance()) >= l ||
-		w->key.substr(0, prefix.length()) == prefix)
+	// This will only walk records matching this id
+	int ok;
+	while ((ok = w->advance()) != -1)
 	{
-		if (w->key.length() < l + 2)
+		if (w->key.length() < 1 + 8 + 2)
 			return "invalid mbox entry -- way too short";
 		
 		// We use this for getting an unsigned value below.
-		const unsigned char* k = (const unsigned char*)w->key.c_str() + l;
+		const unsigned char* k = (const unsigned char*)w->key.c_str()+1+8;
 		
 		// read all the values
 		switch (*k)
 		{
 		case LU_MESSAGE_AUTHOR_EMAIL:
-			author_email_ = w->key.substr(l+1, string::npos);
+			author_email_ = w->key.substr(1+8+1, string::npos);
 			break;
 			
 		case LU_MESSAGE_AUTHOR_NAME:
-			author_name_ = w->key.substr(l+1, string::npos);
+			author_name_ = w->key.substr(1+8+1, string::npos);
 			break;
 			
 		case LU_MESSAGE_SUBJECT:
-			subject_ = w->key.substr(l+1, string::npos);
+			subject_ = w->key.substr(1+8+1, string::npos);
 			break;
 			
 		case LU_MESSAGE_MBOX:
-			if ((int)w->key.length() < l + 12+1+1)
+			if (w->key.length() < 1+8+1+12+1)
 				return "invalid mbox entry -- too short";
 			
 			int i;
@@ -91,7 +89,7 @@ string Summary::load(Reader* r)
 				length_ |= *++k;
 			}
 			
-			mbox_ = w->key.substr(l+1+12, string::npos);
+			mbox_ = w->key.substr(1+8+1+12, string::npos);
 			mboxs_.insert(mbox_);
 			break;
 		
@@ -100,7 +98,7 @@ string Summary::load(Reader* r)
 		}
 	}
 	
-	if (j == -1 && errno != 0)
+	if (ok == -1 && errno != 0)
 		return string("Walker::advance:") + strerror(errno);
 	
 	return "";

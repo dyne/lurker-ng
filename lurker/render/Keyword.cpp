@@ -1,4 +1,4 @@
-/*  $Id: Keyword.cpp,v 1.3 2003-04-25 10:13:52 terpstra Exp $
+/*  $Id: Keyword.cpp,v 1.4 2003-04-25 16:38:18 terpstra Exp $
  *  
  *  Keyword.cpp - Helper which can stream keywords
  *  
@@ -23,70 +23,31 @@
  */
  
 #include "Keyword.h"
+#include <Keys.h>
 
 #include <cerrno>
 #include <cstring>
 
-Keyword::Keyword(Reader* r, bool f, const string& p, const string& o)
- : reader(r), walker(0), forward(f), eof(false), prefix(p), offset(o)
+Keyword::Keyword(Reader* db, Direction dir, const string& kw, const MessageId& id)
+ : walker(db->seek(LU_KEYWORD + kw + '\0', id.raw(), dir)),
+   skip(1+kw.length()+1)
 {
-}
-
-Keyword::Keyword(const Keyword& o)
- : reader(o.reader), walker(0), forward(o.forward), eof(o.eof), prefix(o.prefix), 
-   offset(o.walker.get()?o.walker->key:o.offset)
-{
-}
-
-Keyword::~Keyword()
-{
-}
-
-void Keyword::swap(Keyword& o)
-{
-	std::swap(reader, o.reader);
-	std::swap(walker, o.walker);
-	std::swap(forward,o.forward);
-	std::swap(eof,    o.eof);
-	std::swap(prefix, o.prefix);
-	std::swap(offset, o.offset);
-}
-
-Keyword& Keyword::operator = (const Keyword& o)
-{
-	Keyword(o).swap(*this);
-	return *this;
 }
 
 string Keyword::pull(int n, vector<Summary>& o)
 {
-	if (eof || n == 0) return "";
-	
-	if (walker.get() == 0)
-		walker = reader->seek(prefix + offset, true);
-		// always succeeds
-	
-	while (n != 0)
+	int ok = 0;
+	while (n && (ok = walker->advance()) != -1)
 	{
-		int j = walker->advance();
-		if (j == -1)
-			return string("Walker::advance:") + strerror(errno);
-		
-		if (j < (int)prefix.length() &&
-			walker->key.substr(0, prefix.length()) != prefix)
-
-		{
-			eof = true;
-			return "";
-		}
-		
-		if (walker->key.length() < prefix.length() + 8)
+		if (walker->key.length() != skip + 8)
 			return "corrupt keyword entry";
 		
-		MessageId id(walker->key.c_str() + prefix.length(), forward);
+		MessageId id(walker->key.c_str() + skip, 1);
 		o.push_back(id);
 		--n;
 	}
+	if (ok == -1)
+		return string("Walker::advance:") + strerror(errno);
 	
 	return "";
 }

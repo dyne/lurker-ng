@@ -6,15 +6,17 @@ v0.7:
 	Added mejo's manpage for lurker-index
 	Open mode of 0666 instead of 0644; rely on the umask
 	Support override for lurker.cgi location
+	Install cgis to cgi-bin rather than docroot
 	Replace list_host with archive
 	Don't use symlinks; not portable and jam doesn't do it
 	Support building against local mimelib for deployment without kde
 	Compatability with older g++ 2.95 versions
-	Install cgis to cgi-bin rather than docroot
 	Support backwards reading in esort
 	Fixed a bug with the empty string inserted into the database
 	The database supports prefix partitioning
 	Make search work like mindex
+	Removed debugging some that was left in 0.6
+	A search for no keywords now returns everything
 
 v0.6:
 	Jam replaces automake + overkill autoconf madness; hooray!
@@ -23,6 +25,7 @@ v0.6:
 	Indexing is done atomically with lurker-index (command-line tool)
 	lurker.cgi takes atomic database snapshots directly (no ipc)
 	Basically, a reimplementation in C++
+	
 
 v0.1g:
 	Ignore reply-to address if equal to mailing list address

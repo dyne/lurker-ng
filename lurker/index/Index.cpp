@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.5 2003-04-25 15:12:31 terpstra Exp $
+/*  $Id: Index.cpp,v 1.6 2003-04-25 16:38:18 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -262,6 +262,16 @@ int Index::index_id(time_t server)
 		id.raw()) != 0)
 	{
 		cerr << "Failed to insert message id keyword!" << endl;
+		return -1;
+	}
+	
+	if (writer->insert(
+		LU_KEYWORD +
+		string(LU_KEYWORD_EVERYTHING) + 
+		'\0' + 
+		id.raw()) != 0)
+	{
+		cerr << "Failed to the any keyword!" << endl;
 		return -1;
 	}
 	

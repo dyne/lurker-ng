@@ -1,4 +1,4 @@
-/*  $Id: Threading.cpp,v 1.3 2003-04-25 10:13:54 terpstra Exp $
+/*  $Id: Threading.cpp,v 1.4 2003-04-25 16:38:18 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -48,30 +48,27 @@
 #define TOPMESSAGE_BOTH	'k'
 
 using namespace std;
+using namespace ESort;
 
-string Threading::load(ESort::Reader* r, const Summary& sum, Key& out)
+string Threading::load(Reader* r, const Summary& sum, Key& out)
 {
-	string find_start = 
+	string prefix = 
 		LU_THREADING + 
 		subject_hash(sum.subject().c_str()) + 
-		'\0' + 
-		LU_BACKWARD + 
-		sum.id().serialize_backward();
+		'\0';
 	
-	auto_ptr<ESort::Walker> backwards(r->seek(find_start, true));
+	auto_ptr<Walker> backwards(r->seek(prefix, sum.id().raw(), Backward));
 	
 	/** Walk backwards until we find step off the subject, or there is
 	 *  a break of more than 40 days between messages.
 	 */
-	int j, l = find_start.length() - 8;
 	MessageId root = sum.id();
-	while ((j = backwards->advance()) >= l ||
-	       backwards->key.substr(0, l) == find_start.substr(0, l))
+	while (backwards->advance() != -1)
 	{
-		if ((int)backwards->key.length() < l + 8)
+		if (backwards->key.length() < prefix.length() + 8)
 			return "corrupt threading record -- too short";
 		
-		MessageId x(backwards->key.c_str() + l, false); // backwards
+		MessageId x(backwards->key.c_str() + prefix.length(), 1);
 		if (x.timestamp() + 60*60*24*DAY_GAP_FOR_NEW_THREAD 
 			< root.timestamp())
 			break;
@@ -84,28 +81,20 @@ string Threading::load(ESort::Reader* r, const Summary& sum, Key& out)
 	 *  we keep a map of all the hashes we have seen.
 	 */
 	hashes.clear();
+	nodes.clear();
 	
-	string find_end = 
-		LU_THREADING + 
-		subject_hash(sum.subject().c_str()) + 
-		'\0' + 
-		LU_FORWARD + 
-		root.serialize_forward();
-	
-	auto_ptr<ESort::Walker> forwards(r->seek(find_end, true));
+	auto_ptr<Walker> forwards(r->seek(prefix, root.raw(), Forward));
 	
 	/** Walk forwards until we find step off the subject, or there is
 	 *  a break of more than 40 days between messages.
 	 */
-	l = find_end.length() - 8;
 	MessageId prev = root;
-	while ((j = forwards->advance()) >= l ||
-	       forwards->key.substr(0, l) == find_end.substr(0, l))
+	while (forwards->advance() != -1)
 	{
-		if ((int)forwards->key.length() < l + 8)
+		if (forwards->key.length() < prefix.length() + 8)
 			return "corrupt forwardthreading record -- too short";
 		
-		MessageId x(forwards->key.c_str() + l, true); // forwards
+		MessageId x(forwards->key.c_str() + prefix.length(), 1);
 		
 		if (prev.timestamp() + 60*60*24*DAY_GAP_FOR_NEW_THREAD 
 			< x.timestamp())
@@ -127,8 +116,8 @@ string Threading::load(ESort::Reader* r, const Summary& sum, Key& out)
 		
 		/** Try all possibilities for the in-reply-to
 		 */
-		long candidates = (forwards->key.length() - l - 8) / 4;
-		const char* cand = forwards->key.c_str() + l + 8;
+		long candidates = (forwards->key.length() - prefix.length() - 8) / 4;
+		const char* cand = forwards->key.c_str() + prefix.length() + 8;
 		
 		while (candidates)
 		{
@@ -245,7 +234,7 @@ int my_service_draw_tree(
 	return tree[n].column;
 }
 
-string Threading::draw_tree(ESort::Reader* db)
+string Threading::draw_tree(Reader* db)
 {
 	Threading::Node* tree = &nodes[0];
 	int tree_size = nodes.size();

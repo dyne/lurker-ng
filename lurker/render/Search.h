@@ -1,4 +1,4 @@
-/*  $Id: Search.h,v 1.3 2003-04-25 10:13:52 terpstra Exp $
+/*  $Id: Search.h,v 1.4 2003-04-25 16:38:18 terpstra Exp $
  *  
  *  Search.h - Helper which can intersect keywords
  *  
@@ -33,24 +33,26 @@ using namespace ESort;
 class Search
 {
  protected:
-	struct KEntry
-	{
-		Walker*		walker;
-		string		prefix;
-	};
+ 	struct KEntry
+ 	{
+ 		Walker*	walker;
+ 		long	skip;
+ 	};
+ 	
+	typedef std::list<KEntry> Entries;
 	
-	typedef std::list<KEntry>	Entries;
+	Reader*		db;
+	Direction	dir;
+	MessageId	id;
 	
-	Reader*	db;
-	string	start;
 	bool	eof;
 	Entries	entries;
 	
-	MessageId	top(Entries::iterator i);
-	string		advance(Entries::iterator i);
+	static MessageId top(Entries::iterator i);
+	string Search::advance(Entries::iterator i);
 	
  public:
- 	Search(Reader* db_, const MessageId& laterThan);
+ 	Search(Reader* db_, Direction dir_, const MessageId& id_);
  	~Search();
  	
  	string keyword(const string& key);

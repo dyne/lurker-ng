@@ -1,4 +1,4 @@
-/*  $Id: Keyword.h,v 1.3 2003-04-25 10:13:52 terpstra Exp $
+/*  $Id: Keyword.h,v 1.4 2003-04-25 16:38:18 terpstra Exp $
  *  
  *  Keyword.h - Helper which can stream keywords
  *  
@@ -36,22 +36,14 @@ using namespace ESort;
 class Keyword
 {
  protected:
- 	Reader*		reader;
- 	auto_ptr<Walker> walker;
- 	bool		forward;
- 	bool		eof;
- 	
- 	string		prefix;
- 	string		offset;
+ 	auto_ptr<Walker>	walker;
+ 	string::size_type	skip;
  	
  public:
- 	Keyword(Reader* r = 0, bool forward = true, const string& prefix = "", const string& offset = "");
- 	Keyword(const Keyword& o);
- 	~Keyword();
- 	
- 	Keyword& operator = (const Keyword& o);
- 	
- 	void swap(Keyword& o);
+ 	Keyword(Reader*          db = 0, 
+ 		Direction        dir = Forward, 
+ 		const string&    keyword = "", 
+ 		const MessageId& id = MessageId());
  	
  	string pull(int n, vector<Summary>& o);
 };

@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.2 2003-04-21 18:26:21 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.3 2003-04-25 16:38:19 terpstra Exp $
  *  
  *  mindex.cpp - Handle a mindex/ command
  *  
@@ -80,10 +80,8 @@ int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	vector<Summary> forward, backward, queue;
 	
-	Keyword backwardk(db, false, LU_KEYWORD LU_BACKWARD LU_KEYWORD_LIST + list.mbox + '\0', id.serialize_backward());
-	MessageId nd = id;
-	nd.increment(); // make the two lists disjoint
-	Keyword forwardk (db, true,  LU_KEYWORD LU_FORWARD  LU_KEYWORD_LIST + list.mbox + '\0', nd.serialize_forward ());
+	Keyword backwardk(db, Backward, LU_KEYWORD_LIST + list.mbox, id);
+	Keyword forwardk (db, Forward,  LU_KEYWORD_LIST + list.mbox, id);
 	
 	string ok;
 	

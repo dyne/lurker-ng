@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.3 2003-04-24 12:50:43 terpstra Exp $
+/*  $Id: message.cpp,v 1.4 2003-04-25 16:38:19 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -322,12 +322,11 @@ string MBox::load(ESort::Reader* db, const MessageId& rel)
 	string ok;
 	vector<Summary> sum;
 	
-	Keyword n(db, true,
-		LU_KEYWORD LU_FORWARD LU_KEYWORD_LIST +
-		cfg.mbox + 
-		'\0',
-		rel.serialize_forward());
+	Keyword n(db, Forward, LU_KEYWORD_LIST + cfg.mbox, rel);
 	if ((ok = n.pull(2, sum)) != "") return ok;
+	
+	if (sum.size() < 1 || sum[0].id() != rel)
+		return "Relative message does not exist";
 	
 	if (sum.size() >= 2)
 	{
@@ -337,16 +336,12 @@ string MBox::load(ESort::Reader* db, const MessageId& rel)
 	
 	sum.clear();
 	
-	Keyword p(db, false,
-		LU_KEYWORD LU_BACKWARD LU_KEYWORD_LIST +
-		cfg.mbox + 
-		'\0',
-		rel.serialize_backward());
-	if ((ok = p.pull(2, sum)) != "") return ok;
+	Keyword p(db, Backward, LU_KEYWORD_LIST + cfg.mbox, rel);
+	if ((ok = p.pull(1, sum)) != "") return ok;
 	
-	if (sum.size() >= 2)
+	if (sum.size() >= 1)
 	{
-		prev = sum[1];
+		prev = sum[0];
 		if ((ok = prev.load(db)) != "") return ok;
 	}
 	
@@ -432,9 +427,8 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		
 		for (mid = mids.begin(); mid != mids.end(); ++mid)
 		{
-			cout << "MID: " << *mid << "\n";
-			Keyword k(db, false,
-				LU_KEYWORD LU_BACKWARD LU_KEYWORD_REPLY_TO + *mid + '\0', "");
+			// cout << "MID: " << *mid << "\n";
+			Keyword k(db, Forward, LU_KEYWORD_REPLY_TO + *mid);
 			if ((ok = k.pull(1000, sums)) != "")
 				break;
 		}
@@ -442,7 +436,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		if (ok == "")
 		for (sum = sums.begin(); sum != sums.end(); ++sum)
 		{
-			cout << "SUM: " << *sum << "\n";
+			// cout << "SUM: " << *sum << "\n";
 			string hash = sum->id().hash();
 			if (thread.hasMessage(hash)) continue;
 			if (followups.find(hash) != followups.end()) continue;
@@ -474,8 +468,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		
 		for (mid = mids.begin(); mid != mids.end(); ++mid)
 		{
-			Keyword k(db, false,
-				LU_KEYWORD LU_BACKWARD LU_KEYWORD_MESSAGE_ID + *mid + '\0', "");
+			Keyword k(db, Forward, LU_KEYWORD_MESSAGE_ID + *mid);
 			if ((ok = k.pull(1000, sums)) != "")
 				break;
 		}
@@ -626,6 +619,8 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		cache.o << "  </drift>\n";
 	}
 	
+#if 0
+	// These are already included; don't print twice
 	set<Summary> replies = thread.replies(spot);
 	if (!replies.empty())
 	{
@@ -638,6 +633,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		cache.o << "  </replies>\n";
 		
 	}
+#endif
 	
 	cache.o << " </threading>\n";
 	

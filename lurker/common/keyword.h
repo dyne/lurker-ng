@@ -1,4 +1,4 @@
-/*  $Id: keyword.h,v 1.3 2003-04-21 18:25:31 terpstra Exp $
+/*  $Id: keyword.h,v 1.4 2003-04-25 16:38:18 terpstra Exp $
  *  
  *  prefix.h - What to place in front of keywords we search for
  *  
@@ -23,9 +23,10 @@
  */
 
 /* fields indexed early */
-#define LU_KEYWORD_MESSAGE_ID	"id:"	/* Message id */
-#define LU_KEYWORD_REPLY_TO	"rt:"	/* Reply-to */
-#define LU_KEYWORD_THREAD	"th:"	/* THread */
+#define LU_KEYWORD_EVERYTHING	"id:any"	/* keyword */
+#define LU_KEYWORD_MESSAGE_ID	"id:"		/* Message id */
+#define LU_KEYWORD_REPLY_TO	"rt:"		/* Reply-to */
+#define LU_KEYWORD_THREAD	"th:"		/* THread */
 
 /* lu_import_message */
 #define	LU_KEYWORD_LIST		"ml:"	/* Mailing List */
