@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.1 2003-05-12 00:55:24 terpstra Exp $
+/*  $Id: PTable.cpp,v 1.2 2003-05-13 21:38:29 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -25,6 +25,8 @@
 #include "PTable.h"
 
 #include <unistd.h>
+
+#include <iostream>
 
 #include <cerrno>
 #include <cstring>
@@ -83,7 +85,7 @@ string PTable::kill()
 	{
 		if (i->kill)
 		{
-			if (verbose) cout << "Deleting: " << i->file << endl;
+			if (verbose) std::cout << "Deleting: " << i->file << endl;
 			if (unlink(i->file.c_str()) < 0)
 			{
 				cerr << "Cannot unlink: " << i->file << ": " << strerror(errno) << endl;

@@ -1,4 +1,4 @@
-/*  $Id: prune.cpp,v 1.2 2003-05-12 00:55:24 terpstra Exp $
+/*  $Id: prune.cpp,v 1.3 2003-05-13 21:38:29 terpstra Exp $
  *  
  *  prune.cpp - Prune obsolete / stale cache files
  *  
@@ -37,11 +37,15 @@
 #include <fcntl.h>
 #include <utime.h>
 
+#include <iostream>
+
 #include <cstring>
 #include <cerrno>
 #include <ctime>
 
 #include "PTable.h"
+
+using namespace std;
 
 void help(const char* name)
 {
