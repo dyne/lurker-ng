@@ -23,7 +23,10 @@
  <b><xsl:value-of select="$author"/>:&#160;</b>
  <xsl:apply-templates select="summary/email" mode="email-link"/><br/>
  <b><xsl:value-of select="$date"/>:&#160;</b>
- <xsl:apply-templates select="summary" mode="date"/>&#160;UTC<br/>
+ <xsl:apply-templates select="summary" mode="text-date"/>
+ <xsl:text>&#160;</xsl:text>
+ <xsl:apply-templates select="summary" mode="timezone"/>
+ <br/>
  <xsl:if test="to">
   <b><xsl:value-of select="$to"/>:&#160;</b>
   <xsl:apply-templates mode="email-list" select="to/email"/><br/>
@@ -162,6 +165,7 @@
   <head>
    <link rel="stylesheet" href="../fmt/default.css" type="text/css"/>
    <title><xsl:value-of select="summary/subject"/></title>
+   <script type="text/javascript" src="../fmt/common.js"/>
   </head>
   <body>
    <div class="header">
@@ -199,7 +203,7 @@
        <xsl:choose>
         <xsl:when test="threading/prev">
          <a href="{threading/prev/summary/id}.{$ext}">
-          <xsl:apply-templates mode="post-description" select="threading/prev/summary"/>
+          <xsl:apply-templates mode="post-description-text" select="threading/prev/summary"/>
           <img src="../imgs/prev.png" alt="&lt;-"/>
          </a>
         </xsl:when>
@@ -215,7 +219,7 @@
        <xsl:choose>
         <xsl:when test="threading/next">
          <a href="{threading/next/summary/id}.{$ext}">
-          <xsl:apply-templates mode="post-description" select="threading/next/summary"/>
+          <xsl:apply-templates mode="post-description-text" select="threading/next/summary"/>
           <img src="../imgs/next.png" alt="-&gt;"/>
          </a>
         </xsl:when>

@@ -1,6 +1,5 @@
 Ideas:
 	Reorder threads by reply-to?
-	Timezones suck. Need to localize times to the browser?
 	Link to mailing lists from complete thread view?
 	More robust detection of 'From ' lines? Too many people screw it up.
 		(Content-Length could help or maybe @ needed in email)

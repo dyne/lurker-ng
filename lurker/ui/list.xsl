@@ -85,7 +85,7 @@
   <head>
    <link rel="stylesheet" href="../fmt/default.css" type="text/css"/>
    <title><xsl:value-of select="list/email/@name"/></title>
-   <xsl:call-template name="java-row-select"/>
+   <script type="text/javascript" src="../fmt/common.js"/>
   </head>
   <body>
    <div class="header">

@@ -6,6 +6,7 @@ InstallFile $(VARDIR)/www/$(PACKAGE) :
 
 InstallFile $(VARDIR)/www/$(PACKAGE)/fmt :
 	default.css
+	common.js
 	english.xsl
 	common.xsl
 	list.xsl

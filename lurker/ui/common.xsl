@@ -36,7 +36,7 @@
 </xsl:template>
 
 <!-- Date formatting -->
-<xsl:template match="summary" mode="date">
+<xsl:template match="summary" mode="utc-date">
  <xsl:value-of select="substring(id,1,4)"/>
  <xsl:text>-</xsl:text>
  <xsl:value-of select="substring(id,5,2)"/>
@@ -47,22 +47,46 @@
  <xsl:text>:</xsl:text>
  <xsl:value-of select="substring(id,12,2)"/>
 </xsl:template>
-
+<xsl:template match="summary" mode="text-date">
+ <script type="text/javascript"><xsl:comment>
+textdate(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
+ <noscript><xsl:apply-templates mode="utc-date" select="."/></noscript>
+</xsl:template>
+<xsl:template match="summary" mode="timezone">
+ <script type="text/javascript"><xsl:comment>
+timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
+ <noscript>UTC</noscript>
+</xsl:template>
 
 <!-- Summary formatting -->
-<xsl:template match="summary" mode="post-description">
+<xsl:template match="summary" mode="post-description-text">
  <xsl:apply-templates mode="email-name" select="email"/>
  <xsl:value-of select="$posted-at"/>
- <xsl:apply-templates mode="date" select="."/>
+ <xsl:apply-templates mode="text-date" select="."/>
 </xsl:template>
 <xsl:template match="summary" mode="post-description-link">
  <a href="../message/{id}.{$ext}">
-  <xsl:apply-templates mode="post-description" select="."/>
+  <xsl:apply-templates mode="post-description-text" select="."/>
  </a>
 </xsl:template>
 <xsl:template match="summary" mode="post-description-list">
  <xsl:if test="position()!=1">, </xsl:if>
  <xsl:apply-templates mode="post-description-link" select="."/>
+</xsl:template>
+<xsl:template match="summary" mode="post-description-title">
+ <xsl:attribute name="title">
+  <xsl:apply-templates mode="email-name" select="email"/>
+  <xsl:value-of select="$posted-at"/>
+  <xsl:apply-templates mode="utc-date" select="."/>
+ </xsl:attribute>
+ <xsl:attribute name="onMouseOver">
+  <xsl:text>titledate(this,'</xsl:text>
+  <xsl:apply-templates mode="email-name" select="email"/>
+  <xsl:value-of select="$posted-at"/>
+  <xsl:text>',</xsl:text>
+  <xsl:value-of select="timestamp"/>
+  <xsl:text>);</xsl:text>
+ </xsl:attribute>
 </xsl:template>
 
 
@@ -76,9 +100,7 @@
     <xsl:value-of select="local-name(.)"/>
     <xsl:text>.png</xsl:text>
    </xsl:attribute>
-   <xsl:attribute name="title">
-    <xsl:apply-templates mode="post-description" select="../../summary[id=$id]"/>
-   </xsl:attribute>
+   <xsl:apply-templates mode="post-description-title" select="../../summary[id=$id]"/>
    <xsl:if test="@selected">
     <xsl:attribute name="class">selected</xsl:attribute>
    </xsl:if>
@@ -246,40 +268,14 @@
 <xsl:template match="server" mode="splash-link">
  <a href="../splash/index.{$ext}"><xsl:value-of select="archive"/></a>
 </xsl:template>
-<xsl:template name="java-row-select">
- <SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript">
-  <xsl:comment>
-   var old = "ffffff";
-   function rollOut(thisItem)
-   {
-    thisItem.style.background=old; 
-    thisItem.style.backgroundColor=old;
-   }
-   function rollIn(thisItem)
-   {
-    if (thisItem.style.background)
-    {
-     old = thisItem.style.background; 
-     thisItem.style.background="CCAACC"; 
-    }
-    else
-    {
-     old = thisItem.style.backgroundColor;
-     thisItem.style.backgroundColor="CCAACC";
-    }
-   }
-  //</xsl:comment>
- </SCRIPT>
-</xsl:template>
-
 <xsl:template match="list" mode="list-link">
  <a href="../list/{id}.{$ext}">
   <xsl:apply-templates mode="email-name" select="email"/>
  </a>
 </xsl:template>
-
 <xsl:template match="summary" mode="thread-link">
  <a href="../thread/{id}.{$ext}"><xsl:value-of select="subject"/></a>
 </xsl:template>
+
 
 </xsl:stylesheet>

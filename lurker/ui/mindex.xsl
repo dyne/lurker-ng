@@ -39,7 +39,7 @@
    </div>
   </td>
   <td nowrap="NOWRAP">
-   <xsl:apply-templates mode="date" select="summary"/>
+   <xsl:apply-templates mode="text-date" select="summary"/>
   </td>
  </xsl:element>
  <xsl:text>&#10;</xsl:text>
@@ -52,7 +52,7 @@
   <head>
    <link rel="stylesheet" href="../fmt/default.css" type="text/css"/>
    <title><xsl:value-of select="list/email/@name"/></title>
-   <xsl:call-template name="java-row-select"/>
+   <script type="text/javascript" src="../fmt/common.js"/>
   </head>
   <body>
    <div class="header">
@@ -126,7 +126,11 @@
       <tr>
        <th><xsl:value-of select="$subject"/></th>
        <th><xsl:value-of select="$author"/></th>
-       <th><xsl:value-of select="$date"/>&#160;(UTC)</th>
+       <th><xsl:value-of select="$date"/>
+           <xsl:text>&#160;(</xsl:text>
+           <xsl:apply-templates select="row[position()=1]/summary" mode="timezone"/>
+           <xsl:text>)</xsl:text>
+       </th>
       </tr>
       <xsl:apply-templates mode="message" select="row"/>
      </table>
