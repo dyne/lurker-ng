@@ -27,6 +27,7 @@ v0.10:
 	Renamed Config.h to ConfigFile.h for windows
 	Fixed rendering in konqueror
 	Got subject/author clipping working in IE+Konqueror
+	Double-click in list overview goes directly to the message
 
 v0.9:
 	Don't segfault in rare cases if using '-d' on import (zero restart)
