@@ -67,6 +67,6 @@
 
 <xsl:variable name="unknown-address" select="'unbekannt'"/>
 <xsl:variable name="posted-at" select="' am '"/>
-<xsl:variable name="admin-by" select="'Administriert von:'"/>
-<xsl:variable name="version" select="'Version'"/>
+<xsl:variable name="admin-by" select="'Administriert von '"/>
+<xsl:variable name="version" select="'Version '"/>
 </xsl:stylesheet>
