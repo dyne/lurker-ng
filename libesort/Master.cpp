@@ -1,4 +1,4 @@
-/*  $Id: Master.cpp,v 1.2 2003-08-16 18:29:05 terpstra Exp $
+/*  $Id: Master.cpp,v 1.3 2003-08-16 18:36:20 terpstra Exp $
  *  
  *  Master.cpp - Coordinate commit+read interface
  *  
@@ -198,7 +198,7 @@ auto_ptr<Walker> Master::seek(const string& k, Direction dir)
 	return auto_ptr<Walker>(out);
 }
 
-auto_ptr<Walker> Master::seek(const string& pfx, const string& k, Direction dir)
+auto_ptr<Walker> Master::seekp(const string& pfx, const string& k, Direction dir)
 {
 	assert (dir == Forward || dir == Backward);
 	

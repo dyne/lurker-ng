@@ -1,2 +1,8 @@
-v0.5:
+v1.0:
 	Copied libesort from lurker
+	Added rollback method for completeness
+	Added FORWARD/BACKWARD to match conventional C++
+	Renamed seek() with prefix to seekp() other languages
+	Standardized FORWARD=1, BACKWARD=2
+	Added C bindings -- header + library (esortc)
+	Added Perl bindings (use KW)

@@ -1,4 +1,4 @@
-/*  $Id: esortc.h,v 1.2 2003-08-16 18:15:25 terpstra Exp $
+/*  $Id: esortc.h,v 1.3 2003-08-16 18:36:20 terpstra Exp $
  *  
  *  esortc.h - Public interface to libesort for C
  *  
@@ -69,8 +69,9 @@ Walker	esort_writer_seek (Writer r, const char* key,    unsigned long keylen, in
 Walker	esort_writer_seekp(Writer r, const char* prefix, unsigned long prefixlen, const char* key, unsigned long keylen, int direction);
 
 /* Methods for writing to a Writer */
-int	esort_writer_insert(Writer w, const char* key, unsigned long keylen);
-int	esort_writer_commit(Writer w);
+int	esort_writer_insert  (Writer w, const char* key, unsigned long keylen);
+int	esort_writer_commit  (Writer w);
+int	esort_writer_rollback(Writer w);
 
 #ifdef __cplusplus
 }

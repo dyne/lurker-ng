@@ -16,7 +16,7 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 	Esort::BACKWARD
 ) ] );
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-our $VERSION = '0.02';
+our $VERSION = '1.0';
 
 require XSLoader;
 XSLoader::load('KW', $VERSION);

@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.4 2003-08-16 18:29:06 terpstra Exp $
+/*  $Id: esort.h,v 1.5 2003-08-16 18:36:21 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -157,7 +157,7 @@ class Reader
  	 *  
  	 *  This operation never failes; you must call advance() before use.
  	 */
- 	virtual auto_ptr<Walker> seek(const string& prefix, const string& k, Direction dir) = 0;
+ 	virtual auto_ptr<Walker> seekp(const string& prefix, const string& k, Direction dir) = 0;
  	
  	/** Open an existing database for reading.
  	 *  0 is returned and errno set on error.

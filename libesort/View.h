@@ -1,4 +1,4 @@
-/*  $Id: View.h,v 1.1.1.1 2003-08-15 13:59:07 terpstra Exp $
+/*  $Id: View.h,v 1.2 2003-08-16 18:36:21 terpstra Exp $
  *  
  *  View.h - Snapshot of commit state
  *  
@@ -57,7 +57,7 @@ class View : public Reader
  	int rawseek(Merger* out, const string& k, bool forward);
  	
  	auto_ptr<Walker> seek(const string& k, Direction dir);
- 	auto_ptr<Walker> seek(const string& pfx, const string& k, Direction dir);
+ 	auto_ptr<Walker> seekp(const string& pfx, const string& k, Direction dir);
 };
 
 }

@@ -1,4 +1,4 @@
-/*  $Id: View.cpp,v 1.1.1.1 2003-08-15 13:59:07 terpstra Exp $
+/*  $Id: View.cpp,v 1.2 2003-08-16 18:36:21 terpstra Exp $
  *  
  *  View.cpp - Snapshot of commit state
  *  
@@ -146,7 +146,7 @@ auto_ptr<Walker> View::seek(const string& k, Direction dir)
 	return auto_ptr<Walker>(out);
 }
 
-auto_ptr<Walker> View::seek(const string& pfx, const string& k, Direction dir)
+auto_ptr<Walker> View::seekp(const string& pfx, const string& k, Direction dir)
 {
 	assert (dir == Forward || dir == Backward);
 	

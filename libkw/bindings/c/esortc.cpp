@@ -1,4 +1,4 @@
-/*  $Id: esortc.cpp,v 1.2 2003-08-16 18:15:25 terpstra Exp $
+/*  $Id: esortc.cpp,v 1.3 2003-08-16 18:36:20 terpstra Exp $
  *  
  *  esortc.cpp - C binding for the ESort API
  *  
@@ -105,7 +105,7 @@ Walker esort_reader_seekp(Reader r, const char* prefix, unsigned long prefixlen,
 {
 	ESort::Reader* rr = reinterpret_cast<ESort::Reader*>(r);
 	ESort::Direction d = (ESort::Direction)direction;
-	std::auto_ptr<ESort::Walker> o(rr->seek(std::string(key, keylen), d));
+	std::auto_ptr<ESort::Walker> o(rr->seekp(std::string(prefix, prefixlen), std::string(key, keylen), d));
 	return o.release();
 }
 
@@ -121,7 +121,7 @@ Walker esort_writer_seekp(Writer w, const char* prefix, unsigned long prefixlen,
 {
 	ESort::Writer* rw = reinterpret_cast<ESort::Writer*>(w);
 	ESort::Direction d = (ESort::Direction)direction;
-	std::auto_ptr<ESort::Walker> o(rw->seek(std::string(key, keylen), d));
+	std::auto_ptr<ESort::Walker> o(rw->seekp(std::string(prefix, prefixlen), std::string(key, keylen), d));
 	return o.release();
 }
 
@@ -135,6 +135,12 @@ int esort_writer_commit(Writer w)
 {
 	ESort::Writer* rw = reinterpret_cast<ESort::Writer*>(w);
 	return rw->commit();
+}
+
+int esort_writer_rollback(Writer w)
+{
+	ESort::Writer* rw = reinterpret_cast<ESort::Writer*>(w);
+	return rw->rollback();
 }
 
 } // extern C

@@ -35,6 +35,9 @@ opendb(ESort_String db)
 MODULE = KW	PACKAGE = ESort::WriterPtr
 
 error_int
+ESort_Writer::rollback()
+
+error_int
 ESort_Writer::commit()
 
 error_int
@@ -50,7 +53,7 @@ ESort_Writer::seek(ESort_String key, ESort_Direction dir)
 ESort_Walker*
 ESort_Writer::seekp(ESort_String prefix, ESort_String key, ESort_Direction dir)
 	CODE:
-		RETVAL = THIS->seek(prefix, key, dir).release();
+		RETVAL = THIS->seekp(prefix, key, dir).release();
 	OUTPUT:
 		RETVAL
 
@@ -70,7 +73,7 @@ ESort_Reader::seek(ESort_String key, ESort_Direction dir)
 ESort_Walker*
 ESort_Reader::seekp(ESort_String prefix, ESort_String key, ESort_Direction dir)
 	CODE:
-		RETVAL = THIS->seek(prefix, key, dir).release();
+		RETVAL = THIS->seekp(prefix, key, dir).release();
 	OUTPUT:
 		RETVAL
 
