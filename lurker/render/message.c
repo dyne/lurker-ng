@@ -1,4 +1,4 @@
-/*  $Id: message.c,v 1.14 2002-02-22 01:55:58 terpstra Exp $
+/*  $Id: message.c,v 1.15 2002-02-22 02:02:54 terpstra Exp $
  *  
  *  message.c - output results from a message/ lookup
  *  
@@ -69,9 +69,11 @@ int lu_mbox_handler(
 	const char* uri, 
 	lu_doctype t)
 {
-	FILE* out;
-	int   fd;
-	int   i;
+	FILE*  out;
+	int    fd;
+	int    i;
+	char   buf[4096];
+	size_t got;
 	
 	if (t != LU_OTHER)
 	{	/* Only know how to handle .txt */
@@ -119,11 +121,18 @@ int lu_mbox_handler(
 	fprintf(lu_server_link, "%s %i%c", 
 		LU_PROTO_GETMBOX, i, LU_PROTO_ENDREQ);
 	
-	printf("Status: 200 OK\r\n");
-	printf("Content-type: text/plain\r\n\r\n");
-	
 	lu_forward_data(out);
 	
-	/* We handled the request internally */
+	printf("Status: 200 OK\r\n");
+	printf("Content-type: text/plain\r\n\r\n");
+	fflush(stdout);
+	
+	/* We handled the request internally, but we also need to serve it */
+	/* Pipe it through */
+	fseek(out, 0, SEEK_SET);
+	while ((got = fread(&buf[0], 1, sizeof(buf), out)) > 0)
+		write(1, &buf[0], got);
+	
+	fclose(out);
 	return -1;
 }
