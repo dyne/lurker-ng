@@ -10,10 +10,20 @@ lurker authors
 	Programmer
 	Build maintainer
 
-'Jonas Meurer' <jonas@freesources.org>
-	Debian package
-	Original man page
-	German translation
+----------------
+port maintainers
+----------------
+
+Debian package: 'Jonas Meurer' <jonas@freesources.org>
+FreeBSD port (obsolete?): 'Chris Bond' <cbond@users.sourceforge.net>
+
+-----------
+translators
+-----------
+
+English: Wesley W. Terpstra
+German: Jonas Meurer, Maria Rivilis, Wesley W. Terpstra
+Japanese: Atsushi Ikeda (currently obsolete pending retranslation)
 
 ---------------------
 former lurker authors
@@ -23,11 +33,7 @@ former lurker authors
 	Refined and designed the UI of versions < 0.9
 
 'Chris Bond' <cbond@users.sourceforge.net>
-	FreeBSD port (now defunct?)
 	C-client integration for email parsing < 0.6
-
-'Atsushi Ikeda' <aikeda@users.sourceforge.net>
-	Japanese translation of < 0.6 UI
 
 --------------
 special thanks
