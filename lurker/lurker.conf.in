@@ -91,6 +91,6 @@ cache_index_ttl   = 604800
 
 list 987 = Lurker-Support
 	description = Example mailing list configuration
-#	address     = users@sourceforge.net
+	address     = lurker-users@lists.sourceforge.net
 
 	mbox 321 = @DATADIR_expand@/doc/@PACKAGE@/lurker.mbox

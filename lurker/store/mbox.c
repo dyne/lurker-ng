@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.32 2002-06-14 17:05:24 terpstra Exp $
+/*  $Id: mbox.c,v 1.33 2002-06-16 14:13:51 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -25,7 +25,7 @@
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
 
-#define DEBUG 1
+/* #define DEBUG 1 */
 
 #include "common.h"
 #include "io.h"
