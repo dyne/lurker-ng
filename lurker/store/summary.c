@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.2 2002-02-04 04:30:30 terpstra Exp $
+/*  $Id: summary.c,v 1.3 2002-02-04 04:32:02 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -131,6 +131,12 @@ static int my_summary_squishy_subject(
 	char* e;
 	char* w;
 	int state, ws;
+	
+	if (!subject)
+	{
+		*target = 0;
+		return 0;
+	}
 	
 	/* Skip past any number of: ' *[^ :]{0, 8}:' sequences
 	 */
