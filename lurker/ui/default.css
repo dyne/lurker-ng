@@ -158,10 +158,6 @@ td {
   font-family: Arial, sans-serif;
 }
 
-td.even{
-  background-color: #ffffcc;
-}
-
 ul {
   margin-bottom: 0em;
   margin-top: 0em;
@@ -172,7 +168,7 @@ h1.group {
 }
 
 /* wrap this around the table to fix progressive rendering in mozilla */
-div.mozbug { 
+div[class~="mozbug"] {  /* confuse NS4 */
   margin: 0px;
   padding: 0px;
   border: 1px solid #000;
@@ -185,9 +181,14 @@ table.index {
   width: 100%;
 }
 
+table.index tr {
+  height: 24px; 
+}
+
 table.index td {
   vertical-align: middle;
   padding: 0px 5px 0px 5px;
+  height: 24px; 
 }
 
 table.index th {
@@ -195,9 +196,9 @@ table.index th {
   padding: 0px 5px 0px 5px;
 }
 
-td.chart img {
-  vertical-align: bottom;
-  padding: 0px 1px 0px 0px;
+td[class~="chart"] img { /* We use this selector to confuse NS4 */
+  vertical-align: bottom; 
+  margin: 0px 1px 0px 0px;
 }
 
 table.index td.chart {
@@ -205,14 +206,12 @@ table.index td.chart {
   vertical-align: bottom;
 }
 
-td.clipped {
-  overflow: hidden;
+table.squash {
+  table-layout: fixed;
 }
-
 div.squash {
-  overflow: visible;
-  width: 50px;
-  white-space: nowrap;
+  overflow: hidden;
+  white-space: nowrap; 
 }
 
 div.goodsig {
@@ -246,8 +245,6 @@ img.photo {
  float: right;
 }
 .padded td { padding-bottom:1px }  /* Adds padding to output tables containing Discussion Tree icon */
-
-table.index tr { height: 24px; }
 
 .na { color:#BBB }  /* used to fade text when link not available, but still has placeholder text */
 .mime-label { text-align:right; padding:4px }  /* Mime labels in message contents */

@@ -45,14 +45,14 @@
     <xsl:otherwise>row2</xsl:otherwise>
    </xsl:choose>
   </xsl:attribute>
-  <td nowrap="NOWRAP" class="clipped">
+  <td nowrap="NOWRAP">
    <div class="squash">
     <a href="../thread/{summary/id}.{$ext}">
      <xsl:value-of select="summary/subject"/>
     </a>
    </div>
   </td>
-  <td nowrap="NOWRAP" class="clipped">
+  <td nowrap="NOWRAP">
    <div class="squash">
     <xsl:apply-templates mode="email-name" select="summary/email"/>
    </div>
@@ -132,11 +132,11 @@
    
    <div class="body">
     <div class="mozbug">
-     <table class="index">
-      <col width="60%" align="left"/>
-      <col width="30%" align="left"/>
-      <col width="8%"  align="left"/>
-      <col width="2%"  align="right"/>
+     <table class="index squash">
+      <col width="67%" align="left"/>
+      <col width="33%" align="left"/>
+      <col width="85"  align="left"/>
+      <col width="40"  align="right"/>
       <tr>
        <th align="left"><xsl:value-of select="$new-threads"/></th>
        <th align="left"><xsl:value-of select="$recent-poster"/></th>

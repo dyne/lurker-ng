@@ -24,14 +24,14 @@
     <xsl:otherwise>row2</xsl:otherwise>
    </xsl:choose>
   </xsl:attribute>
-  <td nowrap="NOWRAP" class="clipped">
+  <td nowrap="NOWRAP">
    <div class="squash">
     <a href="../message/{summary/id}.{$ext}">
      <xsl:value-of select="summary/subject"/>
     </a>
    </div>
   </td>
-  <td nowrap="NOWRAP" class="clipped">
+  <td nowrap="NOWRAP">
    <div class="squash">
     <xsl:apply-templates mode="email-name" select="summary/email"/>
    </div>
@@ -117,10 +117,10 @@
    
    <div class="body">
     <div class="mozbug">
-     <table class="index">
-      <col width="60%" align="left"/>
+     <table class="index squash">
+      <col width="70%" align="left"/>
       <col width="30%" align="left"/>
-      <col width="10%" align="right"/>
+      <col width="150" align="left"/>
       <tr>
        <th align="left"><xsl:value-of select="$subject"/></th>
        <th align="left"><xsl:value-of select="$author"/></th>

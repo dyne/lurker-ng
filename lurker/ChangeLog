@@ -3,6 +3,7 @@ v1.0:
 	Worked around how Solaris #defines open
 	Renamed Config.h to ConfigFile.h for windows
 	Fixed rendering in konqueror
+	Got subject/author clipping working in IE+Konqueror
 
 v0.10:
 	New-Topics and Old-Topics should show the subject
