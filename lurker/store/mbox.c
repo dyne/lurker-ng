@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.3 2002-02-03 08:25:32 terpstra Exp $
+/*  $Id: mbox.c,v 1.4 2002-02-04 05:10:09 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -38,10 +38,10 @@
 
 /*------------------------------------------------ Constant parameters */
 
-#if defined(HAVE_FLOCK)
-#define USE_LOCK_FLOCK
-#elif defined(HAVE_FCNTL_H) && defined(HAVE_F_GETLK)
+#if defined(HAVE_FCNTL_H) && defined(HAVE_F_GETLK)
 #define USE_LOCK_FCNTL
+#elif defined(HAVE_FLOCK)
+#define USE_LOCK_FLOCK
 #elif defined(HAVE_LOCKF)
 #define USE_LOCK_LOCKF
 #endif
@@ -178,6 +178,7 @@ static void my_mbox_process_mbox(
 			}
 			
 			my_mbox_unlock_mbox(mbox->fd, mbox->path);
+			mail_free(m);
 			return;
 		}
 		
@@ -197,6 +198,7 @@ static void my_mbox_process_mbox(
 			}
 			
 			my_mbox_unlock_mbox(mbox->fd, mbox->path);
+			mail_free(m);
 			return;
 		}
 		
