@@ -449,6 +449,9 @@ static PyMethodDef ESort_methods[] = {
 	{NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
+#ifndef PyMODINIT_FUNC
+#define PyMODINIT_FUNC extern "C" void
+#endif
 PyMODINIT_FUNC
 initESort(void)
 {
