@@ -22,7 +22,9 @@ lurkerd_SOURCES = \
 	search.h   search.c   \
 	service.h  service.c  \
 	main.c     btree.h    \
-	expiry.c   expiry.h
+	expiry.c   expiry.h   \
+	url.c mailto.c quote.c art.c
+
 
 lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV} @INTLLIBS@
 

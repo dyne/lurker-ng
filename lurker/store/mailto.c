@@ -4,8 +4,6 @@ const char* mailto_scan_pass1(const char* s, const char* e)
 	const char* last = 0;
 	goto mailto_scan_pass118;
 	
-mailto_scan_pass10:
-	return last;
 mailto_scan_pass11:
 	last = e;
 	if (s == e) return last;
