@@ -6,7 +6,7 @@ EXTRA_DIST = Design profile.cc rbuffer.c \
 
 libkap_a_SOURCES = \
 	kap.h private.h avl.h \
-	btree.c append.c wbuffer.c kap.c
+	btree.c append.c wbuffer.c rbuffer.c kap.c
 
 kapmake_SOURCES = kapmake.c
 kapmake_LDADD = libkap.a -lm @MAINT@ -ldmalloc
@@ -21,19 +21,19 @@ tests:	test-append test-btree test-full test-avl profile
 	cat *.c *.cc *.h | ./test-full
 
 test-append: test-append.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm @MAINT@ -ldmalloc
 
 test-avl: test-avl.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm @MAINT@ -ldmalloc
 
 test-btree: test-btree.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm @MAINT@ -ldmalloc
 
 test-full: test-full.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm @MAINT@ -ldmalloc
 
 profile: profile.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm @MAINT@ -ldmalloc
 
 clean-local:
 	rm -f test-append test-btree test-full test-avl profile

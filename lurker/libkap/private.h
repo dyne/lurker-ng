@@ -1,4 +1,4 @@
-/*  $Id: private.h,v 1.8 2002-07-11 23:50:54 terpstra Exp $
+/*  $Id: private.h,v 1.9 2002-07-19 14:25:08 terpstra Exp $
  *  
  *  private.h - Private internal interfaces for libkap
  *  
@@ -41,6 +41,7 @@ struct Kap_T
 struct Kap_Btree* 	  btree_init(void);
 struct Kap_Append*	 append_init(void);
 struct Kap_Wbuffer*	wbuffer_init(void);
+struct Kap_Rbuffer*	rbuffer_init(void);
 
 int kap_btree_open(Kap k, const char* dir, const char* prefix);
 int kap_btree_sync(Kap k);
@@ -54,6 +55,10 @@ int kap_wbuffer_open(Kap k, const char* dir, const char* prefix);
 int kap_wbuffer_sync(Kap k);
 int kap_wbuffer_close(Kap k);
 
+int kap_rbuffer_open(Kap k, const char* dir, const char* prefix);
+int kap_rbuffer_sync(Kap k);
+int kap_rbuffer_close(Kap k);
+
 /* Convenient methods */
 int kap_write_full(int fd, const unsigned char* buf, size_t dat);
 int kap_read_full (int fd,       unsigned char* buf, size_t dat);
@@ -64,6 +69,14 @@ int kap_append_real(Kap k, const char* key, void* data, size_t len, size_t* out)
 /* Protected methods for use by kap */
 int kap_wbuffer_push (Kap k, const char* key, unsigned char* buf);
 int kap_wbuffer_flush(Kap k, const char* key);
+
+int kap_rbuffer_kopen (Kap k, const KRecord* kr);
+int kap_rbuffer_kclose(Kap k, const KRecord* kr);
+
+int kap_rbuffer_read(Kap k, const KRecord* kr, size_t offset, void* out, size_t amount);
+int kap_rbuffer_find(Kap k, KRecord* kr,
+	int (*testfn)(const void* arg, const void* rec), const void* arg,
+	ssize_t* offset, void* rec);
 
 /* Kap databases only support a single reader/writer */
 int kap_lock(int fd);

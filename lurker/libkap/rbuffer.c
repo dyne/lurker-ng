@@ -1,4 +1,4 @@
-/*  $Id: rbuffer.c,v 1.3 2002-07-12 19:02:00 terpstra Exp $
+/*  $Id: rbuffer.c,v 1.4 2002-07-19 14:25:08 terpstra Exp $
  *  
  *  rbuffer.c - Implements a buffering system that read combines
  *  
@@ -67,10 +67,6 @@
  * will be doing a linear prediction as to where to search next. This means
  * we will be pulling records out of sequence.
  *
- * However, since the most common use of the breader/offset call is for the
- * keyword search, and keyword searches proceed end->start, we will want
- * to keep the records that we hit and are earlier than where we searched.
- *
  * So, we need to keep more than one LU_PULL_AT_ONCE buffer in memory. We
  * expire those records which are furthest towards the end when we need
  * a new buffer.
@@ -85,151 +81,151 @@
 /* This is the maximum number of cache handles we allow to be used.
  * Since a keyword search must have one handle for every word in the search
  * criterea, and we don't like to allocate memory while running, this will
- * cap the number of keywords allowed in a search.
+ * cap the number of cached keywords allowed in a search.
  */
 #define LU_MAX_HANDLES	32
 
 /* This is the size for our pull-records-at once.
- * We retrieve this many message_ids any single disk access.
+ * We retrieve this many bytes any single disk access.
  */
-#define LU_PULL_AT_ONCE	4096
+#define LU_PULL_AT_ONCE	8192
 
 /* This is how many records about offset information we keep.
  */
-#define LU_BOUNDARY_RECORDS	256
+#define LU_BOUNDARY_RECORDS	512
 
 /* This is how many cache records we keep for each keyword. Each one of them
- * holds LU_PULL_AT_ONCE records.
+ * holds LU_PULL_AT_ONCE bytes.
  */
-#define	LU_CACHE_RECORDS	4
+#define	LU_CACHE_RECORDS	8
 
-/* Total cache used: LU_MAX_HANDLES*LU_PULL_AT_ONCE*LU_CACHE_RECORDS*4
+/* The maximum age of a buffer
+ */
+#define MAX_AGE			30000
+
+/* Total cache used: LU_MAX_HANDLES*LU_PULL_AT_ONCE*LU_CACHE_RECORDS
  *                   --> 2.0Mb
  * Total offset information: LU_MAX_HANDLES*LU_BOUNDARY_RECORDS*16
- *                   --> 256Kb
+ *                   --> 512Kb
  */
 
-/* This is the maximum value my_breader_ptr can attain.
+/* This is the maximum value ptr can attain.
  */
-#define MY_BREADER_PTR_MAX	0xFFFFUL
+#define BPTR_MAX	0xFFFFUL
 
 /*------------------------------------------------ Private types */
 
 /* Must be able to store up to LU_BOUNDARY_RECORDS */
-typedef lu_word	my_breader_ptr;
+typedef unsigned short	bptr;
 
 typedef struct Boundary_T
 {
-	message_id	key;	/* id */
-	message_id	index;
+	size_t		key; /* index */
 	
-	lu_byte		skew;
-	my_breader_ptr	left;
-	my_breader_ptr	right;
+	bptr		left;
+	bptr		right;
+	
+	unsigned char	skew;
 } Boundary;
 
 typedef struct Cache_T
 {
-	message_id buffer[LU_PULL_AT_ONCE];
-	message_id offset;
+	unsigned char	buffer[LU_PULL_AT_ONCE];
+	size_t		offset;
+	int		age;
 } Cache;
 
 typedef struct Record_T
 {
-	Cache	cache   [LU_CACHE_RECORDS];
+	Cache		cache   [LU_CACHE_RECORDS];
 	Boundary	boundary[LU_BOUNDARY_RECORDS];
 	
-	my_breader_ptr		boundary_usage;
-	my_breader_ptr		boundary_root;
+	bptr		boundary_usage;
+	bptr		boundary_root;
 	
-	Lu_Flatfile_Handle	flatfile;
-	message_id		count;
-	message_id		last_id;
+	/* This is the record which corresponds to a given AVL table entry */
+	unsigned char*	table_records;
 	
-	char			keyword[LU_KEYWORD_LEN+1];
-	int			usage;
-	lu_quad			age;
+	off_t		id;	/* identity of the cache record */
+	int		usage;
+	int		age;
 } Record;
 
 /*------------------------------------------------ Private global vars */
 
 struct Kap_Rbuffer
 {
-	Record*   my_breader_records;
-	Boundary* my_breader_table;
+	Record*   	records;
+	ssize_t   	recsize;
+	
+	/* One big malloc which covers all the table_records in records */
+	unsigned char*	tables;
 };
 
 /*------------------------------------------------ Private helper methods */
 
-inline int my_breader_compare(message_id a, message_id b)
+inline int compare(size_t a, size_t b)
 {
-	if (a < b)
-		return -1;
-	if (a > b) 
-		return 1;
+	if (a < b)	return -1;
+	if (a > b)	return 1;
 	return 0;
 }
 
-int my_breader_bounded(void* bound, message_id id)
-{
-	return (id <= *(message_id*)bound);
-}
+static Boundary* avl_table = 0;
+AVL_DEFINE_INSERT(rb, bptr, BPTR_MAX, Boundary, avl_table, compare)
+AVL_DEFINE_REMOVE(rb, bptr, BPTR_MAX, Boundary, avl_table, compare)
 
-LU_BTREE_DEFINE(
-	breader, 
-	my_breader_ptr, 
-	MY_BREADER_PTR_MAX,
-	Boundary,
-	my_breader_table,
-	my_breader_compare)
-
-static int my_breader_fetch_sector(
-	Record* record, 
-	message_id index)
+static int fetch_sector(
+	Kap		k,
+	const KRecord*	kr,
+	Record*		record, 
+	off_t		off)
 {
-	message_id	amount;
-	message_id	oldest = 0;
-	int		which  = 0;
-	int		i;
-	int		out;
-	message_id	key;
-	my_breader_ptr	kill;
-	my_breader_ptr	scan;
+	size_t	amount;
+	int	oldest = 0;
+	int	which  = 0;
+	int	i;
+	int	out;
+	bptr	kill;
+	bptr	scan;
 	
-	assert(index < record->count);
-	index -= (index % LU_PULL_AT_ONCE);
+	assert(off < kr->records);
+	off -= (off % (LU_PULL_AT_ONCE/k->rbuffer->recsize));
 	
-	/* Find the largest index record to dump
-	 * Note, free = lu_common_minvalid -- the largest possible value
+	/* Find the largest off record to dump
+	 * free records have preset age MAX_AGE
 	 */
 	for (i = 0; i < LU_CACHE_RECORDS; i++)
 	{
-		if (record->cache[i].offset == index)
+		if (record->cache[i].age != MAX_AGE &&
+		    record->cache[i].offset == off)
 		{
 			/* We already have the sector loaded */
 			return 0;
 		}
 		
-		if (record->cache[i].offset > oldest)
+		if (record->cache[i].age < MAX_AGE)
+			record->cache[i].age++;
+		
+		if (record->cache[i].age > oldest)
 		{
 			which = i;
-			oldest = record->cache[i].offset;
+			oldest = record->cache[i].age;
 		}
 	}
 	
-	amount = record->count - index;
-	if (amount > LU_PULL_AT_ONCE)
-		amount = LU_PULL_AT_ONCE;
+	amount = kr->records - off;
+	if (amount > LU_PULL_AT_ONCE/k->rbuffer->recsize)
+		amount = LU_PULL_AT_ONCE/k->rbuffer->recsize;
 	
-	record->cache[which].offset = index;
+	record->cache[which].offset = off;
 	
 #ifdef DEBUG
-	printf("****** DISK HIT ****** (%d %d)\n", index, amount);
+	printf("****** DISK HIT ****** (%d %d)\n", off, amount);
 #endif
 	
-	out = lu_flatfile_handle_read(
-		record->flatfile,
-		index,
+	out = kap_append_read(k, kr,
+		off,
 		&record->cache[which].buffer[0],
 		amount);
 	
@@ -237,18 +233,17 @@ static int my_breader_fetch_sector(
 	
 	/* Remember the boundary information we learn about this sector.
 	 */
-	key = record->cache[which].buffer[0];
 	
-	/* We are operating on this breader table */
-	my_breader_table = &record->boundary[0];
+	/* We are operating on this rb table */
+	avl_table = &record->boundary[0];
 	
 	scan = record->boundary_root;
-	while (scan != MY_BREADER_PTR_MAX)
+	while (scan != BPTR_MAX)
 	{
-		if (key < my_breader_table[scan].key)
-			scan = my_breader_table[scan].left;
-		else if (key > my_breader_table[scan].key)
-			scan = my_breader_table[scan].right;
+		if (off < avl_table[scan].key)
+			scan = avl_table[scan].left;
+		else if (off > avl_table[scan].key)
+			scan = avl_table[scan].right;
 		else
 		{	/* We have already seen this key */
 			return 0;
@@ -258,12 +253,12 @@ static int my_breader_fetch_sector(
 	if (record->boundary_usage == LU_BOUNDARY_RECORDS)
 	{	/* Forget about the rightmost value -- less useful */
 		scan = record->boundary_root;
-		while (my_breader_table[scan].right != MY_BREADER_PTR_MAX)
-			scan = my_breader_table[scan].right;
+		while (avl_table[scan].right != BPTR_MAX)
+			scan = avl_table[scan].right;
 		
 		record->boundary_root = 
-			my_btree_breader_remove(record->boundary_root, scan);
-		assert (record->boundary_root != MY_BREADER_PTR_MAX);
+			my_avl_rb_remove(record->boundary_root, scan);
+		assert (record->boundary_root != BPTR_MAX);
 		
 		kill = scan;
 	}
@@ -272,27 +267,31 @@ static int my_breader_fetch_sector(
 		kill = record->boundary_usage++;
 	}
 	
-	record->boundary[kill].key   = key;
-	record->boundary[kill].index = index;
+	record->boundary[kill].key = off;
+	memcpy(	&record->table_records[kill*k->rbuffer->recsize],
+		&record->cache[which].buffer[0],
+		k->rbuffer->recsize);
 	
-	/* Push the new record and increase usage if it's not a duplicate */
+	/* Push the new record */
 	record->boundary_root = 
-		my_btree_breader_insert(record->boundary_root, kill);
-	assert (record->boundary_root != MY_BREADER_PTR_MAX);
+		my_avl_rb_insert(record->boundary_root, kill);
+	assert (record->boundary_root != BPTR_MAX);
 	
 	return 0;
 }
 
-static int my_breader_find_which(
-	Record* record,
-	message_id offset)
+static int find_which(
+	Kap	k,
+	Record*	record,
+	size_t	offset)
 {
 	int i;
 	
 	for (i = 0; i < LU_CACHE_RECORDS; i++)
 	{
 		if (offset >= record->cache[i].offset &&
-		    offset < record->cache[i].offset + LU_PULL_AT_ONCE)
+		    offset < record->cache[i].offset + 
+		    		LU_PULL_AT_ONCE/k->rbuffer->recsize)
 		{
 			return i;
 		}
@@ -301,22 +300,24 @@ static int my_breader_find_which(
 	return -1;
 }
 
-static int my_breader_read(
-	Record* record, 
-	message_id offset, 
-	message_id count,
-	message_id* out)
+static int read(
+	Kap		k,
+	const KRecord*	kr,
+	Record*		record, 
+	size_t		offset, 
+	void*		out,
+	size_t		count)
 {
-	message_id	got, ind;
-	int		stat;
-	int		i;
+	size_t	got, ind;
+	int	stat;
+	int	i;
 	
 	while (count)
 	{
-		stat = my_breader_fetch_sector(record, offset);
+		stat = fetch_sector(k, kr, record, offset);
 		if (stat != 0) return stat;
 		
-		i = my_breader_find_which(record, offset);
+		i = find_which(k, record, offset);
 		ind = offset - record->cache[i].offset;
 		got = LU_PULL_AT_ONCE - ind;
 		
@@ -326,10 +327,10 @@ static int my_breader_read(
 		}
 			
 		memcpy(	out, 
-			&record->cache[i].buffer[ind],
-			got * sizeof(message_id));
+			&record->cache[i].buffer[ind*k->rbuffer->recsize],
+			got * k->rbuffer->recsize);
 		
-		out    += got;
+		out    = ((unsigned char*)out) + got*k->rbuffer->recsize;
 		count  -= got;
 		offset += got;
 	}
@@ -337,17 +338,21 @@ static int my_breader_read(
 	return 0;
 }
 
-static int my_breader_find(
-	Record*	record,
-	int			(*test)(void* arg, message_id id),
-	void*			arg,
-	message_id*		offset)
+static int find(
+	Kap 		k,
+	const KRecord*	kr,
+	Record*		record,
+	int		(*testfn)(const void* arg, const void* rec),
+	const void*	arg,
+	ssize_t*	offset,
+	void*		rec)
 {
-	int		which;
-	my_breader_ptr	ptr;
+	int	which;
+	bptr	ptr;
 	
-	message_id	left_off, right_off, mid_off;
-	int		l, r, m;
+	size_t	cache_size;
+	size_t	left_off, right_off, mid_off;
+	int	l, r, m;
 	
 	/* This function implements a three-stage binary-search.
 	 * First, it searches the boundary cache to narrow the end-points.
@@ -358,7 +363,7 @@ static int my_breader_find(
 	
 	/* These are the crude end-points that we know */
 	left_off = 0;
-	right_off = record->count;
+	right_off = kr->records;
 	
 	/* The id must lie in the range [left_off, right_off) or not at all */
 	/* Another invariant is that left_off is a multiple of LU_PULL_AT_ONCE */
@@ -369,7 +374,7 @@ static int my_breader_find(
 	
 	/* Now, use the boundary data to refine them */
 	ptr = record->boundary_root;
-	while (ptr != MY_BREADER_PTR_MAX)
+	while (ptr != BPTR_MAX)
 	{
 #ifdef DEBUG
 		printf("--> %d %d\n", record->boundary[ptr].key,
@@ -377,12 +382,12 @@ static int my_breader_find(
 #endif
 		/* We are seeking the largest object which passes */
 		
-		if (test(arg, record->boundary[ptr].key))
+		if (testfn(arg, &record->table_records[ptr*k->rbuffer->recsize]))
 		{	/* This object passed the test, so we know
 			 * the last match is in the range [m, inf).
 			 * Interesect with invariant [l, r) to get [m, r)
 			 */
-			left_off = record->boundary[ptr].index;
+			left_off = record->boundary[ptr].key;
 			ptr = record->boundary[ptr].right;
 		}
 		else
@@ -390,7 +395,7 @@ static int my_breader_find(
 			 * the last match must be before it: (-inf, m).
 			 * Intersect with invariant [l, r) to get [l, m)
 			 */
-			right_off = record->boundary[ptr].index;
+			right_off = record->boundary[ptr].key;
 			ptr = record->boundary[ptr].left;
 		}
 	}
@@ -398,8 +403,10 @@ static int my_breader_find(
 #ifdef DEBUG
 	printf("== %d %d\n", left_off, right_off);
 #endif
+	cache_size = LU_PULL_AT_ONCE / k->rbuffer->recsize;
+	
 	assert (left_off <= right_off);
-	assert (left_off % LU_PULL_AT_ONCE == 0);
+	assert (left_off % cache_size == 0);
 	
 	/* Ok, using the boundary data we now have a range in which it must
 	 * lie. Lets refine this by reading the disk.
@@ -421,25 +428,25 @@ static int my_breader_find(
 	 *   about it for hours before I wrote it, and then later found it was 
 	 *   wrong because of the alignment issue. This is the best way. Honest.
 	 */
-	while (right_off - left_off > LU_PULL_AT_ONCE)
+	while (right_off - left_off > cache_size)
 	{
-		assert (left_off % LU_PULL_AT_ONCE == 0);
+		assert (left_off % cache_size == 0);
 		
 		mid_off = (left_off + right_off) / 2;
-		mid_off += LU_PULL_AT_ONCE-1;
-		mid_off -= (mid_off % LU_PULL_AT_ONCE);
+		mid_off += cache_size-1;
+		mid_off -= (mid_off % cache_size);
 		
-		assert (mid_off % LU_PULL_AT_ONCE == 0);
+		assert (mid_off % cache_size == 0);
 		assert (mid_off > left_off && mid_off < right_off);
 		
-		my_breader_fetch_sector(record, mid_off);
-		which = my_breader_find_which(record, mid_off);
+		fetch_sector(k, kr, record, mid_off);
+		which = find_which(k, record, mid_off);
 		assert (which != -1);
 		
 		assert (record->cache[which].offset == mid_off);
 		
 		/* We are seeking the largest object which passes */
-		if (test(arg, record->cache[which].buffer[0]))
+		if (testfn(arg, &record->cache[which].buffer[0]))
 		{	/* This object passes, so: [m, inf) -> [m, r) */
 			left_off = mid_off;
 		}
@@ -454,7 +461,7 @@ static int my_breader_find(
 	if (right_off == left_off)
 	{	/* No matches */
 		assert(left_off == 0);
-		*offset = lu_common_minvalid;
+		*offset = -1;
 		return 0;
 	}
 	
@@ -466,8 +473,8 @@ static int my_breader_find(
 	 * (if there is a match)
 	 */
 	
-	my_breader_fetch_sector(record, left_off);
-	which = my_breader_find_which(record, left_off);
+	fetch_sector(k, kr, record, left_off);
+	which = find_which(k, record, left_off);
 	assert (which != -1);
 	assert (record->cache[which].offset == left_off);
 	
@@ -475,14 +482,14 @@ static int my_breader_find(
 	l = 0;
 	r = right_off - left_off;
 	
-	assert (r > 0 && r <= LU_PULL_AT_ONCE);
+	assert (r > 0 && r <= cache_size);
 	
 	/* Invariant is now: hit is in range [l, r) in buffer */
 	while (r - l > 1)
 	{
 		m = (l+r)/2;
 		
-		if (test(arg, record->cache[which].buffer[m]))
+		if (testfn(arg, &record->cache[which].buffer[m]))
 		{	/* This object passes, so: [m, inf) -> [m, r) */
 			l = m;
 		}
@@ -497,104 +504,106 @@ static int my_breader_find(
 	 * Test to see that it satisfies the test!
 	 */
 	
-	if (test(arg, record->cache[which].buffer[l]))
+	if (testfn(arg, &record->cache[which].buffer[l]))
 	{	/* Positive match */
 		*offset = left_off + l;
+		memcpy(rec, &record->cache[which].buffer[l], k->rbuffer->recsize);
 	}
 	else
 	{	/* This is the only record it could have been, and it fails. */
-		*offset = lu_common_minvalid;
+		*offset = -1;
 		assert(l == 0 && left_off == 0);
 	}
 		
 	return 0;
 }
 
-static void my_breader_purify_record(
-	Record* record, 
-	const char* keyword)
+static void purify_record(
+	Record* record)
 {
 	int i;
 	
-	strncpy(&record->keyword[0], keyword, LU_KEYWORD_LEN);
-	record->keyword[LU_KEYWORD_LEN] = 0;
-	
-	record->boundary_root  = MY_BREADER_PTR_MAX;
+	record->boundary_root  = BPTR_MAX;
 	record->boundary_usage = 0;
 	
 	for (i = 0; i < LU_CACHE_RECORDS; i++)
 	{
-		record->cache[i].offset = lu_common_minvalid;
+		record->cache[i].offset = 0;
+		record->cache[i].age = MAX_AGE;
 	}
 }
 
 /*------------------------------------------------ Public component methods */
 
-int init()
+struct Kap_Rbuffer* rbuffer_init()
+{
+	struct Kap_Rbuffer* rbuffer = malloc(sizeof(struct Kap_Rbuffer));
+	if (!rbuffer) return 0;
+	
+	rbuffer->records = 0;
+	rbuffer->tables  = 0;
+	
+	return rbuffer;
+}
+
+int kap_rbuffer_open(Kap k, const char* dir, const char* prefix)
 {
 	int i;
 	
-	my_breader_records = malloc(sizeof(Record)*LU_MAX_HANDLES);
-	if (!my_breader_records)
-	{
-		fputs(("Failed to allocate storage for breader buffers\n"), 
-			stderr);
-		return -1;
-	}
+	kap_append_get_recordsize(k, &k->rbuffer->recsize);
+	
+	k->rbuffer->records = malloc(sizeof(Record)*LU_MAX_HANDLES);
+	k->rbuffer->tables  = malloc(k->rbuffer->recsize
+				*LU_MAX_HANDLES*LU_BOUNDARY_RECORDS);
+	
+	if (!k->rbuffer->records || !k->rbuffer->tables)
+		return ENOMEM;
 	
 	for (i = 0; i < LU_MAX_HANDLES; i++)
 	{
-		my_breader_records[i].usage = 0;
-		my_breader_records[i].age   = 0;
+		k->rbuffer->records[i].id    = -1;
+		k->rbuffer->records[i].usage = 0;
+		k->rbuffer->records[i].age   = 0;
+		
+		k->rbuffer->records[i].table_records = 
+			&k->rbuffer->tables[k->rbuffer->recsize
+				*i*LU_BOUNDARY_RECORDS];
 	}
 	
 	return 0;
 }
 
-int open()
+int kap_rbuffer_sync(Kap k)
 {
 	return 0;
 }
 
-int sync()
+int kap_rbuffer_close(Kap k)
 {
-	return 0;
-}
-
-int close()
-{
-	return 0;
-}
-
-int quit()
-{
-	if (my_breader_records)
-	{
-		free(my_breader_records);
-		my_breader_records = 0;
-	}
+	if (k->rbuffer->records) free(k->rbuffer->records); k->rbuffer->records = 0;
+	if (k->rbuffer->tables)  free(k->rbuffer->tables);  k->rbuffer->tables  = 0;
 	
 	return 0;
 }
 
 /*------------------------------------------------ Public accessor methods */
 
-Lu_Breader_Handle new(
-	const char* keyword)
+int kap_rbuffer_kopen(Kap k, const KRecord* kr)
 {
-	static lu_quad age = 1;
-	
-	message_id new_off;
-	int        which;
+	static int age = 1;
 	
 	int	i;
 	int	best;
+	
+	/* Don't cache anything this small - it would be a waste */
+	if (kr->records < LU_PULL_AT_ONCE/k->rbuffer->recsize)
+		return 0;
 	
 	/* Firstly, see if we already have this handle open.
 	 */
 	for (i = 0; i < LU_MAX_HANDLES; i++)
 	{
-		if (!strcmp(&my_breader_records[i].keyword[0], keyword))
+		if (k->rbuffer->records[i].id == kr->jumps[0])
 		{
 			break;
 		}
@@ -606,9 +615,9 @@ Lu_Breader_Handle new(
 		
 		for (i = 0; i < LU_MAX_HANDLES; i++)
 		{
-			if (my_breader_records[i].usage == 0 &&
-				(best == -1 || my_breader_records[i].age
-					< my_breader_records[best].age))
+			if (k->rbuffer->records[i].usage == 0 &&
+				(best == -1 || k->rbuffer->records[i].age
+					< k->rbuffer->records[best].age))
 			{
 				best = i;
 			}
@@ -616,161 +625,82 @@ Lu_Breader_Handle new(
 		
 		if (best == -1)
 		{	/* Unable to find an unused record */
+			/* No big deal - just uncached */
 			return 0;
 		}
 		
-		my_breader_purify_record(&my_breader_records[best], keyword);
+		purify_record(&k->rbuffer->records[best]);
 	}
 	else
 	{
 		best = i;
 	}
 	
-	if (my_breader_records[best].usage == 0)
-	{
-		my_breader_records[best].flatfile =
-			lu_flatfile_open_handle(keyword);
-		if (my_breader_records[best].flatfile == 0)
-		{	/* Unable to access underlying flatfile */
-			return 0;
-		}
-		
-		new_off = lu_flatfile_handle_records(
-				my_breader_records[best].flatfile);
-		
-		/* Kill off cache that is at the eof */
-		if (my_breader_records[best].count != new_off)
-		{
-			which = my_breader_find_which(
-				&my_breader_records[best],
-				my_breader_records[best].count);
-			if (which != -1)
-			{
-				my_breader_records[best].cache[which].offset = 
-					lu_common_minvalid;
-			}
-			my_breader_records[best].count = new_off;
-		}
-		
-		my_breader_records[best].last_id = lu_common_minvalid;
-		
-		if (my_breader_records[best].count > 0)
-		{
-			my_breader_read(
-				&my_breader_records[best], 
-				my_breader_records[best].count - 1, 
-				1,
-				&my_breader_records[best].last_id);
-		}
-	}
+	k->rbuffer->records[best].usage++;
+	k->rbuffer->records[best].age = age++;
 	
-	my_breader_records[best].usage++;
-	my_breader_records[best].age = age++;
-	
-	if (age == 0xFFFFFFFFUL) /* a big number that fits in a quad */
+	if (age == MAX_AGE)
 	{	/* Cycle the age by resetting everyone */
 		age = 1;
 		for (i = 0; i < LU_MAX_HANDLES; i++)
 		{
-			my_breader_records[i].age = 0;
+			k->rbuffer->records[i].age = 0;
 		}
 	}
 	
-	return best+1;
+	return 0;
 }
 
-int offset(
-	Lu_Breader_Handle	h,
-	int			(*test)(void* arg, message_id id),
-	void*			arg,
-	message_id*		index)
+int kap_rbuffer_kclose(Kap k, const KRecord* kr)
 {
-	Record* record;
+	int i;	
 	
-	assert (h <= LU_MAX_HANDLES && h > 0);
-	assert (my_breader_records[h-1].usage > 0);
-	
-	record = &my_breader_records[h-1];
-	
-	return my_breader_find(record, test, arg, index);
-}
-
-int offset_id(
-	Lu_Breader_Handle	h,
-	message_id		id,
-	message_id*		index)
-{
-	Record* record;
-	
-	assert (h <= LU_MAX_HANDLES && h > 0);
-	assert (my_breader_records[h-1].usage > 0);
-	
-	record = &my_breader_records[h-1];
-	
-	/* Find the largest record with the propery <= id */
-	return my_breader_find(record, &my_breader_bounded, &id, index);
-}
-
-message_id records(
-	Lu_Breader_Handle h)
-{
-	Record* record;
-	
-	assert (h <= LU_MAX_HANDLES && h > 0);
-	assert (my_breader_records[h-1].usage > 0);
-	
-	record = &my_breader_records[h-1];
-	
-	return record->count;
-}
-
-message_id quick_records(
-	const char* keyword)
-{
-	return lu_flatfile_records(keyword);
-}
-
-message_id last(
-	Lu_Breader_Handle h)
-{
-	Record* record;
-	
-	assert (h <= LU_MAX_HANDLES && h > 0);
-	assert (my_breader_records[h-1].usage > 0);
-	
-	record = &my_breader_records[h-1];
-	
-	return record->last_id;
-}
-
-int read(
-	Lu_Breader_Handle h,
-	message_id index,
-	message_id count,
-	message_id* out)
-{
-	Record* record;
-	
-	assert (h <= LU_MAX_HANDLES && h > 0);
-	assert (my_breader_records[h-1].usage > 0);
-	
-	record = &my_breader_records[h-1];
-	
-	return my_breader_read(record, index, count, out);
-}
-
-void free(
-	Lu_Breader_Handle h)
-{
-	assert (h <= LU_MAX_HANDLES && h > 0);
-	assert (my_breader_records[h-1].usage > 0);
-	
-	my_breader_records[h-1].usage--;
-	if (my_breader_records[h-1].usage == 0)
+	for (i = 0; i < LU_MAX_HANDLES; i++)
 	{
-		/* On the last reference, close the flatfile handle.
-		 * However, we still retain boundary data and cache.
-		 */
-		lu_flatfile_close_handle(my_breader_records[h-1].flatfile);
+		if (k->rbuffer->records[i].id == kr->jumps[0])
+		{
+			/* On the last reference the record is up for kopens.
+			 * However, we still retain boundary data and cache.
+			 */
+			k->rbuffer->records[i].usage--;
+		}
 	}
+	
+	return 0;
+}
+
+int kap_rbuffer_read(Kap k, const KRecord* kr, size_t offset, void* out, size_t amount)
+{
+	int i;	
+	
+	for (i = 0; i < LU_MAX_HANDLES; i++)
+	{
+		if (k->rbuffer->records[i].id == kr->jumps[0])
+		{
+			return read(k, kr, &k->rbuffer->records[i],
+				offset, out, amount);
+		}
+	}
+	
+	/* uncached */
+	return kap_append_read(k, kr, offset, out, amount);
+}
+
+int kap_rbuffer_find(Kap k, KRecord* kr,
+	int (*testfn)(const void* arg, const void* rec), const void* arg,
+	ssize_t* offset, void* rec)
+{
+	int i;	
+	
+	for (i = 0; i < LU_MAX_HANDLES; i++)
+	{
+		if (k->rbuffer->records[i].id == kr->jumps[0])
+		{
+			return find(k, kr, &k->rbuffer->records[i],
+				testfn, arg, offset, rec);
+		}
+	}
+	
+	/* uncached */
+	return kap_append_find(k, kr, testfn, arg, offset, rec);
 }

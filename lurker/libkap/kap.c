@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.12 2002-07-17 10:30:50 terpstra Exp $
+/*  $Id: kap.c,v 1.13 2002-07-19 14:25:08 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -126,6 +126,9 @@ int kap_create(Kap* k, int flags)
 	if ((flags & (KAP_WBUFFER|KAP_BTREE))  == KAP_WBUFFER)
 		return KAP_OPT_INVALID;
 	
+	if ((flags & (KAP_RBUFFER|KAP_APPEND)) == KAP_RBUFFER)
+		return KAP_OPT_INVALID;
+	
 	(*k)->btree   = 0;
 	(*k)->append  = 0;
 	(*k)->wbuffer = 0;
@@ -149,7 +152,16 @@ int kap_create(Kap* k, int flags)
 		if (!(*k)->wbuffer) goto kap_create_error3;
 	}
 	
+	if ((flags & KAP_RBUFFER) == KAP_RBUFFER)
+	{
+		(*k)->rbuffer = rbuffer_init();
+		if (!(*k)->rbuffer) goto kap_create_error4;
+	}
+	
 	return 0;
+	
+kap_create_error4:
+	if ((*k)->wbuffer) free((*k)->wbuffer);
 	
 kap_create_error3:
 	if ((*k)->append) free((*k)->append);
@@ -171,9 +183,10 @@ int kap_destroy(Kap k)
 	
 	if ((ret = kap_close(k)) != 0) out = ret;
 	
-	if (k->btree)   free(k->btree);
-	if (k->append)  free(k->append);
+	if (k->rbuffer) free(k->rbuffer);
 	if (k->wbuffer) free(k->wbuffer);
+	if (k->append)  free(k->append);
+	if (k->btree)   free(k->btree);
 	
 	free(k);
 	
@@ -199,9 +212,17 @@ int kap_open(Kap k, const char* dir, const char* prefix)
 		out = kap_wbuffer_open(k, dir, prefix);
 		if (out) goto kap_open_error2;
 	}
+	if (k->rbuffer)
+	{
+		out = kap_rbuffer_open(k, dir, prefix);
+		if (out) goto kap_open_error3;
+	}
 	
 	return 0;
 
+kap_open_error3:
+	if (k->wbuffer) kap_wbuffer_close(k);
+	
 kap_open_error2:
 	if (k->append) kap_append_close(k);
 	
@@ -217,6 +238,7 @@ int kap_sync(Kap k)
 	int out, ret;
 	out = 0;
 	
+	if (k->rbuffer) if ((ret = kap_rbuffer_sync(k)) != 0) out = ret;
 	if (k->wbuffer) if ((ret = kap_wbuffer_sync(k)) != 0) out = ret;
 	if (k->append)  if ((ret = kap_append_sync (k)) != 0) out = ret;
 	if (k->btree)   if ((ret = kap_btree_sync  (k)) != 0) out = ret;
@@ -229,6 +251,7 @@ int kap_close(Kap k)
 	int out, ret;
 	out = 0;
 	
+	if (k->rbuffer) if ((ret = kap_rbuffer_close(k)) != 0) out = ret;
 	if (k->wbuffer) if ((ret = kap_wbuffer_close(k)) != 0) out = ret;
 	if (k->append)  if ((ret = kap_append_close (k)) != 0) out = ret;
 	if (k->btree)   if ((ret = kap_btree_close  (k)) != 0) out = ret;
@@ -337,6 +360,41 @@ void kap_encode_offset(unsigned char* where, off_t rec, short len)
 	}
 }
 
+int kap_krecords(Kap k, size_t* records, const char* key)
+{
+	KRecord	kr;
+	int	out;
+	ssize_t len;
+	size_t	klen;
+	unsigned char buf[256];
+	
+	if (!k->append) return KAP_NO_APPEND;
+	
+	if (k->wbuffer)
+	{
+		out = kap_wbuffer_flush(k, key);
+		if (out) return out;
+	}
+	
+	out = kap_btree_read(k, key, &buf[0], &len);
+	if (out == KAP_NOT_FOUND)
+	{	/* We will rewrite this on calls to write */
+		memset(&kr, 0, sizeof(KRecord));
+	}
+	else if (out == 0)
+	{
+		klen = kap_decode_krecord(&buf[0], &kr);
+		assert (len == klen);
+	}
+	else
+	{
+		return out;
+	}
+	
+	*records = kr.records;
+	return 0;
+}
+
 int kap_kopen(Kap k, KRecord* kr, const char* key)
 {
 	int	out;
@@ -356,27 +414,46 @@ int kap_kopen(Kap k, KRecord* kr, const char* key)
 	if (out == KAP_NOT_FOUND)
 	{	/* We will rewrite this on calls to write */
 		memset(kr, 0, sizeof(KRecord));
-		return 0;
 	}
-	
-	if (out == 0)
+	else if (out == 0)
 	{
 		klen = kap_decode_krecord(&buf[0], kr);
 		assert (len == klen);
 	}
+	else
+	{
+		return out;
+	}
 	
-	return out;
+	if (k->rbuffer)
+	{
+		kap_rbuffer_kopen(k, kr);
+	}
+	
+	return 0;
 }
 
 int kap_kclose(Kap k, KRecord* kr,  const char* key)
-{	/* do nothing (but don't tell! - people should still call this!) */
+{
+	if (k->rbuffer)
+	{
+		kap_rbuffer_kclose(k, kr);
+	}
+	
 	return 0;
 }
 
 int kap_kread(Kap k, const KRecord* kr, const char* key,
 	size_t where, void* buf, size_t amt)
 {
-	return kap_append_read(k, kr, where, buf, amt);
+	if (k->rbuffer)
+	{
+		return kap_rbuffer_read(k, kr, where, buf, amt);
+	}
+	else
+	{
+		return kap_append_read(k, kr, where, buf, amt);
+	}
 }
 
 int kap_kwrite(Kap k, KRecord* kr, const char* key,
@@ -395,6 +472,21 @@ int kap_kwrite(Kap k, KRecord* kr, const char* key,
 	}
 	
 	return out;
+}
+
+int kap_find(
+	Kap k, KRecord* kr,
+	int (*testfn)(const void* arg, const void* rec), const void* arg,
+	ssize_t* offset, void* rec)
+{
+	if (k->rbuffer)
+	{
+		return kap_rbuffer_find(k, kr, testfn, arg, offset, rec);
+	}
+	else
+	{
+		return kap_append_find(k, kr, testfn, arg, offset, rec);
+	}
 }
 
 struct AppendBack

@@ -1,4 +1,4 @@
-/*  $Id: test-avl.cc,v 1.1 2002-07-09 22:42:45 terpstra Exp $
+/*  $Id: test-avl.cc,v 1.2 2002-07-19 14:25:08 terpstra Exp $
  *  
  *  test-avl.cc - Test insert and delete operations of the avl tree
  *  
@@ -52,7 +52,8 @@ Record	tbl[SIZE];
 
 int compare(long a, long b) { return a - b; }
 
-AVL_DEFINE(foo, rptr, SIZE, Record, tbl, compare)
+AVL_DEFINE_INSERT(foo, rptr, SIZE, Record, tbl, compare)
+AVL_DEFINE_REMOVE(foo, rptr, SIZE, Record, tbl, compare)
 
 int main()
 {

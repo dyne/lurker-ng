@@ -106,7 +106,7 @@ EXTRA_DIST = Design profile.cc rbuffer.c \
 
 libkap_a_SOURCES = \
 	kap.h private.h avl.h \
-	btree.c append.c wbuffer.c kap.c
+	btree.c append.c wbuffer.c rbuffer.c kap.c
 
 
 kapmake_SOURCES = kapmake.c
@@ -123,7 +123,7 @@ LIBRARIES = $(noinst_LIBRARIES)
 libkap_a_AR = $(AR) cru
 libkap_a_LIBADD =
 am_libkap_a_OBJECTS = btree.$(OBJEXT) append.$(OBJEXT) wbuffer.$(OBJEXT) \
-	kap.$(OBJEXT)
+	rbuffer.$(OBJEXT) kap.$(OBJEXT)
 libkap_a_OBJECTS = $(am_libkap_a_OBJECTS)
 bin_PROGRAMS = kapmake$(EXEEXT) kapdump$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
@@ -145,7 +145,8 @@ LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
 @AMDEP_TRUE@DEP_FILES = $(DEPDIR)/append.Po $(DEPDIR)/btree.Po \
 @AMDEP_TRUE@	$(DEPDIR)/kap.Po $(DEPDIR)/kapdump.Po \
-@AMDEP_TRUE@	$(DEPDIR)/kapmake.Po $(DEPDIR)/wbuffer.Po
+@AMDEP_TRUE@	$(DEPDIR)/kapmake.Po $(DEPDIR)/rbuffer.Po \
+@AMDEP_TRUE@	$(DEPDIR)/wbuffer.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -216,6 +217,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/kap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/kapdump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/kapmake.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/rbuffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/wbuffer.Po@am__quote@
 
 distclean-depend:
@@ -375,19 +377,19 @@ tests:	test-append test-btree test-full test-avl profile
 	cat *.c *.cc *.h | ./test-full
 
 test-append: test-append.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm @MAINT@ -ldmalloc
 
 test-avl: test-avl.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm @MAINT@ -ldmalloc
 
 test-btree: test-btree.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm @MAINT@ -ldmalloc
 
 test-full: test-full.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm @MAINT@ -ldmalloc
 
 profile: profile.cc libkap.a
-	g++ -Wall -O2 -g $< libkap.a -o $@ -lm
+	g++ -Wall -O2 -g $< libkap.a -o $@ -lm @MAINT@ -ldmalloc
 
 clean-local:
 	rm -f test-append test-btree test-full test-avl profile

@@ -12,7 +12,8 @@ Unfulfilled requirements:
 	Better packing of tree
 
 BUGS:
-	Read buffer in libkap has not been re-integrated
+	Writes to an open KRecord are not reflected in read cache
+	AVL uses a global table -- not reentrant
 	We don't check for double append
 	
 	Attachments are never cached because we need to tell the browser

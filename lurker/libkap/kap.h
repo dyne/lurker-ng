@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.16 2002-07-12 13:31:46 terpstra Exp $
+/*  $Id: kap.h,v 1.17 2002-07-19 14:25:08 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -279,6 +279,7 @@ int	kap_append_append(Kap k, KRecord* kr,
 /** Find the largest record which satisfies a given property.
  *  test is called with testfn(arg, record) to determine if record
  *  satisfies the property.
+ *  Also, note: this property MUST be a total order.
  *  Upon return, rec will hold to matching record, and offset the
  *  position. If not found, offset == -1 and KAP_NOT_FOUND is returned.
  *  Errors: all kap_append_read() and KAP_NOT_FOUND
@@ -299,6 +300,13 @@ size_t kap_encode_krecord(      unsigned char* where, const KRecord* kr);
 /****************************************** Combined KAP calls */
 
 
+/** Read the number of records in a KRecord by keyword name.
+ *  This does NOT blow away read cache like kap_kopen.
+ *  This DOES flush write cache on the record prior to reading.
+ *  This requires both the keyword and append layers.
+ *  Errors: all kap_btree_read(), and KAP_NO_APPEND
+ */
+int	kap_krecords(Kap k, size_t* recs, const char* key);
 
 /** Open a KRecord by keyword name.
  *  This requires both the keyword and append layers.
@@ -308,12 +316,14 @@ size_t kap_encode_krecord(      unsigned char* where, const KRecord* kr);
 int	kap_kopen(Kap k, KRecord* kr, const char* key);
 
 /** Close a KRecord by keyword name.
+ *  Decreases read buffer usage counter.
  */
 int	kap_kclose(Kap k, KRecord* kr, const char* key);
 
 /** Read from a KRecord.
  *  Does not flush. If you have appended since a kopen, you will not
  *  see the new records. (Done to allow atomic interaction)
+ *  Makes use of read cache.
  *  Errors: all kap_append_read()
  */
 int	kap_kread(Kap k, const KRecord* kr, const char* key,
@@ -333,6 +343,19 @@ int	kap_kwrite(Kap k, KRecord* kr, const char* key,
  */
 int	kap_append(Kap k, const char* key, 
 	void* data, size_t len);
+
+/** Find the largest record which satisfies a given property.
+ *  test is called with testfn(arg, record) to determine if record
+ *  satisfies the property.
+ *  Also, note: this property MUST be a total order.
+ *  Upon return, rec will hold to matching record, and offset the
+ *  position. If not found, offset == -1 and KAP_NOT_FOUND is returned.
+ *  Unlike kap_append_find, this makes use of read cache.
+ *  Errors: all kap_append_read() and KAP_NOT_FOUND
+ */
+int	kap_find(Kap k, KRecord* kr,
+	int (*testfn)(const void* arg, const void* rec), const void* arg,
+	ssize_t* offset, void* rec);
 
 /** Encode offsets in portable manner.
  *  Some people find this useful for storing integers on disk.

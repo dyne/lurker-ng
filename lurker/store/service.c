@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.83 2002-07-19 12:24:18 terpstra Exp $
+/*  $Id: service.c,v 1.84 2002-07-19 14:25:08 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -2576,7 +2576,7 @@ static int my_service_splash(
 {
 	Lu_Config_List*		scan;
 	char			key[40];
-	KRecord			kr;
+	size_t			records;
 	int			out;
 	
 	if (strcmp(request, "index"))
@@ -2609,23 +2609,19 @@ static int my_service_splash(
 	{
 		snprintf(&key[0], sizeof(key), "%s%d", LU_KEYWORD_LIST, scan->id);
 		
-		/*!!! would be nice if we didn't blow cache away*/
-		out = kap_kopen(lu_config_keyword, &kr, &key[0]);
+		out = kap_krecords(lu_config_keyword, &records, &key[0]);
 		if (out != 0) return -1;
 		
 		if (my_service_list(
 			h, 
 			scan, 
-			kr.records, 
-			kr.records
-			?((kr.records - 1) / LU_PROTO_INDEX * LU_PROTO_INDEX)
+			records, 
+			records
+			?((records - 1) / LU_PROTO_INDEX * LU_PROTO_INDEX)
 			:0) != 0)
 		{
 			return -1;
 		}
-		
-		out = kap_kclose(lu_config_keyword, &kr, &key[0]);
-		if (out != 0) return -1;
 	}
 	
 	if (my_service_buffer_write(h, "</splash>\n") != 0) return -1;
