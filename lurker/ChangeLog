@@ -11,6 +11,7 @@ v0.1d:
 	Made the AVL trees reentrant
 	Reintegrated the read buffer into libkap -> faster searches
 	mmap is used for .append files to allow async writes
+	Fallback when out of address space to read()/write() added
 	We preallocate storage for append to prevent wasted writes
 	Threads can span 3 months instead of 1
 	No longer require numeric id tags for lists

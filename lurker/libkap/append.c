@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.17 2002-07-21 22:54:23 terpstra Exp $
+/*  $Id: append.c,v 1.18 2002-07-22 12:07:27 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -121,37 +121,7 @@ struct Kap_Append
 
 /***************************************** Strategies for accessing the disk */
 
-#ifdef USE_MMAP
-# define  READ_RECORDS(k, s, b, a) (memcpy(b, &k->mmap[s], a), 0)
-# define WRITE_RECORDS(k, s, b, a) (memcpy(&k->mmap[s], b, a), 0)
-
-static size_t round_mmap_up(size_t amt)
-{
-	size_t out = 0xC000; /* Can't quite map 2Gb- so use 110000... */
-	while (out < amt) out <<= 1;
-	return out;
-}
-
-#else
-
-static int READ_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t amount)
-{
-	if (lseek(k->fd, sector, SEEK_SET) != sector)
-	{
-		if (errno == 0) errno = EINTR;
-		return -1;
-	}
-	
-	if (kap_read_full(k->fd, buf, amonut) != 0)
-	{
-		if (errno == 0) errno = EINTR;
-		return -1;
-	}
-	
-	return 0;
-}
-
-static int WRITE_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t amount)
+static int IO_WRITE_RECORDS(struct Kap_Append* k, off_t sector, const void* buf, size_t amount)
 {
 	if (lseek(k->fd, sector, SEEK_SET) != sector)
 	{
@@ -166,6 +136,70 @@ static int WRITE_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t a
 	}
 	
 	return 0;
+}
+
+static int IO_READ_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t amount)
+{
+	if (lseek(k->fd, sector, SEEK_SET) != sector)
+	{
+		if (errno == 0) errno = EINTR;
+		return -1;
+	}
+	
+	if (kap_read_full(k->fd, buf, amount) != 0)
+	{
+		if (errno == 0) errno = EINTR;
+		return -1;
+	}
+	
+	return 0;
+}
+
+#ifdef USE_MMAP
+
+inline int WRITE_RECORDS(struct Kap_Append* k, off_t sector, const void* buf, size_t amount)
+{
+	if (k->mmap != MAP_FAILED)
+	{
+		memcpy(&k->mmap[sector], buf, amount);
+		return 0;
+	}
+	else
+	{
+		return IO_WRITE_RECORDS(k, sector, buf, amount);
+	}
+}
+
+inline int READ_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t amount)
+{
+	if (k->mmap != MAP_FAILED)
+	{
+		memcpy(buf, &k->mmap[sector], amount);
+		return 0;
+	}
+	else
+	{
+		return IO_READ_RECORDS(k, sector, buf, amount);
+	}
+}
+
+static size_t round_mmap_up(size_t amt)
+{
+	size_t out = 0xC000; /* Can't quite map 2Gb- so use 110000... */
+	while (out < amt) out <<= 1;
+	return out;
+}
+
+#else
+
+inline int WRITE_RECORDS(struct Kap_Append* k, off_t sector, const void* buf, size_t amount)
+{
+	return IO_WRITE_RECORDS(k, sector, buf, amount);
+}
+
+inline int READ_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t amount)
+{
+	return IO_READ_RECORDS(k, sector, buf, amount);
 }
 
 #endif
@@ -313,15 +347,18 @@ static off_t allocate_cell(Kap k, int jump)
 			k->append->fd,
 			0);
 		
-		if (tmp == MAP_FAILED)
+		/* Allow us to run out of mmap space and fall back to normal
+		 * disk IO.
+		 */
+		if (tmp == MAP_FAILED && errno != ENOMEM)
 			return 0;
 		
-		if (munmap(
+		if (k->append->mmap != MAP_FAILED && munmap(
 			k->append->mmap,
 			round_mmap_up(k->append->eof)) 
 			!= 0)
 		{
-			munmap(tmp, round_mmap_up(eof));
+			if (tmp != MAP_FAILED) munmap(tmp, round_mmap_up(eof));
 			return 0;
 		}
 		
@@ -616,7 +653,7 @@ struct Kap_Append* append_init(void)
 int kap_append_sync(Kap k)
 {
 #ifdef USE_MMAP
-	if (msync(
+	if (k->append->mmap != MAP_FAILED && msync(
 		k->append->mmap,
 		round_mmap_up(k->append->eof),
 		MS_SYNC|MS_INVALIDATE) != 0)
@@ -807,7 +844,8 @@ int kap_append_open(Kap k, const char* dir, const char* prefix)
 		MAP_SHARED,
 		k->append->fd,
 		0);
-	if (k->append->mmap == MAP_FAILED)
+	/* If we cannot mmap for any other reason than no memory, abort */
+	if (k->append->mmap == MAP_FAILED && errno != ENOMEM)
 	{
 		if (errno)	out = errno;
 		else		out = ENOMEM;

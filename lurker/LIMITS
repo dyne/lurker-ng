@@ -1,3 +1,8 @@
+****************************************************************************
+*                          HARD MESSAGE BARRIERS                           *
+****************************************************************************
+
+
 4 billion message barrier (12TB mail)
 
 	Lurker uses 32-bit message-ids
@@ -22,16 +27,25 @@ breaking the 2 billion message barrier (6TB mail)
 
 	See breaking the 4 billion barrier, if you break it, you break this.
 
-1 million message barrier (3 GB mail)
+
+
+****************************************************************************
+*                          SOFT MESSAGE BARRIERS                           *
+****************************************************************************
+
+
+1 million SOFT message barrier (3 GB mail)
 
 	Lurker uses mmaps entensively (some might say insanely). 
 	The entire keyword search database is mmap'd at once. 
 	This restricts the database to a size of about 1GB since there
 	is overhead on re-mmap'ing. 
 	The database at this volume is about 33% the size of the email. 
-	So you can address 3Gb of email.
+	So you can address at most 3Gb of email with this method.
+	If you need to address more, lurker will automatically switch to
+	using read()/write()
 
-breaking the 1 million message barrier (3GB mail)
+breaking the 1 million SOFT message barrier (3GB mail)
 
 	There are two ways to break the 1 million message barrier.
 	
@@ -45,6 +59,5 @@ breaking the 1 million message barrier (3GB mail)
 		consumer 64bit machines, I think this is the best option.
 
 	Technique #2 (hated):
-		configure with --disable-mmap
-		This is insane! 
+		Do nothing, let lurker fall back to read()/write()
 		Doing this will reduce your import performance by about 10*

@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.25 2002-07-19 16:07:12 terpstra Exp $
+/*  $Id: btree.c,v 1.26 2002-07-22 12:07:27 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -141,20 +141,7 @@ struct Kap_Btree
 
 /***************************************** Strategies for accessing the disk */
 
-#ifdef USE_MMAP
-# define  READ_SECTOR(k, s, b) (memcpy(b, &k->mmap[s*k->sector_size], k->sector_size), 0)
-# define WRITE_SECTOR(k, s, b) (memcpy(&k->mmap[s*k->sector_size], b, k->sector_size), 0)
-
-static size_t round_mmap_up(size_t amt)
-{
-	size_t out = 0xC000; /* Can't quite map 2Gb- so use 110000... */
-	while (out < amt) out <<= 1;
-	return out;
-}
-
-#else
-
-static int READ_SECTOR(struct Kap_Btree* k, off_t sector, void* buf)
+static int IO_READ_SECTOR(struct Kap_Btree* k, off_t sector, void* buf)
 {
 	if (lseek(k->fd, sector*k->sector_size, SEEK_SET) != 
 	    sector*k->sector_size)
@@ -172,7 +159,7 @@ static int READ_SECTOR(struct Kap_Btree* k, off_t sector, void* buf)
 	return 0;
 }
 
-static int WRITE_SECTOR(struct Kap_Btree* k, off_t sector, void* buf)
+static int IO_WRITE_SECTOR(struct Kap_Btree* k, off_t sector, const void* buf)
 {
 	if (lseek(k->fd, sector*k->sector_size, SEEK_SET) != 
 	    sector*k->sector_size)
@@ -188,6 +175,53 @@ static int WRITE_SECTOR(struct Kap_Btree* k, off_t sector, void* buf)
 	}
 	
 	return 0;
+}
+
+#ifdef USE_MMAP
+
+inline int READ_SECTOR(struct Kap_Btree* k, off_t sector, void* buf)
+{
+	if (k->mmap != MAP_FAILED)
+	{
+		memcpy(buf, &k->mmap[sector*k->sector_size], k->sector_size);
+		return 0;
+	}
+	else
+	{
+		return IO_READ_SECTOR(k, sector, buf);
+	}
+}
+
+inline int WRITE_SECTOR(struct Kap_Btree* k, off_t sector, const void* buf)
+{
+	if (k->mmap != MAP_FAILED)
+	{
+		memcpy(&k->mmap[sector*k->sector_size], buf, k->sector_size);
+		return 0;
+	}
+	else
+	{
+		return IO_WRITE_SECTOR(k, sector, buf);
+	}
+}
+
+static size_t round_mmap_up(size_t amt)
+{
+	size_t out = 0xC000; /* Can't quite map 2Gb- so use 110000... */
+	while (out < amt) out <<= 1;
+	return out;
+}
+
+#else
+
+inline int READ_SECTOR(struct Kap_Btree* k, off_t sector, void* buf)
+{
+	return IO_READ_SECTOR(k, sector, buf);
+}
+
+inline int WRITE_SECTOR(struct Kap_Btree* k, off_t sector, const void* buf)
+{
+	return IO_WRITE_SECTOR(k, sector, buf);
 }
 
 #endif
@@ -509,7 +543,7 @@ int kap_btree_open(Kap k, const char* dir, const char* prefix)
 		MAP_SHARED,
 		k->btree->fd, 
 		0);
-	if (k->btree->mmap == MAP_FAILED)
+	if (k->btree->mmap == MAP_FAILED && errno != ENOMEM)
 	{
 		if (errno)	out = errno;
 		else		out = ENOMEM;
@@ -539,7 +573,7 @@ kap_btree_open_error0:
 int kap_btree_sync(Kap k)
 {
 #ifdef USE_MMAP
-	if (msync(
+	if (k->btree->mmap != MAP_FAILED && msync(
 		k->btree->mmap,
 		round_mmap_up(k->btree->size*k->btree->sector_size),
 		MS_SYNC | MS_INVALIDATE) != 0)
@@ -623,15 +657,15 @@ static off_t allocate_cell(Kap k)
 			k->btree->fd, 
 			0);
 		
-		if (tmp == MAP_FAILED)
+		if (tmp == MAP_FAILED && errno != ENOMEM)
 			return 0;
 		
-		if (munmap(
+		if (k->btree->mmap != MAP_FAILED && munmap(
 			k->btree->mmap, 
 			round_mmap_up(k->btree->size*k->btree->sector_size)) 
 			!= 0)
 		{
-			munmap(tmp, round_mmap_up((k->btree->size+1)*k->btree->sector_size));
+			if (tmp != MAP_FAILED) munmap(tmp, round_mmap_up((k->btree->size+1)*k->btree->sector_size));
 			return 0;
 		}
 		
