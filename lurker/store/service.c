@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.32 2002-02-25 08:24:58 terpstra Exp $
+/*  $Id: service.c,v 1.33 2002-02-25 09:48:51 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -958,8 +958,6 @@ static int my_service_getmsg(
 	My_Service_Handle h, 
 	const char* request)
 {
-	const char*	scan;
-	const char*	last;
 	char*		eptr;
 	message_id	id;
 	lu_addr		bits;
@@ -1080,23 +1078,6 @@ static int my_service_getmsg(
 	if (my_service_buffer_write(h, "<message>\n")    != 0) goto my_service_getmsg_error3;
 	if (my_service_server(h)                         != 0) goto my_service_getmsg_error3;
 	if (my_service_list(h, list, lu_common_minvalid) != 0) goto my_service_getmsg_error3;
-	
-	/* Find the last component of the path */
-	if (mbox->path)
-	{
-		last = scan = mbox->path;
-		for (; *scan; scan++)
-		{
-			if (*scan == '/')
-			{
-				last = scan + 1;
-			}
-		}
-		
-		if (my_service_buffer_write(h, " <mbox>")   != 0) goto my_service_getmsg_error3;
-		if (my_service_write_str(h, last)           != 0) goto my_service_getmsg_error3;
-		if (my_service_buffer_write(h, "</mbox>\n") != 0) goto my_service_getmsg_error3;
-	}
 	
 	if (my_service_buffer_write(h, " <id>")                 != 0) goto my_service_getmsg_error3;
 	if (my_service_write_int   (h, id)                      != 0) goto my_service_getmsg_error3;
