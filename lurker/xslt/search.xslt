@@ -46,10 +46,10 @@
       / <xsl:value-of select="/search/hits"/>
   
      <xsl:if test="/search/prev">
-       <a href="{/search/prev}+{/search/query}.html">(&lt;&lt; prev)</a>
+       <a href="{/search/prev}%20{/search/query}.html">(&lt;&lt; prev)</a>
      </xsl:if>
      <xsl:if test="/search/next">
-       <a href="{/search/next}+{/search/query}.html">(next &gt;&gt;)</a>
+       <a href="{/search/next}%20{/search/query}.html">(next &gt;&gt;)</a>
      </xsl:if>
   </h2>
 
