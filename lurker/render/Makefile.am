@@ -12,6 +12,7 @@ dist_www_DATA = .htaccess
 	message.c \
 	mindex.c \
 	tindex.c \
-	main.c
+	main.c \
+	splash.c
 
 @PACKAGE@_cgi_LDADD = @RENDER_LIBS@ ../common/libcommon.a

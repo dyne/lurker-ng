@@ -1,4 +1,4 @@
-/*  $Id: handler.h,v 1.4 2002-02-11 03:45:51 terpstra Exp $
+/*  $Id: handler.h,v 1.5 2002-02-12 05:47:29 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -30,12 +30,14 @@ extern FILE* lu_server_link;
 
 extern FILE* lu_render_open(const char* parameter);
 extern int   lu_render_close(FILE* f);
+extern int   lu_forward_xml(const char* parameter);
 
 extern int lu_message_handler(char* parameter, const char* uri, lu_doctype t);
 extern int lu_thread_handler (char* parameter, const char* uri, lu_doctype t);
 extern int lu_mindex_handler (char* parameter, const char* uri, lu_doctype t);
 extern int lu_tindex_handler (char* parameter, const char* uri, lu_doctype t);
 extern int lu_search_handler (char* parameter, const char* uri, lu_doctype t);
+extern int lu_splash_handler (char* parameter, const char* uri, lu_doctype t);
 
 extern const char basic_error[];    /* %s %s %s */
 extern const char redirect_error[]; /* %s */

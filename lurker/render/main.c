@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.5 2002-02-11 03:45:51 terpstra Exp $
+/*  $Id: main.c,v 1.6 2002-02-12 05:47:29 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -142,6 +142,43 @@ int lu_render_close(FILE* f)
 	
 	fclose(f);
 	return fd;
+}
+
+int lu_forward_xml(const char* parameter)
+{
+	FILE*	xml;
+	char	buf[4096];
+	size_t	got;
+	size_t  get;
+	int	fragment;
+	
+	if ((xml = lu_render_open(parameter)) == 0)
+		return -1;
+	
+	fflush(lu_server_link);
+	fragment = 0;
+	while (1)
+	{
+		if (fragment == 0)
+		{
+			if (fscanf(lu_server_link, "%d", &fragment) != 1)
+				break;
+			if (fgetc(lu_server_link) != '\n')
+				break;
+			if (fragment == 0)
+				break;
+		}
+		
+		get = sizeof(buf);
+		if (get > fragment) get = fragment;
+		
+		got = fread(&buf[0], 1, get, lu_server_link);
+		fwrite(&buf[0], 1, got, xml);
+		
+		fragment -= got;
+	}
+	
+	return lu_render_close(xml);
 }
 
 static int render_html(const char* parameter)
@@ -408,6 +445,7 @@ int main(int argc, char* argv[])
 	else if (!strcmp(module, "mindex" )) handler = &lu_mindex_handler;
 	else if (!strcmp(module, "tindex" )) handler = &lu_tindex_handler;
 	else if (!strcmp(module, "search" )) handler = &lu_search_handler;
+	else if (!strcmp(module, "splash" )) handler = &lu_splash_handler;
 	else
 	{
 		printf("Status: 404 Not Found\r\n");

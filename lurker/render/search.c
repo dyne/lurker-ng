@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.5 2002-02-11 03:55:03 terpstra Exp $
+/*  $Id: search.c,v 1.6 2002-02-12 05:47:29 terpstra Exp $
  *  
  *  search.c - output results from a search/ lookup
  *  
@@ -66,15 +66,10 @@ int lu_search_handler(
 	const char* uri, 
 	lu_doctype t)
 {
-	FILE* xml;
-	int fragment;
-	
 	char		buf[4096];
 	char*		w;
 	char*		e;
 	const char*	s;
-	size_t		got;
-	size_t 		get;
 	
 	if (!memcmp(parameter, "bounce", 6))
 	{	/* We were called like a real CGI - we need to redirect the
@@ -121,32 +116,6 @@ int lu_search_handler(
 	
 	fprintf(lu_server_link, "%s%s%c", 
 		LU_PROTO_SEARCH, parameter, LU_PROTO_ENDREQ);
-	fflush(lu_server_link);
-	
-	if ((xml = lu_render_open(parameter)) == 0)
-		return -1;
-	
-	fragment = 0;
-	while (1)
-	{
-		if (fragment == 0)
-		{
-			if (fscanf(lu_server_link, "%d", &fragment) != 1)
-				break;
-			if (fgetc(lu_server_link) != '\n')
-				break;
-			if (fragment == 0)
-				break;
-		}
 		
-		get = sizeof(buf);
-		if (get > fragment) get = fragment;
-		
-		got = fread(&buf[0], 1, get, lu_server_link);
-		fwrite(&buf[0], 1, got, xml);
-		
-		fragment -= got;
-	}
-	
-	return lu_render_close(xml);
+	return lu_forward_xml(parameter);
 }

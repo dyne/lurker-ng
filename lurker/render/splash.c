@@ -1,4 +1,4 @@
-/*  $Id: mindex.c,v 1.7 2002-02-12 05:47:29 terpstra Exp $
+/*  $Id: splash.c,v 1.1 2002-02-12 05:47:29 terpstra Exp $
  *  
  *  mindex.c - output results from a mindex/ lookup
  *  
@@ -26,13 +26,11 @@
 #include "common.h"
 #include "protocol.h"
 
-int lu_mindex_handler(
+int lu_splash_handler(
 	char* parameter, 
 	const char* uri, 
 	lu_doctype t)
 {
-	int i, j;
-	
 	if (t != LU_XML && t != LU_HTML)
 	{	/* Don't know how to deal with other types */
 		printf("Status: 404 Not Found\r\n");
@@ -41,19 +39,8 @@ int lu_mindex_handler(
 		return -1;
 	}
 	
-	if (sscanf(parameter, "%d@%d", &i, &j) != 2)
-	{
-		printf("Status: 200 OK\r\n");
-		printf("Content-type: text/html\r\n\r\n");
-		printf(&basic_error[0], 
-			"Reading parameters",
-			parameter,
-			"Not formatted as &lt;list&gt;@&lt;ffset&gt;");
-		return -1;
-	}
-	
-	fprintf(lu_server_link, "%s%d %d%c", 
-		LU_PROTO_MINDEX, i, j, LU_PROTO_ENDREQ);
+	fprintf(lu_server_link, "%s%c", 
+		LU_PROTO_LISTS, LU_PROTO_ENDREQ);
 	
 	return lu_forward_xml(parameter);
 }
