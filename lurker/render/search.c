@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.4 2002-02-11 03:45:51 terpstra Exp $
+/*  $Id: search.c,v 1.5 2002-02-11 03:55:03 terpstra Exp $
  *  
  *  search.c - output results from a search/ lookup
  *  
@@ -38,6 +38,7 @@ static void extract_keyword(
 	const char* prefix,
 	const char* field)
 {
+	char* t;
 	char* s;
 	
 	if ((s = strstr(parameter, field)) == 0)
@@ -47,7 +48,11 @@ static void extract_keyword(
 	if (!*s++) return;	/* skip the = */
 	if (!*s || *s == '&') return; /* empty field */
 	
-	if (*w != e) *(*w)++ = '+';
+	for (t = "%20"; *w != e && *t; t++)
+		*(*w)++ = *t;
+	
+	for (; *w != e && *prefix; prefix++)
+		*(*w)++ = *prefix;
 	
 	for (; *w != e && *s; s++)
 	{
@@ -82,9 +87,12 @@ int lu_search_handler(
 				break;
 		}
 		
-		s++;
+		memcpy(&buf[0], uri, s - uri);
+		buf[s - uri] = '/';
+		buf[s - uri+1] = '0';
+		buf[s - uri+2] = 0;
 		
-		snprintf(&buf[0], sizeof(buf), "%s/0", uri);
+		s++;
 		w = &buf[strlen(buf)];
 		e = &buf[sizeof(buf)-1];
 		
