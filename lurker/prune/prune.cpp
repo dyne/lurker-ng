@@ -1,4 +1,4 @@
-/*  $Id: prune.cpp,v 1.3 2003-05-13 21:38:29 terpstra Exp $
+/*  $Id: prune.cpp,v 1.4 2003-05-13 21:43:25 terpstra Exp $
  *  
  *  prune.cpp - Prune obsolete / stale cache files
  *  
@@ -142,7 +142,7 @@ int main(int argc, char** argv)
 	lock.l_whence = SEEK_SET;
 	if (fcntl(fd, F_SETLK, &lock) != 0)
 	{
-		if (errno == ACCES || errno == EAGAIN)
+		if (errno == EACCES || errno == EAGAIN)
 			state = USED;
 		else	state = FAIL;
 	}
