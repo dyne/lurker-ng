@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.28 2003-07-02 09:14:09 terpstra Exp $
+/*  $Id: message.cpp,v 1.29 2003-07-02 10:21:08 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -223,7 +223,7 @@ void run_pgp(ostream& o, string& command)
 	else
 	{
 		details = command + " failed with " + strerror(errno);
-		status = 1;
+		status = 2;
 	}
 	
 	o << "<signed ok=\"";
