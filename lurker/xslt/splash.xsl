@@ -77,32 +77,34 @@
 </xsl:template>
 
 <xsl:template match="splash" mode="body">
- <h2><xsl:value-of select="$lists"/></h2>
- <div id="listBlock">
- <table id="listTable" width="100%">
-  <xsl:variable name="size1" select="floor((count(list)+3) div 4)"/>
-  <xsl:variable name="size2" select="floor((count(list)+2) div 4)"/>
-  <xsl:variable name="size3" select="floor((count(list)+1) div 4)"/>
-  <xsl:variable name="size4" select="floor((count(list)+0) div 4)"/>
-  
-  <xsl:variable name="off1" select="1"/>
-  <xsl:variable name="off2" select="$off1+$size1"/>
-  <xsl:variable name="off3" select="$off2+$size2"/>
-  <xsl:variable name="off4" select="$off3+$size3"/>
-  <xsl:variable name="off5" select="$off4+$size4"/>
-
-  <tbody>
-   <xsl:call-template name="format">
-    <xsl:with-param name="col1" select="list[position() &gt;= $off1 and position() &lt; $off2]"/>
-    <xsl:with-param name="col2" select="list[position() &gt;= $off2 and position() &lt; $off3]"/>
-    <xsl:with-param name="col3" select="list[position() &gt;= $off3 and position() &lt; $off4]"/>
-    <xsl:with-param name="col4" select="list[position() &gt;= $off4 and position() &lt; $off5]"/>
-   </xsl:call-template>
-  </tbody>
- </table>
- </div>
-
- <br/><br/><hr/>
+ <xsl:for-each select="group">
+  <h2><xsl:value-of select="title"/></h2>
+  <div id="listBlock">
+  <table id="listTable" width="100%">
+   <xsl:variable name="size1" select="floor((count(list)+3) div 4)"/>
+   <xsl:variable name="size2" select="floor((count(list)+2) div 4)"/>
+   <xsl:variable name="size3" select="floor((count(list)+1) div 4)"/>
+   <xsl:variable name="size4" select="floor((count(list)+0) div 4)"/>
+   
+   <xsl:variable name="off1" select="1"/>
+   <xsl:variable name="off2" select="$off1+$size1"/>
+   <xsl:variable name="off3" select="$off2+$size2"/>
+   <xsl:variable name="off4" select="$off3+$size3"/>
+   <xsl:variable name="off5" select="$off4+$size4"/>
+ 
+   <tbody>
+    <xsl:call-template name="format">
+     <xsl:with-param name="col1" select="list[position() &gt;= $off1 and position() &lt; $off2]"/>
+     <xsl:with-param name="col2" select="list[position() &gt;= $off2 and position() &lt; $off3]"/>
+     <xsl:with-param name="col3" select="list[position() &gt;= $off3 and position() &lt; $off4]"/>
+     <xsl:with-param name="col4" select="list[position() &gt;= $off4 and position() &lt; $off5]"/>
+    </xsl:call-template>
+   </tbody>
+  </table>
+  </div>
+  <br/><br/><hr/>
+ </xsl:for-each>
+ 
  <h2><xsl:value-of select="$titlesearch"/></h2>
 
  <table width="100%"><tr><td width="50%">&#160;</td><td>

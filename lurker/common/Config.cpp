@@ -1,4 +1,4 @@
-/*  $Id: Config.cpp,v 1.5 2003-06-04 12:35:28 terpstra Exp $
+/*  $Id: Config.cpp,v 1.6 2003-06-04 15:08:10 terpstra Exp $
  *  
  *  Config.cpp - Knows how to load the config file
  *  
@@ -151,7 +151,11 @@ int Config::process_command(const string& key, const string& val)
 	
 	string::size_type len = string::npos;
 	
-	if (key == "list")
+	if (key == "group")
+	{
+		group = val;
+	}
+	else if (key == "list")
 	{
 		len = 32;
 		if (!isSimple(val) || val.length() == 0)
@@ -160,8 +164,15 @@ int Config::process_command(const string& key, const string& val)
 			return -1;
 		}
 		
-		lists[val].mbox = val;
-		list = &lists[val];
+		if (lists.find(val) != lists.end())
+		{
+			error << "List id '" << val << "' is already defined." << endl;
+			return -1;
+		}
+		
+		groups[group][val] = list = &lists[val];
+		list->mbox = val;
+		list->group = group;
 	}
 	else if (key == "title")
 	{
@@ -243,7 +254,8 @@ int Config::process_command(const string& key, const string& val)
 ostream& operator << (ostream& o, const List& l)
 {
 	o << "<list>"
-	  << "<id>" << l.mbox << "</id>";
+	  << "<id>" << l.mbox << "</id>"
+	  << "<group>" << l.group << "</group>";
 	
 	if (l.link.length() > 0)
 		o << "<link>" << xmlEscape << l.link << "</link>";

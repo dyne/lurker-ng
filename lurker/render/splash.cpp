@@ -1,4 +1,4 @@
-/*  $Id: splash.cpp,v 1.2 2003-04-21 18:26:21 terpstra Exp $
+/*  $Id: splash.cpp,v 1.3 2003-06-04 15:08:10 terpstra Exp $
  *  
  *  splash.cpp - Handle a splash/ command
  *  
@@ -38,9 +38,18 @@ int handle_splash(const Config& cfg, ESort::Reader* db, const string& param)
 		<< "<splash>\n"
 		<< " " << cfg << "\n";
 	
-	Config::Lists::const_iterator i;
-	for (i = cfg.lists.begin(); i != cfg.lists.end(); ++i)
-		cache.o << " " << i->second << "\n";
+	Config::Groups::const_iterator group;
+	for (group = cfg.groups.begin(); group != cfg.groups.end(); ++group)
+	{
+		cache.o << " <group>\n"
+		        << "  <title>" << group->first << "</title>\n";
+		
+		Config::Members::const_iterator member;
+		for (member = group->second.begin(); member != group->second.end(); ++member)
+			cache.o << "  " << *member->second << "\n";
+		
+		cache.o << " </group>\n";
+	}
 	
 	cache.o << "</splash>\n";
 	

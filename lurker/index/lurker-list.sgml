@@ -56,8 +56,8 @@ lurker-list.1: lurker-list.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg>-c &lt;config-file&gt;</arg>
-      <arg>-i -t -a -l -d</arg>
-      <arg>listid listid ...</arg>
+      <arg>-i -g -t -a -l -d</arg>
+      <arg>listid ...</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -84,6 +84,12 @@ lurker-list.1: lurker-list.sgml
         <term><option>-i</option></term>
         <listitem>
           <para>Output only the list id</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-g</option></term>
+        <listitem>
+          <para>Output only the group</para>
         </listitem>
       </varlistentry>
       <varlistentry>

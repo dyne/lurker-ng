@@ -1,4 +1,4 @@
-/*  $Id: Config.h,v 1.7 2003-05-06 14:32:32 terpstra Exp $
+/*  $Id: Config.h,v 1.8 2003-06-04 15:08:10 terpstra Exp $
  *  
  *  Config.h - Knows how to load the config file
  *  
@@ -48,12 +48,14 @@ struct List
 	string address;
 	string description;
 	string link;
+	string group;
 };
 
 class Config
 {
  private:
  	List* list;
+ 	string group;
 #if __GNUC__ == 2
 	strstream error;
 #else
@@ -61,9 +63,12 @@ class Config
 #endif
  	
  public:
- 	typedef map<string, List> Lists;
+ 	typedef map<string, List>    Lists;
+ 	typedef map<string, List*>   Members;
+ 	typedef map<string, Members> Groups;
  	
- 	Lists lists;
+ 	Lists  lists;
+ 	Groups groups;
  	 	
  	string	dbdir;
  	string	archive;
@@ -86,7 +91,7 @@ class Config
 #endif
  	}
  	
- 	Config() : list(0) { }
+ 	Config() : list(0), group("Mailing Lists") { }
  	
  	// Open the config from this file.
  	int load(const char* file);

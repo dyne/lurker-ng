@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.2 2003-06-04 14:38:13 terpstra Exp $
+/*  $Id: list.cpp,v 1.3 2003-06-04 15:08:10 terpstra Exp $
  *  
  *  list.cpp - Parse the config file for helper scripts
  *  
@@ -39,10 +39,11 @@ void help(const char* name)
 {
 	cerr << "Lurker-list (v" << VERSION << ") parses lists from the config file.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> [-i -t -a -l -d] [listid ...]\n";
+	cerr << "Usage: " << name << " -c <config-file> [-i -g -t -a -l -d] [listid ...]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-i               Output only the list id\n";
+	cerr << "\t-g               Output only the group\n";
 	cerr << "\t-t               Output only the title\n";
 	cerr << "\t-a               Output only the email address\n";
 	cerr << "\t-l               Output only the url link\n";
@@ -60,12 +61,13 @@ int main(int argc, char** argv)
 	const char* config  = 0;
 	int         fields  = 0;
 	bool        ids     = false;
+	bool        group   = false;
 	bool        title   = false;
 	bool        address = false;
 	bool        link    = false;
 	bool        desc    = false;
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:itald?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:igtald?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -75,6 +77,10 @@ int main(int argc, char** argv)
 		case 'i':
 			++fields;
 			ids = true;
+			break;
+		case 'g':
+			++fields;
+			group = true;
 			break;
 		case 't':
 			++fields;
@@ -140,6 +146,7 @@ int main(int argc, char** argv)
 	for (o = output.begin(); o != output.end(); ++o)
 	{
 		if (!fields || ids)     cout << o->mbox        << "\n";
+		if (!fields || group)   cout << o->group       << "\n";
 		if (!fields || title)   cout << o->title       << "\n";
 		if (!fields || address) cout << o->address     << "\n";
 		if (!fields || link)    cout << o->link        << "\n";
