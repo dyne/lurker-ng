@@ -12,6 +12,7 @@ v0.10:
 	Verify gpg signatures and format them for the user
 	All displayed dates will be browser local time if javascript is on
 	Mail with an unescaped From is now converted to quoted-printable
+	Added a heuristic to try and detect unescaped 'From ' lines
 
 v0.9:
 	Don't segfault in rare cases if using '-d' on import (zero restart)

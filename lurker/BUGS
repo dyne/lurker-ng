@@ -2,8 +2,6 @@ Ideas:
 	Reorder threads by reply-to?
 	Gzip output?
 	Link to mailing lists from complete thread view?
-	More robust detection of 'From ' lines? Too many people screw it up.
-		(Content-Length could help or maybe @ needed in email)
 --- 1.0 boundary ---
 	Printable css?
 	In-message forward/backward for search results?

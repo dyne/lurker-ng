@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.30 2003-06-26 20:13:19 terpstra Exp $
+/*  $Id: main.cpp,v 1.31 2003-06-26 21:14:24 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -316,6 +316,64 @@ void status(off_t did, long messages, time_t start)
 	     << " at " << (messages / amt) << " messages (" << (did/(1024*amt)) << "KB) / second" << endl;
 }
 
+string::size_type find_message_boundary(const string& str, string::size_type o)
+{
+	while ((o = str.find("\nFrom ", o)) != string::npos)
+	{
+		// We have a potential message break.
+		// Our philosophy is: only reject it if it seems to be REALLY
+		// broken; default to believing message breaks. If we ever
+		// choose to ignore a break, given a warning. (after all the
+		// mailbox is corrupt)
+		
+		++o; // step onto the 'From '
+		string::size_type eol = str.find('\n', o);
+		
+		// we have not buffered the end of line? then believe that
+		// it is a real break; this is only a heuristic
+		if (eol == string::npos) return o;
+		
+		string header(str, o, eol - o);
+		// A real message break will look like:
+		// From <addr> <date>
+		// If either 'addr' is an email address or 'date' a date
+		// then we decide it is a valid message break. Only if
+		// both are broken do we reject it.
+		
+		const char* d = header.c_str()+4;
+		
+		// skip whitespace
+		while (*d && (*d == ' ' || *d == '\t')) ++d;
+		
+		bool email = false;
+		// we should be on an email address.
+		// if there is an '@' sign then this must be ok
+		while (*d && *d != ' ' && *d != '\t')
+		{
+			if (*d == '@') email = true;
+			++d;
+		}
+		
+		// skip whitespace
+		while (*d && (*d == ' ' || *d == '\t')) ++d;
+		
+		time_t now = 9999999; // don't care - just no syscall
+		time_t arrival = get_date(d, &now);
+		bool date = (arrival != (time_t)-1 && arrival != 0);
+		
+		// it sounds like this is probably a message break
+		if (*d && (date || email)) return o;
+		
+		// well, we gave it the benefit of the doubt, but ...
+		// this just don't look like a message break
+		
+		cerr << "warning: treating '" << header << "' as part of a message because it does not have an @ in the username or a valid date." << endl;
+		// implicitly continue the loop
+	}
+	
+	return o;
+}
+
 int main(int argc, char** argv)
 {
 	int c;
@@ -434,12 +492,13 @@ int main(int argc, char** argv)
 		else	was = 0;
 		
 		string::size_type eos;
-		while (batch != -1 && (eos = buf.find("\nFrom ", was)) != string::npos)
+		while (batch != -1 && 
+		       (eos = find_message_boundary(buf, was)) != string::npos)
 		{
-			DwString msg(buf.c_str(), eos+1);
-			buf = buf.substr(eos+1, string::npos);
+			DwString msg(buf.c_str(), eos);
+			buf = buf.substr(eos, string::npos);
 			
-			if (msg[0] == 'F') // strlen > 1 b/c of eos+1
+			if (msg[0] == 'F') // strlen > 1 b/c of linefeed prior to From
 			{	// ignore potential leading blanks
 				if (index(msg, batch, dropdup, compress) != 0) return 1;
 				++messages;
