@@ -1,4 +1,4 @@
-/*  $Id: test.cpp,v 1.3 2003-04-25 11:09:44 terpstra Exp $
+/*  $Id: test.cpp,v 1.4 2003-04-25 11:11:42 terpstra Exp $
  *  
  *  test.cpp - Write lots of crap and compare with RAM
  *  
@@ -187,7 +187,7 @@ int main(int argc, char** argv)
 	cout << "For replay of this run, seed: " << seed << endl;
 	srandom(seed);
 	
-	db = Writer::open("turnip");
+	db = Writer::open("turnip", Parameters(1, 8192, 255, false));
 	if (!db.get())
 	{
 		perror("Writer::open");
