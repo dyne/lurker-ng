@@ -1,5 +1,6 @@
 Ideas:
 	errordocument failthrough configable
+	Next/Prev message in list view
 	maybe use: message/YYYYMM,email,20chars of subject,goop
 		-- human recognizable
 	secured lists? login required?
