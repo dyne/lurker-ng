@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.10 2002-02-25 07:03:50 terpstra Exp $
+/*  $Id: common.c,v 1.11 2002-02-25 07:37:51 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -54,9 +54,16 @@ const char* lu_common_cleanup_id(
 	static char buf[LU_KEYWORD_LEN+1-sizeof(LU_KEYWORD_MESSAGE_ID)];
 	char* w;
 	char* e;
+	const char* scan;
 	
-	while (isspace(*id)) id++;
-	if (*id == '<') id++;
+	/* Try to find a '<' in preference to anything else */
+	for (scan = id; *scan; scan++)
+		if (*scan == '<')
+			break;
+	
+	/* If we found an '<' use it, else walk past it */
+	if (*scan) id = scan+1;
+	else while (isspace(*id)) id++;
 	
 	w = &buf[0];
 	e = &buf[sizeof(buf) - 1];
