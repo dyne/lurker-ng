@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.17 2002-06-14 11:16:58 terpstra Exp $
+/*  $Id: breader.c,v 1.18 2002-06-20 14:50:09 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -175,7 +175,9 @@ static int my_breader_fetch_sector(
 	int		which  = 0;
 	int		i;
 	int		out;
-	my_breader_ptr	tmp;
+	message_id	key;
+	my_breader_ptr	kill;
+	my_breader_ptr	scan;
 	
 	assert(index < record->count);
 	index -= (index % LU_PULL_AT_ONCE);
@@ -218,24 +220,48 @@ static int my_breader_fetch_sector(
 	
 	/* Remember the boundary information we learn about this sector.
 	 */
+	key = record->cache[which].buffer[0];
+	
+	/* We are operating on this breader table */
+	my_breader_table = &record->boundary[0];
+	
+	scan = record->boundary_root;
+	while (scan != MY_BREADER_PTR_MAX)
+	{
+		if (key < my_breader_table[scan].key)
+			scan = my_breader_table[scan].left;
+		else if (key > my_breader_table[scan].key)
+			scan = my_breader_table[scan].right;
+		else
+		{	/* We have already seen this key */
+			return 0;
+		}
+	}
 	
 	if (record->boundary_usage == LU_BOUNDARY_RECORDS)
+	{	/* Forget about the rightmost value -- less useful */
+		scan = record->boundary_root;
+		while (my_breader_table[scan].right != MY_BREADER_PTR_MAX)
+			scan = my_breader_table[scan].right;
+		
+		record->boundary_root = 
+			my_btree_breader_remove(record->boundary_root, scan);
+		assert (record->boundary_root != MY_BREADER_PTR_MAX);
+		
+		kill = scan;
+	}
+	else
 	{
-		/*!!! Should free a record for reuse */
-		return 0;
+		kill = record->boundary_usage++;
 	}
 	
-	record->boundary[record->boundary_usage].key   = record->cache[which].buffer[0];
-	record->boundary[record->boundary_usage].index = index;
+	record->boundary[kill].key   = key;
+	record->boundary[kill].index = index;
 	
 	/* Push the new record and increase usage if it's not a duplicate */
-	my_breader_table = &record->boundary[0];
-	tmp = my_btree_breader_insert(record->boundary_root, record->boundary_usage);
-	if (tmp != MY_BREADER_PTR_MAX)
-	{
-		record->boundary_root = tmp;
-		record->boundary_usage++;
-	}
+	record->boundary_root = 
+		my_btree_breader_insert(record->boundary_root, kill);
+	assert (record->boundary_root != MY_BREADER_PTR_MAX);
 	
 	return 0;
 }
