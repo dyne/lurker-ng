@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.23 2002-07-15 19:51:27 terpstra Exp $
+/*  $Id: btree.c,v 1.24 2002-07-19 16:02:01 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -597,30 +597,8 @@ static off_t allocate_cell(Kap k)
 	off_t	out = k->btree->size;
 	off_t	go;
 	ssize_t	did;
+	void*	tmp;
 	
-#ifdef USE_MMAP
-	if (round_mmap_up(k->btree->sector_size * (k->btree->size + 1)) !=
-	    round_mmap_up(k->btree->sector_size *  k->btree->size))
-	{
-		if (munmap(
-			k->btree->mmap, 
-			round_mmap_up(k->btree->size*k->btree->sector_size)) 
-			!= 0)
-		{
-			return errno;
-		}
-		
-		k->btree->mmap = mmap(
-			0, 
-			round_mmap_up((k->btree->size+1)*k->btree->sector_size), 
-			PROT_READ|PROT_WRITE, 
-			MAP_SHARED,
-			k->btree->fd, 
-			0);
-		
-		assert (k->btree->mmap != MAP_FAILED);
-	}
-#endif
 	/* Step 1: pre-allocate storage on disk with writing 0s.
 	 * This avoids making stupid sparse files.
 	 */
@@ -630,9 +608,36 @@ static off_t allocate_cell(Kap k)
 	if (go != k->btree->sector_size*k->btree->size)
 		return 0;
 	
-	did = write(k->btree->fd, k->btree->sectc, k->btree->sector_size);
-	if (did != k->btree->sector_size)
-		return 0;
+	did = kap_write_full(k->btree->fd, k->btree->sectc, k->btree->sector_size);
+	if (did != 0) return 0;
+	
+#ifdef USE_MMAP
+	if (round_mmap_up(k->btree->sector_size * (k->btree->size + 1)) !=
+	    round_mmap_up(k->btree->sector_size *  k->btree->size))
+	{
+		tmp = mmap(
+			0, 
+			round_mmap_up((k->btree->size+1)*k->btree->sector_size), 
+			PROT_READ|PROT_WRITE, 
+			MAP_SHARED,
+			k->btree->fd, 
+			0);
+		
+		if (tmp == MAP_FAILED)
+			return 0;
+		
+		if (munmap(
+			k->btree->mmap, 
+			round_mmap_up(k->btree->size*k->btree->sector_size)) 
+			!= 0)
+		{
+			munmap(tmp, round_mmap_up((k->btree->size+1)*k->btree->sector_size));
+			return errno;
+		}
+		
+		k->btree->mmap = tmp;
+	}
+#endif
 	
 	/* Only now record that we have consumed this space. 
 	 * If we fuck up and don't use this space, it is lost, but that is
