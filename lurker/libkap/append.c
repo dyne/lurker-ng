@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.13 2002-07-12 12:50:36 terpstra Exp $
+/*  $Id: append.c,v 1.14 2002-07-12 12:55:39 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -414,10 +414,10 @@ int kap_append_append(Kap k, KRecord* kr, void* data, size_t len)
 int kap_append_find(
 	Kap		k, 
 	KRecord*	kr,
-	int		(*testfn)(const void* arg, const unsigned char* rec),
+	int		(*testfn)(const void* arg, const void* rec),
 	const void*	arg,
 	ssize_t*	offset,
-	unsigned char*	rec)
+	void*		rec)
 {
 	int out;
 	size_t	l, r, m;

@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.14 2002-07-12 11:42:48 terpstra Exp $
+/*  $Id: kap.h,v 1.15 2002-07-12 12:55:39 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -276,8 +276,8 @@ int	kap_append_append(Kap k, KRecord* kr,
  *  Errors: all kap_append_read() and KAP_NOT_FOUND
  */
 int	kap_append_find(Kap k, KRecord* kr,
-	int (*testfn)(const void* arg, const unsigned char* rec), const void* arg,
-	ssize_t* offset, unsigned char* rec);
+	int (*testfn)(const void* arg, const void* rec), const void* arg,
+	ssize_t* offset, void* rec);
 
 /** Encode the offset information for a KRecord into a buffer 
  * Return number of bytes processed.

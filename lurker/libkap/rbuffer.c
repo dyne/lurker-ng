@@ -1,4 +1,4 @@
-/*  $Id: rbuffer.c,v 1.1 2002-07-11 16:40:46 terpstra Exp $
+/*  $Id: rbuffer.c,v 1.2 2002-07-12 12:55:39 terpstra Exp $
  *  
  *  rbuffer.c - Implements a buffering system that read combines
  *  
@@ -114,7 +114,7 @@
 /* Must be able to store up to LU_BOUNDARY_RECORDS */
 typedef lu_word	my_breader_ptr;
 
-typedef struct My_Breader_Boundary_T
+typedef struct Boundary_T
 {
 	message_id	key;	/* id */
 	message_id	index;
@@ -122,18 +122,18 @@ typedef struct My_Breader_Boundary_T
 	lu_byte		skew;
 	my_breader_ptr	left;
 	my_breader_ptr	right;
-} My_Breader_Boundary;
+} Boundary;
 
-typedef struct My_Breader_Cache_T
+typedef struct Cache_T
 {
 	message_id buffer[LU_PULL_AT_ONCE];
 	message_id offset;
-} My_Breader_Cache;
+} Cache;
 
-typedef struct My_Breader_Record_T
+typedef struct Record_T
 {
-	My_Breader_Cache	cache   [LU_CACHE_RECORDS];
-	My_Breader_Boundary	boundary[LU_BOUNDARY_RECORDS];
+	Cache	cache   [LU_CACHE_RECORDS];
+	Boundary	boundary[LU_BOUNDARY_RECORDS];
 	
 	my_breader_ptr		boundary_usage;
 	my_breader_ptr		boundary_root;
@@ -145,12 +145,15 @@ typedef struct My_Breader_Record_T
 	char			keyword[LU_KEYWORD_LEN+1];
 	int			usage;
 	lu_quad			age;
-} My_Breader_Record;
+} Record;
 
 /*------------------------------------------------ Private global vars */
 
-static My_Breader_Record*   my_breader_records;
-static My_Breader_Boundary* my_breader_table;
+struct Kap_Rbuffer
+{
+	Record*   my_breader_records;
+	Boundary* my_breader_table;
+};
 
 /*------------------------------------------------ Private helper methods */
 
@@ -172,12 +175,12 @@ LU_BTREE_DEFINE(
 	breader, 
 	my_breader_ptr, 
 	MY_BREADER_PTR_MAX,
-	My_Breader_Boundary,
+	Boundary,
 	my_breader_table,
 	my_breader_compare)
 
 static int my_breader_fetch_sector(
-	My_Breader_Record* record, 
+	Record* record, 
 	message_id index)
 {
 	message_id	amount;
@@ -277,7 +280,7 @@ static int my_breader_fetch_sector(
 }
 
 static int my_breader_find_which(
-	My_Breader_Record* record,
+	Record* record,
 	message_id offset)
 {
 	int i;
@@ -295,7 +298,7 @@ static int my_breader_find_which(
 }
 
 static int my_breader_read(
-	My_Breader_Record* record, 
+	Record* record, 
 	message_id offset, 
 	message_id count,
 	message_id* out)
@@ -331,7 +334,7 @@ static int my_breader_read(
 }
 
 static int my_breader_find(
-	My_Breader_Record*	record,
+	Record*	record,
 	int			(*test)(void* arg, message_id id),
 	void*			arg,
 	message_id*		offset)
@@ -504,7 +507,7 @@ static int my_breader_find(
 }
 
 static void my_breader_purify_record(
-	My_Breader_Record* record, 
+	Record* record, 
 	const char* keyword)
 {
 	int i;
@@ -523,11 +526,11 @@ static void my_breader_purify_record(
 
 /*------------------------------------------------ Public component methods */
 
-int lu_breader_init()
+int init()
 {
 	int i;
 	
-	my_breader_records = malloc(sizeof(My_Breader_Record)*LU_MAX_HANDLES);
+	my_breader_records = malloc(sizeof(Record)*LU_MAX_HANDLES);
 	if (!my_breader_records)
 	{
 		fputs(("Failed to allocate storage for breader buffers\n"), 
@@ -544,22 +547,22 @@ int lu_breader_init()
 	return 0;
 }
 
-int lu_breader_open()
+int open()
 {
 	return 0;
 }
 
-int lu_breader_sync()
+int sync()
 {
 	return 0;
 }
 
-int lu_breader_close()
+int close()
 {
 	return 0;
 }
 
-int lu_breader_quit()
+int quit()
 {
 	if (my_breader_records)
 	{
@@ -572,7 +575,7 @@ int lu_breader_quit()
 
 /*------------------------------------------------ Public accessor methods */
 
-Lu_Breader_Handle lu_breader_new(
+Lu_Breader_Handle new(
 	const char* keyword)
 {
 	static lu_quad age = 1;
@@ -672,13 +675,13 @@ Lu_Breader_Handle lu_breader_new(
 	return best+1;
 }
 
-int lu_breader_offset(
+int offset(
 	Lu_Breader_Handle	h,
 	int			(*test)(void* arg, message_id id),
 	void*			arg,
 	message_id*		index)
 {
-	My_Breader_Record* record;
+	Record* record;
 	
 	assert (h <= LU_MAX_HANDLES && h > 0);
 	assert (my_breader_records[h-1].usage > 0);
@@ -688,12 +691,12 @@ int lu_breader_offset(
 	return my_breader_find(record, test, arg, index);
 }
 
-int lu_breader_offset_id(
+int offset_id(
 	Lu_Breader_Handle	h,
 	message_id		id,
 	message_id*		index)
 {
-	My_Breader_Record* record;
+	Record* record;
 	
 	assert (h <= LU_MAX_HANDLES && h > 0);
 	assert (my_breader_records[h-1].usage > 0);
@@ -704,10 +707,10 @@ int lu_breader_offset_id(
 	return my_breader_find(record, &my_breader_bounded, &id, index);
 }
 
-message_id lu_breader_records(
+message_id records(
 	Lu_Breader_Handle h)
 {
-	My_Breader_Record* record;
+	Record* record;
 	
 	assert (h <= LU_MAX_HANDLES && h > 0);
 	assert (my_breader_records[h-1].usage > 0);
@@ -717,16 +720,16 @@ message_id lu_breader_records(
 	return record->count;
 }
 
-message_id lu_breader_quick_records(
+message_id quick_records(
 	const char* keyword)
 {
 	return lu_flatfile_records(keyword);
 }
 
-message_id lu_breader_last(
+message_id last(
 	Lu_Breader_Handle h)
 {
-	My_Breader_Record* record;
+	Record* record;
 	
 	assert (h <= LU_MAX_HANDLES && h > 0);
 	assert (my_breader_records[h-1].usage > 0);
@@ -736,13 +739,13 @@ message_id lu_breader_last(
 	return record->last_id;
 }
 
-int lu_breader_read(
+int read(
 	Lu_Breader_Handle h,
 	message_id index,
 	message_id count,
 	message_id* out)
 {
-	My_Breader_Record* record;
+	Record* record;
 	
 	assert (h <= LU_MAX_HANDLES && h > 0);
 	assert (my_breader_records[h-1].usage > 0);
@@ -752,7 +755,7 @@ int lu_breader_read(
 	return my_breader_read(record, index, count, out);
 }
 
-void lu_breader_free(
+void free(
 	Lu_Breader_Handle h)
 {
 	assert (h <= LU_MAX_HANDLES && h > 0);
