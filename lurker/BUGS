@@ -11,4 +11,3 @@ Unfulfilled requirements:
 BUGS:
 	Need a better way to clean cache.
 	Timezones suck. Need to localize times to the browser.
-	Need a manpage; steal mejo's
