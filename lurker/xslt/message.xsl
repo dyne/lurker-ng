@@ -118,7 +118,7 @@
 
 <xsl:template match="message" mode="body">
  <p/><xsl:apply-templates select="server" mode="header"/>
- <p/><h2><a href="../thread/{threading/id}.{$ext}">Thread <xsl:value-of select="subject"/></a></h2>
+ <p/><h2><a href="../thread/{thread}.{$ext}">Thread <xsl:value-of select="subject"/></a></h2>
  
  <p/><xsl:apply-templates select="threading/snippet" mode="snippet"/>
 
@@ -127,31 +127,27 @@
   <col width="1*"/>
   <col width="100%"/>
   <tr>
-   <th align="left">Author:</th>
-   <td>
-    <xsl:choose>
-     <xsl:when test="reply-to"><xsl:apply-templates mode="list" select="reply-to"/></xsl:when>
-     <xsl:when test="from">    <xsl:apply-templates mode="list" select="from"/>    </xsl:when>
-     <xsl:when test="sender">  <xsl:apply-templates mode="list" select="sender"/>  </xsl:when>
-    </xsl:choose>
-   </td>
+   <th valign="top" align="left">Author:</th>
+   <td><xsl:apply-templates mode="list" select="email"/></td>
   </tr>
-  <tr><th align="left">To:</th><td><xsl:apply-templates mode="list" select="to"/></td></tr>
+  <tr><th valign="top" align="left">Date:</th><td><xsl:value-of select="time"/></td></tr>
+
+  <tr><th valign="top" align="left">To:</th><td><xsl:apply-templates mode="list" select="to"/></td></tr>
   <xsl:if test="/message/cc">
-   <tr><th align="left">CC:</th><td><xsl:apply-templates mode="list" select="cc"/></td></tr>
+   <tr><th valign="top" align="left">CC:</th><td><xsl:apply-templates mode="list" select="cc"/></td></tr>
   </xsl:if>
-  <tr><th align="left">Date:</th><td><xsl:value-of select="time"/></td></tr>
+  
   <xsl:if test="threading/inreplyto">
-   <tr><th align="left">In-Reply-To:</th><td><xsl:apply-templates mode="list" select="threading/inreplyto/summary"/></td></tr>
+   <tr><th valign="top" align="left">In-Reply-To:</th><td><xsl:apply-templates mode="list" select="threading/inreplyto/summary"/></td></tr>
   </xsl:if>
   <xsl:if test="threading/replies">
-   <tr><th align="left">Follow-Ups:</th><td><xsl:apply-templates mode="list" select="threading/replies/summary"/></td></tr>
+   <tr><th valign="top" align="left">Follow-Ups:</th><td><xsl:apply-templates mode="list" select="threading/replies/summary"/></td></tr>
   </xsl:if>
   <xsl:if test="threading/prev">
-   <tr><th align="left">Previous in Thread</th><td><xsl:apply-templates mode="list" select="threading/prev/summary"/></td></tr>
+   <tr><th valign="top" align="left">Previous in Thread</th><td><xsl:apply-templates mode="list" select="threading/prev/summary"/></td></tr>
   </xsl:if>
   <xsl:if test="threading/next">
-   <tr><th align="left">Next in Thread</th><td><xsl:apply-templates mode="list" select="threading/next/summary"/></td></tr>
+   <tr><th valign="top" align="left">Next in Thread</th><td><xsl:apply-templates mode="list" select="threading/next/summary"/></td></tr>
   </xsl:if>
  </table>
  

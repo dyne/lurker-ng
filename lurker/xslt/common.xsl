@@ -21,7 +21,7 @@
 </xsl:template>
 
 <xsl:template match="email[@address]" mode="list">
-  <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text></xsl:if>
+  <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text><br/></xsl:if>
   <xsl:apply-templates select="."/>
 </xsl:template>
 
@@ -79,13 +79,13 @@
     <a href="../message/{mid}.{$ext}"><xsl:value-of select="subject"/></a>
    </xsl:if>
   </td>
-  <td><xsl:apply-templates select="email"/></td>
-  <td><xsl:value-of select="time"/></td>
+  <td nowrap="1"><xsl:apply-templates select="email"/></td>
+  <td nowrap="1"><xsl:value-of select="time"/></td>
  </tr>
 </xsl:template>
 
 <xsl:template match="summary" mode="list">
-  <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text></xsl:if>
+  <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text><br/></xsl:if>
   <a href="{mid}.{$ext}">
     <xsl:choose>
       <xsl:when test="email/@name"><xsl:value-of select="email/@name"/></xsl:when>
