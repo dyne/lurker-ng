@@ -114,10 +114,13 @@ table.navigation {
   width: 100%;
   font-size: 80%;
   background-color: #e8e8e8;
+
+/* disabled until mozilla fixes the progressive render bug with images
   border-top: 1px solid #969696;
   border-left: 1px solid #969696;
   border-right: 1px solid #555;
   border-bottom: 1px solid #555;
+*/
 }
 
 table.navigation th {
