@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.22 2002-06-14 11:16:58 terpstra Exp $
+/*  $Id: indexer.c,v 1.23 2002-06-17 12:32:37 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -196,6 +196,8 @@ static int my_indexer_push_address(
 	ADDRESS* address)
 {
 	static char buf[200];
+	
+	if (!address) return 0;
 	
 	if (address->personal)
 	{
@@ -399,20 +401,9 @@ void lu_indexer_message(
 	}
 	
 	/* Now, push keywords for all source addresses */
-	if (body->env->from)
-	{
-		my_indexer_push_address(body->env->from);
-	}
-	
-	if (body->env->sender)
-	{
-		my_indexer_push_address(body->env->sender);
-	}
-	
-	if (body->env->reply_to)
-	{
-		my_indexer_push_address(body->env->sender);
-	}
+	my_indexer_push_address(body->env->from);
+	my_indexer_push_address(body->env->sender);
+	my_indexer_push_address(body->env->reply_to);
 	
 	/* If we have a subject index it as both body and subject */
 	if (body->env->subject)
