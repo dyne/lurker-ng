@@ -1,4 +1,4 @@
-/*  $Id: btree.h,v 1.5 2002-06-07 10:29:19 terpstra Exp $
+/*  $Id: btree.h,v 1.6 2002-06-20 14:31:34 terpstra Exp $
  *  
  *  btree.h - Knows how manage a binary search tree
  *  
@@ -35,6 +35,7 @@
 #define LU_BTREE_RIGHT	2
 
 #define LU_BTREE_ALREADY_THERE	-1
+#define LU_BTREE_NOT_FOUND	-1
 #define LU_BTREE_BALANCE	1
 #define LU_BTREE_OK		0
 
@@ -51,10 +52,12 @@
  *   TABLE   -> the base table pointer of type STRUCT
  *   COMPARE -> a strcmp style compare method
  *
- * This will create the method: 
+ * This will create the methods: 
  *   RECTYPE lu_btree_PREFIX_insert(RECTYPE root, RECTYPE recno)
  *     -> you must have already set TABLE[recno].key to an appropriate value.
  *     -> INVALID if already in tree, the new root else (ok)
+ *   RECTYPE lu_btree_PREFIX_remove(RECTYPE root, RECTYPE recno)
+ *     -> INVALID if not in tree, the new root else (ok)
  */
 
 #define LU_BTREE_DEFINE(PREFIX, RECTYPE, INVALID, STRUCT, TABLE, COMPARE) \
@@ -395,4 +398,125 @@ inline int my_btree_##PREFIX##_right_shrunk(RECTYPE* n) \
 		assert(0); \
 		return -1; /* unreached */ \
 	} \
+} \
+\
+inline int my_btree_##PREFIX##_kill_largest(RECTYPE* n, RECTYPE* w) \
+{ \
+	int tmp; \
+	\
+	assert (*n != INVALID); \
+	\
+	if (TABLE[*n].right != INVALID) \
+	{ \
+		if ((tmp = my_btree_##PREFIX##_kill_largest( \
+			&TABLE[*n].right, w)) == LU_BTREE_BALANCE) \
+		{ \
+			return my_btree_##PREFIX##_right_shrunk(n); \
+		} \
+		return tmp; \
+	} \
+	\
+	*w = *n; \
+	*n = TABLE[*n].left; \
+	\
+	return LU_BTREE_BALANCE; \
+} \
+\
+inline int my_btree_##PREFIX##_kill_smallest(RECTYPE* n, RECTYPE* w) \
+{ \
+	int tmp; \
+	\
+	assert (*n != INVALID); \
+	\
+	if (TABLE[*n].left != INVALID) \
+	{ \
+		if ((tmp = my_btree_##PREFIX##_kill_smallest( \
+			&TABLE[*n].left, w)) == LU_BTREE_BALANCE) \
+		{ \
+			return my_btree_##PREFIX##_left_shrunk(n); \
+		} \
+		return tmp; \
+	} \
+	\
+	*w = *n; \
+	*n = TABLE[*n].right; \
+	\
+	return LU_BTREE_BALANCE; \
+} \
+\
+static int my_btree_##PREFIX##_rmv(RECTYPE* n, RECTYPE victim) \
+{ \
+	int dir, tmp; \
+	\
+	if (*n == INVALID) \
+	{ \
+		return LU_BTREE_NOT_FOUND; \
+	} \
+	\
+	dir = COMPARE(TABLE[*n].key, TABLE[victim].key); \
+	\
+	if (dir < 0) \
+	{ \
+		if ((tmp = my_btree_##PREFIX##_rmv( \
+			&TABLE[*n].left, victim)) == LU_BTREE_BALANCE) \
+		{ \
+			return my_btree_##PREFIX##_left_shrunk(n); \
+		} \
+		return tmp; \
+	} \
+	\
+	if (dir > 0) \
+	{ \
+		if ((tmp = my_btree_##PREFIX##_rmv( \
+			&TABLE[*n].right, victim)) == LU_BTREE_BALANCE) \
+		{ \
+			return my_btree_##PREFIX##_right_shrunk(n); \
+		} \
+		return tmp; \
+	} \
+	\
+	assert (*n == victim); \
+	\
+	if (TABLE[*n].left != INVALID) \
+	{ \
+		RECTYPE tn; \
+		int tmp = my_btree_##PREFIX##_kill_largest( \
+			&TABLE[*n].left, &tn); \
+		\
+		*n = tn; \
+		TABLE[tn].left  = TABLE[*n].left; \
+		TABLE[tn].right = TABLE[*n].right; \
+		TABLE[tn].skew  = TABLE[*n].skew; \
+		\
+		if (tmp == LU_BTREE_BALANCE) \
+			return my_btree_##PREFIX##_left_shrunk(n); \
+		return tmp; \
+	} \
+	\
+	if (TABLE[*n].right != INVALID) \
+	{ \
+		RECTYPE tn; \
+		int tmp = my_btree_##PREFIX##_kill_smallest( \
+			&TABLE[*n].right, &tn); \
+		\
+		*n = tn; \
+		TABLE[tn].left  = TABLE[*n].left; \
+		TABLE[tn].right = TABLE[*n].right; \
+		TABLE[tn].skew  = TABLE[*n].skew; \
+		\
+		if (tmp == LU_BTREE_BALANCE) \
+			return my_btree_##PREFIX##_right_shrunk(n); \
+		return tmp; \
+	} \
+	\
+	*n = INVALID; \
+	return LU_BTREE_BALANCE; \
+} \
+\
+static RECTYPE lu_btree_##PREFIX##_remove(RECTYPE root, RECTYPE recno) \
+{ \
+	if (my_btree_##PREFIX##_rmv(&root, recno) == LU_BTREE_NOT_FOUND) \
+		return INVALID; \
+	\
+	return root; \
 }
