@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.28 2002-07-11 23:53:32 terpstra Exp $
+/*  $Id: indexer.c,v 1.29 2002-07-12 13:34:04 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -262,7 +262,7 @@ static int my_indexer_dump_words(
 		lu_config_keyword,
 		my_indexer_buf[where].key, 
 		&id,
-		sizeof(message_id));
+		1);
 #endif
 	
 	if (my_indexer_dump_words(my_indexer_buf[where].right, id) != 0)
