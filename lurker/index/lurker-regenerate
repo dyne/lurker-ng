@@ -1,0 +1,26 @@
+#! /bin/sh -e
+# Expects: <lurker-index> <config file>
+
+idx="$1"
+cfg="$2"
+
+if ! test -x $idx; then echo Cannot execute indexer; exit 1; fi
+if ! test -f $cfg; then echo Cannot read config; exit 1; fi
+
+dbdir=`grep "[ 	]*dbdir" $cfg | cut -d= -f2`
+dbdir=`echo $dbdir`
+
+cd $dbdir
+
+test -d || mkdir tmp
+cd tmp
+mv ../* .
+rm -f db.* db
+
+for l in *; do
+  echo Reindexing $l
+  $idx -c $cfg -l $l -v -b 5 < $l
+done
+
+cd ..
+rm -rf tmp
