@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.37 2004-08-24 16:18:07 terpstra Exp $
+/*  $Id: message.cpp,v 1.38 2004-08-24 21:52:39 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -728,15 +728,15 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
-	Summary& thread_prev = thread.getSummary(thread.prev(spot));
-	Summary& thread_next = thread.getSummary(thread.next(spot));
+	Summary thread_prev;
+	Summary thread_next;
 	
-	if ((!thread_prev.loaded() && (ok = thread_prev.load(db, cfg)) != "") ||
-	    (!thread_next.loaded() && (ok = thread_next.load(db, cfg)) != ""))
+	if ((ok = thread.findprev(spot, db, cfg, thread_prev)) != "" ||
+	    (ok = thread.findnext(spot, db, cfg, thread_next)) != "")
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database message prev/next load failure"), ok,
+		cout << error(_("Thread prev/next load failure"), ok,
 			_("Something internal to the database failed. "
 			  "Please contact the lurker user mailing list for "
 			  "further assistence."));

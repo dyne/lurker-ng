@@ -29,6 +29,7 @@
  all-langs="Any language"
  missing-lang=" - missing in lang.xml"
  offline=" (offline)"
+ deleted-message="deleted message"
  search="Search"
 
  jump-to-date="Jump to those messages within this mailing list which are nearest to the following date:"
@@ -67,6 +68,8 @@
  nov="November"
  dec="December"
 
+ unknown-address="Unknown"
+ deleted-name="Deleted"
  posted-at=" at "
  admin-by="administrated by "
  version="version "

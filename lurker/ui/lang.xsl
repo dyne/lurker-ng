@@ -39,6 +39,7 @@
 <xsl:variable name="all-langs" select="document($langfile)/text/@all-langs"/>
 <xsl:variable name="missing-lang" select="document($langfile)/text/@missing-lang"/>
 <xsl:variable name="offline" select="document($langfile)/text/@offline"/>
+<xsl:variable name="deleted-message" select="document($langfile)/text/@deleted-message"/>
 <xsl:variable name="search" select="document($langfile)/text/@search"/>
 
 <xsl:variable name="jump-to-date" select="document($langfile)/text/@jump-to-date"/>
@@ -78,6 +79,7 @@
 <xsl:variable name="dec" select="document($langfile)/text/@dec"/>
 
 <xsl:variable name="unknown-address" select="document($langfile)/text/@unknown-address"/>
+<xsl:variable name="deleted-name" select="document($langfile)/text/@deleted-name"/>
 <xsl:variable name="posted-at" select="document($langfile)/text/@posted-at"/>
 <xsl:variable name="admin-by" select="document($langfile)/text/@admin-by"/>
 <xsl:variable name="version" select="document($langfile)/text/@version"/>

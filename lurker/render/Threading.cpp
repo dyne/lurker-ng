@@ -1,4 +1,4 @@
-/*  $Id: Threading.cpp,v 1.12 2004-01-06 20:02:05 terpstra Exp $
+/*  $Id: Threading.cpp,v 1.13 2004-08-24 21:52:39 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -492,4 +492,57 @@ void Threading::draw_snippet_row(ostream& o, int* h, Key row, Key root)
 	Threading::Node* tree = &nodes[0];
 	if (*h == -2) *h = my_service_pick_p(tree, root, nodes.size());
 	my_service_draw_snippet_row(o, tree, h, row, root, nodes.size());
+}
+
+string Threading::findprev(Key m, ESort::Reader* r, const Config& cfg, Summary& s)
+{
+	string ok;
+	
+	Key i = m;
+	while (1)
+	{
+		if (i == 0)
+		{
+			s = nodes[m].summary;
+			return "";
+		}
+		--i;
+		
+		if (!nodes[i].summary.loaded() && 
+		    (ok = nodes[i].summary.load(r, cfg)) != "")
+			return ok;
+		
+		if (!nodes[i].summary.deleted())
+		{
+			s = nodes[i].summary;
+			return "";
+		}
+	}
+}
+
+string Threading::findnext(Key m, ESort::Reader* r, const Config& cfg, Summary& s)
+{
+	string ok;
+	
+	
+	Key i = m;
+	while (1)
+	{
+		++i;
+		if (i == nodes.size())
+		{
+			s = nodes[m].summary;
+			return "";
+		}
+		
+		if (!nodes[i].summary.loaded() && 
+		    (ok = nodes[i].summary.load(r, cfg)) != "")
+			return ok;
+		
+		if (!nodes[i].summary.deleted())
+		{
+			s = nodes[i].summary;
+			return "";
+		}
+	}
 }

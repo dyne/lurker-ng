@@ -16,6 +16,23 @@
 </xsl:template>
 
 <!-- Format a message row -->
+<xsl:template match="row[summary/deleted]" mode="message">
+ <xsl:element name="tr">
+  <xsl:attribute name="class">
+   <xsl:choose>
+    <xsl:when test="(position() mod 2) = 0">row1</xsl:when>
+    <xsl:otherwise>row2</xsl:otherwise>
+   </xsl:choose>
+  </xsl:attribute>
+  <td nowrap="NOWRAP">
+   <a name="{summary/id}"/>
+   <xsl:apply-templates mode="tree" select="tree"/>
+  </td>
+  <td nowrap="NOWRAP"><xsl:value-of select="$deleted-name"/></td>
+  <td nowrap="NOWRAP"><xsl:apply-templates mode="text-date" select="summary"/></td>
+ </xsl:element>
+ <xsl:text>&#10;</xsl:text>
+</xsl:template>
 <xsl:template match="row" mode="message">
  <xsl:element name="tr">
   <xsl:attribute name="onClick">

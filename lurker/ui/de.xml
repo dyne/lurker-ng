@@ -29,6 +29,7 @@
  all-langs="Alle Spachen"
  missing-lang=" - fehlt in lang.xml"
  offline=" (offline)"
+ deleted-message="gelöschte Nachricht"
  search="Suchen"
 
  jump-to-date="Springe zu Nachrichten nahe dem folgenden Datum innerhalb dieser Mailing-List:"
@@ -67,6 +68,8 @@
  nov="November"
  dec="Dezember"
 
+ unknown-address="Unbekant"
+ deleted-name="Gelöscht"
  posted-at=" am "
  admin-by="administriert von "
  version="Version "

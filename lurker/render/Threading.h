@@ -1,4 +1,4 @@
-/*  $Id: Threading.h,v 1.4 2004-01-06 20:02:05 terpstra Exp $
+/*  $Id: Threading.h,v 1.5 2004-08-24 21:52:39 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -72,9 +72,8 @@ class Threading
  	string load(ESort::Reader* r, const Summary& sum, Key& out); // "" = ok
  	
  	Key	size()      const { return nodes.size(); }
- 	Key	root()      const { return 0; }
- 	Key	prev(Key m) const { return (m > 0)              ? m-1 : m; }
- 	Key	next(Key m) const { return (m < nodes.size()-1) ? m+1 : m; }
+ 	string	findprev(Key m, ESort::Reader* r, const Config& cfg, Summary& s);
+ 	string	findnext(Key m, ESort::Reader* r, const Config& cfg, Summary& s);
  	
  	bool hasMessage(string hash) { return hashes.find(hash) != hashes.end(); }
  	

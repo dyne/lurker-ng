@@ -1,4 +1,4 @@
-/*  $Id: Summary.cpp,v 1.1 2004-08-24 16:11:33 terpstra Exp $
+/*  $Id: Summary.cpp,v 1.2 2004-08-24 21:52:39 terpstra Exp $
  *  
  *  Summary.cpp - Helper which can load a message given MessageId
  *  
@@ -61,6 +61,10 @@ string Summary::load(Reader* r, const Config& cfg)
 		// read all the values
 		switch (*k)
 		{
+		case LU_MESSAGE_DELETED:
+			deleted_ = true;
+			break;
+			
 		case LU_MESSAGE_AUTHOR_EMAIL:
 			author_email_ = w->key.substr(1+8+1, string::npos);
 			if (cfg.hide_email)
@@ -177,6 +181,9 @@ ostream& operator << (ostream& o, const Summary& s)
 	o << "<summary>"
 	  << "<id>" << s.id().serialize() << "</id>"
 	  << "<timestamp>" << s.id().timestamp() << "</timestamp>";
+	
+	if (s.deleted())
+		o << "<deleted/>";
 	
 	if (s.subject().length() > 0)
 		o << "<subject>" << xmlEscape << s.subject() << "</subject>";

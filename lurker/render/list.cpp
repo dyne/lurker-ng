@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.8 2004-08-24 16:18:07 terpstra Exp $
+/*  $Id: list.cpp,v 1.9 2004-08-24 21:52:39 terpstra Exp $
  *  
  *  list.cpp - Handle a list/ command
  *  
@@ -73,6 +73,7 @@ int list_load_error(const string& ok)
 // nested types break g++ 2.95
 struct NewTopic
 {
+	bool		valid;
 	Summary		newest;
 	vector<int>	days;
 };
@@ -106,6 +107,7 @@ int handle_list(const Config& cfg, ESort::Reader* db, const string& param)
 		ESort::Backward));
 	
 	string::size_type skip = 1 + list.mbox.length() + 1 + 4;
+	
 	while (order.size() < NUM_TOPICS && topicFinder->advance() != -1)
 	{	// check corrupt
 		if (topicFinder->key.length() != skip + 8) break;
@@ -114,7 +116,7 @@ int handle_list(const Config& cfg, ESort::Reader* db, const string& param)
 		if (topics.find(hash) == topics.end())
 		{
 			order.push_back(hash);
-			topics[hash]; // prep it
+			topics[hash].valid = false; // prep it
 		}
 	}
 	

@@ -92,20 +92,27 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
 <!-- Tree formatting -->
 <xsl:template name="tree-link">
  <xsl:variable name="id" select="@id"/>
- <a href="../message/{$id}.{$ext}">
-  <xsl:element name="img">
-   <xsl:attribute name="src">
-    <xsl:text>../imgs/</xsl:text>
-    <xsl:value-of select="local-name(.)"/>
-    <xsl:text>.png</xsl:text>
-   </xsl:attribute>
-   <xsl:apply-templates mode="post-description-title" select="../../summary[id=$id]"/>
-   <xsl:if test="@selected">
-    <xsl:attribute name="class">selected</xsl:attribute>
-   </xsl:if>
-   <xsl:attribute name="alt">M</xsl:attribute>
-  </xsl:element>
- </a>
+ <xsl:choose>
+  <xsl:when test="../../summary[id=$id]/deleted">
+   <img src="../imgs/{local-name(.)}.png" title="{$deleted-message}" alt="M"/>
+  </xsl:when>
+  <xsl:otherwise>
+   <a href="../message/{$id}.{$ext}">
+    <xsl:element name="img">
+     <xsl:attribute name="src">
+      <xsl:text>../imgs/</xsl:text>
+      <xsl:value-of select="local-name(.)"/>
+      <xsl:text>.png</xsl:text>
+     </xsl:attribute>
+     <xsl:apply-templates mode="post-description-title" select="../../summary[id=$id]"/>
+     <xsl:if test="@selected">
+      <xsl:attribute name="class">selected</xsl:attribute>
+     </xsl:if>
+     <xsl:attribute name="alt">M</xsl:attribute>
+    </xsl:element>
+   </a>
+  </xsl:otherwise>
+ </xsl:choose>
 </xsl:template>
 <xsl:template mode="tree" match="a"><img alt="." src="../imgs/a.png"/></xsl:template>
 <xsl:template mode="tree" match="b"><img alt="|" src="../imgs/b.png"/></xsl:template>

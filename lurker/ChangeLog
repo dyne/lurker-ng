@@ -30,6 +30,8 @@ v1.2:
 	Removed all use of KeyReader in favour of Search (handles deletion)
 	Added a lurker-search command which can delete messages
 	Added a '-p' option to lurker-prune which kills off all cache
+	Hacks all over the place to make deleted messages never appear
+	Allow empty files to be included in the config file
 
 v1.1:
 	Create mbox and attach directory upon install

@@ -1,4 +1,4 @@
-/*  $Id: Keys.h,v 1.12 2004-08-20 14:09:20 terpstra Exp $
+/*  $Id: Keys.h,v 1.13 2004-08-24 21:52:39 terpstra Exp $
  *  
  *  Keys.h - What prefixs various database keys
  *  
@@ -38,6 +38,7 @@ using std::vector;
 #define LU_CACHE	"c"
 #define LU_NEW_TOPICS	"n"
 
+#define LU_MESSAGE_DELETED	'd'
 #define LU_MESSAGE_AUTHOR_EMAIL	'e'
 #define LU_MESSAGE_AUTHOR_NAME	'n'
 #define LU_MESSAGE_SUBJECT	's'
@@ -91,9 +92,9 @@ vector<string> extract_message_ids(const char* str);
  * Summary:
  *  LU_SUMMARY
  *  message_id
- *  AUTHOR_EMAIL/AUTHOR_NAME/SUBJECT/MBOX
+ *  DELETED/AUTHOR_EMAIL/AUTHOR_NAME/SUBJECT/MBOX
  *  ... if it has any of these then it must have all of them, in that order
- *  For all except the MBOX, one has just a string value.
+ *  For all except the MBOX+DELETED, one has just a string value.
  *  For Mbox:
  *   <mailbox-as-string> '\0' <64bit offset> <32bit length>
  *
