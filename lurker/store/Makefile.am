@@ -7,5 +7,4 @@ sbin_PROGRAMS = @PACKAGE@d
 	config.c db.c \
 	main.c globals.h records.h
 
-@PACKAGE@d_LDFLAGS = @STORAGE_LIBS@
-@PACKAGE@d_LDADD = ../common/libcommon.a
+@PACKAGE@d_LDADD = @STORAGE_LIBS@ ../common/libcommon.a

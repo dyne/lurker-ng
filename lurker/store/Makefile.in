@@ -83,8 +83,7 @@ sbin_PROGRAMS = @PACKAGE@d
 	main.c globals.h records.h
 
 
-@PACKAGE@d_LDFLAGS = @STORAGE_LIBS@
-@PACKAGE@d_LDADD = ../common/libcommon.a
+@PACKAGE@d_LDADD = @STORAGE_LIBS@ ../common/libcommon.a
 subdir = store
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/config.h
@@ -96,6 +95,7 @@ am_@PACKAGE@d_OBJECTS = keyword.$(OBJEXT) config.$(OBJEXT) db.$(OBJEXT) \
 	main.$(OBJEXT)
 @PACKAGE@d_OBJECTS = $(am_@PACKAGE@d_OBJECTS)
 @PACKAGE@d_DEPENDENCIES = ../common/libcommon.a
+@PACKAGE@d_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/common
