@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.1.1.1 2002-01-21 00:03:06 terpstra Exp $
+/*  $Id: main.c,v 1.2 2002-02-04 01:37:21 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/un.h>
+#include <sys/socket.h>
 
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
@@ -50,6 +52,7 @@
 #include <libxslt/transform.h>
 #include <libxslt/xsltutils.h>
 
+FILE* lu_server_link;
 
 static const char not_found[] =
 "<html>\r\n"
@@ -194,6 +197,10 @@ int main(int argc, char* argv[])
 	char	buf[4096];
 	int	got;
 	
+	int			sun_fd;
+	struct sockaddr_un	sun_addr;
+	int			sun_len;
+	
 	/* What URL are we rendering? */
 	if ((uri = getenv("REQUEST_URI")) == 0)
 	{
@@ -206,6 +213,79 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	uri = strdup(uri);
+	
+	/* Try to connect to the server */
+	if ((sun_fd = socket(PF_UNIX, SOCK_STREAM, 0)) == -1)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Unable to connect to server", 
+			"opening socket",
+			strerror(errno));
+		return 1;
+	}
+	
+	memset(&sun_addr, 0, sizeof(sun_addr));
+	sun_addr.sun_family = PF_UNIX;
+	strcpy(&sun_addr.sun_path[0], PACKAGE ".sock");
+	sun_len = sizeof(sun_addr.sun_family) + strlen(&sun_addr.sun_path[0]) + 1;
+	
+	if (getcwd(&buf[0], sizeof(buf)) == 0)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Saving location of cgi", 
+			"getcwd",
+			strerror(errno));
+		return 1;
+	}
+	
+	/*!!! use some parameter to the cgi instead */\
+	if (chdir(DBDIR) != 0)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Unable to connect to server", 
+			"chdir",
+			strerror(errno));
+		return 1;
+	}
+	
+	if (connect(sun_fd, (struct sockaddr*)&sun_addr, sun_len) != 0)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Unable to connect to server", 
+			"connect",
+			strerror(errno));
+		return 1;
+	}
+	
+	if (chdir(&buf[0]) != 0)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Restoring location of cgi", 
+			"chdir",
+			strerror(errno));
+		return 1;
+	}
+	
+	if ((lu_server_link = fdopen(sun_fd, "w+")) == 0)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Unable to connect to server", 
+			"fdopen",
+			strerror(errno));
+		return 1;
+	}
 	
 	/* First, decode the URI - kill %XX values */
 	w = r = uri;

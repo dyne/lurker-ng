@@ -14,4 +14,4 @@ dist_www_DATA = .htaccess
 	tindex.c \
 	main.c
 
-@PACKAGE@_cgi_LDFLAGS = @RENDER_LIBS@
+@PACKAGE@_cgi_LDADD = @RENDER_LIBS@ ../common/libcommon.a

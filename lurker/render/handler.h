@@ -1,4 +1,4 @@
-/*  $Id: handler.h,v 1.1.1.1 2002-01-21 00:03:06 terpstra Exp $
+/*  $Id: handler.h,v 1.2 2002-02-04 01:37:21 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -23,6 +23,8 @@
  */
 
 #include <stdio.h>
+
+extern FILE* lu_server_link;
 
 extern FILE* lu_render_open(const char* parameter);
 extern int   lu_render_close(FILE* f);
