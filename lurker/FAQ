@@ -1,9 +1,18 @@
+Why are all my dates off by a fixed hour / don't use "From " header?
 Why shouldn't I open the lurker mboxs with a mail reader?
 I run postfix and lurker doesn't import any new email; why?
 Why not store all the messages as XML instead of rendering them as it?
 How can I delete a mailing list?
 
 ---
+
+Q: Why are all my dates off by a fixed hour / don't use "From " header?
+
+A: The computer which imports mail should be in the same timezone as the
+   computer which archived the mail. This is because mailbox timestamp
+   envelopes are generated in local time. You can set your local timezone
+   for the purposes of indexing with the TZ environment variable.
+
 
 Q: Why shouldn't I open the lurker mboxs with a mail reader?
 
