@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.14 2002-07-04 13:04:47 terpstra Exp $
+/*  $Id: btree.c,v 1.15 2002-07-04 18:34:50 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -159,8 +159,7 @@ static int READ_SECTOR(struct Kap_Btree* k, off_t sector, void* buf)
 		return -1;
 	}
 	
-	if (read(k->fd, buf, k->sector_size) !=
-	    k->sector_size)
+	if (kap_read_full(k->fd, buf, k->sector_size) != 0)
 	{
 		if (errno == 0) errno = EINTR;
 		return -1;
@@ -178,8 +177,7 @@ static int WRITE_SECTOR(struct Kap_Btree* k, off_t sector, void* buf)
 		return -1;
 	}
 	
-	if (write(k->fd, buf, k->sector_size) !=
-	    k->sector_size)
+	if (kap_write_full(k->fd, buf, k->sector_size) != 0)
 	{
 		if (errno == 0) errno = EINTR;
 		return -1;
@@ -192,37 +190,18 @@ static int WRITE_SECTOR(struct Kap_Btree* k, off_t sector, void* buf)
 
 /***************************************** Decoder methods */
 
-static void decode_offset(const unsigned char* where, off_t* out, short len)
-{
-	*out = 0;
-	while (len)
-	{
-		*out <<= 8;
-		*out |= where[--len];
-	}
-}
-
-static void encode_offset(unsigned char* where, off_t rec, short len)
-{
-	while (len--)
-	{
-		*where++ = rec;
-		rec >>= 8;
-	}
-}
-
 /* The header is always 46 bytes */
 static void encode_header(Kap k, unsigned char* scan)
 {
 	memcpy(scan, LIBKAP_BTREE_HEAD, LIBKAP_BTREE_HEAD_LEN);
 	scan += LIBKAP_BTREE_HEAD_LEN;
 	
-	encode_offset(scan, k->btree->sector_size,  4); scan += 4;
-	encode_offset(scan, k->btree->max_key_size, 4); scan += 4;
-	encode_offset(scan, k->btree->leaf_size,    4); scan += 4;
-	encode_offset(scan, k->btree->tree_size,    1); scan += 1;
-	encode_offset(scan, k->btree->size,         8); scan += 8;
-	encode_offset(scan, k->btree->root,         8); scan += 8;
+	kap_encode_offset(scan, k->btree->sector_size,  4); scan += 4;
+	kap_encode_offset(scan, k->btree->max_key_size, 4); scan += 4;
+	kap_encode_offset(scan, k->btree->leaf_size,    4); scan += 4;
+	kap_encode_offset(scan, k->btree->tree_size,    1); scan += 1;
+	kap_encode_offset(scan, k->btree->size,         8); scan += 8;
+	kap_encode_offset(scan, k->btree->root,         8); scan += 8;
 }
 
 /* The header is always 46 bytes */
@@ -234,20 +213,20 @@ static int decode_header(Kap k, unsigned char* scan)
 		return KAP_BTREE_CORRUPT;
 	scan += LIBKAP_BTREE_HEAD_LEN;
 	
-	decode_offset(scan, &tmp, 4); scan += 4;
+	kap_decode_offset(scan, &tmp, 4); scan += 4;
 	if (k->btree->sector_size != tmp) return KAP_WRONG_SECTOR_SIZE;
 		
-	decode_offset(scan, &tmp, 4); scan += 4;
+	kap_decode_offset(scan, &tmp, 4); scan += 4;
 	if (k->btree->max_key_size != tmp) return KAP_WRONG_MAX_KEY_SIZE;
 	
-	decode_offset(scan, &tmp, 1); scan += 4;
+	kap_decode_offset(scan, &tmp, 1); scan += 4;
 	if (k->btree->leaf_size != tmp) return KAP_WRONG_LEAF_SIZE;
 	
-	decode_offset(scan, &tmp, 1); scan += 1;
+	kap_decode_offset(scan, &tmp, 1); scan += 1;
 	if (k->btree->tree_size != tmp) return KAP_WRONG_TREE_SIZE;
 	
-	decode_offset(scan, &k->btree->size, 8); scan += 8;
-	decode_offset(scan, &k->btree->root, 8); scan += 8;
+	kap_decode_offset(scan, &k->btree->size, 8); scan += 8;
+	kap_decode_offset(scan, &k->btree->root, 8); scan += 8;
 	
 	if (k->btree->root >= k->btree->size)
 		return KAP_BTREE_CORRUPT;
@@ -421,7 +400,11 @@ int kap_btree_open(Kap k, const char* dir, const char* prefix)
 #endif
 	
 	if (!k->btree) return 0;
-	if (k->btree->fd != -1) return KAP_ALREADY_OPEN;
+	if (k->btree->fd != -1)
+	{
+		out = KAP_ALREADY_OPEN;
+		goto kap_btree_open_error0;
+	}
 	
 	k->btree->secta = malloc(k->btree->sector_size);
 	k->btree->sectb = malloc(k->btree->sector_size);
@@ -430,7 +413,10 @@ int kap_btree_open(Kap k, const char* dir, const char* prefix)
 	
 	if (!k->btree->secta || !k->btree->sectb || !k->btree->sectc ||
 		!k->btree->scratch)
-		return ENOMEM;
+	{
+		out = ENOMEM;
+		goto kap_btree_open_error1;
+	}
 	
 	snprintf(&buf[0], sizeof(buf),
 		"%s/%s.btree", dir, prefix);
@@ -439,14 +425,26 @@ int kap_btree_open(Kap k, const char* dir, const char* prefix)
 		O_BINARY | O_RDWR | O_CREAT,
 		S_IREAD | S_IWRITE);
 	if (k->btree->fd == -1)
-		return errno;
+	{
+		if (errno)	out = errno;
+		else		out = ENOENT;
+		goto kap_btree_open_error1;
+	}
+	
+	if (kap_lock(k->btree->fd))
+	{
+		if (errno)	out = errno;
+		else		out = EBUSY;
+		goto kap_btree_open_error2;
+	}
 	
 	block_device = 0;
 #ifdef HAVE_SYS_STAT_H
 	if (fstat(k->btree->fd, &sbuf) != 0)
 	{
-		if (errno) return errno;
-		return EFAULT;
+		if (errno)	out = errno;
+		else		out = ENOENT;
+		goto kap_btree_open_error3;
 	}
 	
 	block_device = S_ISBLK(sbuf.st_mode);
@@ -468,32 +466,35 @@ int kap_btree_open(Kap k, const char* dir, const char* prefix)
 		memset(k->btree->secta, 0, k->btree->sector_size);
 		encode_header(k, k->btree->secta);
 		
-		got = write(k->btree->fd, k->btree->secta, k->btree->sector_size);
-		if (got != k->btree->sector_size)
+		got = kap_write_full(k->btree->fd, k->btree->secta, k->btree->sector_size);
+		if (got != 0)
 		{
-			if (errno)	return errno;
-			else		return KAP_BTREE_CORRUPT;
+			if (errno)	out = errno;
+			else		out = KAP_BTREE_CORRUPT;
+			goto kap_btree_open_error3;
 		}
 		
 		memset(k->btree->secta, 0, k->btree->sector_size);
 		encode_sector_header(k->btree->secta, 1, 0);
 		
-		got = write(k->btree->fd, k->btree->secta, k->btree->sector_size);
-		if (got != k->btree->sector_size)
+		got = kap_write_full(k->btree->fd, k->btree->secta, k->btree->sector_size);
+		if (got != 0)
 		{
-			if (errno)	return errno;
-			else		return KAP_BTREE_CORRUPT;
+			if (errno)	out = errno;
+			else		out = KAP_BTREE_CORRUPT;
+			goto kap_btree_open_error3;
 		}
 	}
 	else if (got == k->btree->sector_size)
 	{
 		out = decode_header(k, k->btree->secta);
-		if (out != 0) return out;
+		if (out != 0) goto kap_btree_open_error3;
 	}
 	else
 	{
-		if (errno) return errno;
-		return KAP_BTREE_CORRUPT;
+		if (errno)	out = errno;
+		else		out = KAP_BTREE_CORRUPT;
+		goto kap_btree_open_error3;
 	}
 	
 #ifdef USE_MMAP
@@ -505,10 +506,30 @@ int kap_btree_open(Kap k, const char* dir, const char* prefix)
 		k->btree->fd, 
 		0);
 	if (k->btree->mmap == MAP_FAILED)
-		return errno;
+	{
+		if (errno)	out = errno;
+		else		out = ENOMEM;
+		goto kap_btree_open_error3;
+	}
 #endif
 	
 	return 0;
+
+kap_btree_open_error3:
+	kap_unlock(k->btree->fd);
+
+kap_btree_open_error2:
+	close(k->btree->fd);
+	k->btree->fd = -1;
+	
+kap_btree_open_error1:
+	if (k->btree->secta)   free(k->btree->secta);   k->btree->secta   = 0;
+	if (k->btree->sectb)   free(k->btree->sectb);   k->btree->sectb   = 0;
+	if (k->btree->sectc)   free(k->btree->sectc);   k->btree->sectc   = 0;
+	if (k->btree->scratch) free(k->btree->scratch); k->btree->scratch = 0;
+	
+kap_btree_open_error0:
+	return out;
 }
 
 int kap_btree_sync(Kap k)
@@ -533,25 +554,30 @@ int kap_btree_sync(Kap k)
 
 int kap_btree_close(Kap k)
 {
-	int out;
+	int out, ret;
 	
-	out = kap_btree_sync(k);
-	if (out != 0) return out;
+	out = 0;
 	
-	if (k->btree->secta) free(k->btree->secta);
-	if (k->btree->sectb) free(k->btree->sectb);
-	if (k->btree->sectc) free(k->btree->sectc);
-	if (k->btree->scratch) free(k->btree->scratch);
+	if ((ret = kap_btree_sync(k)) != 0) out = ret;
+	
+	if (k->btree->secta)   free(k->btree->secta);   k->btree->secta   = 0;
+	if (k->btree->sectb)   free(k->btree->sectb);   k->btree->sectb   = 0;
+	if (k->btree->sectc)   free(k->btree->sectc);   k->btree->sectc   = 0;
+	if (k->btree->scratch) free(k->btree->scratch); k->btree->scratch = 0;
 	
 #ifdef USE_MMAP
 	if (k->btree->mmap != MAP_FAILED)
-		if (munmap(
+		if ((ret = munmap(
 			k->btree->mmap, 
-			round_mmap_up(k->btree->size*k->btree->sector_size)) != 0)
-			return errno;
+			round_mmap_up(k->btree->size*k->btree->sector_size))) != 0)
+			out = ret;
 #endif
 	
-	return close(k->btree->fd);
+	if ((ret = kap_unlock(k->btree->fd)) != 0) out = ret;
+	
+	if ((ret = close(k->btree->fd)) != 0) out = ret;
+	
+	return out;
 }
 
 /***************************************** Allocate more space */
@@ -743,7 +769,7 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	/* Throw in the new key and target the new record */
 	memcpy(off, scan, klen);
 	off += klen;
-	encode_offset(off, *new, k->btree->tree_size);
+	kap_encode_offset(off, *new, k->btree->tree_size);
 	
 	/* Increase the hits in our parent */
 	decode_sector_header(k->btree->secta, &pl, &ph);
@@ -855,7 +881,7 @@ static int travel_down(Kap k, const char* key, off_t x,
 		}
 		
 		/* Pull the chid off disk */
-		decode_offset(ptr, &child, k->btree->tree_size);
+		kap_decode_offset(ptr, &child, k->btree->tree_size);
 		ptr += k->btree->tree_size;
 		if (READ_SECTOR(k->btree, child, k->btree->sectb) != 0)
 			return errno;
@@ -1046,7 +1072,7 @@ int kap_btree_op(Kap k, const char* key,
 		encode_sector_header(k->btree->secta, 0, 0);
 		
 		w = k->btree->secta + SECTOR_HEADER_SIZE;
-		encode_offset(w, root, k->btree->tree_size);
+		kap_encode_offset(w, root, k->btree->tree_size);
 		w += k->btree->tree_size;
 		
 		/* Split the old root. We will need to obey this functions
