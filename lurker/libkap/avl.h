@@ -1,4 +1,4 @@
-/*  $Id: avl.h,v 1.1 2002-07-04 18:37:29 terpstra Exp $
+/*  $Id: avl.h,v 1.2 2002-07-09 22:42:45 terpstra Exp $
  *  
  *  avl.h - Manage a AVL search tree
  *  
@@ -8,18 +8,19 @@
  *  
  *  Authors: 'Wesley W. Terpstra' <wesley@terpstra.ca>
  *  
- *    This program is free software; you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; version 2.1.
+ *    This library is free software; you can redistribute it and/or
+ *    modify it under the terms of the GNU Lesser General Public
+ *    License as published by the Free Software Foundation;
+ *    version 2 of the License.
  *    
- *    This program is distributed in the hope that it will be useful,
+ *    This library is distributed in the hope that it will be useful,
  *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *    Lesser General Public License for more details.
  *    
- *    You should have received a copy of the GNU General Public License
- *    along with this program; if not, write to the Free Software
- *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *    You should have received a copy of the GNU Lesser General Public
+ *    License along with this library; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
  */
 
 /* This is just a collection of macros that can be dumped on top of any type

@@ -1,6 +1,6 @@
-/*  $Id: private.h,v 1.6 2002-07-09 20:15:23 terpstra Exp $
+/*  $Id: private.h,v 1.7 2002-07-09 22:42:45 terpstra Exp $
  *  
- *  kap.h - Public interface to the kap database
+ *  private.h - Private internal interfaces for libkap
  *  
  *  Copyright (C) 2002 - Wesley W. Terpstra
  *  
@@ -10,7 +10,7 @@
  *  
  *    This library is free software; you can redistribute it and/or
  *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation; either
+ *    License as published by the Free Software Foundation;
  *    version 2 of the License.
  *    
  *    This library is distributed in the hope that it will be useful,

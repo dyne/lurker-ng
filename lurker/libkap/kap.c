@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.7 2002-07-09 20:46:57 terpstra Exp $
+/*  $Id: kap.c,v 1.8 2002-07-09 22:42:45 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -10,7 +10,7 @@
  *  
  *    This library is free software; you can redistribute it and/or
  *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation; either
+ *    License as published by the Free Software Foundation;
  *    version 2 of the License.
  *    
  *    This library is distributed in the hope that it will be useful,

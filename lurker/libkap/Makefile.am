@@ -12,9 +12,16 @@ kapmake_LDADD = libkap.a
 kapdump_SOURCES = kapdump.c
 kapdump_LDADD = libkap.a
 
-tests:	test-append test-btree test-full profile
+tests:	test-append test-btree test-full test-avl profile
+	./test-avl
+	./test-btree
+	./test-append
+	cat *.c *.cc *.h | ./test-full
 
 test-append: test-append.cc libkap.a
+	g++ -Wall -O2 -g $< libkap.a -o $@
+
+test-avl: test-avl.cc libkap.a
 	g++ -Wall -O2 -g $< libkap.a -o $@
 
 test-btree: test-btree.cc libkap.a
@@ -27,5 +34,5 @@ profile: profile.cc libkap.a
 	g++ -Wall -O2 -g $< libkap.a -o $@
 
 clean-local:
-	rm -f test-append test-btree test-full profile
+	rm -f test-append test-btree test-full test-avl profile
 	rm -f *.btree *.append
