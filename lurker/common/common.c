@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.9 2002-02-25 06:10:37 terpstra Exp $
+/*  $Id: common.c,v 1.10 2002-02-25 07:03:50 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -238,6 +238,19 @@ static char* my_common_base64(
 const char* lu_common_charset_maps(
 	const char* charset)
 {
+	if (	(charset[0] == 'k' || charset[0] == 'K') &&
+		(charset[1] == 's' || charset[1] == 'S') &&
+		(charset[2] == '_') &&
+		(charset[3] == 'c' || charset[3] == 'C') &&
+		(charset[4] == '_') &&
+		(charset[5] == '5') &&
+		(charset[6] == '6') &&
+		(charset[7] == '0') &&
+		(charset[8] == '1'))
+	{
+		return "euc-kr";
+	}
+	
 	return charset;
 }
 
