@@ -1,4 +1,4 @@
-.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-list.1,v 1.4 2004-08-19 14:52:29 terpstra Exp $
+.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-list.1,v 1.5 2004-08-24 16:06:30 terpstra Exp $
 .\"
 .\"	transcript compatibility for postscript use.
 .\"
@@ -56,7 +56,7 @@
 lurker\-list \(em parses lists from the config file 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker\-list\fR [\-c <config-file>]  [\-i \-g \-t \-a \-l \-d]  [listid ...]  
+\fBlurker\-list\fR [\-c <config-file>]  [\-i \-g \-t \-a \-l \-d \-s \-o]  [listid ...]  
 .SH "DESCRIPTION" 
 .PP 
 \fBlurker\-list\fR outputs various lurker settings 
@@ -80,9 +80,13 @@ Output only the email address
 Output only the url link 
 .IP "\fB\-d\fP" 10 
 Output only the description 
+.IP "\fB\-s\fP" 10 
+Output only the language 
+.IP "\fB\-o\fP" 10 
+Output only the offline status 
 .SH "SEE ALSO" 
 .PP 
-lurker\-index(1), lurker\-prune(1), lurker\-params(1) 
+lurker\-index(1), lurker\-prune(1), lurker\-params(1), lurker\-search(1) 
 .PP 
 lurker documentation on http://lurker.sourceforge.net/ 
 .SH "COPYRIGHT" 
@@ -112,4 +116,4 @@ Before reporting a bug, please confirm that the bug you found is
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
 <lurker\-users@lists.sourceforge.net>. 
-.\" created by instant / docbook-to-man, Mon 16 Aug 2004, 00:58 
+.\" created by instant / docbook-to-man, Mon 23 Aug 2004, 18:11 

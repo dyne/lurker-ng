@@ -57,7 +57,7 @@ lurker-params.1: lurker-params.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg>\-c &lt;config-file&gt;</arg>
-      <arg>\-d \-a \-n \-e \-x \-m \-i \-w \-h</arg>
+      <arg>\-d \-a \-n \-e \-x \-m \-i \-w \-h \-r</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -131,12 +131,18 @@ lurker-params.1: lurker-params.sgml
           <para>Output only the hide_email state</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term><option>\-r</option></term>
+        <listitem>
+          <para>Output only the raw_email state</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
   <refsect1>
     <title>SEE ALSO</title>
     
-    <para>lurker\-index(1), lurker\-prune(1), lurker\-list(1)</para>
+    <para>lurker\-index(1), lurker\-prune(1), lurker\-list(1), lurker\-search(1)</para>
     <para>lurker documentation on http://lurker.sourceforge.net/</para>
 
   </refsect1>

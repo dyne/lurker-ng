@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.6 2003-07-01 15:49:04 terpstra Exp $
+/*  $Id: list.cpp,v 1.7 2004-08-24 16:06:30 terpstra Exp $
  *  
  *  list.cpp - Parse the config file for helper scripts
  *  
@@ -38,7 +38,7 @@ void help(const char* name)
 {
 	cerr << "Lurker-list (v" << VERSION << ") parses lists from the config file.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> [-i -g -t -a -l -d] [listid ...]\n";
+	cerr << "Usage: " << name << " -c <config-file> [-i -g -t -a -l -d -s -o] [listid ...]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-i               Output only the list id\n";
@@ -47,6 +47,8 @@ void help(const char* name)
 	cerr << "\t-a               Output only the email address\n";
 	cerr << "\t-l               Output only the url link\n";
 	cerr << "\t-d               Output only the description\n";
+	cerr << "\t-s               Output only the language\n";
+	cerr << "\t-o               Output only the offline status\n";
 	cerr << "\n";
 	cerr << "Output various lurker settings from the config file for use in shell scripts.\n";
 	cerr << "Do not use sed/grep/etc, instead use this as it respects include.\n";
@@ -57,16 +59,18 @@ int main(int argc, char** argv)
 {
 	int c;
 	
-	const char* config  = 0;
-	int         fields  = 0;
-	bool        ids     = false;
-	bool        group   = false;
-	bool        title   = false;
-	bool        address = false;
-	bool        link    = false;
-	bool        desc    = false;
+	const char* config   = 0;
+	int         fields   = 0;
+	bool        ids      = false;
+	bool        group    = false;
+	bool        title    = false;
+	bool        address  = false;
+	bool        link     = false;
+	bool        desc     = false;
+	bool        language = false;
+	bool        offline  = false;
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:igtald?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:igtaldso?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -96,6 +100,14 @@ int main(int argc, char** argv)
 		case 'd':
 			++fields;
 			desc = true;
+			break;
+		case 's':
+			++fields;
+			language = true;
+			break;
+		case 'o':
+			++fields;
+			offline = true;
 			break;
 		default:
 			help(argv[0]);
@@ -150,6 +162,8 @@ int main(int argc, char** argv)
 		if (!fields || address) cout << o->address     << "\n";
 		if (!fields || link)    cout << o->link        << "\n";
 		if (!fields || desc)    cout << o->description << "\n";
+		if (!fields || language)cout << o->language    << "\n";
+		if (!fields || offline) cout << (o->offline?"true\n":"false\n");
 	}
 	
 	return 0;

@@ -57,7 +57,7 @@ lurker-list.1: lurker-list.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg>\-c &lt;config-file&gt;</arg>
-      <arg>\-i \-g \-t \-a \-l \-d</arg>
+      <arg>\-i \-g \-t \-a \-l \-d \-s \-o</arg>
       <arg>listid ...</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
@@ -117,12 +117,24 @@ lurker-list.1: lurker-list.sgml
           <para>Output only the description</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term><option>\-s</option></term>
+        <listitem>
+          <para>Output only the language</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>\-o</option></term>
+        <listitem>
+          <para>Output only the offline status</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
   <refsect1>
     <title>SEE ALSO</title>
     
-    <para>lurker\-index(1), lurker\-prune(1), lurker\-params(1)</para>
+    <para>lurker\-index(1), lurker\-prune(1), lurker\-params(1), lurker\-search(1)</para>
     <para>lurker documentation on http://lurker.sourceforge.net/</para>
 
   </refsect1>
