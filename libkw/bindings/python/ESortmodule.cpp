@@ -464,6 +464,11 @@ initESort(void)
 	m = Py_InitModule3("ESort", ESort_methods,
 		"Module gateway for C++ ESort library.");
 	
+	PyModule_AddIntConstant(m, "FORWARD",  1);
+	PyModule_AddIntConstant(m, "Forward",  1);
+	PyModule_AddIntConstant(m, "BACKWARD", 2);
+	PyModule_AddIntConstant(m, "Backward", 2);
+	
 	Py_INCREF(ESortError);
 	PyModule_AddObject(m, "error", ESortError);		
 	Py_INCREF(&WalkerType);
