@@ -85,7 +85,6 @@ dist_www_DATA = .htaccess
 	thread.c \
 	message.c \
 	mindex.c \
-	tindex.c \
 	main.c \
 	splash.c
 
@@ -99,8 +98,8 @@ www_PROGRAMS = @PACKAGE@.cgi$(EXEEXT)
 PROGRAMS = $(www_PROGRAMS)
 
 am_@PACKAGE@_cgi_OBJECTS = search.$(OBJEXT) thread.$(OBJEXT) \
-	message.$(OBJEXT) mindex.$(OBJEXT) tindex.$(OBJEXT) \
-	main.$(OBJEXT) splash.$(OBJEXT)
+	message.$(OBJEXT) mindex.$(OBJEXT) main.$(OBJEXT) \
+	splash.$(OBJEXT)
 @PACKAGE@_cgi_OBJECTS = $(am_@PACKAGE@_cgi_OBJECTS)
 @PACKAGE@_cgi_DEPENDENCIES = ../common/libcommon.a
 @PACKAGE@_cgi_LDFLAGS =
@@ -113,8 +112,7 @@ LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
 @AMDEP_TRUE@DEP_FILES = $(DEPDIR)/main.Po $(DEPDIR)/message.Po \
 @AMDEP_TRUE@	$(DEPDIR)/mindex.Po $(DEPDIR)/search.Po \
-@AMDEP_TRUE@	$(DEPDIR)/splash.Po $(DEPDIR)/thread.Po \
-@AMDEP_TRUE@	$(DEPDIR)/tindex.Po
+@AMDEP_TRUE@	$(DEPDIR)/splash.Po $(DEPDIR)/thread.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -176,7 +174,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/search.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/splash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/thread.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/tindex.Po@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)

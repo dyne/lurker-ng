@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.7 2002-02-12 07:40:43 terpstra Exp $
+/*  $Id: main.c,v 1.8 2002-02-22 00:53:11 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -443,7 +443,6 @@ int main(int argc, char* argv[])
 	if      (!strcmp(module, "message")) handler = &lu_message_handler;
 	else if (!strcmp(module, "thread" )) handler = &lu_thread_handler;
 	else if (!strcmp(module, "mindex" )) handler = &lu_mindex_handler;
-	else if (!strcmp(module, "tindex" )) handler = &lu_tindex_handler;
 	else if (!strcmp(module, "search" )) handler = &lu_search_handler;
 	else if (!strcmp(module, "splash" )) handler = &lu_splash_handler;
 	else

@@ -11,7 +11,6 @@ dist_www_DATA = .htaccess
 	thread.c \
 	message.c \
 	mindex.c \
-	tindex.c \
 	main.c \
 	splash.c
 
