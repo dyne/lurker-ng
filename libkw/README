@@ -1,0 +1,23 @@
+--- placeholder ---
+
+What is ESort? -- An Online External Sort
+ 
+ESort provides a very primitive database API: An insert-only set of keys.
+ 
+There are very different trade-offs when compared with a standard database.
+
+N = number of keys in the set, M = number of operations
+The seeks needed to for each repeated operation in one transaction:
+
+                   ESort           BTree            Hash
+Insertion          O(1)            O(M*log(N))      O(M)
+Read in sequence   O(1)            O(M)             impossible
+Seek to key        O(M*log^2(N))   O(M*log(N))      O(M)
+Delete             impossible      O(M*log(N))      O(M)
+
+From this table, one can conclude that ESort allows blindly fast insertion
+and sequential read, but pays in the cost to seek. This is what makes it
+highly appropriate for keyword indexes.
+
+An additional restriction is that ESort only supports a single-writer.
+An additional advantage is that ESort readers get snap-shots.
