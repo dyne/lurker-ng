@@ -1,4 +1,4 @@
-/*  $Id: Cache.cpp,v 1.3 2003-05-06 14:32:34 terpstra Exp $
+/*  $Id: Cache.cpp,v 1.4 2003-05-18 12:36:50 terpstra Exp $
  *  
  *  Cache.h - Helper which transforms xml -> html and caches files
  *  
@@ -138,7 +138,7 @@ Cache::Cache(const Config& cfg, const string& command, const string& parameter)
 			exit(1);
 		}
 		
-		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout <<	"Content-Type: text/html; charset=UTF-8\r\n\r\n";
 	}
 	else if (ext == "txt")
 	{
@@ -147,7 +147,7 @@ Cache::Cache(const Config& cfg, const string& command, const string& parameter)
 	}
 	else
 	{
-		cout <<	"Content-Type: text/xml\r\n\r\n";
+		cout <<	"Content-Type: text/xml; charset=UTF-8\r\n\r\n";
 		output = cache;
 	}
 	

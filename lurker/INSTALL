@@ -105,7 +105,7 @@ Quick start
 
 	AddType text/xml .xsl
 	AddType text/xml .xml
-	AddDefaultCharset utf-8
+	AddDefaultCharset UTF-8
 	ErrorDocument 404 /cgi-bin/lurker.cgi?../lurker.conf?../htdocs
 
 

@@ -19,6 +19,7 @@ v0.8:
 	Improved the man pages with helpful information
 	Include a subject for emails without one
 	Fixed title display bug
+	Include UTF-8 as charset in response Content-Type
 
 v0.7:
 	Made VERSION controlled by one place: configure.ac
