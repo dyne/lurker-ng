@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.26 2002-08-11 16:19:24 terpstra Exp $
+/*  $Id: main.c,v 1.27 2002-08-16 19:08:12 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -190,6 +190,9 @@ int main(int argc, char* argv[])
 	int	stdoutfd = 1;
 	int	fd;
 	int	got;
+	char	timebuf[100];
+	time_t	now;
+	struct tm* tm;
 	
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -320,8 +323,6 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 	
-	printf("Status: 200 OK\r\n");
-	
 	/* Send the server the request */
 	fprintf(lu_server_link, "%s\n%s\n%s\n%s\n", &cwd[0], mod, qs, ext);
 	fflush(lu_server_link);
@@ -335,22 +336,33 @@ int main(int argc, char* argv[])
 	
 	if (strlen(type) > 1) type[strlen(type)-1] = 0;
 	
+	now = time(0);
+	tm = gmtime(&now);
+	strftime(&timebuf[0], sizeof(timebuf),
+		"%a, %d %b %Y %H:%M:%S GMT", tm);
+	
+	printf("Status: 200 OK\r\n");
+	printf("Date: %s\r\n", &timebuf[0]);
+	printf("Last-Modified: %s\r\n", &timebuf[0]);
+	
 	/* Print out the correct content-type */
 	if (!strcmp(type, "text/xml"))
 	{
 		if (strcmp(ext, "xml"))
 		{
-			printf("Content-type: text/html\r\n\r\n");
+			printf("Content-Type: text/html; charset=utf-8\r\n");
 		}
 		else
 		{
-			printf("Content-type: text/xml\r\n\r\n");
+			printf("Content-Type: text/xml; charset=utf-8\r\n");
 		}
 	}
 	else
 	{
-		printf("Content-type: %s\r\n\r\n", type);
+		printf("Content-Type: %s\r\n", type);
 	}
+	
+	printf("\r\n");
 	fflush(stdout);
 	
 	/* Redirect stdout to cache file */
