@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.1 2003-05-16 12:31:51 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.2 2003-05-16 12:47:14 terpstra Exp $
  *  
  *  mindex.cpp - Cleanup after a mindex/ command
  *  
@@ -86,7 +86,7 @@ void PTable::calc_mindex(KSI ks)
 	string listn(query, 0, at);
 	string ids(query, at+1, string::npos);
 	
-	MessageId id(ids.c_str() + 8);
+	MessageId id(ids.c_str());
 	if (id.timestamp() == 0)
 	{
 		ks->second.kill = true; // shouldn't be in here
