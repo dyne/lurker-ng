@@ -1,4 +1,4 @@
-/*  $Id: Threading.cpp,v 1.5 2003-04-26 12:10:14 terpstra Exp $
+/*  $Id: Threading.cpp,v 1.6 2003-06-08 16:56:50 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -317,10 +317,12 @@ int my_service_draw_snippet(
 	Threading::Node* tree,
 	int p, 
 	int row,
-	string& out)
+	string& out,
+	int num)
 {
 	int col;
 	int c;
+	bool dangle_reply = false;
 	
 	col = tree[p].column = tree[p].consumed;
 	
@@ -332,12 +334,22 @@ int my_service_draw_snippet(
 		for (c = tree[p].replyor_first; c != -1; c = tree[c].replyor_next)
 		{
 			tree[c].consumed = col;
-			col = my_service_draw_snippet(db, tree, c, row+1, out);
+			col = my_service_draw_snippet(db, tree, c, row+1, out, num);
+			if (col == -1) return -1;
+		}
+		
+		if (p+1 < num && tree[p+1].replyee == -1)
+		{ // draw it as though it were a child
+			dangle_reply = true;
+			c = p+1;
+			
+			tree[c].consumed = col;
+			col = my_service_draw_snippet(db, tree, c, row+1, out, num);
 			if (col == -1) return -1;
 		}
 	}
 	
-	if (tree[p].replyor_first == -1 || row >= 3) col++;
+	if ((tree[p].replyor_first == -1 && !dangle_reply) || row >= 3) col++;
 	
 	return col;
 }
@@ -352,6 +364,7 @@ int my_service_pick_p(Threading::Node* tree, int root)
 	else	p = n;
 	
 	if (tree[p].replyee != -1) p = tree[p].replyee;
+	else if (p != 0) p = p - 1; // no in-reply-to, but not root? use prev
 	
 	return p;
 }
@@ -360,7 +373,7 @@ string Threading::draw_snippet(ESort::Reader* db, Key root)
 {
 	Threading::Node* tree = &nodes[0];
 	string out;
-	my_service_draw_snippet(db, tree, my_service_pick_p(tree, root), 0, out);
+	my_service_draw_snippet(db, tree, my_service_pick_p(tree, root), 0, out, nodes.size());
 	return out;
 }
 
@@ -369,7 +382,8 @@ void my_service_draw_snippet_row(
 	Threading::Node*	tree,
 	int* draw_head, 
 	int row,
-	int hl)
+	int hl,
+	int num)
 {
 	int	p;
 	int	c;
@@ -404,6 +418,13 @@ void my_service_draw_snippet_row(
 			else	o << TEE_WSE;
 			col++;
 		}
+		
+		// Check if the next message after p has no in-reply-to
+		if (p+1 < num && tree[p+1].replyee == -1)
+		{ // draw it as though it were a child
+			*draw_head = p+1;
+			draw_head = &tree[p+1].draw_next;
+		}
 	}
 	
 	/* Terminate the list */
@@ -414,5 +435,5 @@ void Threading::draw_snippet_row(ostream& o, int* h, Key row, Key root)
 {
 	Threading::Node* tree = &nodes[0];
 	if (*h == -2) *h = my_service_pick_p(tree, root);
-	my_service_draw_snippet_row(o, tree, h, row, root);
+	my_service_draw_snippet_row(o, tree, h, row, root, nodes.size());
 }
