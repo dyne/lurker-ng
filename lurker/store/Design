@@ -1,14 +1,12 @@
-Current target limits:
-	4 billion messages total -> still fast (<= 0.001s)
-
-The storage component's responsibilities include:
+The storage component's functional I/O requirements include:
 	watching for new messages to index
-	maintaining the keyword database
-	maintaining summary information for messages
-	maintaining summary information for threads
-	maintaining thread joining database
+	maintaining all the databases
 	purging rendered files which have been obsoleted
 	accepting queries from the render component
+
+Current non-functional goals:
+	4 billion messages total -> still fast (<= 0.001s)
+	>100 messages a second on import even when at 1 billion messages
 
 It must support these queries:
 	starting at offset <x> give me the <y> summary blocks for search <z>
@@ -23,3 +21,74 @@ It must support these queries:
 	give me all the summary blocks for messages in thread <x>
 		-> can say 'error, not head, try this: '
 			= we make a symlink
+
+Component diagram:
+
+main--> service ------+-----------\
+  |        |          |           |
+  |        v          v           v
+  +---> summary    breader <-- search
+  |                   |
+  |                   +-----------\
+  |                   |           |
+  |                   v           v
+  +---> indexer -> wbuffer -> flatfile
+  |
+  \---> config
+
+main:
+	Starts up the program
+	Loads the config file
+	Initializes the components
+	Hooks signals for clean shutdown
+	Opens up the service port
+	Fires up st:
+		-> watches mboxes for appends
+			-> adds the summary information for the message
+			-> invokes the indexer on the message
+			-> invokes the summary reply-to resolver
+		-> watches for new connects
+			-> creates a new thread
+			-> watches for requests
+			-> passes them off to the service
+
+service:
+	Receives requests
+	Decides which handler to use
+	Access the appropriate subsystem
+
+summary:
+	Opens the summary databases
+	Syncs the summary databases
+	Provides summary add method
+	Provides summary reply-to resolver
+	Provides retrieval functions for retrieval of summary information
+
+config:
+	Knows how to load the config file
+	Stores the configuration in a global
+	!!! should support config file reloading
+
+flatfile:
+	Knows how to manage the keyword flatfile database
+	Provides a method for append to a keyword record
+	Provides an abstracted read interface
+
+breader:
+	Knows how to use the abstracted read interface for buffered access
+	Provides a method to find the largest record >= it's argument
+
+search:
+	Uses the breader to execute a given search
+
+wbuffer:
+	Implements a buffering system that delays appends to the flatfile
+	Provides a method to flush the whole cache
+	Provides a method to flush a specific word
+	Provides a buffer append method
+
+indexer:
+	Accepts a message
+	Decides what the keywords in the body and subject are
+	Pushes the document to all of them
+	Pushes all the arbirary search words
