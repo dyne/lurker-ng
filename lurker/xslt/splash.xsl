@@ -12,8 +12,15 @@
 <xsl:template match="list">
  <tr>
   <td class="center">
-   <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
-    <xsl:value-of select="email/@name"/></a></td>
+   <xsl:if test="number(messages) > 0">
+    <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
+     <xsl:value-of select="email/@name"/>
+    </a>
+   </xsl:if>
+   <xsl:if test="number(messages) = 0">
+    <xsl:value-of select="email/@name"/>
+   </xsl:if>
+  </td>
   <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
   <xsl:if test="not(description)"><td>--</td></xsl:if>
  </tr>
