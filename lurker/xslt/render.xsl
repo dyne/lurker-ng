@@ -26,17 +26,17 @@
 <xsl:template match="/">
  <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="{$lang}" lang="{$lang}">
   <head>
-   <link rel="stylesheet" href="../fmt/default.css" type="text/css"/>
-   <title>
-    <xsl:apply-templates select="/*/server" mode="title"/> -
-    <xsl:apply-templates mode="title"/>
-   </title>
    <xsl:if test="/redirect/url">
     <meta content="0;URL=../{/redirect/url}.{$ext}" http-equiv="Refresh"/>
    </xsl:if>
    <xsl:if test="/*/server/expires">
     <meta content="{/*/server/expires}" http-equiv="Expires"/>
    </xsl:if>
+   <link rel="stylesheet" href="../fmt/default.css" type="text/css"/>
+   <title>
+    <xsl:apply-templates select="/*/server" mode="title"/> -
+    <xsl:apply-templates mode="title"/>
+   </title>
   </head>
   <body>
    <!-- Server Header -->
