@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.15 2003-05-10 20:08:52 terpstra Exp $
+/*  $Id: main.cpp,v 1.16 2003-05-10 20:58:28 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -51,13 +51,14 @@ off_t          length = 0;
 
 void help(const char* name)
 {
-	cerr << "Lurker-index (v" << VERSION << ") imports messages to the archive.\n";
+	cerr << "Lurker-index (v" << VERSION << ") imports messages into the archive.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> -l <list> (-m | -b <count>) [-v -d -f]\n";
+	cerr << "Usage: " << name << " -c <config-file> -l <list> (-m | -b <count>)\n";
+	cerr << "                        [-v -d -f]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-l <list>        Import messages to the named list\n";
-	cerr << "\t-b <count>       Import a batch of messages; flush every <count>.\n";
+	cerr << "\t-b <count>       Import a batch of messages; flush every count messages\n";
 	cerr << "\t-m               Import a single message\n";
 	cerr << "\t-v               Verbose operation\n";
 	cerr << "\t-d               Drop duplicates per list\n";

@@ -11,19 +11,22 @@ lurker-index.1: lurker-index.sgml
   -->
 
   <!-- Fill in your name for FIRSTNAME and SURNAME. -->
-  <!ENTITY dhfirstname "<firstname>Jonas</firstname>">
-  <!ENTITY dhsurname   "<surname>Meurer</surname>">
+  <!ENTITY dhfirstname "<firstname>Wesley W.</firstname>">
+  <!ENTITY dhsurname   "<surname>Terpstra</surname>">
   <!-- Please adjust the date whenever revising the manpage. -->
-  <!ENTITY dhdate      "<date>June  4, 2002</date>">
+  <!ENTITY dhdate      "<date>May 10, 2003</date>">
   <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
        allowed: see man(7), man(1). -->
   <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
-  <!ENTITY dhemail     "<email>jonas@freesources.org</email>">
-  <!ENTITY dhusername  "Jonas Meurer">
+  <!ENTITY dhemail     "<email>terpstra@users.sourceforge.net</email>">
+  <!ENTITY dhusername  "Wesley W. Terpstra">
+  <!ENTITY odhemail    "<email>jonas@freesources.org</email>">
+  <!ENTITY odhusername "Jonas Meurer">
   <!ENTITY dhucpackage "<refentrytitle>LURKER-INDEX</refentrytitle>">
   <!ENTITY dhpackage   "lurker-index">
 
   <!ENTITY debian      "<productname>Debian</productname>">
+  <!ENTITY lurker      "<productname>lurker</productname>">
   <!ENTITY gnu         "<acronym>GNU</acronym>">
 ]>
 
@@ -50,15 +53,15 @@ lurker-index.1: lurker-index.sgml
   <refnamediv>
     <refname>&dhpackage;</refname>
 
-    <refpurpose>imports messages to the archive</refpurpose>
+    <refpurpose>imports messages into the archive</refpurpose>
   </refnamediv>
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg>-c &lt;config-file&gt;</arg>
       <arg>-l &lt;list&gt;</arg>
+      <arg>-v -d -f</arg>
       <arg>-m | -b &lt;count&gt;</arg>
-      <arg>-v -d</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -67,49 +70,79 @@ lurker-index.1: lurker-index.sgml
     <para><command>&dhpackage;</command> indexes messages from
       standard input and stores them in the lurker database.
       It imports either a single message, or a batch of messages
-      in mbox format. Be aware that if the mbox is not delimited
-      by a valid "From &lt;addr&gt; &lt;date&gt;" line between
-      messages it will be interpretted as a single message with
-      an invalid date.</para>
+      in mbox format. </para>
 
   </refsect1>
   <refsect1>
     <title>OPTIONS</title>
     <variablelist>
       <varlistentry>
-        <term><option>-m</option></term>
-        <listitem>
-          <para>Import a single message</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-v</option></term>
-        <listitem>
-          <para>Verbose operation</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-d</option></term>
-        <listitem>
-          <para>Drop duplicates per list</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
         <term><option>-c config-file</option></term>
         <listitem>
-          <para>Use this config file for lurker settings</para>
+          <para>Use this config file for lurker settings.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-l list</option></term>
+        <term><option>-l listid</option></term>
         <listitem>
-          <para>Import messages to the named list</para>
+          <para>Import messages to the named mailing list. This should match
+          the value in the lurker.conf after the 'list = ' entry.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
         <term><option>-b count</option></term>
         <listitem>
-          <para>Import a batch of messages; flush every count. A good value is 5, can be more depending on your CPU.</para>
+          <para>Import a batch of messages; flush every count messages. A
+          good value for count is 5. In this mode lurker assumes the input
+          is a mailbox delimited by 'From &lt;addr&gt; &lt;date&gt;' lines. 
+          Be aware that if the mbox is not delimited correctly between
+          messages it will be interpretted as a single message with an
+          invalid date. The larger this parameter, the more CPU power lurker
+          needs during import, but the less disk seeks.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-m</option></term>
+        <listitem>
+          <para>Import a single message. In this mode lurker will not
+          interpret 'From ' lines as message delimiters. This helps for when
+          lurker is being fed email directly from the MTA which sometimes
+          does not escape these lines. However, if possible, make your MTA
+          always escape these lines so the generated mbox is valid.  Use
+          this option when fed a single message from an MTA.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-v</option></term>
+        <listitem>
+          <para>Verbose operation. Lurker will output statistics about import
+           speed to assist you in tweaking options for best throughput on
+           your system. It also helps you know how much longer you will have
+           to wait.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-d</option></term>
+        <listitem>
+          <para>Drop duplicates per list. This option will check the
+          database to see if the message has already been imported to a
+          mailing list. Only if it has not been imported will lurker append
+          it to the mailbox. Even without this option lurker does not index
+          a message twice. If an import failed part-way through, you
+          probably want this option to avoid needless replication. However,
+          to generate mailboxes which accurately reflect delivery, leave the
+          option off.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-f</option></term>
+        <listitem>
+          <para>Fast import (but vulnerable to power-failure). This may
+          improve the lifetime of your hard-disk and increase import speed
+          by up to 30%. However, if the power fails during import or shortly
+          thereafter, it is possible you will have a corrupted database. If
+          you use a journaling filesystem, lurker guarantees no corruption
+          when you OMIT this parameter.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -124,8 +157,9 @@ lurker-index.1: lurker-index.sgml
   <refsect1>
     <title>AUTHOR</title>
 
-    <para>This manual page was written by &dhusername; <&dhemail;> for
-      the &debian; system (but may be used by others).  Permission is
+    <para>This manual page was originally written by &odhusername; <&odhemail;> 
+      for the &debian; system. It is now maintained by &dhusername; <&dhemail;>
+      for use within the &lurker; distribution. Permission is
       granted to copy, distribute and/or modify this document under
       the terms of the <acronym>GNU</acronym> Free Documentation
       License, Version 1.1 or any later version published by the Free
