@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.31 2003-07-02 21:39:08 terpstra Exp $
+/*  $Id: message.cpp,v 1.32 2004-01-06 19:42:00 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -73,7 +73,8 @@ void  quote_scan(const unsigned char** s, const unsigned char** e);
 void my_service_mailto(
 	ostream&		o,
 	const char*		buf, 
-	long			len)
+	long			len,
+	const Config&		cfg)
 {
 	const char* s = buf;
 	const char* e = buf+len;
@@ -84,9 +85,19 @@ void my_service_mailto(
 	while (sp = s, ep = e, mailto_scan(us(&sp), us(&ep)), sp)
 	{
 		o << xmlEscape << string(s, sp-s);
-		o << "<mailto>";
-		o << xmlEscape << string(sp, ep-sp);
-		o << "</mailto>";
+		if (cfg.hide_email)
+		{
+			string addr(sp, ep-sp);
+			string::size_type l = addr.find('@');
+			if (l != string::npos) addr.resize(l);
+			o << xmlEscape << addr << "@???";
+		}
+		else
+		{
+			o << "<mailto>";
+			o << xmlEscape << string(sp, ep-sp);
+			o << "</mailto>";
+		}
 		
 		s = ep;
 	}
@@ -97,7 +108,8 @@ void my_service_mailto(
 void my_service_url(
 	ostream&		o,
 	const char*		buf, 
-	long			len)
+	long			len,
+	const Config&		cfg)
 {
 	const char* s = buf;
 	const char* e = buf+len;
@@ -107,7 +119,7 @@ void my_service_url(
 	
 	while (sp = s, ep = e, url_scan(us(&sp), us(&ep)), sp)
 	{
-		my_service_mailto(o, s, sp-s);
+		my_service_mailto(o, s, sp-s, cfg);
 		o << "<url>";
 		o << xmlEscape << string(sp, ep-sp);
 		o << "</url>";
@@ -115,13 +127,14 @@ void my_service_url(
 		s = ep;
 	}
 	
-	my_service_mailto(o, s, e-s);
+	my_service_mailto(o, s, e-s, cfg);
 }
 
 void my_service_pic(
 	ostream&		o,
 	const char*		buf, 
-	long			len)
+	long			len,
+	const Config&		cfg)
 {
 	const char* s = buf;
 	const char* e = buf+len;
@@ -131,21 +144,22 @@ void my_service_pic(
 	
 	while (sp = s, ep = e, art_scan(us(&sp), us(&ep)), sp)
 	{
-		my_service_url(o, s, sp-s);
+		my_service_url(o, s, sp-s, cfg);
 		o << "<art>";
-		my_service_url(o, sp, ep-sp);
+		my_service_url(o, sp, ep-sp, cfg);
 		o << "</art>";
 		
 		s = ep;
 	}
 	
-	my_service_url(o, s, e-s);
+	my_service_url(o, s, e-s, cfg);
 }
 
 void my_service_quote(
 	ostream&		o,
 	const char*		buf, 
-	long			len)
+	long			len,
+	const Config&		cfg)
 {
 	const char* s = buf;
 	const char* e = buf+len;
@@ -155,15 +169,15 @@ void my_service_quote(
 	
 	while (sp = s, ep = e, quote_scan(us(&sp), us(&ep)), sp)
 	{
-		my_service_pic(o, s, sp-s);
+		my_service_pic(o, s, sp-s, cfg);
 		o << "<quote>";
-		my_service_pic(o, sp, ep-sp);
+		my_service_pic(o, sp, ep-sp, cfg);
 		o << "</quote>";
 		
 		s = ep;
 	}
 	
-	my_service_pic(o, s, e-s);
+	my_service_pic(o, s, e-s, cfg);
 }
 
 void find_and_replace(string& target, const string& token, const string& value)
@@ -317,7 +331,7 @@ bool handle_signed_mime(ostream& o, DwEntity& e)
 	return true;
 }
 
-void process_text(ostream& o, bool html, const string& charset, const DwString& out)
+void process_text(ostream& o, bool html, const string& charset, const DwString& out, const Config& cfg)
 {
 	CharsetEscape decode(charset.c_str());
 	string utf8 = decode.write(out.c_str(), out.length());
@@ -335,7 +349,7 @@ void process_text(ostream& o, bool html, const string& charset, const DwString& 
 		start = 0;
 		while ((end = utf8.find('<', start)) != string::npos)
 		{
-			my_service_quote(o, utf8.c_str()+start, end-start);
+			my_service_quote(o, utf8.c_str()+start, end-start, cfg);
 			start = utf8.find('>', end);
 			
 			if (start == string::npos) break;
@@ -344,15 +358,15 @@ void process_text(ostream& o, bool html, const string& charset, const DwString& 
 		
 		// deal with half-open tag at end of input
 		if (start != string::npos)
-			my_service_quote(o, utf8.c_str()+start, utf8.length()-start);
+			my_service_quote(o, utf8.c_str()+start, utf8.length()-start, cfg);
 	}
 	else
 	{
-		my_service_quote(o, utf8.c_str(), utf8.length());
+		my_service_quote(o, utf8.c_str(), utf8.length(), cfg);
 	}
 }
 
-void message_display(ostream& o, DwEntity& e, const string& charset, bool html)
+void message_display(ostream& o, DwEntity& e, const string& charset, bool html, const Config& cfg)
 {
 	// Oldschool pgp usually works by invoking a helper program which
 	// cannot control how the email client then encodes the signed data.
@@ -404,7 +418,7 @@ void message_display(ostream& o, DwEntity& e, const string& charset, bool html)
 		
 		// deal with leading text (substr is copy-free)
 		process_text(o, html, charset,
-			out.substr(pgp_last, pgp_header-pgp_last));
+			out.substr(pgp_last, pgp_header-pgp_last), cfg);
 		
 		bool signOpen = false;
 		if (handle_signed_inline(o, 
@@ -424,7 +438,7 @@ void message_display(ostream& o, DwEntity& e, const string& charset, bool html)
 		{
 			// signed text
 			process_text(o, html, charset,
-				out.substr(pgp_header, pgp_divider-pgp_header));
+				out.substr(pgp_header, pgp_divider-pgp_header), cfg);
 		}
 		
 		if (signOpen)
@@ -434,12 +448,12 @@ void message_display(ostream& o, DwEntity& e, const string& charset, bool html)
 	}
 	// trailing text
 	process_text(o, html, charset,
-		out.substr(pgp_last, out.length()-pgp_last));
+		out.substr(pgp_last, out.length()-pgp_last), cfg);
 }
 
 // this will only output mime information if the dump is false
 void message_build(ostream& o, DwEntity& e, 
-	const string& parentCharset, bool dump, long& x)
+	const string& parentCharset, bool dump, long& x, const Config& cfg)
 {
 	// We are the requested entity.
 	pgp_part = ++x;
@@ -491,7 +505,7 @@ void message_build(ostream& o, DwEntity& e,
 		{
 		case DwMime::kTypeMessage:
 			if (e.Body().Message())
-				message_build(o, *e.Body().Message(), charset, dump, x);
+				message_build(o, *e.Body().Message(), charset, dump, x, cfg);
 			break;
 		
 		case DwMime::kTypeMultipart:
@@ -522,7 +536,7 @@ void message_build(ostream& o, DwEntity& e,
 				if (t.Subtype() != DwMime::kSubtypeAlternative || 
 				    p->Next() == 0 || plain)
 				{	// display all parts, or plain, or last
-					message_build(o, *p, charset, dump, x);
+					message_build(o, *p, charset, dump, x, cfg);
 					
 					// if we printed something, we are done
 					if (t.Subtype() == DwMime::kSubtypeAlternative)
@@ -530,7 +544,7 @@ void message_build(ostream& o, DwEntity& e,
 				}
 				else
 				{
-					message_build(o, *p, charset, false, x);
+					message_build(o, *p, charset, false, x, cfg);
 				}
 				
 				if (signedopen)
@@ -542,19 +556,19 @@ void message_build(ostream& o, DwEntity& e,
 			break;
 		
 		case DwMime::kTypeText:
-			if (dump) message_display(o, e, charset, t.Subtype() == DwMime::kSubtypeHtml);
+			if (dump) message_display(o, e, charset, t.Subtype() == DwMime::kSubtypeHtml, cfg);
 			break;
 		}
 	}
 	else
 	{
-		if (dump) message_display(o, e, charset, false);
+		if (dump) message_display(o, e, charset, false, cfg);
 	}
 	
 	o << "</mime>";
 }
 
-void message_format_address(ostream& o, DwAddress* a, const string& charset)
+void message_format_address(ostream& o, DwAddress* a, const string& charset, const Config& cfg)
 {
 	for (; a != 0; a = a->Next())
 	{
@@ -565,7 +579,7 @@ void message_format_address(ostream& o, DwAddress* a, const string& charset)
 				message_format_address(
 					o, 
 					g->MailboxList().FirstMailbox(), 
-					charset);
+					charset, cfg);
 		}
 		else
 		{
@@ -573,14 +587,14 @@ void message_format_address(ostream& o, DwAddress* a, const string& charset)
 			if (m)
 			{
 				string name = m->FullName().c_str();
-				if (name[0] == '"' && name.length() >= 2)
+				if (name.length() >= 2 && name[0] == '"')
 					name = name.substr(1, name.length()-2);
 				if (name == "")
 					name = m->LocalPart().c_str();
 				
 				// Deal with the horror
 				name = decode_header(name, charset.c_str());
-				if (name.length() > 2 && name[0] == '"')
+				if (name.length() >= 2 && name[0] == '"')
 					name = name.substr(1, name.length()-2);
 				
 				DwString addr = m->LocalPart() + "@" + m->Domain();
@@ -598,7 +612,7 @@ void message_format_address(ostream& o, DwAddress* a, const string& charset)
 				if (name != "")
 					o << " name=\"" << xmlEscape 
 					  << name << "\"";
-				if (addr != "")
+				if (addr != "" && !cfg.hide_email)
 					o << " address=\"" << xmlEscape
 					  << addr.c_str() << "\"";
 				o << "/>";
@@ -883,7 +897,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		message_format_address(
 			cache.o, 
 			message.Headers().To().FirstAddress(),
-			charset);
+			charset, cfg);
 		cache.o	<< "</to>\n";
 	}
 	
@@ -894,7 +908,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		message_format_address(
 			cache.o, 
 			message.Headers().Cc().FirstAddress(),
-			charset);
+			charset, cfg);
 		cache.o	<< "</cc>\n";
 	}
 	
@@ -965,7 +979,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	long aid = 0;
 	// default charset is ISO-8859-1
-	message_build(cache.o, message, "ISO-8859-1", true, aid);
+	message_build(cache.o, message, "ISO-8859-1", true, aid, cfg);
 	
 	cache.o	<< "</message>\n";
 	
