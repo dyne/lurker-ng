@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.8 2002-07-17 10:37:31 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.9 2002-07-17 11:06:58 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -743,7 +743,7 @@ int kap_wbuffer_push(Kap k, const char* keyword, unsigned char* buf)
 		k->wbuffer->count_down = 0;
 		calc_storage(k, 1);
 		
-		if (k->wbuffer->next_sync < 8 * k->wbuffer->num_appends)
+		if (k->wbuffer->next_sync < 32 * k->wbuffer->num_appends)
 			k->wbuffer->next_sync <<= 1;
 	}
 	
