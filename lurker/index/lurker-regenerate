@@ -17,12 +17,12 @@ cd $dbdir
 
 test -d .tmp || mkdir .tmp
 cd .tmp
-mv ../* .
+mv -i ../* .
 rm -f db.* db
 
 for l in *; do
   echo Reindexing $l
-  $idx -c $cfg -l $l -v -b 5 < $l
+  zcat $1 | $idx -c $cfg -l $l -v -b 5
 done
 
 cd ..
