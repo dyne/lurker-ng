@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.24 2002-07-19 16:02:01 terpstra Exp $
+/*  $Id: btree.c,v 1.25 2002-07-19 16:07:12 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -632,7 +632,7 @@ static off_t allocate_cell(Kap k)
 			!= 0)
 		{
 			munmap(tmp, round_mmap_up((k->btree->size+1)*k->btree->sector_size));
-			return errno;
+			return 0;
 		}
 		
 		k->btree->mmap = tmp;
