@@ -1,4 +1,4 @@
-/*  $Id: File.cpp,v 1.3 2003-04-24 23:52:36 terpstra Exp $
+/*  $Id: File.cpp,v 1.4 2003-04-25 10:46:04 terpstra Exp $
  *  
  *  File.cpp - Disk segment for commit'd inserts
  *  
@@ -132,8 +132,93 @@ int FileSource::loadBuf()
 
 unsigned char* FileSource::inverseBuffer()
 {
-	// !!!
-	return 0;
+	unsigned char* target  = new unsigned char[f->p->blockSize()];
+	unsigned char* scratch = new unsigned char[f->p->keySize()];
+	
+	unsigned char* r = buf;
+	unsigned char* w = target + f->p->blockSize();
+	
+	long thisLength, nextLength;	// total key length
+	long thisDup,    nextDup;	// amount in common
+	long thisDelta,  nextDelta;	// amount unique
+	
+	//----------------
+	
+	// teminate the scratch
+	w -= f->p->keyWidth();
+	memset(w, 0, f->p->keyWidth());
+	
+	thisLength = 0;
+	for (unsigned int i = 0; i < f->p->keyWidth(); ++i)
+	{
+		thisLength <<= 8;
+		thisLength += *off;
+		++off;
+	}
+	if (thisLength == 0) return w; // corrupt!
+	thisDup = *off;
+	++off;
+	thisDelta = thisLength - thisDup;
+	if (thisDelta < 0) return w; // corrupt!
+	
+	while (thisLength != 0)
+	{
+		// off points at the unique tail
+		// w point at the last completed record
+		
+		// Read the next record's values
+		nextLength = 0;
+		unsigned char* next = off + thisDelta;
+		for (unsigned int i = 0; i < f->p->keyWidth(); ++i)
+		{
+			nextLength <<= 8;
+			nextLength += *next;
+			++next;
+		}
+		
+		if (nextLength != 0)
+		{
+			nextDup = *next;
+			++next;
+		}
+		else
+		{	// first element has compression 0
+			nextDup = 0;
+		}
+		nextDelta = nextLength - nextDup;
+		
+		// Skip to next cell
+		long wDelta = thisLength - nextDup;
+		unsigned char* tailw = w - wDelta;
+		unsigned char* nextw = tailw - 1 - f->p->keyWidth();
+		
+		// Write out the lengh
+		for (int i = f->p->keyWidth()-1; i >= 0; --i)
+		{
+			nextw[i] = thisLength;
+			thisLength >>= 8;
+		}
+		
+		// We use nextDup for our dup
+		*(tailw-1) = nextDup;
+		
+		// Now, write out the tail
+		memcpy(scratch+thisDup, off, thisDelta);
+		memcpy(tailw, scratch+nextDup, wDelta);
+		
+		// move along
+		thisLength = nextLength;
+		thisDup    = nextDup;
+		thisDelta  = nextDelta;
+		off = next;
+		w = nextw;
+	}
+	
+	delete [] scratch;
+	delete [] buf;
+	buf = target;
+	
+	return w;
 }
 
 int FileSource::advance()
