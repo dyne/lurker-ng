@@ -1,4 +1,4 @@
-/*  $Id: View.h,v 1.4 2003-04-25 14:55:43 terpstra Exp $
+/*  $Id: View.h,v 1.5 2003-05-26 15:41:29 terpstra Exp $
  *  
  *  View.h - Snapshot of commit state
  *  
@@ -50,7 +50,7 @@ class View : public Reader
  	Parameters params;
  	View(const Parameters& p) : params(p) { }
  	
- 	/** Collection of all files open - in decreasing size.
+ 	/** Collection of all files open - in INcreasing size.
  	 */
  	Files	files;
  	
