@@ -1,4 +1,5 @@
 Ideas:
+	Reorder threads by reply-to?
 	More robust detection of 'From ' lines? Too many people screw it up.
 		(Content-Length could help or maybe @ needed in email)
 	Gpg keyring specification for signature checking + faces?
