@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.18 2002-02-12 07:23:55 terpstra Exp $
+/*  $Id: service.c,v 1.19 2002-02-12 09:00:59 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -294,25 +294,27 @@ static int my_service_list(
 	Lu_Config_List* l,
 	message_id msgs)
 {
-	if (my_service_buffer_write(fd, " <list>\n  <id>")     != 0) return -1;
-	if (my_service_write_int(fd, l->id)                    != 0) return -1;
-	if (my_service_buffer_write(fd, "</id>\n  <messages>") != 0) return -1;
-	if (my_service_write_int(fd, msgs)                     != 0) return -1;
-	if (my_service_buffer_write(fd, "</messages>\n")       != 0) return -1;
+	if (my_service_buffer_write(fd, " <list>\n  <id>")       != 0) return -1;
+	if (my_service_write_int(fd, l->id)                      != 0) return -1;
+	if (my_service_buffer_write(fd, "</id>\n  <messages>")   != 0) return -1;
+	if (my_service_write_int(fd, msgs)                       != 0) return -1;
+	if (my_service_buffer_write(fd, "</messages>\n  <email") != 0) return -1;
 	
 	if (l->name)
 	{
-		if (my_service_buffer_write(fd, "  <name>")  != 0) return -1;
+		if (my_service_buffer_write(fd, " name=\"")  != 0) return -1;
 		if (my_service_write_str(fd, l->name)        != 0) return -1;
-		if (my_service_buffer_write(fd, "</name>\n") != 0) return -1;
+		if (my_service_buffer_write(fd, "\"")        != 0) return -1;
 	}
 	
 	if (l->address)
 	{
-		if (my_service_buffer_write(fd, "  <address>")  != 0) return -1;
-		if (my_service_write_str(fd, l->address)        != 0) return -1;
-		if (my_service_buffer_write(fd, "</address>\n") != 0) return -1;
+		if (my_service_buffer_write(fd, " address=\"") != 0) return -1;
+		if (my_service_write_str(fd, l->address)       != 0) return -1;
+		if (my_service_buffer_write(fd, "\"")          != 0) return -1;
 	}
+	
+	if (my_service_buffer_write(fd, "/>\n") != 0) return -1;
 	
 	if (l->description)
 	{
