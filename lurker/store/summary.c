@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.11 2002-02-25 07:55:09 terpstra Exp $
+/*  $Id: summary.c,v 1.12 2002-05-04 04:39:10 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -747,13 +747,13 @@ int lu_summary_write_variable(
 	
 	nulls = 0;
 	have  = 0;
-	while (nulls < 3)
+	while (nulls < 4)
 	{
 		got = read(my_var_fd, &buf[0], sizeof(buf));
 		if (got <= 0) break;
 		e = &buf[got];
 		
-		for (s = w = &buf[0]; w != e && nulls != 3; w++)
+		for (s = w = &buf[0]; w != e && nulls != 4; w++)
 		{
 			if (!*w)
 			{
@@ -763,12 +763,15 @@ int lu_summary_write_variable(
 					switch (nulls)
 					{
 					case 0:
-						write(arg, "   <subject>");
+						write(arg, "   <mid>");
 						break;
 					case 1:
-						write(arg, " name=\"");
+						write(arg, "   <subject>");
 						break;
 					case 2:
+						write(arg, " name=\"");
+						break;
+					case 3:
 						write(arg, " address=\"");
 						break;
 					}
@@ -781,12 +784,15 @@ int lu_summary_write_variable(
 					switch (nulls)
 					{
 					case 0:
-						write(arg, "</subject>\n");
+						write(arg, "</mid>\n");
 						break;
 					case 1:
-						write(arg, "\"");
+						write(arg, "</subject>\n");
 						break;
 					case 2:
+						write(arg, "\"");
+						break;
+					case 3:
 						write(arg, "\"");
 						break;
 					}
@@ -796,7 +802,7 @@ int lu_summary_write_variable(
 				s = w+1;
 				have = 0;
 				
-				if (nulls == 1)
+				if (nulls == 2)
 					write(arg, "   <email");
 			}
 		}
@@ -807,12 +813,15 @@ int lu_summary_write_variable(
 			switch (nulls)
 			{
 			case 0:
-				write(arg, "   <subject>");
+				write(arg, "   <mid>");
 				break;
 			case 1:
-				write(arg, "name=\"");
+				write(arg, "   <subject>");
 				break;
 			case 2:
+				write(arg, "name=\"");
+				break;
+			case 3:
 				write(arg, "address=\"");
 				break;
 			}
@@ -904,6 +913,7 @@ message_id lu_summary_import_message(
 	lu_word mbox, 
 	lu_addr mbox_offset,
 	time_t timestamp, 
+	const char* mmessage_id,
 	const char* subject,
 	const char* author_name,
 	const char* author_email)
@@ -920,7 +930,7 @@ message_id lu_summary_import_message(
 	off_t		sum_off;
 	off_t		var_off;
 	lu_addr		high_bits;
-	size_t		sub_len, aun_len, aue_len;
+	size_t		mid_len, sub_len, aun_len, aue_len;
 	
 	message_id		id;
 	Lu_Summary_Message	sum;
@@ -994,24 +1004,21 @@ message_id lu_summary_import_message(
 		goto lu_summary_import_message_error0;
 	}
 	
-	if (subject)
+	mid_len = strlen(mmessage_id) + 1;
+	if (write(my_summary_variable_fd, mmessage_id, mid_len) != mid_len)
 	{
-		sub_len = strlen(subject) + 1;
-		if (write(my_summary_variable_fd, subject, sub_len) != sub_len)
-		{
-			syslog(LOG_ERR, "Could not write subject to end of variable.flat: %s\n",
-				strerror(errno));
-			goto lu_summary_import_message_error1;
-		}
+		syslog(LOG_ERR, "Could not write message id to end of variable.flat: %s\n",
+			strerror(errno));
+		goto lu_summary_import_message_error1;
 	}
-	else
+	
+	if (!subject) subject = "";
+	sub_len = strlen(subject) + 1;
+	if (write(my_summary_variable_fd, subject, sub_len) != sub_len)
 	{
-		if (write(my_summary_variable_fd, "", 1) != 1)
-		{
-			syslog(LOG_ERR, "Could not write subject to end of variable.flat: %s\n",
-				strerror(errno));
-			goto lu_summary_import_message_error1;
-		}
+		syslog(LOG_ERR, "Could not write subject to end of variable.flat: %s\n",
+			strerror(errno));
+		goto lu_summary_import_message_error1;
 	}
 	
 	aun_len = strlen(author_name) + 1;

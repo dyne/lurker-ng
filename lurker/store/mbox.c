@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.22 2002-05-04 04:26:41 terpstra Exp $
+/*  $Id: mbox.c,v 1.23 2002-05-04 04:39:10 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -407,6 +407,7 @@ static int my_mbox_process_mbox(
 		mbox->id, 
 		mbox->length, 
 		stamp,
+		&message_id  [0],
 		&decode_subj [0], 
 		&author_name [0],
 		&author_email[0]);

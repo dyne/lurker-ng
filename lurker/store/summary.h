@@ -1,4 +1,4 @@
-/*  $Id: summary.h,v 1.3 2002-02-10 21:50:38 terpstra Exp $
+/*  $Id: summary.h,v 1.4 2002-05-04 04:39:10 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -55,9 +55,10 @@ typedef struct Lu_Summary_Message_T
 } Lu_Summary_Message;
 
 /** Message variable length data database - variable.flat
- *   the subject  <null>
- *   author name  <null>
- *   author email <null>
+ *   the messageid <null>
+ *   the subject   <null>
+ *   author name   <null>
+ *   author email  <null>
  */
 
 /** Thread summary info - thread.hash
@@ -147,6 +148,7 @@ extern message_id lu_summary_import_message(
 	lu_word mbox, 
 	lu_addr mbox_offset,
 	time_t timestamp, 
+	const char* message_id,
 	const char* subject,
 	const char* author_name,
 	const char* author_email);

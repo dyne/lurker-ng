@@ -1,4 +1,4 @@
-/*  $Id: expiry.c,v 1.3 2002-05-04 03:36:09 terpstra Exp $
+/*  $Id: expiry.c,v 1.4 2002-05-04 04:39:10 terpstra Exp $
  *  
  *  expiry.c - Record when pages should be destroyed
  *  
@@ -23,7 +23,7 @@
  */
 
 #define _GNU_SOURCE
-#define DEBUG 1
+/* #define DEBUG 1 */
 
 #include "common.h"
 #include "io.h"
