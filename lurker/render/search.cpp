@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.4 2003-04-25 16:38:19 terpstra Exp $
+/*  $Id: search.cpp,v 1.5 2003-04-25 21:54:43 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -175,11 +175,11 @@ string Search::pull(int n, vector<Summary>& o)
 		
 		if (dir == Forward)
 		{
-			if ((ok = advance(big)) != "") return ok;
+			if ((ok = advance(small)) != "") return ok;
 		}
 		else
 		{
-			if ((ok = advance(small)) != "") return ok;
+			if ((ok = advance(big)) != "") return ok;
 		}
 	}
 	
