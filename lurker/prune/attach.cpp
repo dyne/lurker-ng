@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.1 2003-05-14 10:36:13 terpstra Exp $
+/*  $Id: attach.cpp,v 1.2 2003-05-16 12:31:51 terpstra Exp $
  *  
  *  attach.cpp - Cleanup after an attach/ command
  *  
@@ -60,4 +60,7 @@ void PTable::calc_attach(KSI ks)
 			cout << ks->first << ": expired due to no access." << endl;
 		return;
 	}
+	
+	if (verbose)
+		cout << ks->first << ": not expired" << endl;
 }

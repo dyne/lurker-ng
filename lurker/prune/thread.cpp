@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.2 2003-05-14 13:01:03 terpstra Exp $
+/*  $Id: thread.cpp,v 1.3 2003-05-16 12:31:51 terpstra Exp $
  *  
  *  thread.cpp - Cleanup after a thread/ command
  *  
@@ -91,4 +91,7 @@ void PTable::calc_thread(KSI ks)
 			cout << ks->first << ": thread modified." << endl;
 		return;
 	}
+	
+	if (verbose)
+		cout << ks->first << ": not expired" << endl;
 }

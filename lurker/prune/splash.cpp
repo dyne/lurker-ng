@@ -1,4 +1,4 @@
-/*  $Id: splash.cpp,v 1.1 2003-05-14 10:36:13 terpstra Exp $
+/*  $Id: splash.cpp,v 1.2 2003-05-16 12:31:51 terpstra Exp $
  *  
  *  splash.cpp - Cleanup after a splash/ command
  *  
@@ -69,4 +69,7 @@ void PTable::calc_splash(KSI ks)
 			cout << ks->first << ": expired due to no access." << endl;
 		return;
 	}
+	
+	if (verbose)
+		cout << ks->first << ": not expired" << endl;
 }

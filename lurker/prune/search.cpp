@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.1 2003-05-14 10:36:13 terpstra Exp $
+/*  $Id: search.cpp,v 1.2 2003-05-16 12:31:51 terpstra Exp $
  *  
  *  mbox.cpp - Cleanup after an mbox/ command
  *  
@@ -44,6 +44,14 @@ void PTable::calc_search(KSI ks)
 	 *   kill it after a short expiry
 	 */
 	
+	if (ks->second.mtime <= config)
+	{	// die - it's older than the config file
+		ks->second.kill = true;
+		if (verbose)
+			cout << ks->first << ": older than config file." << endl;
+		return;
+	}
+	
 	if (now - ks->second.mtime >= EXPIRE_TIME_CREATION)
 	{
 		ks->second.kill = true;
@@ -51,4 +59,7 @@ void PTable::calc_search(KSI ks)
 			cout << ks->first << ": expired due to maximum age." << endl;
 		return;
 	}
+	
+	if (verbose)
+		cout << ks->first << ": not expired" << endl;
 }

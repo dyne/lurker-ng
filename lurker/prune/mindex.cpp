@@ -1,6 +1,6 @@
-/*  $Id: message.cpp,v 1.3 2003-05-16 12:31:51 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.1 2003-05-16 12:31:51 terpstra Exp $
  *  
- *  message.cpp - Cleanup after a message/ command
+ *  mindex.cpp - Cleanup after a mindex/ command
  *  
  *  Copyright (C) 2002 - Wesley W. Terpstra
  *  
@@ -36,29 +36,18 @@
 
 using namespace std;
 
-void PTable::calc_message(KSI ks)
+void PTable::calc_mindex(KSI ks)
 {
-	/* Messages themselves never change
+	/* Mindex entries use up to 35 records in either direction of the key
 	 *
-	 * ... but messages include:
+	 * ... but mindex include:
 	 *   list info (from config file)
-	 *   thread info
-	 *   next/prev for each mbox info
 	 *
 	 * Policy:
 	 *   kill if obsolete due to above
 	 *   kill if older than a fixed time
 	 *   kill if no recent accesses
 	 */
-	
-	MessageId id(ks->first.c_str() + 8);
-	if (id.timestamp() == 0)
-	{
-		ks->second.kill = true; // shouldn't be in here
-		if (verbose)
-			cout << ks->first << ": not a lurker file." << endl;
-		return;
-	}
 	
 	if (ks->second.mtime <= config)
 	{	// die - it's older than the config file
@@ -84,54 +73,81 @@ void PTable::calc_message(KSI ks)
 		return;
 	}
 	
-	Summary& sum = summaries[id];
-	string tid(subject_hash(sum.subject.c_str()));
-	if (threads.find(tid) != threads.end())
-	{	// die - the thread changed
-		ks->second.kill = true;
+	string query(ks->first, 7, string::npos);
+	string::size_type at = query.find('@');
+	if (at == string::npos)
+	{
+		ks->second.kill = true; // shouldn't be in here
 		if (verbose)
-			cout << ks->first << ": thread modified." << endl;
+			cout << ks->first << ": not a lurker file." << endl;
 		return;
 	}
 	
-	set<string>::const_iterator list;
-	for (list = sum.lists.begin(); list != sum.lists.end(); ++list)
+	string listn(query, 0, at);
+	string ids(query, at+1, string::npos);
+	
+	MessageId id(ids.c_str() + 8);
+	if (id.timestamp() == 0)
 	{
-		const MessageIds& ids = lists[*list];
-		MessageIds::const_iterator self = ids.find(id);
-		if (self == ids.end())
-		{
-			// if it can't find us, then we are not in the range
-			// off messages whose mindex is affected by import
-			continue;
-		}
-		
-		MessageIds::const_iterator next = self; ++next;
-		MessageIds::const_iterator prev = self; --prev;
-		
-		Summaries::const_iterator ns, ps;
-		
-		if (prev != ids.end() && 
-		   (ps = summaries.find(*prev)) != summaries.end() &&
-		   ps->second.changed)
-		{
-			ks->second.kill = true;
-			if (verbose)
-				cout << ks->first << ": previous message changed in '" << *list << "'." << endl;
-			return;
-		}
-		
-		if (next != ids.end() && 
-		   (ns = summaries.find(*next)) != summaries.end() &&
+		ks->second.kill = true; // shouldn't be in here
+		if (verbose)
+			cout << ks->first << ": not a valid timestamp." << endl;
+		return;
+	}
+	
+	if (lists.find(listn) == lists.end())
+	{	// this list has not changed if not pulled
+		if (verbose)
+			cout << ks->first << ": not a modified list." << endl;
+		return;
+	}
+	
+	MessageIds& list = lists[listn];
+	if (list.empty())
+	{
+		if (verbose)
+			cout << ks->first << ": empty list." << endl;
+		return;
+	}
+	
+	MessageIds::const_iterator self = list.lower_bound(id);
+	if (self == list.end())
+	{	// get off the end
+		--self;
+	}
+	
+	int c = 0;
+	for (	MessageIds::const_iterator next = self; 
+		c < 36 && next != list.end();
+		++c, ++next)
+	{
+		Summaries::const_iterator ns;
+		if ((ns = summaries.find(*next)) != summaries.end() &&
 		   ns->second.changed)
 		{
 			ks->second.kill = true;
 			if (verbose)
-				cout << ks->first << ": next message changed in '" << *list << "'." << endl;
+				cout << ks->first << ": succesor messages changed." << endl;
+			return;
+		}
+	}
+	
+	c = 0;
+	for (	MessageIds::const_iterator prev = self; 
+		c < 36 && prev != list.end();
+		++c, --prev)
+	{
+		Summaries::const_iterator ps;
+		if ((ps = summaries.find(*prev)) != summaries.end() &&
+		   ps->second.changed)
+		{
+			ks->second.kill = true;
+			if (verbose)
+				cout << ks->first << ": predecessor messages changed." << endl;
 			return;
 		}
 	}
 	
 	if (verbose)
-		cout << ks->first << ": not expired" << endl;
+		cout << ks->first << ": content unmodified." << endl;
 }

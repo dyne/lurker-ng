@@ -8,6 +8,7 @@ Main lurker-prune :
 	attach.cpp
 	mbox.cpp
 	message.cpp
+	mindex.cpp
 	search.cpp
 	splash.cpp
 	thread.cpp

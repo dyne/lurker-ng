@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.6 2003-05-14 13:01:02 terpstra Exp $
+/*  $Id: PTable.cpp,v 1.7 2003-05-16 12:31:51 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -147,7 +147,7 @@ string PTable::loadSummaries()
 			
 			//!!! could be more careful about corrupt dbs here
 			summaries[id].lists.insert((const char*)(k+1));
-			lists[(const char*)(k+1)];
+			lists[(const char*)(k+1)]; // poke the list table
 			break;
 		
 		default:
@@ -176,7 +176,58 @@ string PTable::loadThreads()
 
 string PTable::loadLists()
 {
-	// !!!
+	MessageId oldest(*newIds.begin());
+	MessageId newest(*--newIds.end());
+	
+	// The goal is to get all the message ids within a list for
+	// the last imported message - 40 to the newest imported message +40.
+	// We load extra messages (over 36) so outliers can be detected.
+	for (Lists::iterator list = lists.begin(); list != lists.end(); ++list)
+	{
+		string pfx = 
+			string(LU_KEYWORD LU_KEYWORD_LIST)
+			+ '\0'
+			+ list->first;
+			
+		auto_ptr<ESort::Walker> forward(
+			reader->seek(pfx, oldest.raw(), ESort::Forward));
+		auto_ptr<ESort::Walker> backward(
+			reader->seek(pfx, oldest.raw(), ESort::Backward));
+		
+		// first walk backwards a few steps
+		for (int backCount = 0; backCount < 40; ++backCount)
+		{
+			if (backward->advance() == -1) break;
+			if (backward->key.length() != pfx.length() + 8)
+				return "corrupt keyword entry";
+			MessageId id(backward->key.c_str() + pfx.length(), 8);
+			list->second.insert(id);
+		}
+		if (errno != 0) return string("Walker::advance:") + strerror(errno);
+		
+		// walk forward till we pass newest
+		int ok;
+		while ((ok = forward->advance()) != -1)
+		{
+			if (forward->key.length() != pfx.length() + 8)
+				return "corrupt keyword entry";
+			MessageId id(forward->key.c_str() + pfx.length(), 8);
+			list->second.insert(id);
+			if (id >= newest) break;
+		}
+		if (ok == -1 && errno != 0) return string("Walker::advance:") + strerror(errno);
+		if (ok == -1) continue;
+		
+		for (int forCount = 0; forCount < 40; ++forCount)
+		{
+			if (forward->advance() == -1) break;
+			if (forward->key.length() != pfx.length() + 8)
+				return "corrupt keyword entry";
+			MessageId id(forward->key.c_str() + pfx.length(), 8);
+			list->second.insert(id);
+		}
+	}
+	
 	return "";
 }
 
@@ -233,7 +284,7 @@ string PTable::calc()
 			if (i->first.substr(0, 6) == "attach" ) calc_attach (i);
 			if (i->first.substr(0, 4) == "mbox"   ) calc_mbox   (i);
 			if (i->first.substr(0, 7) == "message") calc_message(i);
-//			if (i->first.substr(0, 6) == "mindex" ) calc_mindex (i);
+			if (i->first.substr(0, 6) == "mindex" ) calc_mindex (i);
 			if (i->first.substr(0, 6) == "search" ) calc_search (i);
 			if (i->first.substr(0, 6) == "splash" ) calc_splash (i);
 			if (i->first.substr(0, 6) == "thread" ) calc_thread (i);
@@ -261,4 +312,3 @@ string PTable::kill()
 	
 	return "";
 }
-
