@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.6 2002-02-10 21:00:45 terpstra Exp $
+/*  $Id: indexer.c,v 1.7 2002-02-12 06:03:51 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -79,7 +79,7 @@ static int 		my_indexer_dyn_off = 0;
 
 static const char* lu_indexer_mons[12] = { 
 	"jan", "feb", "mar", "apr", "may", "jun", 
-	"jul", "aug", "sep", "oct", "nov", "dev" };
+	"jul", "aug", "sep", "oct", "nov", "dec" };
 
 static const char* lu_indexer_dows[7] = {
 	"sun", "mon", "tue", "wed", "thu", "fri", "sat" };
