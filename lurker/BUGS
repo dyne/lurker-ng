@@ -3,15 +3,21 @@ Ideas:
 	maybe use: message/YYYYMM,email,20chars of subject,goop
 		-- human recognizable
 	secured lists? login required?
+	Maybe manually cache first two levels of btree
+	Maybe manually cache tail of the append layer
 
 Unfulfilled requirements:
 	Better packing of tree
 	XSL support detection
+	Forward backward links within message
+	German pot
 
 BUGS:
+	False search positives
 	Config reloading is broken
 	We no longer support block device operation for append
 	We don't check for double append
+	When mmap() does not fit, speed dies - kernel cache problem
 	
 	Attachments are never cached because we need to tell the browser
 	the content-type and we have no way to record this.
