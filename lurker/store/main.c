@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.15 2002-01-28 08:43:31 terpstra Exp $
+/*  $Id: main.c,v 1.16 2002-01-28 09:17:44 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -46,14 +46,12 @@
 #define openlog(x, y, z)
 #endif
 
-#if defined(HAVE_FCNTL_H) && defined(HAVE_F_GETLK)
+#if defined(HAVE_FLOCK)
+#define USE_LOCK_FLOCK
+#elif defined(HAVE_FCNTL_H) && defined(HAVE_F_GETLK)
 #define USE_LOCK_FCNTL
 #elif defined(HAVE_LOCKF)
 #define USE_LOCK_LOCKF
-#endif
-
-#if defined(HAVE_FLOCK)
-#define USE_LOCK_FLOCK
 #endif
 
 /* Returns 0 on success.
@@ -69,27 +67,18 @@ int lu_lock_mbox(int fd, const char* path)
 	/* leave range as current to eof */
 	
 	if (fcntl(fd, F_SETLK, &lck) == -1)
-		goto lu_lock_mbox_error0;
+		return -1;
 #endif
 
 #if defined(USE_LOCK_FLOCK)
 	if (flock(fd, LOCK_SH) == -1)
-		goto lu_lock_mbox_error1;
+		return -1;
 #elif defined(USE_LOCK_LOCKF)
 	if (lockf(fd, F_TLOCK, 0) == -1)
-		goto lu_lock_mbox_error1;
+		return -1;
 #endif
 	
 	return 0;
-
-lu_lock_mbox_error1:
-#ifdef USE_LOCK_FCNTL
-	lck.l_type = F_UNLCK;
-	fcntl(fd, F_SETLK, &lck);
-#endif
-
-lu_lock_mbox_error0:
-    return -1;
 }
 
 int lu_unlock_mbox(int fd, const char* path)
