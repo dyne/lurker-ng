@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.12 2002-05-03 19:32:21 terpstra Exp $
+/*  $Id: main.c,v 1.13 2002-05-03 19:34:59 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -182,8 +182,8 @@ int main(int argc, char* argv[])
 	
 	ext = strrchr(uri, '.');
 	qs = strrchr(uri, '/');
-	if (qs && ext > qs)	*ext++ = 0;
-	else
+	
+	if (!qs || ext <= qs)
 	{
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0],
@@ -193,9 +193,9 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	
-	*qs = 0;
+	*ext++ = 0;
+	*qs++  = 0;
 	mod = strrchr(uri, '/');
-	*qs = '/';
 	
 	if (!mod)
 	{
@@ -206,6 +206,7 @@ int main(int argc, char* argv[])
 			"Missing the request directory");
 		return 1;
 	}
+	mod++;
 	
 	*qs++ = 0;
 	/* Decode the query string */
