@@ -92,7 +92,7 @@
         <tr>
          <td><b><xsl:value-of select="$list"/></b></td>
          <td>
-          <select name="list" id="listdrop">
+          <select name="list">
            <option value=""><xsl:value-of select="$all-lists"/></option>
            <xsl:apply-templates mode="list-select" select="group/list"/>
           </select>
@@ -103,7 +103,7 @@
          <tr>
           <td><b><xsl:value-of select="$group"/></b></td>
           <td>
-           <select name="group" id="listdrop">
+           <select name="group">
             <option value=""><xsl:value-of select="$all-groups"/></option>
             <xsl:apply-templates mode="group-select" select="group"/>
            </select>
