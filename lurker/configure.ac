@@ -1,11 +1,11 @@
-AC_INIT(lurker, 0.5)
+AC_INIT(lurker, 0.1g)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.42 2003-01-04 20:27:00 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.43 2003-04-14 17:25:19 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
-AM_INIT_AUTOMAKE(lurker, 0.5)
+AM_INIT_AUTOMAKE(lurker, 0.1g)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
