@@ -1,5 +1,7 @@
 Ideas:
 	Sections for mailing lists? Search by section?
+	Include files in config file?
+	Re-add optional lurkerd to match mboxs?
 	Timezones suck. Need to localize times to the browser?
 	Allow control of ascending/descending sort?
 	Maybe make an effort to mangle emails?
@@ -9,6 +11,7 @@ Unfulfilled requirements:
 	New UI
 	New topics
 	in-message forward/backward for search results
+	Multi-level btree style files
 	Message count estimates
 	Boolean "or" in search
 	Phrase searching
