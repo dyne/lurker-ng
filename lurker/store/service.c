@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.68 2002-06-14 11:16:59 terpstra Exp $
+/*  $Id: service.c,v 1.69 2002-06-14 11:59:08 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -727,9 +727,9 @@ static int my_service_dump(
 		syslog(LOG_WARNING, _("Unknown coding: %s\n"), coding);
 		my_service_write_str(h, _("\n*** WARNING: UNKNOWN CHARSET '"));
 		my_service_write_str(h, coding);
-		my_service_write_str(h, _("' FALLING BACK TO ISO-8869-1 ***\n"));
+		my_service_write_str(h, _("' FALLING BACK TO ISO-8859-1 ***\n"));
 		
-		coding = "iso-8869-1";
+		coding = "iso-8859-1";
 		ic = iconv_open("utf-8", coding);
 	}
 	

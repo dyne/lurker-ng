@@ -1,4 +1,4 @@
-/*  $Id: decode.c,v 1.3 2002-06-14 11:16:58 terpstra Exp $
+/*  $Id: decode.c,v 1.4 2002-06-14 11:59:08 terpstra Exp $
  *  
  *  decode.c - decode definitions and types for all tools
  *  
@@ -297,7 +297,7 @@ void lu_decode_header(
 	iconv_t ic;
 	
 	if (!default_coding)
-		default_coding = "iso-8869-1";
+		default_coding = "iso-8859-1";
 	
 	dc = iconv_open("utf-8", default_coding);
 	if (dc == (iconv_t)-1)
