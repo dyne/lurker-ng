@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.5 2002-02-04 07:53:43 terpstra Exp $
+/*  $Id: mbox.c,v 1.6 2002-02-04 23:02:17 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -206,6 +206,7 @@ static void my_mbox_process_mbox(
 			id,
 			m->env->message_id,
 			m->env->in_reply_to);
+		printf("."); fflush(stdout);
 		
 		mail_free(m);
 	}

@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.4 2002-02-04 08:05:31 terpstra Exp $
+/*  $Id: service.c,v 1.5 2002-02-04 23:02:17 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -99,12 +99,23 @@ static int my_service_getmsg(st_netfd_t fd, const char* request)
 		
 		if (list)
 		{
-			strncpy(&out.list_name[0], list->name,
-				sizeof(out.list_name));
-			strncpy(&out.list_address[0], list->address,
-				sizeof(out.list_address));
-			strncpy(&out.list_desc[0], list->description,
-				sizeof(out.list_desc));
+			if (list->name)
+			{
+				strncpy(&out.list_name[0], list->name,
+					sizeof(out.list_name));
+			}
+			
+			if (list->address)
+			{
+				strncpy(&out.list_address[0], list->address,
+					sizeof(out.list_address));
+			}
+			
+			if (list->description)
+			{
+				strncpy(&out.list_desc[0], list->description,
+					sizeof(out.list_desc));
+			}
 			
 			out.list_name   [sizeof(out.list_name   )-1] = 0;
 			out.list_address[sizeof(out.list_address)-1] = 0;
@@ -114,17 +125,20 @@ static int my_service_getmsg(st_netfd_t fd, const char* request)
 		if (mbox)
 		{
 			/* Find the last component of the path */
-			last = scan = mbox->path;
-			for (; *scan; scan++)
+			if (mbox->path)
 			{
-				if (*scan == '/')
+				last = scan = mbox->path;
+				for (; *scan; scan++)
 				{
-					last = scan + 1;
+					if (*scan == '/')
+					{
+						last = scan + 1;
+					}
 				}
+				
+				strncpy(&out.mbox_name[0], last,
+					sizeof(out.mbox_name));
 			}
-			
-			strncpy(&out.mbox_name[0], last,
-				sizeof(out.mbox_name));
 			
 			out.mbox_name[sizeof(out.mbox_name)-1] = 0;
 			
