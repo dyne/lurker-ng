@@ -1,4 +1,4 @@
-/*  $Id: Master.cpp,v 1.11 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: Master.cpp,v 1.12 2003-07-01 13:27:31 terpstra Exp $
  *  
  *  Master.cpp - Coordinate commit+read interface
  *  
@@ -51,7 +51,7 @@ Master::~Master()
 
 int Master::init(const string& db, int mode)
 {
-	if (man.open(view, db, mode) != 0) return -1;
+	if (man.dbopen(view, db, mode) != 0) return -1;
 	
 	return 0;
 }

@@ -1,4 +1,4 @@
-/*  $Id: DbMan.h,v 1.4 2003-05-14 12:24:26 terpstra Exp $
+/*  $Id: DbMan.h,v 1.5 2003-07-01 13:27:31 terpstra Exp $
  *  
  *  DbMan.h - Manage the commit'd segments and parameters
  *  
@@ -65,8 +65,8 @@ class DbMan
  	
  	/** Open the database
  	 */
- 	int open(View& view, const string& db); // ro access
- 	int open(View& view, const string& db, int mode); // rw
+ 	int dbopen(View& view, const string& db); // ro access
+ 	int dbopen(View& view, const string& db, int mode); // rw
  	
  	/** Lock the database for this single writer.
  	 */

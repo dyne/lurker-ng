@@ -1,4 +1,4 @@
-/*  $Id: View.cpp,v 1.12 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: View.cpp,v 1.13 2003-07-01 13:27:31 terpstra Exp $
  *  
  *  View.cpp - Snapshot of commit state
  *  
@@ -167,7 +167,7 @@ auto_ptr<Reader> Reader::open(const string& db, const Parameters& p)
 	
 	auto_ptr<View> out(new View(p));
 	
-	if (man.open(*out.get(), db) != 0)
+	if (man.dbopen(*out.get(), db) != 0)
 		return auto_ptr<Reader>(0);
 	
 	return auto_ptr<Reader>(out);

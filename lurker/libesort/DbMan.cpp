@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.18 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.19 2003-07-01 13:27:31 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -178,7 +178,7 @@ int DbMan::snapshot(View& view)
 	for (std::set<string>::iterator i = ids.begin(); i != ids.end(); ++i)
 	{
 		string name = dbname + "." + *i;
-		int fd = ::open(name.c_str(), O_RDONLY);
+		int fd = open(name.c_str(), O_RDONLY);
 //		std::cout << "opening: " <<  name << ": " << fd << std::endl;
 		if (fd == -1) return -1;
 		view.files.insert(File(*i, fd, &view.params));
@@ -187,7 +187,7 @@ int DbMan::snapshot(View& view)
 	return 0;
 }
 
-int DbMan::open(View& view, const string& db)
+int DbMan::dbopen(View& view, const string& db)
 {
 	assert (dbname == "");
 	
@@ -224,7 +224,7 @@ int DbMan::open(View& view, const string& db)
 	}
 }
 
-int DbMan::open(View& view, const string& db, int mode)
+int DbMan::dbopen(View& view, const string& db, int mode)
 {
 	assert (dbname == "");
 	
@@ -234,13 +234,13 @@ int DbMan::open(View& view, const string& db, int mode)
 	
 	if (lock_database_rw() != 0) return -1;
 	
-	int fd = ::open(dbname.c_str(), O_RDWR | O_CREAT, cmode);
+	int fd = open(dbname.c_str(), O_RDWR | O_CREAT, cmode);
 	if (fd == -1) return -1;
 	dbfile = fdopen(fd, "r+");
 	assert (dbfile != 0);
 	
 	string dirname(dbname, 0, dbname.rfind('/'));
-	dirfd = ::open(dirname.c_str(), O_RDONLY);
+	dirfd = open(dirname.c_str(), O_RDONLY);
 	// ignore the error; some OSes don't allow opening directories
 	
 	// We must lock rw since we may generate it
@@ -317,7 +317,7 @@ int DbMan::lock_database_rw()
 	assert (dbname != "" && dblock == -1);
 	
 	string name = dbname + ".writer";
-	dblock = ::open(name.c_str(), O_RDWR | O_CREAT, cmode);
+	dblock = open(name.c_str(), O_RDWR | O_CREAT, cmode);
 	if (dblock == -1) return -1;
 	
 	return exclusive_file_lock(dblock);
@@ -389,7 +389,7 @@ int DbMan::openNew(string& id)
 	} while (ids.find(ext) != ids.end());
 	
 	string name = dbname + "." + ext;
-	int fd = ::open(name.c_str(), O_RDWR | O_CREAT | O_TRUNC, cmode);
+	int fd = open(name.c_str(), O_RDWR | O_CREAT | O_TRUNC, cmode);
 	
 	id = ext;
 	return fd;
