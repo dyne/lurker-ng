@@ -53,9 +53,9 @@
 <xsl:template match="c"><img src="i/c.png"/></xsl:template>
 <xsl:template match="d"><img src="i/d.png"/></xsl:template>
 <xsl:template match="e"><img src="i/e.png"/></xsl:template>
-<xsl:template match="f"><a href="../message/{../../mid}"><img border="0" src="i/f.png"/></a></xsl:template>
-<xsl:template match="g"><a href="../message/{../../mid}"><img border="0" src="i/g.png"/></a></xsl:template>
-<xsl:template match="h"><a href="../message/{../../mid}"><img border="0" src="i/h.png"/></a></xsl:template>
+<xsl:template match="f"><a href="../message/{../../mid}.{$ext}"><img border="0" src="i/f.png"/></a></xsl:template>
+<xsl:template match="g"><a href="../message/{../../mid}.{$ext}"><img border="0" src="i/g.png"/></a></xsl:template>
+<xsl:template match="h"><a href="../message/{../../mid}.{$ext}"><img border="0" src="i/h.png"/></a></xsl:template>
 
 <xsl:template match="summary">
  <tr>
