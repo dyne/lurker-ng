@@ -10,6 +10,14 @@
 
 archive = Some Mailing List Archive
 
+# You can also localize web viewable strings.
+# The most appropriate will be automatically selected when rendering.
+# Some examples:
+#
+# archive[de] = Einige Mailing-Lists
+# archive[pt] = ...
+# archive[pt-BR] = ...
+
 # The administrative contact information.
 # 
 # This will be displayed at the bottom-right of every page.
