@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.2 2002-02-04 01:37:21 terpstra Exp $
+/*  $Id: main.c,v 1.3 2002-02-10 07:11:51 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -55,12 +55,17 @@
 FILE* lu_server_link;
 
 static const char not_found[] =
+"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
 "<html>\r\n"
 " <head><title>404 Not Found</title></head>\r\n"
-" <body><h1>The page you are looking for could not be found.</h1></body>\r\n"
+" <body><h1>Not Found</h1>\r\n"
+"   The requested URL %s was not found on this server.\r\n"
+"   <p><hr>\r\n"
+" </body>\r\n"
 "</html>\r\n";
 
 const char basic_error[] =
+"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
 "<html>\r\n"
 " <head><title>" PACKAGE " - error rendering page</title></head>\r\n"
 " <body>\r\n"
@@ -69,6 +74,16 @@ const char basic_error[] =
 "  <p><hr>\r\n"
 " </body>\r\n"
 "</html>\r\n";
+
+const char redirect_error[] = 
+"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
+"<html><head>\r\n"
+"<title>301 Moved Permanently</title>\r\n"
+"</head><body>\r\n"
+"<h1>Moved Permanently</h1>\r\n"
+"The document has moved <a href=\"%s\">here</a>.\r\n"
+"<p><hr>\r\n"
+"</body></html>\r\n";
 
 inline int fromhex(char ch)
 {
@@ -186,6 +201,7 @@ static int render_html(const char* parameter)
 int main(int argc, char* argv[])
 {
 	int	html;
+	char*	origuri;
 	char*	uri;
 	char*	suffix;
 	char*	parameter;
@@ -202,7 +218,7 @@ int main(int argc, char* argv[])
 	int			sun_len;
 	
 	/* What URL are we rendering? */
-	if ((uri = getenv("REQUEST_URI")) == 0)
+	if ((origuri = getenv("REQUEST_URI")) == 0)
 	{
 		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
@@ -212,7 +228,7 @@ int main(int argc, char* argv[])
 			"The .htaccess file must be modified");
 		return 1;
 	}
-	uri = strdup(uri);
+	uri = strdup(origuri);
 	
 	/* Try to connect to the server */
 	if ((sun_fd = socket(PF_UNIX, SOCK_STREAM, 0)) == -1)
@@ -318,7 +334,7 @@ int main(int argc, char* argv[])
 	{
 		printf("Status: 404 Not Found\r\n");
 		printf("Content-type: text/html\r\n\r\n");
-		puts(&not_found[0]);
+		printf(&not_found[0], origuri);
 		return 1;
 	}
 	
@@ -328,7 +344,7 @@ int main(int argc, char* argv[])
 	{
 		printf("Status: 404 Not Found\r\n");
 		printf("Content-type: text/html\r\n\r\n");
-		puts(&not_found[0]);
+		printf(&not_found[0], origuri);
 		return 1;
 	}
 	
@@ -345,7 +361,7 @@ int main(int argc, char* argv[])
 	{
 		printf("Status: 404 Not Found\r\n");
 		printf("Content-type: text/html\r\n\r\n");
-		puts(&not_found[0]);
+		printf(&not_found[0], origuri);
 		return 1;
 	}
 	
@@ -362,7 +378,7 @@ int main(int argc, char* argv[])
 	{
 		printf("Status: 404 Not Found\r\n");
 		printf("Content-type: text/html\r\n\r\n");
-		puts(&not_found[0]);
+		printf(&not_found[0], origuri);
 		return 1;
 	}
 	
@@ -375,7 +391,7 @@ int main(int argc, char* argv[])
 	{
 		printf("Status: 404 Not Found\r\n");
 		printf("Content-type: text/html\r\n\r\n");
-		puts(&not_found[0]);
+		printf(&not_found[0], origuri);
 		return 1;
 	}
 	
@@ -435,7 +451,7 @@ int main(int argc, char* argv[])
 		{
 			printf("Status: 404 Not Found\r\n");
 			printf("Content-type: text/html\r\n\r\n");
-			puts(&not_found[0]);
+			printf(&not_found[0], origuri);
 			return 1;
 		}
 	}
@@ -477,7 +493,7 @@ int main(int argc, char* argv[])
 		{
 			printf("Status: 404 Not Found\r\n");
 			printf("Content-type: text/html\r\n\r\n");
-			puts(&not_found[0]);
+			printf(&not_found[0], origuri);
 			return 1;
 		}
 	}

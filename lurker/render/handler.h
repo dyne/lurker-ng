@@ -1,4 +1,4 @@
-/*  $Id: handler.h,v 1.2 2002-02-04 01:37:21 terpstra Exp $
+/*  $Id: handler.h,v 1.3 2002-02-10 07:11:51 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -35,4 +35,6 @@ extern int lu_mindex_handler (char* parameter);
 extern int lu_tindex_handler (char* parameter);
 extern int lu_search_handler (char* parameter);
 
-extern const char basic_error[];
+extern const char basic_error[];    /* %s %s %s */
+extern const char redirect_error[]; /* %s */
+extern const char not_found[];      /* %s */
