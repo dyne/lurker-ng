@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.60 2002-06-05 22:02:41 terpstra Exp $
+/*  $Id: service.c,v 1.61 2002-06-07 10:30:40 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -2239,6 +2239,7 @@ static int my_service_search(
 	int		i;
 	message_id	out;
 	message_id	offset;
+	message_id	predict;
 	const char*	delim;
 	const char*	detail;
 	char*		demux;
@@ -2320,13 +2321,13 @@ static int my_service_search(
 	if (my_service_buffer_write(h, "</offset>\n <query>")  != 0) goto my_service_search_error1;
 	if (my_service_write_str(h, delim)                     != 0) goto my_service_search_error1;
 	if (my_service_buffer_write(h, "</query>\n <queryurl>")!= 0) goto my_service_search_error1;
+	
  	for (demux = (char*)delim; *demux; demux++)
 		if (*demux == '/') *demux = 1;
-	if (my_service_write_url(h, delim)                     != 0) goto my_service_search_error1;
-	if (my_service_buffer_write(h, "</queryurl>\n <hits>") != 0) goto my_service_search_error1;
-	if (my_service_write_int(h, 0)                         != 0) goto my_service_search_error1;
-	if (my_service_buffer_write(h, "</hits>\n")            != 0) goto my_service_search_error1;
-	if (my_service_server(h)                               != 0) goto my_service_search_error1;
+		
+	if (my_service_write_url(h, delim)              != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(h, "</queryurl>\n") != 0) goto my_service_search_error1;
+	if (my_service_server(h)                        != 0) goto my_service_search_error1;
 	
 	if (offset != 0)
 	{
@@ -2365,13 +2366,17 @@ static int my_service_search(
 		if (my_service_buffer_write(h, "</next>\n")          != 0) goto my_service_search_error1;
 	}
 	
-	lu_search_end();
+	lu_search_end(&predict);
+	
+	if (my_service_buffer_write(h, " <hits>")     != 0) goto my_service_search_error0;
+	if (my_service_write_int   (h, predict)       != 0) goto my_service_search_error0;
+	if (my_service_buffer_write(h, "</hits>\n")   != 0) goto my_service_search_error0;
 	if (my_service_buffer_write(h, "</search>\n") != 0) goto my_service_search_error0;
 	
 	return 0;
 
 my_service_search_error1:
-	lu_search_end();
+	lu_search_end(&predict);
 my_service_search_error0:
 	return -1;
 }

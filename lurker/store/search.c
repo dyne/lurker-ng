@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.4 2002-05-29 08:09:54 terpstra Exp $
+/*  $Id: search.c,v 1.5 2002-06-07 10:30:40 terpstra Exp $
  *  
  *  search.h - Uses the breader to execute a given search
  *  
@@ -33,7 +33,46 @@
 #include "breader.h"
 #include "search.h"
 
+#include <st.h>
 #include <ctype.h>
+
+/* Our search algorithm does a simple set intersection on several ordered 
+ * lists. This is done by walking the lists in order. However, the underlying
+ * mechanism will not touch all the intervening records, but instead jumps to 
+ * the correct location. This allows for us to work well even on intersecting
+ * a common word with a rare one.
+ *
+ * To predict the number of hits we use the normal equations solution to the
+ * least squares problem. Although QR might be better, the least squares 
+ * solution is easy to implement and debug. Plus, it's faster and since we
+ * don't expect a great fitting, the QR method would often be a waste.
+ *
+ * That said, here is how we model the system:
+ * x (hit)	y (offset)	
+ * 1		1000
+ * 2		963
+ * 3		500
+ * 4		440
+ * ...
+ *
+ * So, we want to find the best fit line 'ax + b = y' and then predict at 
+ * which value of x the line crosses zero (no more hits).
+ *
+ * Let A = [ x 1 ], c = [ a b ]^T, M = A^T*A, z = A^T*y
+ * Then, we want to solve Mc = z to get our coefficients.
+ *
+ * Note M = [ sum x^2 sum x ], z = [ sum xy ]
+ *          [ sum x   sum 1 ]      [ sum y  ]
+ *
+ * Then M^-1 = [  M11 -M01 ] / (M00*M11 - M10*M01)
+ *             [ -M10  M00 ]
+ *
+ * Unfortunately, we sum from largest to smallest. This means we can't use a 
+ * float to store the value during the summation. However, we can use two
+ * message_ids for accumulation.
+ *
+ * Also, note M01 = M10 because it is symmetric.
+ */
 
 /*------------------------------------------------ Constant parameters */
 
@@ -46,11 +85,19 @@
 static Lu_Breader_Handle	my_search_handle[LU_MAX_TERMS];
 static message_id		my_search_id[LU_MAX_TERMS];
 static int			my_search_handles = 0;
+static st_mutex_t		my_search_mutex;
+
+static message_id	my_search_M00[2];
+static message_id	my_search_M01[2];
+static message_id	my_search_M11[2];
+static message_id	my_search_z0[2];
+static message_id	my_search_z1[2];
 
 /*------------------------------------------------- Public component methods */
 
 int lu_search_init()
 {
+	my_search_mutex = st_mutex_new();
 	return 0;
 }
 
@@ -71,6 +118,7 @@ int lu_search_close()
 
 int lu_search_quit()
 {
+	st_mutex_destroy(my_search_mutex);
 	return 0;
 }
 
@@ -80,9 +128,12 @@ int lu_search_start(
 	const char* keywords,
 	const char** error)
 {
-	char buf[LU_KEYWORD_LEN+1];
-	char* w;
-	char* e;
+	message_id	predict;
+	char		buf[LU_KEYWORD_LEN+1];
+	char*		w;
+	char*		e;
+	
+	st_mutex_lock(my_search_mutex);
 	
 	e = &buf[sizeof(buf)-1];
 	
@@ -127,7 +178,7 @@ int lu_search_start(
 			
 			if (my_search_handle[my_search_handles] == 0)
 			{
-				lu_search_end();
+				lu_search_end(&predict);
 				return -1;
 			}
 			
@@ -206,7 +257,7 @@ int lu_search_result(
 		
 		/* Ok, we know the smallest, largest, and which the largest is */
 		
-		if (lu_breader_offset(
+		if (lu_breader_offset_id(
 			my_search_handle[which], 
 			smallest, 
 			&index) != 0)
@@ -239,7 +290,7 @@ int lu_search_result(
 	return 0;
 }
 
-int lu_search_end()
+int lu_search_end(message_id* predict)
 {
 	int i;
 	
@@ -249,5 +300,8 @@ int lu_search_end()
 	}
 	my_search_handles = 0;
 	
+	st_mutex_unlock(my_search_mutex);
+	
+	*predict = 0;
 	return 0;
 }

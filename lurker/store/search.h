@@ -1,4 +1,4 @@
-/*  $Id: search.h,v 1.3 2002-02-10 23:26:26 terpstra Exp $
+/*  $Id: search.h,v 1.4 2002-06-07 10:30:40 terpstra Exp $
  *  
  *  search.h - Uses the breader to execute a given search
  *  
@@ -50,4 +50,5 @@ extern int lu_search_result(
 
 /* Shutdown the current search.
  */
-extern int lu_search_end();
+extern int lu_search_end(
+	message_id* predict);
