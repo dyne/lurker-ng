@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.5 2002-02-10 09:33:52 terpstra Exp $
+/*  $Id: breader.c,v 1.6 2002-02-10 21:47:26 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -372,7 +372,7 @@ Lu_Breader_Handle lu_breader_new(
 	{	/* Not loaded. Look for the largest aged free one. */
 		best = -1;
 		
-		for (i = 1; i < LU_MAX_HANDLES; i++)
+		for (i = 0; i < LU_MAX_HANDLES; i++)
 		{
 			if (my_breader_records[i].usage == 0 &&
 				(best == -1 || my_breader_records[i].age
