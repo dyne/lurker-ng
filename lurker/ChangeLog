@@ -32,6 +32,7 @@ v1.2:
 	Added a '-p' option to lurker-prune which kills off all cache
 	Hacks all over the place to make deleted messages never appear
 	Allow empty files to be included in the config file
+	Include a fixed version of Silas Jantzen's apache RewriteRule
 
 v1.1:
 	Create mbox and attach directory upon install
