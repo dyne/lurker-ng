@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.33 2002-02-25 09:48:51 terpstra Exp $
+/*  $Id: service.c,v 1.34 2002-02-25 10:08:36 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -236,7 +236,7 @@ static int my_service_write_strl(
 			/* Simply drop control characters: we are outputing
 			 * utf-8; they shouldn't be there.
 			 */
-			if (*buf < 32)
+			if (*buf < 32 && *buf >= 0)
 			{
 				if (my_service_buffer_writel(h, start, buf - start) != 0)
 					return -1;
@@ -457,12 +457,12 @@ static int my_service_dump(
 	{
 		/* Don't know this encoding - just dump the data anyways */
 		syslog(LOG_WARNING, "Unknown coding: %s\n", coding);
-		coding = "iso-8869-1";
-		ic = iconv_open("utf-8", coding);
-		
 		my_service_write_str(h, "\n*** WARNING: UNKNOWN CHARSET '");
 		my_service_write_str(h, coding);
 		my_service_write_str(h, "' FALLING BACK TO ISO-8869-1 ***\n");
+		
+		coding = "iso-8869-1";
+		ic = iconv_open("utf-8", coding);
 	}
 	
 	while (len)
