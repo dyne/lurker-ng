@@ -43,7 +43,7 @@
   </td>
   <td nowrap="NOWRAP" class="clipped">
    <div class="squash">
-    <xsl:apply-templates mode="email-link" select="summary/email"/>
+    <xsl:apply-templates mode="email-name" select="summary/email"/>
    </div>
   </td>
   <td nowrap="NOWRAP" class="chart">
