@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.31 2003-06-26 21:14:24 terpstra Exp $
+/*  $Id: main.cpp,v 1.32 2003-06-26 21:22:42 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -117,7 +117,7 @@ void look_for_from(DwEntity& e)
 		return; // base64 is already fine
 	
 	const DwString& body = e.Body().AsString();
-	if (body.substr(0, 5) != "From " && body.find("\nFrom") == DwString::npos)
+	if (body.substr(0, 5) != "From " && body.find("\nFrom ") == DwString::npos)
 		return; // no From to kill
 	
 	// We have to kill the 'From '. Let's just make it quoted-printable.
@@ -157,7 +157,7 @@ void recursively_kill_from(DwEntity& e)
 	}
 }
 
-int index(const DwString& msg, long batch, bool check, bool compress)
+int index(DwString& msg, long batch, bool check, bool compress)
 {
 //	cout << msg.c_str() << endl;
 	static int count = 0;
@@ -172,6 +172,7 @@ int index(const DwString& msg, long batch, bool check, bool compress)
 	message.Parse();
 	recursively_kill_from(message);
 	message.Assemble();
+	msg = message.AsString(); // does not copy b/c the str is ref counted
 	
 	off_t start = length + append.length();
 	string::size_type unwind = append.length();
