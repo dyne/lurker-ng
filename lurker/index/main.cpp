@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.32 2003-06-26 21:22:42 terpstra Exp $
+/*  $Id: main.cpp,v 1.33 2003-06-26 21:32:32 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -120,11 +120,44 @@ void look_for_from(DwEntity& e)
 	if (body.substr(0, 5) != "From " && body.find("\nFrom ") == DwString::npos)
 		return; // no From to kill
 	
-	// We have to kill the 'From '. Let's just make it quoted-printable.
-	DwString coded;
-	e.Headers().ContentTransferEncoding().FromEnum(DwMime::kCteQuotedPrintable);
-	DwEncodeQuotedPrintable(body, coded);
-	e.Body().FromString(coded);
+	if (e.Headers().HasContentTransferEncoding() &&
+	    e.Headers().ContentTransferEncoding().AsEnum() == DwMime::kCteQuotedPrintable)
+	{	// the thing already is quoted-printable encoded
+		// we will try to minimize the changes
+		DwString newbody;
+		
+		size_t s, e;
+		if (body.substr(0, 5) == "From ")
+		{
+			newbody = "=46rom ";
+			s = 5
+		}
+		else
+		{
+			s = 0;
+		}
+		
+		while ((e = body.find("\nFrom ", s)) != string::npos)
+		{
+			newbody.append(body, s, e-s);
+			newbody += "\n=46";
+			s = e + 2;
+		}
+		
+		newbody.append(body, s, body.length() - s);
+		e.Body().FromString(newbody);
+	}
+	else
+	{
+		// We have to kill the 'From '.
+		// Let's just make it quoted-printable.
+		// This will preserve the content (no '>From').
+		
+		DwString coded;
+		e.Headers().ContentTransferEncoding().FromEnum(DwMime::kCteQuotedPrintable);
+		DwEncodeQuotedPrintable(body, coded);
+		e.Body().FromString(coded);
+	}
 }
 
 void recursively_kill_from(DwEntity& e)
