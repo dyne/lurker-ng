@@ -3,8 +3,8 @@ imgsdir = @wwwdir@/imgs
 dist_imgs_DATA = a.png b.png c.png d.png e.png f.png g.png h.png i.png j.png k.png
 
 install-data-local:
-	$(mkinstalldirs) ${imgsdir}
-	ln -fs ../imgs   ${wwwdir}/thread/i
+	$(mkinstalldirs) $(DESTDIR)${imgsdir}
+	ln -fs ../imgs   $(DESTDIR)${wwwdir}/thread/i
 
 uninstall-local:
-	rm -f ${wwwdir}/thread/i
+	rm -f $(DESTDIR)${wwwdir}/thread/i

@@ -7,10 +7,10 @@ dist_fmt_DATA = \
 	basic.css
 
 install-data-local:
-	$(mkinstalldirs) ${fmtdir}
-	ln -fs basic.css   ${fmtdir}/default.css
-	ln -fs english.xsl ${fmtdir}/lang.xsl
+	$(mkinstalldirs) $(DESTDIR)${fmtdir}
+	ln -fs basic.css   $(DESTDIR)${fmtdir}/default.css
+	ln -fs english.xsl $(DESTDIR)${fmtdir}/lang.xsl
 
 uninstall-local:
-	rm -f ${fmtdir}/default.css
-	rm -f ${fmtdir}/lang.xsl
+	rm -f $(DESTDIR)${fmtdir}/default.css
+	rm -f $(DESTDIR)${fmtdir}/lang.xsl

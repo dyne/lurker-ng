@@ -4,31 +4,19 @@ Suggestion: include documentation in a mbox format in default lurker.com
 Suggestion: base path mboxes are relative to
 
 BUGS:
+	Attachments are never cached because we need to tell the browser
+	the content-type and we have no way to record this.
+
+BUGS:
 2	Seperate lists can receive the same message.
 		-> If we implement insertion earlier in the id list, we
 		   screw ourselves for index caching.
-3	Need a link back to the index from messages for each list.
-5	Attachments should be cacheable - fix it somehow.
 
 	#2 *** Same message in multiple lists:
-		a: finish #2 since this depends on it
 		b: Add another database which stores what lists a message
 		   appears in. It should contain:
 			list, list offset, mbox, mbox offset -- repeated
 		c: Summary should now only include timestamp, flat offset,
-		   thread... (what is thread?) --- some kind of indirection
-		   marker.
-		d: At import, check to see if we already have a given
-		   message-id.
+		   thread... 
 		e: See if already in the lists of occurance database.
 		f: Append to the lists of occurance database.
-		g: If docid > last in list, push it.
-		h: Else, push an indirect docid.
-	
-	#3 *** Link back to each list:
-		a: Finish #2
-		b: Simply use the new list offset field in the database.
-	
-	#5 *** Cachable attachments:
-		Hrm. Not sure what to do here; maybe modify .htaccess to
-		tell apache the content-type?

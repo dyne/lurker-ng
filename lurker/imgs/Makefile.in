@@ -216,11 +216,11 @@ uninstall-am: uninstall-dist_imgsDATA uninstall-info-am uninstall-local
 
 
 install-data-local:
-	$(mkinstalldirs) ${imgsdir}
-	ln -fs ../imgs   ${wwwdir}/thread/i
+	$(mkinstalldirs) $(DESTDIR)${imgsdir}
+	ln -fs ../imgs   $(DESTDIR)${wwwdir}/thread/i
 
 uninstall-local:
-	rm -f ${wwwdir}/thread/i
+	rm -f $(DESTDIR)${wwwdir}/thread/i
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
