@@ -1,4 +1,4 @@
-/*  $Id: globals.h,v 1.3 2002-01-21 07:27:35 terpstra Exp $
+/*  $Id: globals.h,v 1.4 2002-01-23 07:33:12 terpstra Exp $
  *  
  *  globals.h - the global variables and methods for the daemon
  *  
@@ -59,10 +59,12 @@ extern int	lu_lists;
 
 extern int	lu_summary_fd;
 extern int	lu_variable_fd;
+extern int	lu_keyword_fd;
 extern DB_ENV*	lu_db_env;
 extern DB*	lu_thread_db;
 extern DB*	lu_merge_db;
 extern DB*	lu_mbox_db;
+extern DB*	lu_keyword_db;
 
 /** This loads the configuration file into the appropriate globals.
  *  It also opens all the mboxs for the tail functionality.
@@ -119,14 +121,6 @@ extern int lu_reply_to_resolution(
 	message_id id,
 	const char* msg_id,
 	const char* reply_to_msg_id);
-
-/** Here come the all important keyword functions.
- */
-extern int push_keyword(const char* keyword, message_id message);
-
-/** Here go prototypes for the search, however, I don't know how they'll work 
- *  yet.
- */
 
 /** Search the configuration for the mailing list which has the specified id
  */

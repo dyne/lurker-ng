@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.4 2002-01-23 02:23:35 cbond Exp $
+/*  $Id: main.c,v 1.5 2002-01-23 07:33:12 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -22,7 +22,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "records.h"
+#include "keyword.h"
 #include "globals.h"
 #include "io.h"
 
@@ -97,6 +97,9 @@ int main(int argc, const char* argv[])
 		return 1;
 	
 	if (lu_sync_mbox() != 0)
+		return 1;
+	
+	if (lu_keyword_init() != 0)
 		return 1;
 	
 	if (st_init() != 0)

@@ -1,4 +1,4 @@
-/*  $Id: db.c,v 1.5 2002-01-22 23:10:59 terpstra Exp $
+/*  $Id: db.c,v 1.6 2002-01-23 07:33:12 terpstra Exp $
  *  
  *  db.c - manage the databases
  *  
@@ -284,6 +284,15 @@ int lu_open_db()
 		return -1;
 	}
 	
+	lu_keyword_fd = open("keyword.flat", 
+		O_RDWR | O_BINARY | O_CREAT,
+		LU_S_READ | LU_S_WRITE);
+	if (lu_keyword_fd == -1)
+	{
+		perror("keyword.flat");
+		return -1;
+	}
+	
 	if ((error = db_env_create(&lu_db_env, 0)) != 0)
 	{
 		fprintf(stderr, "Creating db3 environment: %s\n", 
@@ -331,6 +340,13 @@ int lu_open_db()
 		return -1;
 	}
 	
+	if ((error = db_create(&lu_keyword_db, lu_db_env, 0)) != 0)
+	{
+		fprintf(stderr, "Creating a db3 database: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+	
 	if ((error = lu_thread_db->open(lu_thread_db, "thread.hash", 0,
 		DB_HASH, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
 	{
@@ -351,6 +367,14 @@ int lu_open_db()
 		DB_BTREE, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
 	{
 		fprintf(stderr, "Opening db3 database: mbox.btree: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+	
+	if ((error = lu_keyword_db->open(lu_keyword_db, "keyword.btree", 0,
+		DB_BTREE, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
+	{
+		fprintf(stderr, "Opening db3 database: keyword.btree: %s\n",
 			db_strerror(error));
 		return -1;
 	}

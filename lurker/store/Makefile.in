@@ -77,6 +77,7 @@ INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common
 sbin_PROGRAMS = @PACKAGE@d
 
 @PACKAGE@d_SOURCES = \
+	keyword.h keyword.c \
 	config.c db.c \
 	main.c globals.h records.h
 
@@ -89,7 +90,8 @@ CONFIG_CLEAN_FILES =
 sbin_PROGRAMS = @PACKAGE@d$(EXEEXT)
 PROGRAMS = $(sbin_PROGRAMS)
 
-am_@PACKAGE@d_OBJECTS = config.$(OBJEXT) db.$(OBJEXT) main.$(OBJEXT)
+am_@PACKAGE@d_OBJECTS = keyword.$(OBJEXT) config.$(OBJEXT) db.$(OBJEXT) \
+	main.$(OBJEXT)
 @PACKAGE@d_OBJECTS = $(am_@PACKAGE@d_OBJECTS)
 @PACKAGE@d_LDADD = $(LDADD)
 @PACKAGE@d_DEPENDENCIES =
@@ -101,7 +103,7 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
 @AMDEP_TRUE@DEP_FILES = $(DEPDIR)/config.Po $(DEPDIR)/db.Po \
-@AMDEP_TRUE@	$(DEPDIR)/main.Po
+@AMDEP_TRUE@	$(DEPDIR)/keyword.Po $(DEPDIR)/main.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -157,6 +159,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/db.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/keyword.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/main.Po@am__quote@
 
 distclean-depend:
