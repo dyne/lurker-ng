@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.7 2002-02-12 06:52:11 terpstra Exp $
+/*  $Id: search.c,v 1.8 2002-02-22 01:09:21 terpstra Exp $
  *  
  *  search.c - output results from a search/ lookup
  *  
@@ -56,8 +56,19 @@ static void extract_keyword(
 	
 	for (; *w != e && *s; s++)
 	{
-		if (*s == '&') break;
-		*(*w)++ = *s;
+		if (*s == '+')
+		{
+			*(*w)++ = '%';
+			if (*w == e) break;
+			*(*w)++ = '2';
+			if (*w == e) break;
+			*(*w)++ = '0';
+		}
+		else
+		{
+			if (*s == '&') break;
+			*(*w)++ = *s;
+		}
 	}
 }
 
