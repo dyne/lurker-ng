@@ -1,12 +1,16 @@
 fmtdir = @wwwdir@/fmt
 
-dist_fmt_DATA = \
-	render.xsl render-html.xsl common.xsl \
-	error.xsl splash.xsl message.xsl mindex.xsl search.xsl thread.xsl redirect.xsl \
+XSL =	render.xsl render-html.xsl common.xsl error.xsl redirect.xsl \
+	splash.xsl message.xsl mindex.xsl search.xsl thread.xsl \
 	english.xsl \
 	basic.css
 
-dist_www_DATA = index.html index.xsl
+INDEX =	index.html index.xsl
+
+fmt_DATA = ${XSL}
+www_DATA = ${INDEX}
+
+EXTRA_DIST = ${XSL} ${INDEX}
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)${fmtdir}

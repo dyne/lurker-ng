@@ -77,22 +77,26 @@ wwwdir = @wwwdir@
 
 fmtdir = @wwwdir@/fmt
 
-dist_fmt_DATA = \
-	render.xsl render-html.xsl common.xsl \
-	error.xsl splash.xsl message.xsl mindex.xsl search.xsl thread.xsl redirect.xsl \
+XSL = render.xsl render-html.xsl common.xsl error.xsl redirect.xsl \
+	splash.xsl message.xsl mindex.xsl search.xsl thread.xsl \
 	english.xsl \
 	basic.css
 
 
-dist_www_DATA = index.html index.xsl
+INDEX = index.html index.xsl
+
+fmt_DATA = ${XSL}
+www_DATA = ${INDEX}
+
+EXTRA_DIST = ${XSL} ${INDEX}
 subdir = xslt
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/system.h
 CONFIG_CLEAN_FILES =
 DIST_SOURCES =
-DATA = $(dist_fmt_DATA) $(dist_www_DATA)
+DATA = $(fmt_DATA) $(www_DATA)
 
-DIST_COMMON = $(dist_fmt_DATA) $(dist_www_DATA) Makefile.am Makefile.in
+DIST_COMMON = Makefile.am Makefile.in
 all: all-am
 
 .SUFFIXES:
@@ -104,36 +108,36 @@ Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	  CONFIG_HEADERS= CONFIG_LINKS= \
 	  CONFIG_FILES=$(subdir)/$@ $(SHELL) ./config.status
 uninstall-info-am:
-install-dist_fmtDATA: $(dist_fmt_DATA)
+install-fmtDATA: $(fmt_DATA)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(fmtdir)
-	@list='$(dist_fmt_DATA)'; for p in $$list; do \
+	@list='$(fmt_DATA)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(fmtdir)/$$f"; \
 	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(fmtdir)/$$f; \
 	done
 
-uninstall-dist_fmtDATA:
+uninstall-fmtDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(dist_fmt_DATA)'; for p in $$list; do \
+	@list='$(fmt_DATA)'; for p in $$list; do \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " rm -f $(DESTDIR)$(fmtdir)/$$f"; \
 	  rm -f $(DESTDIR)$(fmtdir)/$$f; \
 	done
-install-dist_wwwDATA: $(dist_www_DATA)
+install-wwwDATA: $(www_DATA)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(wwwdir)
-	@list='$(dist_www_DATA)'; for p in $$list; do \
+	@list='$(www_DATA)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f"; \
 	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f; \
 	done
 
-uninstall-dist_wwwDATA:
+uninstall-wwwDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(dist_www_DATA)'; for p in $$list; do \
+	@list='$(www_DATA)'; for p in $$list; do \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " rm -f $(DESTDIR)$(wwwdir)/$$f"; \
 	  rm -f $(DESTDIR)$(wwwdir)/$$f; \
@@ -209,8 +213,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-data-local install-dist_fmtDATA \
-	install-dist_wwwDATA
+install-data-am: install-data-local install-fmtDATA install-wwwDATA
 
 install-exec-am:
 
@@ -228,19 +231,18 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-generic
 
-uninstall-am: uninstall-dist_fmtDATA uninstall-dist_wwwDATA \
-	uninstall-info-am uninstall-local
+uninstall-am: uninstall-fmtDATA uninstall-info-am uninstall-local \
+	uninstall-wwwDATA
 
 .PHONY: all all-am check check-am clean clean-generic distclean \
 	distclean-generic distdir dvi dvi-am info info-am install \
 	install-am install-data install-data-am install-data-local \
-	install-dist_fmtDATA install-dist_wwwDATA install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic uninstall uninstall-am \
-	uninstall-dist_fmtDATA uninstall-dist_wwwDATA uninstall-info-am \
-	uninstall-local
+	install-exec install-exec-am install-fmtDATA install-info \
+	install-info-am install-man install-strip install-wwwDATA \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic \
+	uninstall uninstall-am uninstall-fmtDATA uninstall-info-am \
+	uninstall-local uninstall-wwwDATA
 
 
 install-data-local:

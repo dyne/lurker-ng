@@ -1,9 +1,11 @@
 imgsdir = @wwwdir@/imgs
 
-dist_imgs_DATA = \
-	a.png b.png c.png d.png e.png \
+IMGS =	a.png b.png c.png d.png e.png \
 	f.png g.png h.png i.png j.png k.png \
 	next.png prev.png first.png last.png
+
+imgs_DATA = ${IMGS}
+EXTRA_DIST = ${IMGS}
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)${imgsdir}

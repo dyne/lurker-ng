@@ -5,8 +5,9 @@ INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common
 REQUESTS = message mindex search splash mbox attach thread jump
 
 sbin_PROGRAMS = lurkerd
-dist_db_DATA = DB_CONFIG
-EXTRA_DIST = Design
+db_DATA       = DB_CONFIG
+
+EXTRA_DIST = Design DB_CONFIG
 
 lurkerd_SOURCES = \
 	config.h   config.c   \
