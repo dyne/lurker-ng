@@ -4,11 +4,24 @@
 
 <!-- xsl:import href="lang.xsl"/ -->
 <xsl:variable name="lang" select="'en'"/>
+
 <xsl:variable name="tree-context" select="'Thread Context'"/>
-<xsl:variable name="full-tree" select="'sorted by date'"/>
+<xsl:variable name="full-tree" select="'the complete thread tree sorted by date'"/>
+<xsl:variable name="appears-in" select="'Message appears on the following lists:'"/>
+<xsl:variable name="list-info" select="'List Info'"/>
+<xsl:variable name="near-message" select="'Messages Nearby'"/>
+<xsl:variable name="post-new" select="'Post New Thread'"/>
+<xsl:variable name="author" select="'Author'"/>
+<xsl:variable name="date" select="'Date'"/>
+<xsl:variable name="to" select="'To'"/>
+<xsl:variable name="cc" select="'CC'"/>
+<xsl:variable name="old-topics" select="'Old-Topics'"/>
+<xsl:variable name="new-topics" select="'New-Topics'"/>
 
 <xsl:variable name="unknown-address" select="'Someone'"/>
 <xsl:variable name="posted-at" select="' at '"/>
+<xsl:variable name="admin-by" select="'Administrated by:'"/>
+
 <xsl:variable name="lurker-url" select="'http://lurker.sourceforge.net/'"/>
 
 
@@ -27,7 +40,18 @@
   <xsl:otherwise><xsl:value-of select="$unknown-address"/></xsl:otherwise>
  </xsl:choose>
 </xsl:template>
-
+<xsl:template match="email[@address]" mode="email-link">
+ <a href="mailto:{@address}">
+  <xsl:apply-templates mode="email-name" select="."/>
+ </a>
+</xsl:template>
+<xsl:template match="email" mode="email-link">
+ <xsl:apply-templates mode="email-name" select="."/>
+</xsl:template>
+<xsl:template match="email" mode="email-list">
+ <xsl:if test="position()!=1">, </xsl:if>
+ <xsl:apply-templates mode="email-link" select="."/>
+</xsl:template>
 
 <!-- Date formatting -->
 <xsl:template match="summary" mode="date">
@@ -48,6 +72,15 @@
  <xsl:apply-templates mode="email-name" select="email"/>
  <xsl:value-of select="$posted-at"/>
  <xsl:apply-templates mode="date" select="."/>
+</xsl:template>
+<xsl:template match="summary" mode="post-description-link">
+ <a href="../message/{id}">
+  <xsl:apply-templates mode="post-description" select="."/>
+ </a>
+</xsl:template>
+<xsl:template match="summary" mode="post-description-list">
+ <xsl:if test="position()!=1">, </xsl:if>
+ <xsl:apply-templates mode="post-description-link" select="."/>
 </xsl:template>
 
 

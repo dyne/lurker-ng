@@ -1,0 +1,185 @@
+body {
+  padding: 0px;
+  margin: 0px;
+  background-color: #FFF;
+}
+
+div.header {
+  background-color: #BBF;
+  padding: 4px 0.25em 0.25em 0.25em;
+  border-bottom: 1px solid #434399;
+}
+
+div.footer {
+  background-color: #BBF;
+  padding: 0.25em 0.25em 1px 0.25em;
+  border-top: 1px solid #434399;
+}
+
+h1 {
+  font-family: sans-serif;
+  font-size: 110%;
+  font-weight: bold;
+	margin-bottom: 4px;
+	margin-top: 4px;
+}
+
+h2 {
+   width: 100%;
+   text-indent: 8%;
+   background-color: #BBF;
+   margin-top: 0;
+   margin-bottom: 1.2em;
+   font-family: Arial, sans-serif;
+   font-size: 140%;
+   font-weight: bold;
+   padding-bottom: 2px;
+}
+
+table.external {
+  width: 100%;
+}
+
+table.external td {
+  padding-left: 0.25em;
+	padding-right: 0.25em;
+}
+
+table.external td.mini {
+  padding-top: 1em;
+	padding-bottom: 1em;
+	font-size: 80%;
+}
+
+a:link    { color:#11F }
+a:visited { color:#00B }
+a:hover   { color:#F00 }
+a:active  { color:#A00 }
+h1 a:visited { color:#11F }
+
+dt a { font-weight: normal }
+.mime-label a { background-color:#DDF; padding:3px; font-weight:bold }
+
+img { border: 0; margin: 0; padding: 0 }
+h2 img { vertical-align:middle; padding-top:1px }
+td img { vertical-align:middle }
+.selected { background-color:#AAF }  /* Mark the thread segment as selected */
+.drift    { background-color:#EEA }  /* Mark the thread segment as drifted */
+.normal   { }                        /* Mark the thread segment as normal */
+
+/* The following are used to induce highlighting effects on thread message icons */
+a.thm:hover { background-color:#77F }
+a.thm:visited img.drift:hover { background-color:#7BF !important }
+a.thm:visited img.drift { background-color:#DDB }
+a.thm:hover img.drift:hover { background-color:#7DF }
+a.thm:hover img.drift { background-color:#77F }
+a.thm:visited img.normal:hover { background-color:#77D }
+a.thm:visited img.normal { background-color:#BBB }
+a.thm:hover img.normal { background-color:#77F }
+a.thm:hover img.selected { background-color:#77F }
+
+table {
+  border-collapse: collapse;
+  border: hidden;
+}
+
+tr { vertical-align:top; text-align:left; font-family: Arial, sans-serif; padding:0 }
+.thRow { background-color:#DDF }   /* header row for mindex/thread/search tables */
+tr.lit  { background-color:#77F }  /* even rows in mindex/thread/search tables */
+tr.row1 { background-color:#DDD }  /* even rows in mindex/thread/search tables */
+tr.row2 { background-color:#EEE }  /* odd rows in mindex/thread/search tables  */
+
+div.message {
+  margin: 1em;
+}
+
+table.attachments {
+  float: right;
+  border: 2px solid #e8e8e8;
+  background-color: white;
+}
+
+table.attachments tr {
+  text-align: left;
+}
+
+table.attachments th {
+  background-color: #e8e8e8;
+}
+
+table.navigation {
+  width: 100%;
+  font-size: 80%;
+  background-color: #e8e8e8;
+  border-top: 1px solid #969696;
+  border-left: 1px solid #969696;
+  border-right: 1px solid #555;
+  border-bottom: 1px solid #555;
+}
+
+table.navigation th {
+  font-size: 80%;
+  background-color: #969696;
+  padding: 3px;
+}
+
+table.navigation td {
+  background-color: white;
+  vertical-align: top;
+}
+
+table.appears {
+  border: 1px solid #969696;
+  background-color: white;
+  font-size: 75%;
+}
+
+table.appears td {
+  border: 1px solid #969696;
+}
+
+table.header {
+  width: 100%;
+}
+
+table.header td.subject {
+  font-weight: bold;
+  background-color: #fffeee;
+}
+
+table.header td {
+  padding: 4px;
+}
+
+table.emailHeaders td {
+  padding: 0px;
+  border: 0px;
+}
+
+td {
+  padding: 0 2px 0px 2px;
+  vertical-align: top;
+  font-family: Arial, sans-serif;
+}
+
+td.even{
+  background-color: #ffffcc;
+}
+
+div.messageBody {
+  padding: 4px;
+  margin-top: 1em;
+}
+
+
+.padded td { padding-bottom:1px }  /* Adds padding to output tables containing Discussion Tree icon */
+
+.na { color:#BBB }  /* used to fade text when link not available, but still has placeholder text */
+.mime-label { text-align:right; padding:4px }  /* Mime labels in message contents */
+.longtext  { width:400px }  /* sets width of text entry fields */
+
+.mime { }    /* block containing one part of message's mime contents */
+.mailto { }  /* "mailto" elements used inside of message's mime contents */
+.url { }     /* "url" elements used inside of message's mime contents */
+.quote { }   /* "quote" elements used inside of message's mime contents */
+.art { }     /* "art" elements used inside of message's mime contents */
