@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.16 2002-05-09 23:11:55 terpstra Exp $
+/*  $Id: summary.c,v 1.17 2002-05-10 01:12:41 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -78,7 +78,7 @@ static time_t		my_summary_last_time;
  * the same squishy subject and a reply-to linkage, we may merge threads
  * at that time.
  */
-#define LU_THREAD_OVERLAP_TIME	60*60*24*14
+#define LU_THREAD_OVERLAP_TIME	60*60*24*30
 
 /* The squishy merge db has keys like:
  *  <list><squishy subject><timestamp>
@@ -96,6 +96,7 @@ static int my_summary_squishy_subject(
 	char* target)
 {
 	/* Alright, we want to drop 're:', 'fwd:', etc.
+	 * Also drop [...] chunks
 	 * Anything after a 'was:' should be cut.
 	 * Changes in case shouldn't be confusing.
 	 * Punctuation is disregarded.
@@ -115,6 +116,7 @@ static int my_summary_squishy_subject(
 	}
 	
 	/* Skip past any number of: ' *[^ :]{0, 8}:' sequences
+	 * Also, any number of '\[[^\]]{0,16}\]' sequences
 	 */
 	state = 1;
 	
@@ -122,7 +124,11 @@ static int my_summary_squishy_subject(
 	while (*s)
 	{
 		if (state == 0)
-		{
+		{	/* We are scanning a word that could be ...: */
+			if (*s == '[' && s == r)
+			{
+				state = 2;
+			}
 			if (*s == ':')
 			{
 				state = 1;
@@ -134,7 +140,7 @@ static int my_summary_squishy_subject(
 			
 			s++;
 		}
-		else
+		else if (state == 1)
 		{	/* We're skiping past whitespace */
 			if (isspace(*s))
 			{
@@ -145,6 +151,19 @@ static int my_summary_squishy_subject(
 				r = s;
 				state = 0;
 			}
+		}
+		else
+		{	/* We're skipping past a [...] */
+			if (*s == ']')
+			{
+				state = 1;
+			}
+			else if (s - r > 16)
+			{
+				break;
+			}
+			
+			s++;
 		}
 	}
 	
@@ -279,7 +298,8 @@ int my_summary_find_thread(
 	
 	if (error == DB_NOTFOUND)
 		error = cursor->c_get(cursor, &key, &val, DB_LAST);
-	else
+	else if (thread_key_len != key.size || 
+	         memcmp(&thread_key[0], &thread_key_bak[0], key.size - sizeof(lu_quad)))
 		error = cursor->c_get(cursor, &key, &val, DB_PREV);
 	
 	if (error && error != DB_NOTFOUND)

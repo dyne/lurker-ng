@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.43 2002-05-09 23:11:55 terpstra Exp $
+/*  $Id: service.c,v 1.44 2002-05-10 01:12:41 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1515,25 +1515,28 @@ static void my_service_init_tree(
 /* return what we use up to */
 static int my_service_draw_tree(
 	My_Service_Reply_Tree* tree, 
-	int n, int col)
+	int n, int u)
 {
 	int i;
 	int c;
+	int col = 0;
 	
 	/* Find the column we can use. */
-	for (i = n; i <= tree[n].depth; i++)
+	for (i = u; i <= tree[n].depth; i++)
 		if (col < tree[i].consumed)
 			col = tree[i].consumed;
+	
+	tree[n].consumed = col;
 	
 	tree[n].column = col;
 	for (c = tree[n].replyor_first; c != -1; c = tree[c].replyor_next)
 	{
-		col = my_service_draw_tree(tree, c, col); 
-		for (i = n; i <= c; i++)
-			tree[i].consumed = col;
+		col = my_service_draw_tree(tree, c, n); 
+		for (i = n; i < c; i++)
+			tree[i].consumed = col+1;
 	}
 	
-	return tree[n].column + 1;
+	return tree[n].column;
 }
 
 static void my_service_draw_row(

@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.25 2002-05-09 06:28:58 terpstra Exp $
+/*  $Id: mbox.c,v 1.26 2002-05-10 01:12:41 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -24,8 +24,7 @@
 
 #define _GNU_SOURCE
 
-/*!!! Don't forget to turn off in final release */
-#define DEBUG 1
+/* #define DEBUG 1 */
 
 #include "common.h"
 #include "io.h"
