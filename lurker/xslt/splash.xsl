@@ -95,7 +95,7 @@
    <colgroup id="col4"/>
   </xsl:if>
 
-  <tr><caption><xsl:value-of select="$lists"/></caption></tr>
+  <caption><xsl:value-of select="$lists"/></caption>
   
   <xsl:call-template name="format">
    <xsl:with-param name="col1" select="list[position() &gt;= $off1 and position() &lt; $off2]"/>
