@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.6 2002-02-25 03:20:57 terpstra Exp $
+/*  $Id: common.c,v 1.7 2002-02-25 03:48:47 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -124,7 +124,7 @@ static char* my_common_quoted(
 		b = &buf[bl];
 		w = we - wl;
 		
-		if (tmp == (size_t)-1) break;
+		if (tmp == (size_t)-1 && errno != EINVAL) break;
 	}
 	
 	return w;
@@ -229,7 +229,7 @@ static char* my_common_base64(
 		b = &buf[bl];
 		w = we - wl;
 		
-		if (tmp == (size_t)-1) break;
+		if (tmp == (size_t)-1 && errno != EINVAL) break;
 	}
 	
 	return w;
