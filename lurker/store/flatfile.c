@@ -1,4 +1,4 @@
-/*  $Id: flatfile.c,v 1.6 2002-02-22 01:18:58 terpstra Exp $
+/*  $Id: flatfile.c,v 1.7 2002-02-24 23:35:51 terpstra Exp $
  *  
  *  flatfile.c - Knows how to manage the keyword flatfile database
  *  
@@ -793,6 +793,7 @@ Lu_Flatfile_Handle lu_flatfile_open_handle(
 		return 0;
 	}
 	
+	/*!!! It seems silly that we malloc here and nowhere else! */
 	if ((out = malloc(sizeof(struct My_Flatfile_Handle_T))) == 0)
 	{
 		return 0;

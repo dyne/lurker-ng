@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.10 2002-02-22 01:18:58 terpstra Exp $
+/*  $Id: breader.c,v 1.11 2002-02-24 23:35:51 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -532,6 +532,11 @@ Lu_Breader_Handle lu_breader_new(
 	{
 		my_breader_records[best].flatfile =
 			lu_flatfile_open_handle(keyword);
+		if (my_breader_records[best].flatfile == 0)
+		{	/* Unable to access underlying flatfile */
+			return 0;
+		}
+		
 		my_breader_records[best].count =
 			lu_flatfile_handle_records(
 				my_breader_records[best].flatfile);
