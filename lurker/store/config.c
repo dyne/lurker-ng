@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.4 2002-02-10 20:38:38 terpstra Exp $
+/*  $Id: config.c,v 1.5 2002-02-12 07:16:40 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -62,6 +62,10 @@ static const char*	my_config_file;
 char*	lu_config_dbdir   = 0;
 char*	lu_config_wwwdir  = 0;
 char*	lu_config_pidfile = 0;
+
+char*	lu_config_list_host	= 0;
+char*	lu_config_admin_name	= 0;
+char*	lu_config_admin_address	= 0;
 
 DB_ENV*		lu_config_env   = 0;
 Lu_Config_List*	lu_config_list  = 0;
@@ -419,6 +423,75 @@ static int my_config_load_config()
 			if (!lu_config_pidfile)
 				ok = -1;
 		}
+		else if (!strcmp(&keyword[0], "list_host"))
+		{
+			if (what)
+			{
+				fprintf(stderr, "%s:%d: error: "
+					"list_host in list scope\n",
+					my_config_file, lines);
+				ok = -1;
+				continue;
+			}
+			if (lu_config_list_host)
+			{
+				fprintf(stderr, "%s:%d: warning: "
+					"list_host reset\n",
+					my_config_file, lines);
+				free(lu_config_list_host);
+			}
+			
+			lu_config_list_host = my_config_find_after(
+				&line[0], my_config_file, lines);
+			if (!lu_config_list_host)
+				ok = -1;
+		}
+		else if (!strcmp(&keyword[0], "admin_name"))
+		{
+			if (what)
+			{
+				fprintf(stderr, "%s:%d: error: "
+					"admin_name in list scope\n",
+					my_config_file, lines);
+				ok = -1;
+				continue;
+			}
+			if (lu_config_admin_name)
+			{
+				fprintf(stderr, "%s:%d: warning: "
+					"admin_name reset\n",
+					my_config_file, lines);
+				free(lu_config_admin_name);
+			}
+			
+			lu_config_admin_name = my_config_find_after(
+				&line[0], my_config_file, lines);
+			if (!lu_config_admin_name)
+				ok = -1;
+		}
+		else if (!strcmp(&keyword[0], "admin_address"))
+		{
+			if (what)
+			{
+				fprintf(stderr, "%s:%d: error: "
+					"admin_address in list scope\n",
+					my_config_file, lines);
+				ok = -1;
+				continue;
+			}
+			if (lu_config_admin_address)
+			{
+				fprintf(stderr, "%s:%d: warning: "
+					"admin_address reset\n",
+					my_config_file, lines);
+				free(lu_config_admin_address);
+			}
+			
+			lu_config_admin_address = my_config_find_after(
+				&line[0], my_config_file, lines);
+			if (!lu_config_admin_address)
+				ok = -1;
+		}
 		else if (!strcmp(&keyword[0], "list"))
 		{
 			if (sscanf(&line[0], "%19s %d = ", &keyword[0], &i) != 2)
@@ -600,6 +673,27 @@ static int my_config_load_config()
 		fprintf(stderr, "%s: warning: dbdir not declared - "
 			"using: %s\n", my_config_file, DBDIR);
 		lu_config_dbdir = strdup(DBDIR);
+	}
+	
+	if (!lu_config_list_host)
+	{
+		fprintf(stderr, "%s: warning: list_host not declared - "
+			"using: somewhere.org\n", my_config_file);
+		lu_config_list_host = strdup("somewhere.org");
+	}
+	
+	if (!lu_config_admin_name)
+	{
+		fprintf(stderr, "%s: warning: admin_name not declared - "
+			"using: unconfigured\n", my_config_file);
+		lu_config_admin_name = strdup("unconfigured");
+	}
+	
+	if (!lu_config_admin_address)
+	{
+		fprintf(stderr, "%s: warning: admin_address not declared - "
+			"using: nill@unconfigured.org\n", my_config_file);
+		lu_config_admin_address = strdup("nill@unconfigured.org");
 	}
 	
 	if (ok != 0)
