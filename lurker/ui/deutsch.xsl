@@ -65,8 +65,8 @@
 <xsl:variable name="nov">November</xsl:variable>
 <xsl:variable name="dec">Dezember</xsl:variable>
 
-<xsl:variable name="unknown-address" select="'Someone'"/>
-<xsl:variable name="posted-at" select="' at '"/>
+<xsl:variable name="unknown-address" select="'Autor unbekannt'"/>
+<xsl:variable name="posted-at" select="' am '"/>
 <xsl:variable name="admin-by" select="'Administriert von:'"/>
 <xsl:variable name="version" select="'Version'"/>
 </xsl:stylesheet>
