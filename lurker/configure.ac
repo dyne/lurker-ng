@@ -15,6 +15,10 @@ AC_PROG_CXX
 
 AC_LANG(C++)
 
+if test "x$USE_MAINTAINER_MODE" != "xno"; then
+  CXXFLAGS="$CXXFLAGS -Wall -O2 -g"
+fi
+
 AC_SEARCH_HEADER_DIRS(
   [iconv.h],
   [/usr/local/include],,

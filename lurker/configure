@@ -3305,6 +3305,10 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
+if test "x$USE_MAINTAINER_MODE" != "xno"; then
+  CXXFLAGS="$CXXFLAGS -Wall -O2 -g"
+fi
+
 
 ac_ext=cc
 ac_cpp='$CXXCPP $CPPFLAGS'
