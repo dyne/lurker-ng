@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.13 2003-05-07 16:32:00 terpstra Exp $
+/*  $Id: main.cpp,v 1.14 2003-05-07 16:33:32 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -263,7 +263,8 @@ int main(int argc, char** argv)
 	
 	ESort::Parameters params(synced);
 	// work around g++ 2.95 borkage
-	auto_ptr<ESort::Writer> dbt(ESort::Writer::open(cfg.dbdir + "/db"));
+	auto_ptr<ESort::Writer> dbt(
+		ESort::Writer::open(cfg.dbdir + "/db", params));
 	db = dbt;
 	
 	if (!db.get())
