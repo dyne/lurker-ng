@@ -1,12 +1,87 @@
-dbdir   = @DBDIR_expand@
-wwwdir  = @WWWDIR_expand@
-pidfile = @LOCALSTATEDIR_expand@/run/@PACKAGE@.pid
+# To the user: You will probably want to change the first three options here
+# and add mailing lists at the bottom of the file.
 
+# What name should lurker use when refering to the machine it runs on.
+# This does not need to be correct; it is aesthetic only.
 list_host     = demo-server.org
+
+# This is the administrator information used at the bottom of generated
+# pages. You should probably set it to something useful.
 admin_name    = Unconfigured
 admin_address = nill@bitbucket.org
 
-# Now follow the mboxs which will be monitored for incoming messages
+
+
+
+####################### These settings probably don't need to be changed.
+
+# These are path settings which will probably have been set correctly to
+# match what lurker was configured with.
+
+# The pid file is written out by lurker if it is run in undetached mode.
+# Lurker does not check to see if another lurker process is running, instead
+# this is left up to programs like start-stop-daemon.
+pidfile = @LOCALSTATEDIR_expand@/run/@PACKAGE@.pid
+
+# The directory where lurker will keep it's database information.
+# The domain socket used to communicate with the CGI is also placed here.
+# If you change this value from it's default of
+#   @DBDIR_expand@
+#  then you must also add it to the cgi error-document handler in your
+#  .htaccess, like: ErrorDocument 404 lurker.cgi?/the/new/db/dir
+dbdir   = @DBDIR_expand@
+
+# This is the directory into which cache files are written.
+# If you move the cgi and cache location this must be updated to match so
+# that lurker can expire old cached files.
+wwwdir  = @WWWDIR_expand@
+
+# These are some cache settings that control how web content is cached to
+# minimize CPU utilization and decrease page load times.
+
+# This option specifies what the largest file size (in bytes) we will cache
+# is. Because the purpose of the cache is to reduce CPU usage, and large
+# files consume CPU cycles to serve, there is little savings in caching
+# large files. They would merely be a waste of on-disk storage.
+cache_cutoff = 65536
+
+# These options specify the maximum amount of files and storage lurker is
+# allowed to leave cached in the wwwdir at a given time.
+cache_files = 4096
+cache_size  = 8388608
+
+# These specify the time to live (in seconds) of cache files for various
+# page types. Bear in mind that pages can become invalidated by imports and
+# so should have reasonably short time to live. However, pages recently
+# accessed are quite likely to be hit again (imagine: slashdot). So, cache
+# can pay off quite wonderfully. Index pages should not need to ever be
+# invalidated except for space reclamation since lurker kills them when they
+# change.
+cache_search_ttl  = 600
+cache_message_ttl = 600
+cache_index_ttl   = 604800
+
+
+
+
+
+
+
+#!!!!!!!!!!!!!!!!!!!!!!!!! Change below this point !!!!!!!!!!!!!!!!!!!!!!
+
+# Now comes configuration for the mailing lists lurker is to host.
+# 
+# Each list must be given a distinct number which is never changed or
+# reused even if the old list was removed. If you wish to renumber them,
+# you will have to reimport the database.
+#
+# Each mbox must be given a distinct number which is never changed or
+# reused within the specified list. You must also ensure that these mboxes
+# are only appended to. They must never be modified in any other way. This
+# means you should never open them with a mail reader---even just to examine
+# them. You may move the mboxes as long as you update the path given here.
+#
+# Here is an example:
 #
 # list 0 = Debian-Devel
 # 	description = Debian Developer Discussion Forum

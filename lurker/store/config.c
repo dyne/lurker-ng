@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.7 2002-02-21 22:47:37 terpstra Exp $
+/*  $Id: config.c,v 1.8 2002-05-03 01:29:16 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -70,6 +70,14 @@ char*	lu_config_admin_address	= 0;
 DB_ENV*		lu_config_env   = 0;
 Lu_Config_List*	lu_config_list  = 0;
 int		lu_config_lists = 0;
+
+long	lu_config_cache_cutoff	= 0;
+long	lu_config_cache_files	= 0;
+long	lu_config_cache_size	= 0;
+
+time_t	lu_config_cache_search_ttl	= 0;
+time_t	lu_config_cache_message_ttl	= 0;
+time_t	lu_config_cache_index_ttl	= 0;
 
 /*------------------------------------------------ Private helper methods */
 
@@ -279,6 +287,27 @@ static char* my_config_find_after(
 	return out;
 }
 
+static long my_config_number_after(
+	const char* str,
+	const char* cfg,
+	int lines)
+{
+	int   out = 0;
+	char* num = my_config_find_after(str, cfg, lines);
+	
+	if (num)
+	{
+		out = atol(num);
+		if (!out)
+		{
+			fprintf(stderr, "%s:%d: error: invalid value - must be positive integer\n", cfg, lines);
+		}
+		free(num);
+	}
+	
+	return out;
+}
+
 static int my_config_open_mboxs()
 {
 	Lu_Config_List* list;
@@ -306,6 +335,87 @@ static int my_config_open_mboxs()
 	}
 	
 	return ok;
+}
+
+#define PRE_LIST_STR(key, var) \
+if (!strcmp(&keyword[0], key)) \
+{ \
+	if (what) \
+	{ \
+		fprintf(stderr, "%s:%d: error: %s in list scope\n", \
+			my_config_file, lines, key); \
+		ok = -1; \
+		continue; \
+	} \
+	\
+	if (var) \
+	{ \
+		fprintf(stderr, "%s:%d: warning: %s reset\n", \
+			my_config_file, lines, key); \
+		free(var); \
+	} \
+	\
+	var = my_config_find_after(&line[0], my_config_file, lines); \
+	if (!var) ok = -1; \
+}
+
+#define PRE_LIST_NUM(key, var) \
+if (!strcmp(&keyword[0], key)) \
+{ \
+	if (what) \
+	{ \
+		fprintf(stderr, "%s:%d: error: %s in list scope\n", \
+			my_config_file, lines, key); \
+		ok = -1; \
+		continue; \
+	} \
+	\
+	if (var) \
+	{ \
+		fprintf(stderr, "%s:%d: warning: %s reset\n", \
+			my_config_file, lines, key); \
+	} \
+	\
+	var = my_config_number_after(&line[0], my_config_file, lines); \
+	if (!var) ok = -1; \
+}
+
+#define AFT_LIST_STR(key, var) \
+if (!strcmp(&keyword[0], key)) \
+{ \
+	if (!what) \
+	{ \
+		fprintf(stderr, "%s:%d: error: %s outside list scope\n", \
+			my_config_file, lines, key); \
+		ok = -1; \
+		continue; \
+	} \
+	\
+	if (what->var) \
+	{ \
+		fprintf(stderr, "%s:%d: warning: %s reset\n", \
+			my_config_file, lines, key); \
+		free(what->var); \
+	} \
+	\
+	what->var = my_config_find_after(&line[0], my_config_file, lines); \
+	if (!what->var) ok = -1; \
+}
+
+#define DEF_STR(key, var, val) \
+if (!var) \
+{ \
+	fprintf(stderr, "%s: warning: %s not declared - " \
+		"using: %s\n", my_config_file, key, val); \
+	var = strdup(DEFAULT_PID_FILE); \
+}
+
+#define DEF_NUM(key, var, val) \
+if (!var) \
+{ \
+	fprintf(stderr, "%s: warning: %s not declared - " \
+		"using: %d\n", my_config_file, key, val); \
+	var = val; \
 }
 
 static int my_config_load_config()
@@ -356,146 +466,7 @@ static int my_config_load_config()
 			continue;
 		}
 		
-		if (!strcmp(&keyword[0], "dbdir"))
-		{
-			if (what)
-			{
-				fprintf(stderr, "%s:%d: error: "
-					"dbdir in list scope\n",
-					my_config_file, lines);
-				ok = -1;
-				continue;
-			}
-			
-			if (lu_config_dbdir)
-			{
-				fprintf(stderr, "%s:%d: warning: "
-					"dbdir reset\n",
-					my_config_file, lines);
-				free(lu_config_dbdir);
-			}
-			
-			lu_config_dbdir = my_config_find_after(
-				&line[0], my_config_file, lines);
-			if (!lu_config_dbdir)
-				ok = -1;
-		}
-		else if (!strcmp(&keyword[0], "wwwdir"))
-		{
-			if (what)
-			{
-				fprintf(stderr, "%s:%d: error: "
-					"wwwdir in list scope\n",
-					my_config_file, lines);
-				ok = -1;
-				continue;
-			}
-			if (lu_config_wwwdir)
-			{
-				fprintf(stderr, "%s:%d: warning: "
-					"wwwdir reset\n",
-					my_config_file, lines);
-				free(lu_config_wwwdir);
-			}
-			
-			lu_config_wwwdir = my_config_find_after(
-				&line[0], my_config_file, lines);
-			if (!lu_config_wwwdir)
-				ok = -1;
-		}
-		else if (!strcmp(&keyword[0], "pidfile"))
-		{
-			if (what)
-			{
-				fprintf(stderr, "%s:%d: error: "
-					"pidfile in list scope\n",
-					my_config_file, lines);
-				ok = -1;
-				continue;
-			}
-			if (lu_config_pidfile)
-			{
-				fprintf(stderr, "%s:%d: warning: "
-					"pidfile reset\n",
-					my_config_file, lines);
-				free(lu_config_pidfile);
-			}
-			
-			lu_config_pidfile = my_config_find_after(
-				&line[0], my_config_file, lines);
-			if (!lu_config_pidfile)
-				ok = -1;
-		}
-		else if (!strcmp(&keyword[0], "list_host"))
-		{
-			if (what)
-			{
-				fprintf(stderr, "%s:%d: error: "
-					"list_host in list scope\n",
-					my_config_file, lines);
-				ok = -1;
-				continue;
-			}
-			if (lu_config_list_host)
-			{
-				fprintf(stderr, "%s:%d: warning: "
-					"list_host reset\n",
-					my_config_file, lines);
-				free(lu_config_list_host);
-			}
-			
-			lu_config_list_host = my_config_find_after(
-				&line[0], my_config_file, lines);
-			if (!lu_config_list_host)
-				ok = -1;
-		}
-		else if (!strcmp(&keyword[0], "admin_name"))
-		{
-			if (what)
-			{
-				fprintf(stderr, "%s:%d: error: "
-					"admin_name in list scope\n",
-					my_config_file, lines);
-				ok = -1;
-				continue;
-			}
-			if (lu_config_admin_name)
-			{
-				fprintf(stderr, "%s:%d: warning: "
-					"admin_name reset\n",
-					my_config_file, lines);
-				free(lu_config_admin_name);
-			}
-			
-			lu_config_admin_name = my_config_find_after(
-				&line[0], my_config_file, lines);
-			if (!lu_config_admin_name)
-				ok = -1;
-		}
-		else if (!strcmp(&keyword[0], "admin_address"))
-		{
-			if (what)
-			{
-				fprintf(stderr, "%s:%d: error: "
-					"admin_address in list scope\n",
-					my_config_file, lines);
-				ok = -1;
-				continue;
-			}
-			if (lu_config_admin_address)
-			{
-				fprintf(stderr, "%s:%d: warning: "
-					"admin_address reset\n",
-					my_config_file, lines);
-				free(lu_config_admin_address);
-			}
-			
-			lu_config_admin_address = my_config_find_after(
-				&line[0], my_config_file, lines);
-			if (!lu_config_admin_address)
-				ok = -1;
-		}
-		else if (!strcmp(&keyword[0], "list"))
+		if (!strcmp(&keyword[0], "list"))
 		{
 			if (sscanf(&line[0], "%19s %d = ", &keyword[0], &i) != 2)
 			{
@@ -540,57 +511,10 @@ static int my_config_load_config()
 			what->description = 0;
 			what->mbox_head   = 0;
 			what->next        = 0;
+			what->cache_head  = 0;
 			
 			target_mbox = &what->mbox_head;
 			target_list = &what->next;
-		}
-		else if (!strcmp(&keyword[0], "description"))
-		{
-			if (!what)
-			{
-				fprintf(stderr, "%s:%d: error: "
-					"description outside list scope\n",
-					my_config_file, lines);
-				ok = -1;
-				continue;
-			}
-			
-			if (what->description)
-			{
-				fprintf(stderr, "%s:%d: warning: "
-					"description reset\n",
-					my_config_file, lines);
-				free(what->description);
-			}
-			
-			what->description = my_config_find_after
-				(&line[0], my_config_file, lines);
-			if (!what->description)
-				ok = -1;
-		}
-		else if (!strcmp(&keyword[0], "address"))
-		{
-			if (!what)
-			{
-				fprintf(stderr, "%s:%d: error: "
-					"address outside list scope\n",
-					my_config_file, lines);
-				ok = -1;
-				continue;
-			}
-			
-			if (what->address)
-			{
-				fprintf(stderr, "%s:%d: warning: "
-					"address reset\n",
-					my_config_file, lines);
-				free(what->address);
-			}
-			
-			what->address = my_config_find_after
-				(&line[0], my_config_file, lines);
-			if (!what->address)
-				ok = -1;
 		}
 		else if (!strcmp(&keyword[0], "mbox"))
 		{
@@ -647,6 +571,20 @@ static int my_config_load_config()
 			
 			target_mbox = &(*target_mbox)->next;
 		}
+		else PRE_LIST_STR("dbdir",             lu_config_dbdir)
+		else PRE_LIST_STR("wwwdir",            lu_config_wwwdir)
+		else PRE_LIST_STR("pidfile",           lu_config_pidfile)
+		else PRE_LIST_STR("list_host",         lu_config_list_host)
+		else PRE_LIST_STR("admin_name",        lu_config_admin_name)
+		else PRE_LIST_STR("admin_address",     lu_config_admin_address)
+		else PRE_LIST_NUM("cache_cutoff",      lu_config_cache_cutoff)
+		else PRE_LIST_NUM("cache_files",       lu_config_cache_files)
+		else PRE_LIST_NUM("cache_size",        lu_config_cache_size)
+		else PRE_LIST_NUM("cache_search_ttl",  lu_config_cache_search_ttl)
+		else PRE_LIST_NUM("cache_message_ttl", lu_config_cache_message_ttl)
+		else PRE_LIST_NUM("cache_index_ttl",   lu_config_cache_index_ttl)
+		else AFT_LIST_STR("description",       description)
+		else AFT_LIST_STR("address",           address)
 		else
 		{
 			fprintf(stderr, "%s:%d: error: unknown keyword '%s'\n",
@@ -657,47 +595,19 @@ static int my_config_load_config()
 	
 	fclose(c);
 	
-	if (!lu_config_pidfile)
-	{
-		fprintf(stderr, "%s: warning: pidfile not declared - "
-			"using: %s\n", my_config_file, DEFAULT_PID_FILE);
-		lu_config_pidfile = strdup(DEFAULT_PID_FILE);
-	}
+	DEF_STR("dbdir",         lu_config_dbdir,         DBDIR)
+	DEF_STR("wwwdir",        lu_config_wwwdir,        WWWDIR)
+	DEF_STR("pidfile",       lu_config_pidfile,       DEFAULT_PID_FILE)
+	DEF_STR("list_host",     lu_config_list_host,     "somewhere.org")
+	DEF_STR("admin_name",    lu_config_admin_name,    "unconfigured")
+	DEF_STR("admin_address", lu_config_admin_address, "nill@unconfigured.org")
 	
-	if (!lu_config_wwwdir)
-	{
-		fprintf(stderr, "%s: warning: wwdir not declared - "
-			"using: %s\n", my_config_file, WWWDIR);
-		lu_config_wwwdir = strdup(WWWDIR);
-	}
-	
-	if (!lu_config_dbdir)
-	{
-		fprintf(stderr, "%s: warning: dbdir not declared - "
-			"using: %s\n", my_config_file, DBDIR);
-		lu_config_dbdir = strdup(DBDIR);
-	}
-	
-	if (!lu_config_list_host)
-	{
-		fprintf(stderr, "%s: warning: list_host not declared - "
-			"using: somewhere.org\n", my_config_file);
-		lu_config_list_host = strdup("somewhere.org");
-	}
-	
-	if (!lu_config_admin_name)
-	{
-		fprintf(stderr, "%s: warning: admin_name not declared - "
-			"using: unconfigured\n", my_config_file);
-		lu_config_admin_name = strdup("unconfigured");
-	}
-	
-	if (!lu_config_admin_address)
-	{
-		fprintf(stderr, "%s: warning: admin_address not declared - "
-			"using: nill@unconfigured.org\n", my_config_file);
-		lu_config_admin_address = strdup("nill@unconfigured.org");
-	}
+	DEF_NUM("cache_cutoff",      lu_config_cache_cutoff,      65536)
+	DEF_NUM("cache_files",       lu_config_cache_files,       4096)
+	DEF_NUM("cache_size",        lu_config_cache_size,        8388608)
+	DEF_NUM("cache_search_ttl",  lu_config_cache_search_ttl,  600)
+	DEF_NUM("cache_message_ttl", lu_config_cache_message_ttl, 600)
+	DEF_NUM("cache_index_ttl",   lu_config_cache_index_ttl,   604800)
 	
 	if (ok != 0)
 	{
