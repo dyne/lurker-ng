@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.5 2002-07-09 00:09:40 terpstra Exp $
+/*  $Id: kap.c,v 1.6 2002-07-09 20:15:23 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -134,7 +134,16 @@ int kap_create(Kap* k, int flags)
 		if (!(*k)->append) goto kap_create_error2;
 	}
 	
+	if ((flags & KAP_WBUFFER) == KAP_WBUFFER)
+	{
+		(*k)->wbuffer = wbuffer_init();
+		if (!(*k)->wbuffer) goto kap_create_error3;
+	}
+	
 	return 0;
+	
+kap_create_error3:
+	if ((*k)->append) free((*k)->append);
 	
 kap_create_error2:
 	if ((*k)->btree) free((*k)->btree);
@@ -153,8 +162,10 @@ int kap_destroy(Kap k)
 	
 	if ((ret = kap_close(k)) != 0) out = ret;
 	
-	if (k->btree)  free(k->btree);
-	if (k->append) free(k->append);
+	if (k->btree)   free(k->btree);
+	if (k->append)  free(k->append);
+	if (k->wbuffer) free(k->wbuffer);
+	
 	free(k);
 	
 	return out;
@@ -167,15 +178,29 @@ int kap_open(Kap k, const char* dir, const char* prefix)
 	if (k->btree)
 	{
 		out = kap_btree_open(k, dir, prefix);
-		if (out) return out;
+		if (out) goto kap_open_error0;
 	}
 	if (k->append)
 	{
 		out = kap_append_open(k, dir, prefix);
-		if (out) return out;
+		if (out) goto kap_open_error1;
+	}
+	if (k->wbuffer)
+	{
+		out = kap_wbuffer_open(k, dir, prefix);
+		if (out) goto kap_open_error2;
 	}
 	
 	return 0;
+
+kap_open_error2:
+	if (k->append) kap_append_close(k);
+	
+kap_open_error1:
+	if (k->btree)  kap_btree_close (k);
+	
+kap_open_error0:
+	return out;
 }
 
 int kap_sync(Kap k)
@@ -183,8 +208,9 @@ int kap_sync(Kap k)
 	int out, ret;
 	out = 0;
 	
-	if (k->btree)  if ((ret = kap_btree_sync (k)) != 0) out = ret;
-	if (k->append) if ((ret = kap_append_sync(k)) != 0) out = ret;
+	if (k->wbuffer) if ((ret = kap_wbuffer_sync(k)) != 0) out = ret;
+	if (k->append)  if ((ret = kap_append_sync (k)) != 0) out = ret;
+	if (k->btree)   if ((ret = kap_btree_sync  (k)) != 0) out = ret;
 	
 	return out;
 }
@@ -194,8 +220,9 @@ int kap_close(Kap k)
 	int out, ret;
 	out = 0;
 	
-	if (k->btree)  if ((ret = kap_btree_close (k)) != 0) out = ret;
-	if (k->append) if ((ret = kap_append_close(k)) != 0) out = ret;
+	if (k->wbuffer) if ((ret = kap_wbuffer_close(k)) != 0) out = ret;
+	if (k->append)  if ((ret = kap_append_close (k)) != 0) out = ret;
+	if (k->btree)   if ((ret = kap_btree_close  (k)) != 0) out = ret;
 	
 	return out;
 }
@@ -361,6 +388,7 @@ struct AppendBack
 	const char*	key;
 	void*		data;
 	size_t		len;
+	size_t*		recs;
 	int		out;
 };
 
@@ -383,10 +411,13 @@ static int append_back(void* arg, const char* key, unsigned char* record, ssize_
 	nfo->out = kap_append_append(nfo->k, &kr, nfo->data, nfo->len);
 	
 	*len = kap_encode_krecord(record, &kr);
+	*nfo->recs = kr.records;
+	
 	return 1;
 }
 
-int kap_append(Kap k, const char* key, void* data, size_t len)
+int kap_append_real(Kap k, const char* key, void* data, size_t len,
+	size_t* nout)
 {
 	struct AppendBack nfo;
 	int out;
@@ -398,10 +429,38 @@ int kap_append(Kap k, const char* key, void* data, size_t len)
 	nfo.key		= key;
 	nfo.data	= data;
 	nfo.len		= len;
+	nfo.recs	= nout;
 	nfo.out		= 0;
 	
 	out = kap_btree_op(k, key, &append_back, &nfo);
 	
 	if (nfo.out) return nfo.out;
 	return out;
+}
+
+int kap_append(Kap k, const char* key, void* data, size_t len)
+{
+	size_t	nill;
+	int	out;
+	
+	if (k->wbuffer)
+	{
+		if (len == 1)
+		{
+			return kap_wbuffer_push(k, key, data);
+		}
+		else
+		{	/* User has done defragmentation or write combine
+			 * already -- trust them.
+			 */
+			out = kap_wbuffer_flush(k, key);
+			if (out) return out;
+			
+			return kap_append_real(k, key, data, len, &nill);
+		}
+	}
+	else
+	{
+		return kap_append_real(k, key, data, len, &nill);
+	}
 }
