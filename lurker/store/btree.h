@@ -1,4 +1,4 @@
-/*  $Id: btree.h,v 1.7 2002-06-20 14:32:26 terpstra Exp $
+/*  $Id: btree.h,v 1.8 2002-06-21 13:15:37 terpstra Exp $
  *  
  *  btree.h - Knows how manage a binary search tree
  *  
@@ -453,7 +453,7 @@ static int my_btree_##PREFIX##_rmv(RECTYPE* n, RECTYPE victim) \
 		return LU_BTREE_NOT_FOUND; \
 	} \
 	\
-	dir = COMPARE(TABLE[*n].key, TABLE[victim].key); \
+	dir = COMPARE(TABLE[victim].key, TABLE[*n].key); \
 	\
 	if (dir < 0) \
 	{ \
