@@ -5,13 +5,11 @@
     version="1.0">
 
 <xsl:template match="mindex" mode="title">
- <xsl:apply-templates select="server" mode="title"/> -
  <xsl:value-of select="list/email/@name"/> -
  Messages <xsl:value-of select="offset"/>-<xsl:value-of select="string(number(offset)+count(summary)-1)"/>
 </xsl:template>
 
 <xsl:template match="mindex" mode="body">
- <p/><xsl:apply-templates select="server" mode="header"/>
  <p/>
  <h2>
   <xsl:apply-templates select="list/email"/> - Messages

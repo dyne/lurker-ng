@@ -5,12 +5,10 @@
     version="1.0">
 
 <xsl:template match="search" mode="title">
- <xsl:apply-templates select="server" mode="title"/> -
  Search: <xsl:value-of select="query"/>
 </xsl:template>
 
 <xsl:template match="search" mode="body">
- <p/><xsl:apply-templates select="server" mode="header"/>
  <p/><h2>Messages <xsl:value-of select="offset"/> / <xsl:value-of select="hits"/></h2>
  <p/>
  <h2>

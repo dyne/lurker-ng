@@ -5,7 +5,6 @@
     version="1.0">
 
 <xsl:template match="splash" mode="title">
- <xsl:apply-templates select="server" mode="title"/> -
  <xsl:copy-of select="$splash"/>
 </xsl:template>
 
@@ -36,9 +35,6 @@
 </xsl:template>
 
 <xsl:template match="splash" mode="body">
- <xsl:apply-templates select="server" mode="header"/>
-
- <br/>
  <div id="listblock">
  <xsl:if test="count(list)&lt;8">
   <table class="listtable0">

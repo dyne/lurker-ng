@@ -5,12 +5,10 @@
     version="1.0">
 
 <xsl:template match="error" mode="title">
- <xsl:apply-templates select="server" mode="title"/> -
  <xsl:value-of select="title"/>
 </xsl:template>
 
 <xsl:template match="error" mode="body">
- <p/><xsl:apply-templates select="server" mode="header"/>
  <p/><h2><xsl:value-of select="title"/>:</h2>
  <p/><xsl:value-of select="message"/>
  <p/><xsl:value-of select="detail"/>

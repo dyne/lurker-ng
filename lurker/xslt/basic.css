@@ -1,5 +1,5 @@
-h1 { text-align:center; font-family:HoratioDMed, Tahoma, Arial, sans-serif; font-size:300% }
-h2 { width:100%; text-indent:8%; background-color:#BBF; font-size:170%;
+h1 { text-align:center; font-family:HoratioDMed, Tahoma, Arial, sans-serif; font-size:160% }
+h2 { width:100%; text-indent:8%; background-color:#BBF; font-size:140%;
      margin-top:0; margin-bottom:1.2em; font-family:Times New Roman, serif }
 hr { color:black }
 table { border-collapse:collapse; border:hidden }
@@ -15,7 +15,7 @@ img.selected { background-color:#BBF; }
 
 .listtable { border:2px solid black }
 
-th { text-align:center; font-weight:bold; font-family:Times New Roman, serif }
+th { text-align:left; font-weight:bold; font-family:Times New Roman, serif }
 table { text-align:left; vertical-align:top; padding:2px 8px; font-family:Arial, sans-serif }
 
 tr.row1 { background-color:#DDD; text-align:left; vertical-align:top; padding:0px 0px; font-family:Arial, sans-serif }

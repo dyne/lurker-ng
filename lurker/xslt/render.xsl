@@ -26,14 +26,23 @@
  <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="{$lang}" lang="{$lang}">
   <head>
    <link rel="stylesheet" href="../fmt/default.css" type="text/css"/>
-   <title><xsl:apply-templates mode="title"/></title>
+   <title>
+    <xsl:apply-templates select="*/server" mode="title"/> -
+    <xsl:apply-templates mode="title"/>
+   </title>
   </head>
   <body>
+   <!-- Server Header -->
+   <p/><xsl:apply-templates select="*/server" mode="header"/>
+
+   <!-- Request Body -->
    <xsl:apply-templates mode="body"/>
 
-<!-- Attach Server Footer -->
-   <br/><hr/>
-   <p class="center"/><xsl:apply-templates select="*/server" mode="footer"/>
+   <!--  Server Footer -->
+   <p/><hr/>
+   <div class="center">
+    <xsl:apply-templates select="*/server" mode="footer"/>
+   </div>
   </body>
  </html>
 </xsl:template>

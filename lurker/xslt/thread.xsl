@@ -5,12 +5,10 @@
     version="1.0">
 
 <xsl:template match="thread" mode="title">
- <xsl:apply-templates select="server" mode="title"/> -
  <xsl:value-of select="summary/subject"/>
 </xsl:template>
 
 <xsl:template match="thread" mode="body">
- <p/><xsl:apply-templates select="server" mode="header"/>
  <p/>
  <h2>
   <xsl:value-of select="summary/subject"/>
