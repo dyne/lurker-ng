@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.18 2002-07-11 16:09:37 terpstra Exp $
+/*  $Id: btree.c,v 1.19 2002-07-11 16:38:14 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -47,7 +47,7 @@
 #endif
 
 #ifndef assert
-# define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FI
+# define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
 #endif
 
 #ifdef HAVE_IO_H

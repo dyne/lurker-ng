@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.9 2002-07-11 16:13:11 terpstra Exp $
+/*  $Id: append.c,v 1.10 2002-07-11 16:38:14 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -47,7 +47,7 @@
 #endif
 
 #ifndef assert
-# define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FI
+# define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
 #endif
 
 #ifdef HAVE_IO_H

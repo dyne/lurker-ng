@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.9 2002-07-11 16:14:49 terpstra Exp $
+/*  $Id: kap.c,v 1.10 2002-07-11 16:38:14 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -71,7 +71,7 @@
 #endif
 
 #ifndef assert
-# define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FI
+# define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
 #endif
 
 #define _(String) gettext (String)

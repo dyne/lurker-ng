@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.4 2002-07-11 16:23:16 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.5 2002-07-11 16:38:14 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -48,7 +48,7 @@
 #endif
 
 #ifndef assert
-# define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FI
+# define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
 #endif
 
 
