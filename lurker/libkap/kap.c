@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.6 2002-07-09 20:15:23 terpstra Exp $
+/*  $Id: kap.c,v 1.7 2002-07-09 20:46:57 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -336,6 +336,13 @@ int kap_kopen(Kap k, KRecord* kr, const char* key)
 	unsigned char buf[256];
 	
 	if (!k->append) return KAP_NO_APPEND;
+	
+	if (k->wbuffer)
+	{
+		int out;
+		out = kap_wbuffer_flush(k, key);
+		if (out) return out;
+	}
 	
 	out = kap_btree_read(k, key, &buf[0], &len);
 	if (out == KAP_NOT_FOUND)

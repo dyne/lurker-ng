@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.9 2002-07-09 13:56:08 terpstra Exp $
+/*  $Id: kap.h,v 1.10 2002-07-09 20:46:57 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -266,7 +266,8 @@ size_t kap_encode_krecord(      unsigned char* where, const KRecord* kr);
 
 /** Open a KRecord by keyword name.
  *  This requires both the keyword and append layers.
- *  Errors: all kap_btree_read(), and KAP_NO_APPEND
+ *  This will flush cache on the record prior to reading.
+ *  Errors: all kap_append(), kap_btree_read(), and KAP_NO_APPEND
  */
 int	kap_kopen(Kap k, KRecord* kr, const char* key);
 
@@ -275,8 +276,9 @@ int	kap_kopen(Kap k, KRecord* kr, const char* key);
 int	kap_kclose(Kap k, KRecord* kr, const char* key);
 
 /** Read from a KRecord.
- *  This is simply an alias for kap_append_read. However, at some point this
- *  may change. So a stub function is provided.
+ *  Does not flush. If you have appended since a kopen, you will not
+ *  see the new records. (Done to allow atomic interaction)
+ *  Errors: all kap_append_read()
  */
 int	kap_kread(Kap k, const KRecord* kr, const char* key,
 	size_t where, void* buf, size_t amt);
