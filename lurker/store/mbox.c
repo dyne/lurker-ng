@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.16 2002-02-25 06:10:38 terpstra Exp $
+/*  $Id: mbox.c,v 1.17 2002-02-25 07:55:09 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -29,6 +29,7 @@
 
 #include "common.h"
 #include "io.h"
+#include "prefix.h"
 
 #include "mbox.h"
 #include "config.h"
@@ -208,6 +209,8 @@ static int my_mbox_process_mbox(
 	char			decode_subj [200];
 	char			author_name [100];
 	char			author_email[100];
+	char			message_id[LU_KEYWORD_LEN+1];
+	char			reply_to  [LU_KEYWORD_LEN+1];
 	int			error;
 	
 	if (lu_mbox_map_message(mbox, &mbox->msg, mbox->length) != 0)
@@ -323,12 +326,43 @@ static int my_mbox_process_mbox(
 		lu_mbox_destroy_message(&m);
 		return -1;
 	}
+	
+	/* Empty fields initially */
+	message_id[0] = reply_to[0] = 0;
+	
+	if (m.env->message_id)
+		strcpy(&message_id[0], lu_common_cleanup_id(m.env->message_id));
+	if (!strchr(&message_id[0], '@'))
+	{	/* We only like message-ids with an '@' in them. */
+		message_id[0] = 0;
+	}
+	
+	if (!reply_to[0] && m.env->in_reply_to)
+	{
+		strcpy(&reply_to[0], lu_common_cleanup_id(m.env->in_reply_to));
+		if (!strchr(&reply_to[0], '@'))
+			reply_to[0] = 0;
+	}
+	
+	if (!reply_to[0] && m.env->followup_to)
+	{
+		strcpy(&reply_to[0], lu_common_cleanup_id(m.env->followup_to));
+		if (!strchr(&reply_to[0], '@'))
+			reply_to[0] = 0;
+	}
+	
+	if (!reply_to[0] && m.env->references)
+	{
+		strcpy(&reply_to[0], lu_common_cleanup_id(m.env->references));
+		if (!strchr(&reply_to[0], '@'))
+			reply_to[0] = 0;
+	}
 
 	/*!!! Unwind the indexer pushes if reply_to fails */
 	lu_summary_reply_to_resolution(
 		id,
-		m.env->message_id,
-		m.env->in_reply_to);
+		&message_id[0],
+		&reply_to[0]);
 	
 #ifdef DEBUG
 	printf("."); fflush(stdout);

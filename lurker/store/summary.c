@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.10 2002-02-25 00:13:30 terpstra Exp $
+/*  $Id: summary.c,v 1.11 2002-02-25 07:55:09 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -1278,11 +1278,11 @@ int lu_summary_reply_to_resolution(
 	 int			i;
 	 Lu_Breader_Handle	h;
 	 
-	 if (msg_id)
+	 if (*msg_id)
 	 { 	/* Does anything already imported reply to us? */
 	 	snprintf(&key[0], sizeof(key), "%s%s",
 	 		LU_KEYWORD_REPLY_TO,
-	 		lu_common_cleanup_id(msg_id));
+	 		msg_id);
 	 	
 	 	h = lu_breader_new(&key[0]);
 	 	if (h != 0)
@@ -1313,11 +1313,11 @@ int lu_summary_reply_to_resolution(
 	 	}
 	 }
 	 
-	 if (reply_to_msg_id)
+	 if (*reply_to_msg_id)
 	 {	/* Do we reply to anything? */
 	 	snprintf(&key[0], sizeof(key), "%s%s",
 	 		LU_KEYWORD_MESSAGE_ID,
-	 		lu_common_cleanup_id(reply_to_msg_id));
+	 		reply_to_msg_id);
 	 	
 	 	h = lu_breader_new(&key[0]);
 	 	if (h != 0)
