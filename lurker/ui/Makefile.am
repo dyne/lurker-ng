@@ -8,6 +8,6 @@ dist_fmt_DATA = \
 dist_html_DATA = index.html
 
 install-data-local:
-	for i in list message mindex search splash thread; do \
+	for i in attach list message mindex search splash thread; do \
 		$(mkinstalldirs) $(DESTDIR)$(htmldir)/$$i; \
 		done
