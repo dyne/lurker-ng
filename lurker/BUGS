@@ -4,19 +4,11 @@ Suggestion: include documentation in a mbox format in default lurker.com
 Suggestion: base path mboxes are relative to
 
 BUGS:
+	Presently we have no keyword write buffer
+	Also we don't check for double append
+	
+	Need HTML parsing for the email that's html
+	Should find urls etc in message bodies
+	
 	Attachments are never cached because we need to tell the browser
 	the content-type and we have no way to record this.
-
-BUGS:
-2	Seperate lists can receive the same message.
-		-> If we implement insertion earlier in the id list, we
-		   screw ourselves for index caching.
-
-	#2 *** Same message in multiple lists:
-		b: Add another database which stores what lists a message
-		   appears in. It should contain:
-			list, list offset, mbox, mbox offset -- repeated
-		c: Summary should now only include timestamp, flat offset,
-		   thread... 
-		e: See if already in the lists of occurance database.
-		f: Append to the lists of occurance database.
