@@ -67,7 +67,6 @@ td img { vertical-align:middle }
 .normal   { }                        /* Mark the thread segment as normal */
 
 /* The following are used to induce highlighting effects on thread message icons */
-a img { background-color:#FFF }
 a img.selected { background-color:#77F }
 a:visited img { background-color:#BBB }
 a:visited img.selected { background-color:#77F }
