@@ -1,4 +1,4 @@
-/*  $Id: host.c,v 1.6 2002-07-12 17:53:57 terpstra Exp $
+/*  $Id: host.c,v 1.7 2002-08-14 10:20:08 terpstra Exp $
  *  
  *  host.c - collection of useful web regexps for reg2c
  *  
@@ -26,6 +26,7 @@
 #include <string.h>
 
 #define TOKEN_REG       "([A-Za-z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9]|[a-zA-Z0-9])"
+#define INT_REG		"([0-9]+)"
 #define HOST_REG	"((" TOKEN_REG "\\.)*" TOKEN_REG ")"
 #define USER_REG	"([A-Za-z0-9][a-zA-Z0-9._=\\-]*[a-zA-Z0-9]|[a-zA-Z0-9])"
 #define FILE_REG        "([A-Za-z%~0-9:.,_\\-]*[A-Za-z0-9]|#|\\.\\.)"
@@ -37,6 +38,7 @@
 #define URL_REG    	"(((" PROTO_REG "://" HOST_REG ")" \
                          "|(www\\." HOST_REG "\\." TOKEN_REG ")" \
                          ")" \
+                         "(:"	INT_REG  ")?" \
                          "("    PATH_REG ")?" \
                     	 "(\\#" FILE_REG ")?" \
                     	 "(\\?" POST_REG ")?" \
