@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.24 2003-06-25 21:14:56 terpstra Exp $
+/*  $Id: message.cpp,v 1.25 2003-06-25 22:16:13 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -181,6 +181,24 @@ string pgp_tmpfile(const string& type)
 	return string("../attach/") + buf + "@" + pgp_name_prefix + "." + type;
 }
 
+void pgp_writefile(ostream& o, const DwString& data)
+{
+	size_t s, e;
+	
+	s = 0;
+	while (1)
+	{
+		e = data.find_first_of("\r\n", s);
+		if (e == DwString::npos) break;
+		
+		o.write(data.c_str() + s, e - s);
+		if (data[s] == '\r') ++s;
+		else if (data[s] == '\n') o << "\r\n";
+	}
+	
+	o.write(data.c_str() + s, data.length() - s);
+}
+
 void run_pgp(ostream& o, string& command)
 {
 	string photo = pgp_tmpfile("photo");
@@ -267,7 +285,7 @@ bool handle_signed_inline(ostream& o, DwEntity& e)
 	if (1)
 	{ // create the cleartext
 		std::ofstream body(cleartext.c_str());
-		body.write(out.c_str(), out.length());
+		pgp_writefile(body, out);
 	}
 	
 	run_pgp(o, command);
@@ -307,15 +325,13 @@ bool handle_signed_mime(ostream& o, DwEntity& e)
 	if (1)
 	{ // create the cleartext
 		std::ofstream bodyf(cleartext.c_str());
-		bodyf.write(	body->AsString().c_str(), 
-				body->AsString().length());
+		pgp_writefile(bodyf, body->AsString());
 	}
 	
 	if (1)
 	{ // create the signature
 		std::ofstream sigf(signature.c_str());
-		sigf.write(	sig->Body().AsString().c_str(), 
-				sig->Body().AsString().length());
+		pgp_writefile(sigf, sig->Body().AsString());
 	}
 	
 	run_pgp(o, command);
