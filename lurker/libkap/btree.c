@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.2 2002-07-01 12:54:09 terpstra Exp $
+/*  $Id: btree.c,v 1.3 2002-07-01 14:25:31 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -504,11 +504,33 @@ static off_t allocate_cell(Kap k)
 
 /***************************************** Functions to parse the sector */
 
-/* Precondition: x is loaded in secta
- * Doesn't touch the disk
+/* Doesn't touch the disk
  */
-static int is_full(const unsigned char* sector)
+static int is_full(Kap k, const unsigned char* sector)
 {
+	int			i, leaf, count;
+	size_t			size, remain;
+	const unsigned char*	scan;
+	
+	leaf  = ((struct Sector_Header*)sector)->leaf;
+	count = ((struct Sector_Header*)sector)->count;
+	
+	if (leaf) scan = sector + sizeof(struct Sector_Header);
+	else      scan = sector + sizeof(struct Sector_Header) + k->btree->tree_size;
+	
+	for (i = 0; i < count; i++)
+	{
+		scan += strlen(scan) + 1;
+		
+		if (leaf)	scan += 1 + (*scan);
+		else		scan += k->btree->tree_size;
+	}
+	
+	size = scan - sector;
+	remain = k->btree->sector_size - size;
+	
+	return	remain < 1 + k->btree->leaf_size + k->btree->max_key_size ||
+		remain <   2*k->btree->tree_size + k->btree->max_key_size;
 }
 
 /***************************************** Btree insertion code */
@@ -529,6 +551,106 @@ static int is_full(const unsigned char* sector)
 static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 			unsigned char* off)
 {
+	unsigned char* mid;
+	unsigned char* next;
+	unsigned char* scan;
+	
+	int hits, leaf, count;
+	size_t klen, follows, remains;
+	
+	/* Amount after off in parent */
+	follows = k->btree->secta + k->btree->sector_size - off;
+	
+	
+	
+	
+	/* Find the mid point of the child */
+	mid = k->btree->sectb + k->btree->sector_size/2;
+	
+	leaf  = ((struct Sector_Header*)k->btree->sectb)->leaf;
+	count = ((struct Sector_Header*)k->btree->sectb)->count;
+	
+	scan = k->btree->sectb + sizeof(struct Sector_Header);
+	if (!leaf) scan += k->btree->tree_size;
+	
+	for (hits = 0, next = scan; next < mid; scan = next, hits++)
+	{
+		next = scan + strlen(scan) + 1;
+		
+		if (leaf)	next += 1 + (*next);
+		else		next += k->btree->tree_size;
+	}
+	
+	assert (hits < count);
+	
+	/* Scan now points at the key which overflows the mid point */
+	remains = k->btree->sectb + k->btree->sector_size - scan;
+	klen = strlen(scan) + 1;
+	
+	
+	
+	
+	
+	/* Allocate the new cell */
+	*new = allocate_cell(k);
+	if (*new == 0) return KAP_NO_SPACE;
+	
+	
+	
+	
+	
+	/********** Prepare the parent */
+	
+	
+	/* Move the memory of our parent to accomodate this record plus an
+	 * additional tree_size
+	 */
+	memmove(off + klen + k->btree->tree_size,	/* new location */
+		off,					/* old location */
+		follows - klen - k->btree->tree_size);
+	
+	/* Throw in the new key and target the new record */
+	memcpy(off, scan, klen);
+	off += klen;
+	encode_offset(off, *new, k->btree->tree_size);
+	
+	/* Increase the hits in our parent */
+	((struct Sector_Header*)k->btree->secta)->count++;
+	
+	
+	
+	
+	/********** Prepare the new child */
+	
+	
+	memset(k->btree->sectc, 0, k->btree->sector_size);
+	((struct Sector_Header*)k->btree->sectc)->leaf = leaf;
+	if (leaf)
+	{
+		((struct Sector_Header*)k->btree->sectc)->count = count - hits;
+		memcpy(	k->btree->sectc + sizeof(struct Sector_Header),
+			scan,
+			remains);
+	}
+	else
+	{
+		((struct Sector_Header*)k->btree->sectc)->count = count - hits - 1;
+		memcpy(	k->btree->sectc + sizeof(struct Sector_Header),
+			scan+klen,
+			remains-klen);
+	}
+	
+	
+	/********** Prepare the old child */
+	
+	
+	/* Truncate the original record */
+	memset(scan, 0, remains);
+	((struct Sector_Header*)k->btree->sectb)->count = hits;
+	
+	
+	/********** Done */
+	return 0;
 }
 
 /* Precondition: x is loaded in secta
@@ -570,10 +692,11 @@ static int travel_down(Kap k, const char* key, off_t x,
 		
 		/* Pull the chid off disk */
 		decode_offset(ptr, &child, k->btree->tree_size);
+		ptr += k->btree->tree_size;
 		if (READ_SECTOR(k->btree, child, k->btree->sectb) != 0)
 			return errno;
 		
-		if (is_full(k->btree->sectb))
+		if (is_full(k, k->btree->sectb))
 		{	/* Preserve the "not full" precondition */
 		}
 		
@@ -613,7 +736,7 @@ int kap_btree_op(Kap k, const char* key,
 	if (READ_SECTOR(k->btree, root, k->btree->secta) != 0)
 		return errno;
 	
-	if (is_full(k->btree->secta))
+	if (is_full(k, k->btree->secta))
 	{
 		off_t split_root;
 		off_t new_root;
