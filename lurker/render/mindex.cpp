@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.3 2003-04-25 16:38:19 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.4 2003-04-25 20:12:32 terpstra Exp $
  *  
  *  mindex.cpp - Handle a mindex/ command
  *  
@@ -90,7 +90,7 @@ int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database mindex seek failure"), strerror(errno),
+		cout << error(_("Database mindex seek failure"), ok,
 			_("Something internal to the database failed. "
 			  "Please contact the lurker user mailing list for "
 			  "furth assistence."));
