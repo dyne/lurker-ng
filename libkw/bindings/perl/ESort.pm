@@ -42,10 +42,10 @@ ESort - Perl extension online external sort
   $db->commit();
   
   $db = ESort::Reader("fred");
-  $w = $db->seek("", $ESort::FORWARD);
+  $w = $db->seek("zzz", $ESort::BACKWARD);
   while ($w->advance() >= 0)
   {
-    print $w->key(), "\n";
+    print $w->key, "\n";
   }
 
 =head1 ABSTRACT
