@@ -4,8 +4,9 @@ BUGS:
 		-> If we implement insertion earlier in the id list, we
 		   screw ourselves for index caching.
 3	Need a link back to the index from messages for each list.
-4	Attachments should be cacheable - fix it somehow.
-5	Make threading work somehow.
+4	xml browsable with remote stylesheets
+5	Attachments should be cacheable - fix it somehow.
+6	Make threading work somehow.
 
 	#1 *** Message ID instead of docid should be URL
 		a: find a good md5 implementation.
@@ -36,10 +37,16 @@ BUGS:
 		a: Finish #4
 		b: Simply use the new list offset field in the database.
 	
-	#4 *** Cachable attachments:
+	#4 *** xml browsing:
+		a: need smarter stylesheets with control vars
+		b: make common stylesheet included
+		c: fix error message formatting
+		d: figure why mozilla crashes on splash and eats search
+	
+	#5 *** Cachable attachments:
 		Hrm. Not sure what to do here; maybe modify .htaccess to
 		tell apache the content-type?
 	
-	#5 *** Threading:
+	#6 *** Threading:
 		??? Not sure what to do; old scheme is not good enough.
 		Maybe we want some sort of breath-first search?
