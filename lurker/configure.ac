@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.17 2002-05-04 03:42:34 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.18 2002-05-04 03:53:09 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -36,6 +36,7 @@ AC_PROG_RANLIB
 AC_HEADER_STDC
 AC_HEADER_DIRENT
 
+AC_C_BIGENDIAN
 AC_C_CONST
 AC_C_INLINE
 AC_C_CHAR_UNSIGNED
