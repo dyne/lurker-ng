@@ -1,11 +1,13 @@
 Ideas:
-	Sections for mailing lists?
+	Sections for mailing lists? Search by section?
 	Allow control of ascending/descending sort?
 	Maybe make an effort to mangle emails?
 	Deleted message keyword?
 
 Unfulfilled requirements:
+	New UI
 	New topics
+	in-message forward/backward for search results
 	Message count estimates
 	Boolean "or" in search
 	Phrase searching
