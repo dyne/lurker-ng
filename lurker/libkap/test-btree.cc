@@ -13,7 +13,7 @@ void test_write(Kap k, const char* key, string val, int exist)
 	int out;
 	ssize_t l = val.length();
 	
-//	cout << "TEST WRITE: " << key << " for " << val << endl;
+//	cout << "TEST WRITE: " << key << endl;
 	
 	out = kap_btree_write(k, key, 
 		(const unsigned char*)val.c_str(), &l);
@@ -28,7 +28,7 @@ void test_read(Kap k, const char* key, string val, int exist)
 	unsigned char buf[1000];
 	ssize_t len;
 	
-//	cout << "TEST READ: " << key << " for " << val << endl;
+	cout << "TEST READ: " << key << endl;
 	
 	out = kap_btree_read(k, key, &buf[0], &len);
 	assert (exist || out == KAP_NOT_FOUND);
@@ -51,6 +51,12 @@ int main()
 	assert (out == ENOENT);
 	
 	unlink("test-btree.btree");
+	
+	out = kap_btree_set_sectorsize(k, 512);
+	assert (out == ERANGE);
+	
+	out = kap_btree_set_sectorsize(k, 768);
+	assert (out == 0);
 	
 	out = kap_open(k, ".", "test-btree");
 	assert (out == 0);
@@ -77,12 +83,12 @@ int main()
 		char buf[7];
 		string val = "       ";
 		
-		buf[0] = 'a' + random() % 32;
-		buf[1] = 'a' + random() % 32;
-		buf[2] = 'a' + random() % 32;
-		buf[3] = 'a' + random() % 32;
-		buf[4] = 'a' + random() % 32;
-		buf[5] = 'a' + random() % 32;
+		buf[0] = 'a' + random() % 26;
+		buf[1] = 'a' + random() % 26;
+		buf[2] = 'a' + random() % 26;
+		buf[3] = 'a' + random() % 26;
+		buf[4] = 'a' + random() % 26;
+		buf[5] = 'a' + random() % 26;
 		buf[6] = 0;
 		
 		val[0] = random() % 256;
