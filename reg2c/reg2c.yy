@@ -1,4 +1,4 @@
-/*  $Id: reg2c.yy,v 1.4 2002-07-11 21:34:12 terpstra Exp $
+/*  $Id: reg2c.yy,v 1.5 2002-07-11 22:11:02 terpstra Exp $
  *  
  *  reg2c.c - compile regular expressions to DFA switch()ing C
  *  
@@ -420,6 +420,10 @@ Inputs examine_exits(const NFA& nfa, const DFA_State& state)
 {
 	Inputs out;
 	DFA_State::const_iterator i;
+	int j;
+
+	for (j = 0; j < 256; j++)
+		out[j];	/* make sure it exists */
 	
 	for (i = state.begin(); i != state.end(); i++)
 	{
@@ -439,7 +443,6 @@ void dedeterministic_it(DFA& out, const NFA& nfa, DFA_State& start)
 	expand_epsilon(nfa, where);
 	
 	todo.insert(start = flatten(where));
-	todo.insert(DFA_State());
 	while (!todo.empty())
 	{
 		DFA_State what = *todo.begin();
@@ -455,16 +458,13 @@ void dedeterministic_it(DFA& out, const NFA& nfa, DFA_State& start)
 			expand_epsilon(nfa, where);
 			DFA_State dest = flatten(where);
 			
-			if (dest.length())
+			if (out.find(dest) == out.end())
 			{
-				if (out.find(dest) == out.end())
-				{
-					todo.insert(dest);
-					out[dest] = Transition();
-				}
-				
-				t[i->first] = &out.find(dest)->first;
+				todo.insert(dest);
+				out[dest] = Transition();
 			}
+			
+			t[i->first] = &out.find(dest)->first;
 		}
 	}
 }
@@ -698,7 +698,12 @@ void compile(const NFA& nfa)
 	int k;
 	CState i;
 	CState go[256];
-	CState nill = reduced_map[DFA_State()];
+	CState nill;
+
+	if (reduced_map.find(DFA_State()) != reduced_map.end())
+		nill = reduced_map[DFA_State()];
+	else
+		nill = reduced_states.size();
 	
 	CState states = 0;
 	for (i = 0; i < reduced_states.size(); i++)
@@ -708,9 +713,9 @@ void compile(const NFA& nfa)
 	fflush(stderr);
 	
 	printf("%s %s(const unsigned char* s, const unsigned char* e)\n", 
-		(mode==MODE_TEST)?"int":"const char*", func);
+		(mode==MODE_TEST)?"int":"const unsigned char*", func);
 	printf("{\n");
-	if (mode == MODE_LAST_HIT) printf("\tconst char* last = 0;\n");
+	if (mode == MODE_LAST_HIT) printf("\tconst unsigned char* last = 0;\n");
 	
 	printf("\tgoto %s%u;\n\t\n", func, reduced_map[start]);
 	
@@ -753,7 +758,7 @@ int main(int argc, const char** argv)
 	printf(
 	"/* Copyright: Public domain\n"
 	" * Produced with reg2c for %s\n"
-	" * cvs id tag: $Id: reg2c.yy,v 1.4 2002-07-11 21:34:12 terpstra Exp $\n"
+	" * cvs id tag: $Id: reg2c.yy,v 1.5 2002-07-11 22:11:02 terpstra Exp $\n"
 	" *\n"
 	" * Regular expression: %s\n"
 	" */\n\n", getenv("EMAIL"), argv[3]);
@@ -794,7 +799,7 @@ int main(int argc, const char** argv)
 		func = argv[2];
 		
 		fprintf(stderr, "\nBuilding dispatcer... "); fflush(stderr);
-		printf("void %s(const char** s, const char** e)\n", func);
+		printf("void %s(const unsigned char** s, const unsigned char** e)\n", func);
 		printf("{\n");
 		printf("\t*s = %s_pass1(*s, *e);\n", func);
 		printf("\tif (*s) *e = %s_pass2(*s, *e);\n", func);
