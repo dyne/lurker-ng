@@ -13,7 +13,6 @@ Ideas:
 
 BUGS:
 	Reply to in messages?
-	Width problem in Safari?
 	There is a slight bug in advance() pre-commit post-insert.
 		(you don't always see fresh keys if partially past it)
 		(... but this doesn't affect lurker, so not priority)

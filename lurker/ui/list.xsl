@@ -150,8 +150,8 @@
    <div class="body">
     <div class="mozbug">
      <table class="index squash">
-      <col width="67%" align="left"/>
-      <col width="33%" align="left"/>
+      <col width="60%" align="left"/>
+      <col width="30%" align="left"/>
       <col width="85"  align="left"/>
       <col width="40"  align="right"/>
       <tr>

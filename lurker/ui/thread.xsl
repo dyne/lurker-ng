@@ -82,7 +82,7 @@
      <table class="index">
       <col width="60%" align="left"/>
       <col width="30%" align="left"/>
-      <col width="10%" align="right"/>
+      <col width="160" align="right"/>
       <tr>
        <th align="left"><xsl:value-of select="$thread"/></th>
        <th align="left"><xsl:value-of select="$author"/></th>
