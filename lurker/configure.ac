@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1c)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.32 2002-07-12 13:17:42 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.33 2002-07-12 15:16:52 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -74,7 +74,6 @@ AC_C_INLINE
 AC_C_CHAR_UNSIGNED
 
 ST_CHECK(STORAGE)
-DB3_CHECK(STORAGE)
 C_CLIENT_CHECK(STORAGE)
 XSLT_CHECK(RENDER)
 
