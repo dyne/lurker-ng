@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.40 2002-08-30 11:24:02 terpstra Exp $
+/*  $Id: main.c,v 1.41 2002-09-02 08:20:56 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -317,6 +317,10 @@ int main(int argc, char** argv)
 		openlog(STORAGE, LOG_PID | LOG_PERROR, LOG_MAIL);
 
 #ifdef HAVE_SIGNAL_H
+	/* This signal can happen even with libst sadly.
+	 */
+	signal(SIGPIPE, SIG_IGN);
+	
 	/* These signals will trigger a safe db cleanup after the current task
 	 * has been completed.
 	 */
