@@ -10,7 +10,7 @@ LinkLibraries lurker-index  : libcommon libesort ;
 LinkLibraries lurker-list   : libcommon ;
 LinkLibraries lurker-params : libcommon ;
 
-InstallBin $(BINDIR) : lurker-index lurker-list lurker-params;
+InstallBin $(BINDIR) : lurker-index lurker-list lurker-params ;
 InstallFile $(VARDIR)/lib/$(PACKAGE) : stub ;
 
 InstallMan $(MANDIR) : lurker-index.1 lurker-list.1 lurker-params.1 ;
