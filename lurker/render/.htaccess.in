@@ -1,7 +1,7 @@
 Options +ExecCGI
 AddHandler cgi-script .cgi
 
-AddType text/xsl .xml
+AddType text/xml .xsl
 AddType text/xml .xml
 
 AddDefaultCharset utf-8
