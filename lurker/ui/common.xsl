@@ -80,10 +80,7 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
   <xsl:apply-templates mode="utc-date" select="."/>
  </xsl:attribute>
  <xsl:attribute name="onMouseOver">
-  <xsl:text>titledate(this,'</xsl:text>
-  <xsl:apply-templates mode="email-name" select="email"/>
-  <xsl:value-of select="$posted-at"/>
-  <xsl:text>',</xsl:text>
+  <xsl:text>titledate(this,</xsl:text>
   <xsl:value-of select="timestamp"/>
   <xsl:text>);</xsl:text>
  </xsl:attribute>

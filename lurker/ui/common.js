@@ -39,10 +39,12 @@ function textdate(utc)
 	document.write(s);
 }
 
-function titledate(thisItem, prefix, utc)
+function titledate(thisItem, utc)
 {
 	var d = new Date(utc*1000);
-	var s = prefix + d.getFullYear().toString()
+	var s = thisItem.getAttribute('title');
+	s =	s.substring(0, s.length-16)
+		+ d.getFullYear().toString()
 		+ '-' + twostr(d.getMonth()+1)
 		+ '-' + twostr(d.getDate())
 		+ ' ' + twostr(d.getHours()) // nbsp in titles is bad
