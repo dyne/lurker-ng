@@ -2,6 +2,10 @@ dbdir   = @DBDIR_expand@
 wwwdir  = @WWWDIR_expand@
 pidfile = @LOCALSTATEDIR_expand@/run/@PACKAGE@.pid
 
+list_host     = demo-server.org
+admin_name    = Unconfigured
+admin_address = nill@bitbucket.org
+
 # Now follow the mboxs which will be monitored for incoming messages
 #
 # list 0 = Debian-Devel
