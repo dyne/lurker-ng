@@ -21,7 +21,7 @@
  raw-email="Wiadomość jako email"
 
  front-page="Góra strony"
- search-menu="Szukaj w archiwum wiadomości pasujących wiadomości"
+ search-menu="Szukaj w archiwum pasujących wiadomości"
  list="Lista"
  group="Grupa"
  all-lists="Dowolna lista"
@@ -33,7 +33,7 @@
  search="Szukaj"
 
  jump-to-date="Przejdź do wiadomości najbliższej podanej dacie w tej liście:"
- search-list="Szukaj w tej liście wiadomości które zawierają następujące słowa kluczowe:"
+ search-list="Szukaj w tej liście wiadomości, które zawierają następujące słowa kluczowe:"
  jump="Przejdź"
  use-special-word-list="Użyj słowa kluczowego "
  to-search-list=" aby zawęzić przeszukiwanie tylko do tej listy."
