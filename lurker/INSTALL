@@ -15,7 +15,7 @@ Quick start
 1 ./configure
 
   If you need to specify dependency locations these options might help:
-  --with-xsltengine=CMD   Use the given command to render xslt
+  --with-mimelib-local    Use internal lurker/mimelib/*
   --with-mimelib-include  Location of mimelib/message.h
   --with-mimelib-libname  Try an alternative library name
 
