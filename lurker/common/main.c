@@ -1,5 +1,5 @@
 /*
- * $Id: main.c,v 1.5 2002-02-25 03:20:57 terpstra Exp $
+ * $Id: main.c,v 1.6 2002-02-25 06:10:38 terpstra Exp $
  *  
  *  main.c - debugging test for message parsing routines.
  *  
@@ -36,7 +36,8 @@ main(int argc, char **argv)
 	lu_common_decode_header(
 		"peanuts =?euc-jp?q?aa=A4=A8bb?= your death",
 		&buf[0],
-		20);
+		20,
+		0);
 	
 	puts(&buf[0]);
 	return 0;

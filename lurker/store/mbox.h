@@ -1,4 +1,4 @@
-/*  $Id: mbox.h,v 1.6 2002-02-22 00:51:43 terpstra Exp $
+/*  $Id: mbox.h,v 1.7 2002-02-25 06:10:38 terpstra Exp $
  *  
  *  mbox.h - Knows how to follow mboxes for appends and import messages
  *  
@@ -72,6 +72,11 @@ extern int lu_mbox_parse_message(
  */
 extern int lu_mbox_destroy_message(
 	struct Lu_Mbox_Message* m);
+
+/* This finds a charset attribute for the given body.
+ */
+const char* lu_mbox_find_charset(
+	struct mail_bodystruct* body);
 
 /*------------------------------------------------- Public component methods */
 

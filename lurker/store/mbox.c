@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.15 2002-02-25 03:33:18 terpstra Exp $
+/*  $Id: mbox.c,v 1.16 2002-02-25 06:10:38 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -233,14 +233,16 @@ static int my_mbox_process_mbox(
 			lu_common_decode_header(
 				m.env->reply_to->personal,
 				&author_name[0],
-				sizeof(author_name));
+				sizeof(author_name),
+				lu_mbox_find_charset(m.body));
 		}
 		else if (m.env->from && m.env->from->personal)
 		{
 			lu_common_decode_header(
 				m.env->from->personal,
 				&author_name[0],
-				sizeof(author_name));
+				sizeof(author_name),
+				lu_mbox_find_charset(m.body));
 		}
 		
 		if (m.env->reply_to->mailbox && m.env->reply_to->host)
@@ -257,7 +259,8 @@ static int my_mbox_process_mbox(
 			lu_common_decode_header(
 				m.env->from->personal,
 				&author_name[0],
-				sizeof(author_name));
+				sizeof(author_name),
+				lu_mbox_find_charset(m.body));
 		}
 		if (m.env->from->mailbox && m.env->from->host)
 		{
@@ -273,7 +276,8 @@ static int my_mbox_process_mbox(
 			lu_common_decode_header(
 				m.env->sender->personal,
 				&author_name[0],
-				sizeof(author_name));
+				sizeof(author_name),
+				lu_mbox_find_charset(m.body));
 		}
 		if (m.env->sender->mailbox && m.env->sender->host)
 		{
@@ -288,7 +292,8 @@ static int my_mbox_process_mbox(
 		lu_common_decode_header(
 			m.env->subject,
 			&decode_subj[0],
-			sizeof(decode_subj));
+			sizeof(decode_subj),
+			lu_mbox_find_charset(m.body));
 	}
 		
 	id = lu_summary_import_message(
@@ -683,6 +688,30 @@ int lu_mbox_quit()
 }
 
 /*------------------------------------------------- Public accessor methods */
+
+const char* lu_mbox_find_charset(
+	struct mail_bodystruct* body)
+{
+	PARAMETER* scan;
+	
+	for (scan = body->parameter; scan; scan = scan->next)
+	{
+		if (	scan->attribute &&
+			(scan->attribute[0] == 'c' || scan->attribute[0] == 'C') &&
+			(scan->attribute[1] == 'h' || scan->attribute[1] == 'H') &&
+			(scan->attribute[2] == 'a' || scan->attribute[2] == 'A') &&
+			(scan->attribute[3] == 'r' || scan->attribute[3] == 'R') &&
+			(scan->attribute[4] == 's' || scan->attribute[4] == 'S') &&
+			(scan->attribute[5] == 'e' || scan->attribute[5] == 'E') &&
+			(scan->attribute[6] == 't' || scan->attribute[6] == 'T') &&
+			!scan->attribute[7])
+		{
+			return lu_common_charset_maps(scan->value);
+		}
+	}
+	
+	return 0;
+}
 
 char* lu_mbox_select_body(
 	struct Lu_Mbox_Message* in,

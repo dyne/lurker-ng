@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.6 2002-02-25 03:20:57 terpstra Exp $
+/*  $Id: common.h,v 1.7 2002-02-25 06:10:38 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -109,7 +109,15 @@ extern message_id lu_common_minvalid;
 
 /*------------------------------------------------ Public helpers */
 
+/* Decode a message hreader into unescaped utf-8.
+ * This deals with =?charset?coding?str?= escaping as well as broken mail
+ * clients which mistakenly use the same charset they used for the body.
+ */
 void lu_common_decode_header(
 	const char*	r,
 	char*		out,
-	size_t		outlen);
+	size_t		outlen,
+	const char*	default_coding);
+
+const char* lu_common_charset_maps(
+	const char*	charset);

@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.8 2002-02-25 04:25:26 terpstra Exp $
+/*  $Id: common.c,v 1.9 2002-02-25 06:10:37 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -235,10 +235,17 @@ static char* my_common_base64(
 	return w;
 }
 
+const char* lu_common_charset_maps(
+	const char* charset)
+{
+	return charset;
+}
+
 void lu_common_decode_header(
 	const char*	r,
 	char*		out,
-	size_t		outlen)
+	size_t		outlen,
+	const char*	default_coding)
 {
 	/* Now, the plan is to just pass it through as though it were utf-8
 	 * until such a time as we see an =?charset?coding?str?=. If we think
@@ -249,13 +256,24 @@ void lu_common_decode_header(
 	char* w;
 	char* e;
 	
+	const char* start;
 	const char* rewind;
 	const char* close;
 	
 	char  charset[30];
 	char* b;
 	
+	size_t	wlen, rlen; 
+	
+	iconv_t dc;
 	iconv_t ic;
+	
+	if (!default_coding)
+		default_coding = "iso-8869-1";
+	
+	dc = iconv_open("utf-8", default_coding);
+	if (dc == (iconv_t)-1)
+		dc = iconv_open("utf-8", "iso-8859-1");
 	
 	w = out;
 	e = out + outlen - 1; /* leave space for a null */
@@ -263,15 +281,18 @@ void lu_common_decode_header(
 	rewind = r;
 	while (1)
 	{
-		r = rewind;
+		start = r = rewind;
 		
 		/* Handle normal string content */
-		for (; *r && w != e; r++)
+		for (; *r; r++)
 		{
 			if (*r == '=' && *(r+1) == '?')
 				break;
-			*w++ = *r;
 		}
+		
+		rlen = r - start;
+		wlen = e - w;
+		iconv(dc, (char**)&start, &rlen, &w, &wlen);
 		
 		if (!*r || w == e) break;
 		
@@ -323,13 +344,13 @@ void lu_common_decode_header(
 		}
 		
 		/* Try to open the charset */
-		ic = iconv_open("utf-8", &charset[0]);
+		ic = iconv_open("utf-8", lu_common_charset_maps(&charset[0]));
 		
 		/* Is this charset supported? */
 		if (ic == (iconv_t)-1)
 		{
-			*w++ = '=';
-			continue;
+			syslog(LOG_WARNING, "Unknown header coding: %s\n", &charset[0]);
+			ic = iconv_open("utf-8", "iso-8859-1");
 		}
 		
 		if ((*r == 'q' || *r == 'Q') && *(r+1) == '?')
@@ -351,4 +372,5 @@ void lu_common_decode_header(
 	}
 	
 	*w = 0;
+	iconv_close(dc);
 }

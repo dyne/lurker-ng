@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.28 2002-02-25 04:05:03 terpstra Exp $
+/*  $Id: service.c,v 1.29 2002-02-25 06:10:38 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -258,12 +258,13 @@ static int my_service_write_int(
 
 static int my_service_write_ehead(
 	My_Service_Handle	h,
-	const char*		header)
+	const char*		header,
+	const char*		coding)
 {
 	char buf[1024];
 	
 	/* This will transform the string into raw binary encoded utf-8 */
-	lu_common_decode_header(header, &buf[0], sizeof(buf));
+	lu_common_decode_header(header, &buf[0], sizeof(buf), coding);
 	
 	/* Now, write it as an xml escaped string */
 	return my_service_write_str(h, &buf[0]);
@@ -362,7 +363,8 @@ static int my_service_server(
 static int my_service_addresses(
 	My_Service_Handle h,
 	ADDRESS* addr, 
-	const char* name)
+	const char* name,
+	const char* coding)
 {
 	if (!addr) return 0;
 	
@@ -381,9 +383,9 @@ static int my_service_addresses(
 		
 		if (addr->personal)
 		{
-			if (my_service_buffer_write(h, " name=\""    ) != 0) return -1;
-			if (my_service_write_ehead (h, addr->personal) != 0) return -1;
-			if (my_service_buffer_write(h, "\""          ) != 0) return -1;
+			if (my_service_buffer_write(h, " name=\""            ) != 0) return -1;
+			if (my_service_write_ehead (h, addr->personal, coding) != 0) return -1;
+			if (my_service_buffer_write(h, "\""                  ) != 0) return -1;
 		}
 		
 		if (addr->mailbox && addr->host)
@@ -425,30 +427,6 @@ static char* my_service_find_name(
 	return 0;
 }
 
-static char* my_service_find_charset(
-	struct mail_bodystruct* body)
-{
-	PARAMETER* scan;
-	
-	for (scan = body->parameter; scan; scan = scan->next)
-	{
-		if (	scan->attribute &&
-			(scan->attribute[0] == 'c' || scan->attribute[0] == 'C') &&
-			(scan->attribute[1] == 'h' || scan->attribute[1] == 'H') &&
-			(scan->attribute[2] == 'a' || scan->attribute[2] == 'A') &&
-			(scan->attribute[3] == 'r' || scan->attribute[3] == 'R') &&
-			(scan->attribute[4] == 's' || scan->attribute[4] == 'S') &&
-			(scan->attribute[5] == 'e' || scan->attribute[5] == 'E') &&
-			(scan->attribute[6] == 't' || scan->attribute[6] == 'T') &&
-			!scan->attribute[7])
-		{
-			return scan->value;
-		}
-	}
-	
-	return 0;
-}
-
 static int my_service_dump(
 	My_Service_Handle	h,
 	const char*		dat,
@@ -468,7 +446,7 @@ static int my_service_dump(
 	{
 		/* Don't know this encoding - just dump the data anyways */
 		syslog(LOG_WARNING, "Unknown coding: %s\n", coding);
-		return my_service_write_strl(h, dat, len);
+		ic = iconv_open("utf-8", "iso-8859-1");
 	}
 	
 	while (len)
@@ -502,7 +480,7 @@ static int my_service_traverse(
 	char*			buffer;
 	int			nfree;
 	char*			name;
-	char*			charset;
+	const char*		charset;
 	
 	if (!body)
 	{	/* You never know... */
@@ -512,7 +490,7 @@ static int my_service_traverse(
 	if (body->type > 8) body->type = 8;
 	
 	name    = my_service_find_name(body);
-	charset = my_service_find_charset(body);
+	charset = lu_mbox_find_charset(body);
 	
 	if (my_service_buffer_write(h, "<mime id=\"") != 0) return -1;
 	if (my_service_write_int   (h, count        ) != 0) return -1;
@@ -977,6 +955,7 @@ static int my_service_getmsg(
 	
 	Lu_Breader_Handle	b;
 	char			keyword[LU_KEYWORD_LEN+1];
+	const char*		coding;
 	
 	message_id		count, ind, get, i, buf[1024];
 	
@@ -1073,6 +1052,8 @@ static int my_service_getmsg(
 		b = 0;
 	}
 	
+	coding = lu_mbox_find_charset(mmsg.body);
+	
 	if (my_service_xml_head(h)                       != 0) goto my_service_getmsg_error3;
 	if (my_service_buffer_write(h, "<message>\n")    != 0) goto my_service_getmsg_error3;
 	if (my_service_server(h)                         != 0) goto my_service_getmsg_error3;
@@ -1140,12 +1121,12 @@ static int my_service_getmsg(
 		if (my_service_buffer_write(h, " </replies>\n") != 0) goto my_service_getmsg_error3;
  	}
 	
-	if (my_service_addresses(h, mmsg.env->from,     "from"    ) != 0) goto my_service_getmsg_error3;
-	if (my_service_addresses(h, mmsg.env->sender,   "sender"  ) != 0) goto my_service_getmsg_error3;
-	if (my_service_addresses(h, mmsg.env->reply_to, "reply-to") != 0) goto my_service_getmsg_error3;
-	if (my_service_addresses(h, mmsg.env->to,       "to"      ) != 0) goto my_service_getmsg_error3;
-	if (my_service_addresses(h, mmsg.env->cc,       "cc"      ) != 0) goto my_service_getmsg_error3;
-	if (my_service_addresses(h, mmsg.env->bcc,      "bcc"     ) != 0) goto my_service_getmsg_error3;
+	if (my_service_addresses(h, mmsg.env->from,     "from",     coding) != 0) goto my_service_getmsg_error3;
+	if (my_service_addresses(h, mmsg.env->sender,   "sender",   coding) != 0) goto my_service_getmsg_error3;
+	if (my_service_addresses(h, mmsg.env->reply_to, "reply-to", coding) != 0) goto my_service_getmsg_error3;
+	if (my_service_addresses(h, mmsg.env->to,       "to",       coding) != 0) goto my_service_getmsg_error3;
+	if (my_service_addresses(h, mmsg.env->cc,       "cc",       coding) != 0) goto my_service_getmsg_error3;
+	if (my_service_addresses(h, mmsg.env->bcc,      "bcc",      coding) != 0) goto my_service_getmsg_error3;
 	
 	if (mmsg.env->message_id)
 	{
@@ -1157,7 +1138,7 @@ static int my_service_getmsg(
 	if (mmsg.env->subject)
 	{
 		if (my_service_buffer_write(h, " <subject>"     ) != 0) goto my_service_getmsg_error3;
-		if (my_service_write_ehead (h, mmsg.env->subject) != 0) goto my_service_getmsg_error3;
+		if (my_service_write_ehead (h, mmsg.env->subject, coding) != 0) goto my_service_getmsg_error3;
 		if (my_service_buffer_write(h, "</subject>\n"   ) != 0) goto my_service_getmsg_error3;
 	}
 	
