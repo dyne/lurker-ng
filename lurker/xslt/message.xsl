@@ -4,7 +4,7 @@
     xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
 
-<xsl:template match="a" mode="snippet"><img alt=" " src="../imgs/a.png"/></xsl:template>
+<xsl:template match="a" mode="snippet"><img alt="." src="../imgs/a.png"/></xsl:template>
 <xsl:template match="b" mode="snippet"><img alt="|" src="../imgs/b.png"/></xsl:template>
 <xsl:template match="c" mode="snippet"><img alt="-" src="../imgs/c.png"/></xsl:template>
 <xsl:template match="d" mode="snippet"><img alt="\" src="../imgs/d.png"/></xsl:template>
@@ -102,6 +102,14 @@
 
 <xsl:template match="br" mode="snippet"><br/></xsl:template>
 
+<xsl:template match="list" mode="offset">
+ <ul/>
+ <a href="../mindex/{id}@{string(floor(number(offset) div 20)*20)}.{$ext}">
+  <xsl:value-of select="email/@name"/> - message #
+  <xsl:value-of select="offset"/>
+ </a>
+</xsl:template>
+
 <xsl:template match="message" mode="title">
  <xsl:apply-templates select="server" mode="title"/> -
  <xsl:value-of select="list/email/@name"/> -
@@ -147,6 +155,12 @@
   </xsl:if>
  </table>
  
+ <hr/>
+ <p/>Appears in the <a href="../mbox/{mid}.txt">mailbox</a> of these mailing lists:
+ <ul>
+  <xsl:apply-templates select="list" mode="offset"/>
+ </ul>
+
  <hr/>
  <blockquote>
   <xsl:apply-templates select="mime"/>

@@ -48,7 +48,7 @@
 
 <!-- Format summary lists -->
 
-<xsl:template match="a"><img alt=" " src="i/a.png"/></xsl:template>
+<xsl:template match="a"><img alt="." src="i/a.png"/></xsl:template>
 <xsl:template match="b"><img alt="|" src="i/b.png"/></xsl:template>
 <xsl:template match="c"><img alt="-" src="i/c.png"/></xsl:template>
 <xsl:template match="d"><img alt="\" src="i/d.png"/></xsl:template>
