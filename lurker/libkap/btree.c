@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.15 2002-07-04 18:34:50 terpstra Exp $
+/*  $Id: btree.c,v 1.16 2002-07-09 13:24:55 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -282,7 +282,7 @@ struct Kap_Btree* btree_init(void)
 	btree->sector_size  = 8*1024;
 	btree->max_key_size = 100;
 	btree->tree_size    = 3;
-	btree->leaf_size    = 252;
+	btree->leaf_size    = 4+(32*5);
 	
 	btree->fd = -1;
 #ifdef USE_MMAP
@@ -327,7 +327,7 @@ int kap_btree_set_maxkeysize(Kap k, ssize_t size)
 	
 	bak = k->btree->max_key_size;
 	k->btree->max_key_size = size;
-	
+
 	if (needed_for_leaf_sector(k) > k->btree->sector_size ||
 	    needed_for_tree_sector(k) > k->btree->sector_size)
 	{

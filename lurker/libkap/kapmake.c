@@ -1,4 +1,4 @@
-/*  $Id: kapmake.c,v 1.6 2002-07-09 09:10:42 terpstra Exp $
+/*  $Id: kapmake.c,v 1.7 2002-07-09 13:24:55 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool
  *  
@@ -61,7 +61,7 @@ void help()
 	fputs(_("\t-s <bytes>\tSector size for the btree                   (8096)\n"), stderr);
 	fputs(_("\t-k <bytes>\tMaximum size of input key                    (100)\n"), stderr);
 	fputs(_("\t-t <bytes>\tNumber of bytes used in tree pointers          (3)\n"), stderr);
-	fputs(_("\t-l <bytes>\tMaximum number of bytes used in leaf records (252)\n"), stderr);
+	fputs(_("\t-l <bytes>\tMaximum number of bytes used in leaf records (164)\n"), stderr);
 	fputs(_("\t-r <bytes>\tSize of append records                         (4)\n"), stderr);
 	fputs("\n", stderr);
 	fputs(_("\t<file>\tThe database to append into\n"), stderr);
@@ -91,7 +91,7 @@ int main(int argc, char * const * argv)
 	ssize_t	sector_size	= 8192;
 	ssize_t	max_key_size	= 100;
 	short	tree_size	= 3;
-	ssize_t	leaf_size	= 252;
+	ssize_t	leaf_size	= 4+(5*32);
 	ssize_t	record_size	= 4;
 	
 	int mode = KAP_BTREE | KAP_APPEND;
