@@ -1,4 +1,4 @@
-/*  $Id: db.c,v 1.12 2002-01-31 05:42:40 terpstra Exp $
+/*  $Id: db.c,v 1.13 2002-01-31 06:42:13 terpstra Exp $
  *  
  *  db.c - manage the databases
  *  
@@ -38,6 +38,8 @@
 #else
 #define syslog(x, y, ...)
 #endif
+
+// #define DEBUG 1
 
 int	lu_summary_fd;
 int	lu_variable_fd;
@@ -288,24 +290,28 @@ static int lu_squishy_subject(const char* subject, char* target)
 		}
 		else
 		{
-			if (ws)
-			{
-				*w++ = ' ';
-				ws = 0;
-				
-				/* Need to retest since we are doing a double
-				 * write
-				 */
-				if (target == e) break;
-			}
-			
-			if (*r == ':')
+			if (*r == ':' && (w - target) > 8 &&
+				tolower(*(r-1)) == 'w' &&
+				tolower(*(r-2)) == 'a' &&
+				tolower(*(r-3)) == 's')
 			{	/* Nasty colons! */
+				if (ws) *w++ = ' ';
 				break;
 			}
 			
 			if (isalnum(*r))
 			{
+				if (ws)
+				{
+					*w++ = ' ';
+					ws = 0;
+					
+					/* Need to retest since we are doing a double
+					 * write
+					 */
+					if (w == e) break;
+				}
+				
 				*w++ = tolower(*r);
 			}
 		}
@@ -410,6 +416,9 @@ static int pop_thread(message_id thread_id, ThreadSummary* thread)
 		}
 	}
 	
+	thread->prev_thread = lu_kw_invalid;
+	thread->next_thread = lu_kw_invalid;
+	
 	return 0;
 }
 
@@ -419,7 +428,28 @@ static int pop_thread(message_id thread_id, ThreadSummary* thread)
  */
 static int push_thread(message_id thread_id, ThreadSummary* thread)
 {
-	/*!!! how do we find the end?*/
+	int		error;
+	DBT		key;
+	DBT		val;
+	
+	thread->prev_thread = lu_kw_invalid;
+	thread->next_thread = lu_kw_invalid;
+	
+	memset(&key, 0, sizeof(DBT));
+	memset(&val, 0, sizeof(DBT));
+	
+	key.data = &thread_id;
+	key.size = sizeof(message_id);
+	val.data = thread;
+	val.size = sizeof(ThreadSummary);
+	
+	if ((error = lu_thread_db->put(lu_thread_db, 0, &key, &val, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Storing thread summary for %d: %s\n",
+			thread_id, db_strerror(error));
+		return -1;
+	}
+	
 	return 0;
 }
 
@@ -515,6 +545,26 @@ static int lu_find_thread(
 		return -1;
 	}
 	
+	if (error == DB_NOTFOUND ||
+	    squishy_len != key.size - sizeof(lu_word) - sizeof(lu_quad) || 
+	    memcmp(&squishy[0], &thread_key[sizeof(lu_word)], squishy_len))
+	{	/* There is no prior thread */
+		prior_time = 0;
+	}
+	else
+	{
+		memcpy(&prior_time, &thread_key[key.size-sizeof(lu_quad)], 
+			sizeof(lu_quad));
+			
+		error = lu_thread_db->get(lu_thread_db, 0, &ind, &val, 0);
+		if (error)
+		{
+			syslog(LOG_ERR, "Unable to retrieve thread summary: %s\n",
+				db_strerror(error));
+			return -1;
+		}
+	}
+	
 	error = cursor->c_close(cursor);
 	if (error)
 	{
@@ -523,30 +573,17 @@ static int lu_find_thread(
 		return -1;
 	}
 	
-	if (error == DB_NOTFOUND ||
-	    memcmp(&squishy[0], &thread_key[sizeof(lu_word)], squishy_len))
-	{	/* There is no prior thread */
+	if (prior_time == 0)
+	{
 		*out = lu_kw_invalid;
 		return 0;
-	}
-	else
-	{
-		error = lu_thread_db->get(lu_thread_db, 0, &ind, &val, 0);
-		if (error)
-		{
-			syslog(LOG_ERR, "Unable to retrieve thread summary: %s\n",
-				db_strerror(error));
-			return -1;
-		}
-		
-		memcpy(&prior_time, &thread_key[key.size-sizeof(lu_quad)], 
-			sizeof(lu_quad));
 	}
 	
 	/* Ok, we now have the data loaded, do a quick consistency check */
 	if (prior_time != prior.start || prior.start > prior.end)
 	{
-		syslog(LOG_ERR, "Corrupt thread database - prior\n");
+		syslog(LOG_ERR, "Corrupt thread database - prior (%d %d %d\n",
+			prior_time, prior.start, prior.end);
 		return -1;
 	}
 	
@@ -607,7 +644,7 @@ message_id lu_import_message(
 		goto lu_import_message_error0;
 	}
 	
-	var_off = lseek(lu_summary_fd, 0, SEEK_END);
+	var_off = lseek(lu_variable_fd, 0, SEEK_END);
 	if (var_off == -1)
 	{
 		syslog(LOG_ERR, "Could not seek to end of variable.flat: %s\n",
@@ -616,7 +653,7 @@ message_id lu_import_message(
 	}
 	
 	sub_len = strlen(subject) + 1;
-	if (write(lu_summary_fd, subject, sub_len) != sub_len)
+	if (write(lu_variable_fd, subject, sub_len) != sub_len)
 	{
 		syslog(LOG_ERR, "Could not write subject to end of variable.flat: %s\n",
 			strerror(errno));
@@ -624,7 +661,7 @@ message_id lu_import_message(
 	}
 	
 	aun_len = strlen(author_name) + 1;
-	if (write(lu_summary_fd, author_name, aun_len) != aun_len)
+	if (write(lu_variable_fd, author_name, aun_len) != aun_len)
 	{
 		syslog(LOG_ERR, "Could not write author name to end of variable.flat: %s\n",
 			strerror(errno));
@@ -632,7 +669,7 @@ message_id lu_import_message(
 	}
 	
 	aue_len = strlen(author_email) + 1;
-	if (write(lu_summary_fd, author_email, aue_len) != aue_len)
+	if (write(lu_variable_fd, author_email, aue_len) != aue_len)
 	{
 		syslog(LOG_ERR, "Could not write author email to end of variable.flat: %s\n",
 			strerror(errno));
@@ -695,9 +732,8 @@ message_id lu_import_message(
 		
 		key.data = &thread_key[0];
 		key.size = thread_key_len;
-		ind.ulen = sizeof(message_id);
-		ind.size = DB_DBT_USERMEM;
 		ind.data = &id;
+		ind.size = sizeof(message_id);
 		
 		error = lu_merge_db->put(lu_merge_db, 0, &key, &ind, 0);
 		if (error)
@@ -770,6 +806,9 @@ message_id lu_import_message(
 		if (push_thread(thread_id, &thread) != 0)
 			goto lu_import_message_error4;
 	}
+	
+	lu_msg_free++;
+	lu_last_time = timestamp;
 	
 	return id;
 
@@ -902,6 +941,10 @@ int lu_open_db()
 			db_strerror(error));
 		return -1;
 	}
+
+#ifdef DEBUG
+	lu_db_env->set_errfile(lu_db_env, stderr);
+#endif
 	
 	/* Give ourselves a special and unique shared memory key */
 	if ((error = lu_db_env->set_shm_key(lu_db_env, 0x4E12DA03UL)) != 0)
