@@ -5,13 +5,10 @@ Quick start
 
    g++ >= 3.2            - http://gcc.gnu.org/
    zlib                  - http://www.gzip.org/zlib/
-   jam                   - ftp://ftp.perforce.com/pub/jam
    mimelib  (kdenetwork) - ftp://download.uk.kde.org/pub/kde/stable/latest/src
    xsltproc (libxslt1)   - http://xmlsoft.org/XSLT/
  
- A hint: building jam on Solaris requires that cc -> gcc.
- 
- If you need to, lurker can be built using only g++ 2.95, however 3.2 is
+ If you need to, lurker can be built using only g++ 2.95, however 3.2+ is
  recommended as the resulting binaries are much smaller and faster.
  
  If you do not want kdenetwork, you can also download mimelib separately
@@ -22,10 +19,10 @@ Quick start
  and is only used if your lurker.conf references it. However, it is the
  preferred method for rendering html, so we recommend installing it.
  
- For debian: apt-get install xsltproc libmimelib1-dev jam g++ zlib1g-dev
+ For debian: apt-get install xsltproc libmimelib1-dev g++ zlib1g-dev
  
 1 [flags] ./configure [options]
-
+  
   To control the mimelib location, setting these options may help:
   --with-mimelib-local        Use internal lurker/mimelib/*
   --with-mimelib-include=DIR  Location of mimelib/message.h
@@ -38,12 +35,10 @@ Quick start
   To control the environment, variants of these flags may help:
   LDFLAGS="-L/sw/lib"
   CPPFLAGS="-I/sw/include -DDW_UNIX"
-  JAM="/sw/bin/jam"
+  
+2 make
 
-2 jam
-
-3 jam install	(as root if you don't have permission)
-		(DESTDIR=/tmp/lurker jam install -- also works)
+3 make install	(as root if you don't have permission)
   
   You may want to strip the binaries as they can be quite large.
 
