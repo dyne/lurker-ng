@@ -1,14 +1,14 @@
-'Wesley W. Terpstra' <wesley@terpstra.ca>
+'Wesley W. Terpstra' <terpstra@users.sourceforge.net>
 
 	Design
-	Backing datastore
-	Rendering cgi
+	Principal Implementor
 
-'Chris Bond'
+'Chris Bond' <cbond@users.sourceforge.net>
 
 	FreeBSD port
-	IPC
+	C-client integration
 
-'Pete Lypkie'
+'Renaud B. Trudel' <renaudtrudel@users.sourceforge.net>
 
-	XSLT rendering engines
+	XSLT themes
+	Graphic Design
