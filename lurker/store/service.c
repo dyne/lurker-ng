@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.81 2002-07-12 21:51:39 terpstra Exp $
+/*  $Id: service.c,v 1.82 2002-07-18 11:03:34 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -2615,7 +2615,9 @@ static int my_service_splash(
 			h, 
 			scan, 
 			kr.records, 
-			(kr.records - 1) / LU_PROTO_INDEX * LU_PROTO_INDEX) != 0)
+			kr.records
+			?((kr.records - 1) / LU_PROTO_INDEX * LU_PROTO_INDEX)
+			:0) != 0)
 		{
 			return -1;
 		}
