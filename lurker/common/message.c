@@ -1,5 +1,5 @@
 /*
- * $Id: message.c,v 1.8 2002-01-28 08:40:37 cbond Exp $
+ * $Id: message.c,v 1.9 2002-01-28 08:46:15 cbond Exp $
  *  
  *  message.c - parse mail.
  *  
@@ -52,7 +52,7 @@ mail_parse(int fd, off_t offset)
 	if (fstat(fd, &sb) < 0)
 		return (NULL);
 
-	if ((out = (struct msg *)malloc(sizeof(struct msg))) == NULL)
+	if ((out = (struct msg *)calloc(1, sizeof(struct msg))) == NULL)
 		return (NULL);
 
 	/*
