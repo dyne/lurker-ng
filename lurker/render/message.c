@@ -1,4 +1,4 @@
-/*  $Id: message.c,v 1.4 2002-02-04 09:11:17 cbond Exp $
+/*  $Id: message.c,v 1.5 2002-02-04 23:02:40 terpstra Exp $
  *  
  *  message.c - output results from a message/ lookup
  *  
@@ -49,25 +49,12 @@ static int my_strcasecmp(
 	return 0;
 }
 
-static struct xml_special {
-	const char symbol;
-	const char *replace;
-} special[] = {
-	{ '\'',	"&apos;"	},
-	{ '<',	"&lt;"		},
-	{ '>',	"&gt;"		},
-	{ '&',	"&amp;"		},
-	{ '"',	"&quot;"	},
-	{ '\0', NULL		}
-};
-
 static void write_xml_escaped(
-	char *buf,
+	const char *buf,
 	size_t length,
 	FILE *out)
 {
-	struct xml_special *rep;
-	char *end, *start;
+	const char *end, *start;
 
 	/*
 	 * Read the buffer, looking for XML symbols that need
@@ -75,25 +62,46 @@ static void write_xml_escaped(
 	 * segments.
 	 */
 	start = buf;
-	for (end = buf + length; buf < end; ++buf) {
-		switch (*buf) {
-			case '\'':
-			case '<':
-			case '>':
-			case '"':
-			case '&':
-				fwrite(start, 1, buf - start, out);
-				for (rep = &special[0]; rep->symbol; rep++)
-					if (rep->symbol == *buf)
-						break;
-				fputs(rep->replace, out);
-				start = ++buf;
-				break;
-			default:
-				break;
+	for (end = buf + length; buf < end; ++buf)
+	{
+		switch (*buf) 
+		{
+		case '\'':
+			fwrite(start, 1, buf - start, out);
+			fputs("&apos;", out);
+			start = ++buf;
+			break;
+		case '<':
+			fwrite(start, 1, buf - start, out);
+			fputs("&lt;", out);
+			start = ++buf;
+			break;
+		case '>':
+			fwrite(start, 1, buf - start, out);
+			fputs("&gt;", out);
+			start = ++buf;
+			break;
+		case '"':
+			fwrite(start, 1, buf - start, out);
+			fputs("&quot;", out);
+			start = ++buf;
+			break;
+		case '&':
+			fwrite(start, 1, buf - start, out);
+			fputs("&amp;", out);
+			start = ++buf;
+			break;
 		}
 	}
+	
 	fwrite(start, 1, buf - start, out);
+}
+
+static void write_xml_escaped_str(
+	const char *buf,
+	FILE *out)
+{
+	return write_xml_escaped(buf, strlen(buf), out);
 }
 
 static void message_traverse(
@@ -206,18 +214,21 @@ static void write_addresses(ADDRESS* addr, const char* name, FILE* out)
 		
 		if (addr->personal)
 		{
-			fprintf(out, " name=\"%s\"", 
-				addr->personal);
+			fputs(" name=\"", out);
+			write_xml_escaped_str(addr->personal, out);
+			fputs("\"", out);
 		}
 		
 		if (addr->mailbox && addr->host)
 		{
-			fprintf(out, " address=\"%s@%s\"",
-				addr->mailbox,
-				addr->host);
+			fputs(" address=\"", out);
+			write_xml_escaped_str(addr->mailbox, out);
+			fputs("@", out);
+			write_xml_escaped_str(addr->host,    out);
+			fputs("\"", out);
 		}
 		
-		fprintf(out, "/>\n");
+		fputs("/>\n", out);
 	}
 	
 	fprintf(out, " </%s>\n", name);
@@ -281,12 +292,15 @@ int lu_message_handler(char* parameter)
 	fprintf(xml, "<message>\n");
 	
 	fprintf(xml, " <list>\n");
-	fprintf(xml, "  <name>%s</name>\n", &msg.list_name[0]);
-	fprintf(xml, "  <address>%s</address>\n", &msg.list_address[0]);
-	fprintf(xml, "  <desc>%s</desc>\n", &msg.list_desc[0]);
-	fprintf(xml, " </list>\n");
-	
-	fprintf(xml, " <mbox>%s</mbox>\n", &msg.mbox_name[0]);
+	fputs("  <name>", xml);
+	write_xml_escaped_str(&msg.list_name[0], xml);
+	fputs("</name>\n  <address>", xml);
+	write_xml_escaped_str(&msg.list_address[0], xml);
+	fputs("</address>\n  <desc>", xml);
+	write_xml_escaped_str(&msg.list_desc[0], xml);
+	fputs("</desc>\n </list>\n <mbox>", xml);
+	write_xml_escaped_str(&msg.mbox_name[0], xml);
+	fputs("</mbox>\n", xml);
 	
 	fprintf(xml, " <timestamp>%d</timestamp>\n", msg.timestamp);
 	tm = msg.timestamp;
@@ -317,8 +331,10 @@ int lu_message_handler(char* parameter)
 	
 	if (email->env->subject)
 	{
-		fprintf(xml, " <subject>%s</subject>\n",
-			email->env->subject);
+		fputs(" <subject>", xml);
+		write_xml_escaped(email->env->subject,
+			strlen(email->env->subject), xml);
+		fputs("</subject>\n", xml);
 	}
 	
 	write_addresses(email->env->from,     "from",     xml);
@@ -330,8 +346,10 @@ int lu_message_handler(char* parameter)
 	
 	if (email->env->message_id)
 	{
-		fprintf(xml, " <message-id>%s</message-id>\n", 
-			email->env->message_id);
+		fputs(" <message-id>", xml);
+		write_xml_escaped(email->env->message_id,
+			strlen(email->env->message_id), xml);
+		fputs("</message-id>\n", xml);
 	}
 	
 	fprintf(xml, " <body>");
