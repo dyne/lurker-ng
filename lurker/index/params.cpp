@@ -1,4 +1,4 @@
-/*  $Id: params.cpp,v 1.6 2003-06-25 14:34:09 terpstra Exp $
+/*  $Id: params.cpp,v 1.7 2003-07-01 15:49:04 terpstra Exp $
  *  
  *  params.cpp - Parse the config file for helper scripts
  *  
@@ -25,7 +25,7 @@
 #define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 
-#include <Config.h>
+#include <ConfigFile.h>
 
 #include <iostream>
 #include <vector>

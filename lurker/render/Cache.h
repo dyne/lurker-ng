@@ -1,4 +1,4 @@
-/*  $Id: Cache.h,v 1.2 2003-04-21 18:26:18 terpstra Exp $
+/*  $Id: Cache.h,v 1.3 2003-07-01 15:49:04 terpstra Exp $
  *  
  *  Cache.h - Helper which transforms xml -> html and caches files
  *  
@@ -25,7 +25,7 @@
 #ifndef CACHE_H 
 #define CACHE_H
 
-#include <Config.h>
+#include <ConfigFile.h>
 
 #include <iostream>
 #include <cstdio>

@@ -1,4 +1,4 @@
-/*  $Id: Index.h,v 1.8 2003-06-26 20:13:19 terpstra Exp $
+/*  $Id: Index.h,v 1.9 2003-07-01 15:49:04 terpstra Exp $
  *  
  *  Index.h - Insert all the keywords from the given email
  *  
@@ -30,7 +30,7 @@
 
 #include <esort.h>
 #include <MessageId.h>
-#include <Config.h>
+#include <ConfigFile.h>
 
 struct Index
 {

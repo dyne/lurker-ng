@@ -1,6 +1,7 @@
 v1.0:
 	Froze the 1.* series against all changes other than bug fixes
 	Worked around how Solaris #defines open
+	Renamed Config.h to ConfigFile.h for windows
 
 v0.10:
 	New-Topics and Old-Topics should show the subject

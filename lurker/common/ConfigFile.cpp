@@ -1,6 +1,6 @@
-/*  $Id: Config.cpp,v 1.14 2003-06-25 14:34:09 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.1 2003-07-01 15:49:04 terpstra Exp $
  *  
- *  Config.cpp - Knows how to load the config file
+ *  ConfigFile.cpp - Knows how to load the config file
  *  
  *  Copyright (C) 2002 - Wesley W. Terpstra
  *  
@@ -25,7 +25,7 @@
 #define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 
-#include "Config.h"
+#include "ConfigFile.h"
 #include "XmlEscape.h"
 
 #include <fstream>

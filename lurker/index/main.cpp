@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.37 2003-07-01 14:05:52 terpstra Exp $
+/*  $Id: main.cpp,v 1.38 2003-07-01 15:49:04 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -31,7 +31,7 @@
 #include <mimelib/enum.h>
 #include <mimelib/utility.h>
 
-#include <Config.h>
+#include <ConfigFile.h>
 #include <esort.h>
 
 #include <iostream>

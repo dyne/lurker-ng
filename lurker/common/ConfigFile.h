@@ -1,6 +1,6 @@
-/*  $Id: Config.h,v 1.15 2003-07-01 13:15:30 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.1 2003-07-01 15:49:04 terpstra Exp $
  *  
- *  Config.h - Knows how to load the config file
+ *  ConfigFile.h - Knows how to load the config file
  *  
  *  Copyright (C) 2002 - Wesley W. Terpstra
  *  

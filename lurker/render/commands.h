@@ -1,4 +1,4 @@
-/*  $Id: commands.h,v 1.3 2003-06-09 02:31:48 terpstra Exp $
+/*  $Id: commands.h,v 1.4 2003-07-01 15:49:04 terpstra Exp $
  *  
  *  commands.h - All the commands we support
  *  
@@ -26,7 +26,7 @@
 #define COMMANDS_H
 
 #include <esort.h>
-#include <Config.h>
+#include <ConfigFile.h>
 #include <vector>
 
 #define _(x) x
