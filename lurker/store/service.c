@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.39 2002-05-04 05:34:22 terpstra Exp $
+/*  $Id: service.c,v 1.40 2002-05-06 22:19:38 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -408,8 +408,22 @@ static int my_service_xml_head(
 {
 	return my_service_buffer_write(h, 
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-		"<?xml-stylesheet type=\"text/xml\" href=\"render.xslt\"?>\n"
+		"<?xml-stylesheet type=\"text/xml\" href=\"../fmt/render.xsl\"?>\n"
 		);
+}
+
+static int my_service_server(
+	My_Service_Handle h)
+{
+	if (my_service_buffer_write(h, " <server>\n  <hostname>")       != 0) return -1;
+	if (my_service_write_str(h, lu_config_list_host)                != 0) return -1;
+	if (my_service_buffer_write(h, "</hostname>\n  <email name=\"") != 0) return -1;
+	if (my_service_write_str(h, lu_config_admin_name)               != 0) return -1;
+	if (my_service_buffer_write(h, "\" address=\"")                 != 0) return -1;
+	if (my_service_write_str(h, lu_config_admin_address)            != 0) return -1;
+	if (my_service_buffer_write(h, "\"/>\n </server>\n")            != 0) return -1;
+	
+	return 0;
 }
 
 static int my_service_error(
@@ -426,21 +440,9 @@ static int my_service_error(
 	if (my_service_write_str(h, error)                      != 0) return -1;
 	if (my_service_buffer_write(h, "</message>\n <detail>") != 0) return -1;
 	if (my_service_write_str(h, detail)                     != 0) return -1;
-	if (my_service_buffer_write(h, "</detail>\n</error>\n") != 0) return -1;
-	
-	return 0;
-}
-
-static int my_service_server(
-	My_Service_Handle h)
-{
-	if (my_service_buffer_write(h, " <server>\n  <hostname>")       != 0) return -1;
-	if (my_service_write_str(h, lu_config_list_host)                != 0) return -1;
-	if (my_service_buffer_write(h, "</hostname>\n  <email name=\"") != 0) return -1;
-	if (my_service_write_str(h, lu_config_admin_name)               != 0) return -1;
-	if (my_service_buffer_write(h, "\" address=\"")                 != 0) return -1;
-	if (my_service_write_str(h, lu_config_admin_address)            != 0) return -1;
-	if (my_service_buffer_write(h, "\"/>\n </server>\n")            != 0) return -1;
+	if (my_service_buffer_write(h, "</detail>\n")           != 0) return -1;
+	if (my_service_server(h)                                != 0) return -1;
+	if (my_service_buffer_write(h, "</error>\n")            != 0) return -1;
 	
 	return 0;
 }
@@ -775,7 +777,7 @@ static int my_service_summary(
 	return 0;
 }
 
-static int my_service_getmbox(
+static int my_service_mbox(
 	My_Service_Handle h, 
 	const char* request,
 	const char* ext)
@@ -802,7 +804,7 @@ static int my_service_getmbox(
 			"Malformed request",
 			"Lurkerd received a request for a non-textual mbox",
 			request);
-		goto my_service_getmbox_error0;
+		goto my_service_mbox_error0;
 	}
 	
 	id = lu_summary_lookup_mid(request);
@@ -812,7 +814,7 @@ static int my_service_getmbox(
 			"Message does not exist",
 			"Lurkerd received a request for a non-existant message",
 			request);
-		goto my_service_getmbox_error0;
+		goto my_service_mbox_error0;
 	}
 	
 	msg = lu_summary_read_msummary(id);
@@ -822,7 +824,7 @@ static int my_service_getmbox(
 			"Internal Error",
 			"Lurkerd failed to retrieve the summary for the named message",
 			request);
-		goto my_service_getmbox_error0;
+		goto my_service_mbox_error0;
 	}
 	
 	bits = msg.flat_offset;
@@ -844,7 +846,7 @@ static int my_service_getmbox(
 			"Internal Error",
 			"Lurkerd has a message which refers to a missing mailing list",
 			request);
-		goto my_service_getmbox_error0;
+		goto my_service_mbox_error0;
 	}
 	
 	mbox = lu_config_find_mbox(list, mbox_id);
@@ -854,7 +856,7 @@ static int my_service_getmbox(
 			"Internal Error",
 			"Lurkerd has a message which refers to a missing mailbox",
 			request);
-		goto my_service_getmbox_error0;
+		goto my_service_mbox_error0;
 	}
 	
 	if (lu_mbox_map_message(mbox, &cmsg, offset) != 0)
@@ -863,7 +865,7 @@ static int my_service_getmbox(
 			"Internal Error",
 			"Lurkerd was unable to mmap the message into memory",
 			request);
-		goto my_service_getmbox_error0;
+		goto my_service_mbox_error0;
 	}
 	
 	base = cmsg.map.base;
@@ -872,17 +874,17 @@ static int my_service_getmbox(
 	
 	if (my_service_buffer_init(h, "text/plain\n", 1, 
 			lu_config_cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
-		goto my_service_getmbox_error1;
+		goto my_service_mbox_error1;
 	if (my_service_buffer_writel(h, base, len) != 0)
-		goto my_service_getmbox_error1;
+		goto my_service_mbox_error1;
 	
 	lu_mbox_destroy_map(&cmsg);
 	return 0;
 
-my_service_getmbox_error1:
+my_service_mbox_error1:
 	lu_mbox_destroy_map(&cmsg);
 	
-my_service_getmbox_error0:
+my_service_mbox_error0:
 	return -1;
 }
 
@@ -1048,7 +1050,7 @@ my_service_attach_error0:
 	return -1;
 }
 
-static int my_service_getmsg(
+static int my_service_message(
 	My_Service_Handle h, 
 	const char* request,
 	const char* ext)
@@ -1080,7 +1082,7 @@ static int my_service_getmsg(
 			"Lurkerd received a message request for non html/xml",
 			ext);
 		
-		goto my_service_getmsg_error0;
+		goto my_service_message_error0;
 	}
 	
 	id = lu_summary_lookup_mid(request);
@@ -1090,7 +1092,7 @@ static int my_service_getmsg(
 			"Message does not exist",
 			"Lurkerd received a request for a non-existant message",
 			request);
-		goto my_service_getmsg_error0;
+		goto my_service_message_error0;
 	}
 	
 	msg = lu_summary_read_msummary(id);
@@ -1100,7 +1102,7 @@ static int my_service_getmsg(
 			"Internal Error",
 			"Lurkerd failed to retrieve the summary for the named message",
 			request);
-		goto my_service_getmsg_error0;
+		goto my_service_message_error0;
 	}
 	
 	bits = msg.flat_offset;
@@ -1122,7 +1124,7 @@ static int my_service_getmsg(
 			"Internal Error",
 			"Lurkerd has a message which refers to a missing mailing list",
 			request);
-		goto my_service_getmsg_error0;
+		goto my_service_message_error0;
 	}
 	
 	mbox = lu_config_find_mbox(list, mbox_id);
@@ -1132,7 +1134,7 @@ static int my_service_getmsg(
 			"Internal Error",
 			"Lurkerd has a message which refers to a missing mailbox",
 			request);
-		goto my_service_getmsg_error0;
+		goto my_service_message_error0;
 	}
 	
 	if (lu_mbox_map_message(mbox, &cmsg, offset) != 0)
@@ -1141,7 +1143,7 @@ static int my_service_getmsg(
 			"Internal Error",
 			"Lurkerd was unable to mmap the message into memory",
 			request);
-		goto my_service_getmsg_error0;
+		goto my_service_message_error0;
 	}
 	
 	if (lu_mbox_parse_message(&cmsg, &mmsg) != 0)
@@ -1150,7 +1152,7 @@ static int my_service_getmsg(
 			"Internal Error",
 			"Lurkerd was unable to parse the map'd message",
 			request);
-		goto my_service_getmsg_error1;
+		goto my_service_message_error1;
 	}
 	
 	if (mmsg.env->message_id)
@@ -1166,7 +1168,7 @@ static int my_service_getmsg(
 				"Internal Error",
 				"Lurkerd was unable to access the reply-to keyword",
 				request);
-			goto my_service_getmsg_error2;
+			goto my_service_message_error2;
 		}
 	}
 	else
@@ -1178,35 +1180,35 @@ static int my_service_getmsg(
 	
 	if (my_service_buffer_init(h, "text/xml\n", 1, 
 			lu_config_cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
-		goto my_service_getmsg_error3;
+		goto my_service_message_error3;
 	
-	if (my_service_xml_head(h)                       != 0) goto my_service_getmsg_error3;
-	if (my_service_buffer_write(h, "<message>\n")    != 0) goto my_service_getmsg_error3;
-	if (my_service_server(h)                         != 0) goto my_service_getmsg_error3;
-	if (my_service_list(h, list, lu_common_minvalid) != 0) goto my_service_getmsg_error3;
+	if (my_service_xml_head(h)                       != 0) goto my_service_message_error3;
+	if (my_service_buffer_write(h, "<message>\n")    != 0) goto my_service_message_error3;
+	if (my_service_server(h)                         != 0) goto my_service_message_error3;
+	if (my_service_list(h, list, lu_common_minvalid) != 0) goto my_service_message_error3;
 	
-	if (my_service_buffer_write(h, " <id>")                 != 0) goto my_service_getmsg_error3;
-	if (my_service_write_int   (h, id)                      != 0) goto my_service_getmsg_error3;
-	if (my_service_buffer_write(h, "</id>\n <timestamp>")   != 0) goto my_service_getmsg_error3;
-	if (my_service_write_int   (h, msg.timestamp)           != 0) goto my_service_getmsg_error3;
-	if (my_service_buffer_write(h, "</timestamp>\n <time>") != 0) goto my_service_getmsg_error3;
-	if (my_service_write_time  (h, msg.timestamp)           != 0) goto my_service_getmsg_error3;
-	if (my_service_buffer_write(h, "</time>\n <thread>")    != 0) goto my_service_getmsg_error3;
-	if (my_service_write_int   (h, msg.thread_parent)       != 0) goto my_service_getmsg_error3;
-	if (my_service_buffer_write(h, "</thread>\n")           != 0) goto my_service_getmsg_error3;
+	if (my_service_buffer_write(h, " <id>")                 != 0) goto my_service_message_error3;
+	if (my_service_write_int   (h, id)                      != 0) goto my_service_message_error3;
+	if (my_service_buffer_write(h, "</id>\n <timestamp>")   != 0) goto my_service_message_error3;
+	if (my_service_write_int   (h, msg.timestamp)           != 0) goto my_service_message_error3;
+	if (my_service_buffer_write(h, "</timestamp>\n <time>") != 0) goto my_service_message_error3;
+	if (my_service_write_time  (h, msg.timestamp)           != 0) goto my_service_message_error3;
+	if (my_service_buffer_write(h, "</time>\n <thread>")    != 0) goto my_service_message_error3;
+	if (my_service_write_int   (h, msg.thread_parent)       != 0) goto my_service_message_error3;
+	if (my_service_buffer_write(h, "</thread>\n")           != 0) goto my_service_message_error3;
 	
 	if (msg.in_reply_to != lu_common_minvalid)
 	{
-		if (my_service_buffer_write(h, " <inreplyto>\n")  != 0) goto my_service_getmsg_error3;
-		if (my_service_summary(h, msg.in_reply_to)        != 0) goto my_service_getmsg_error3;
-		if (my_service_buffer_write(h, " </inreplyto>\n") != 0) goto my_service_getmsg_error3;
+		if (my_service_buffer_write(h, " <inreplyto>\n")  != 0) goto my_service_message_error3;
+		if (my_service_summary(h, msg.in_reply_to)        != 0) goto my_service_message_error3;
+		if (my_service_buffer_write(h, " </inreplyto>\n") != 0) goto my_service_message_error3;
 	}
 	
 	if (b != 0 && (count = lu_breader_records(b)) != 0)
 	{
  		ind = 0;
  		
-		if (my_service_buffer_write(h, " <replies>\n") != 0) goto my_service_getmsg_error3;
+		if (my_service_buffer_write(h, " <replies>\n") != 0) goto my_service_message_error3;
 		
  		while (count)
  		{
@@ -1215,61 +1217,61 @@ static int my_service_getmsg(
  				get = sizeof(buf)/sizeof(message_id);
  			
  			if (lu_breader_read(b, ind, get, &buf[0]) != 0)
- 				goto my_service_getmsg_error3;
+ 				goto my_service_message_error3;
  			
  			for (i = 0; i < get; i++)
  			{
  				if (my_service_summary(h, buf[i]) != 0)
- 					goto my_service_getmsg_error3;
+ 					goto my_service_message_error3;
  			}
  			
  			ind   += get;
  			count -= get;
  		}
  		
-		if (my_service_buffer_write(h, " </replies>\n") != 0) goto my_service_getmsg_error3;
+		if (my_service_buffer_write(h, " </replies>\n") != 0) goto my_service_message_error3;
  	}
 	
-	if (my_service_addresses(h, mmsg.env->from,     "from",     coding) != 0) goto my_service_getmsg_error3;
-	if (my_service_addresses(h, mmsg.env->sender,   "sender",   coding) != 0) goto my_service_getmsg_error3;
-	if (my_service_addresses(h, mmsg.env->reply_to, "reply-to", coding) != 0) goto my_service_getmsg_error3;
-	if (my_service_addresses(h, mmsg.env->to,       "to",       coding) != 0) goto my_service_getmsg_error3;
-	if (my_service_addresses(h, mmsg.env->cc,       "cc",       coding) != 0) goto my_service_getmsg_error3;
-	if (my_service_addresses(h, mmsg.env->bcc,      "bcc",      coding) != 0) goto my_service_getmsg_error3;
+	if (my_service_addresses(h, mmsg.env->from,     "from",     coding) != 0) goto my_service_message_error3;
+	if (my_service_addresses(h, mmsg.env->sender,   "sender",   coding) != 0) goto my_service_message_error3;
+	if (my_service_addresses(h, mmsg.env->reply_to, "reply-to", coding) != 0) goto my_service_message_error3;
+	if (my_service_addresses(h, mmsg.env->to,       "to",       coding) != 0) goto my_service_message_error3;
+	if (my_service_addresses(h, mmsg.env->cc,       "cc",       coding) != 0) goto my_service_message_error3;
+	if (my_service_addresses(h, mmsg.env->bcc,      "bcc",      coding) != 0) goto my_service_message_error3;
 	
 	if (mmsg.env->message_id)
 	{
-		if (my_service_buffer_write(h, " <message-id>"     ) != 0) goto my_service_getmsg_error3;
-		if (my_service_write_str   (h, mmsg.env->message_id) != 0) goto my_service_getmsg_error3;
-		if (my_service_buffer_write(h, "</message-id>\n"   ) != 0) goto my_service_getmsg_error3;
+		if (my_service_buffer_write(h, " <mid>"            ) != 0) goto my_service_message_error3;
+		if (my_service_write_str   (h, mmsg.env->message_id) != 0) goto my_service_message_error3;
+		if (my_service_buffer_write(h, "</mid>\n"          ) != 0) goto my_service_message_error3;
 	}
 	
-	if (my_service_buffer_write(h, " <subject>") != 0) goto my_service_getmsg_error3;
+	if (my_service_buffer_write(h, " <subject>") != 0) goto my_service_message_error3;
 	if (mmsg.env->subject && mmsg.env->subject[0])
 	{
-		if (my_service_write_ehead (h, mmsg.env->subject, coding) != 0) goto my_service_getmsg_error3;
+		if (my_service_write_ehead (h, mmsg.env->subject, coding) != 0) goto my_service_message_error3;
 	}
 	else
 	{
-		if (my_service_buffer_write(h, "No subject") != 0) goto my_service_getmsg_error3;
+		if (my_service_buffer_write(h, "No subject") != 0) goto my_service_message_error3;
 	}
-	if (my_service_buffer_write(h, "</subject>\n") != 0) goto my_service_getmsg_error3;
+	if (my_service_buffer_write(h, "</subject>\n") != 0) goto my_service_message_error3;
 	
-	if (my_service_traverse(h, &mmsg, mmsg.body, 0) == -1) goto my_service_getmsg_error3;
-	if (my_service_buffer_write(h, "</message>\n")  != 0) goto my_service_getmsg_error3;
+	if (my_service_traverse(h, &mmsg, mmsg.body, 0) == -1) goto my_service_message_error3;
+	if (my_service_buffer_write(h, "</message>\n")  != 0) goto my_service_message_error3;
 	
 	if (b != 0) lu_breader_free(b);
 	lu_mbox_destroy_message(&mmsg);
 	lu_mbox_destroy_map(&cmsg);
 	return 0;
 	
-my_service_getmsg_error3:
+my_service_message_error3:
 	if (b != 0) lu_breader_free(b);
-my_service_getmsg_error2:
+my_service_message_error2:
 	lu_mbox_destroy_message(&mmsg);
-my_service_getmsg_error1:
+my_service_message_error1:
 	lu_mbox_destroy_map(&cmsg);
-my_service_getmsg_error0:
+my_service_message_error0:
 	return -1;
 }
 
@@ -1611,7 +1613,7 @@ my_service_search_error0:
 	return -1;
 }
 
-static int my_service_lists(
+static int my_service_splash(
 	My_Service_Handle h, 
 	const char* request,
 	const char* ext)
@@ -1640,7 +1642,7 @@ static int my_service_lists(
 	if (my_service_buffer_init(h, "text/xml\n", 1, 
 			2592000, LU_EXPIRY_NO_LIST) != 0) return -1;
 	if (my_service_xml_head(h)                  != 0) return -1;
-	if (my_service_buffer_write(h, "<lists>\n") != 0) return -1;
+	if (my_service_buffer_write(h, "<splash>\n")!= 0) return -1;
 	if (my_service_server(h)                    != 0) return -1;
 
 	for (	scan = lu_config_list; 
@@ -1655,7 +1657,7 @@ static int my_service_lists(
 		}
 	}
 	
-	if (my_service_buffer_write(h, "</lists>\n") != 0) return -1;
+	if (my_service_buffer_write(h, "</splash>\n") != 0) return -1;
 	
 	return 0;
 }
@@ -1750,12 +1752,12 @@ extern int lu_service_connection(st_netfd_t fd)
 	printf("Request: %s: %s . %s\n", mod, qs, ext);
 #endif
 	
-	if      (!strcmp(mod, "message")) my_service_getmsg (&h, qs, ext);
-	else if (!strcmp(mod, "mbox"))    my_service_getmbox(&h, qs, ext);
+	if      (!strcmp(mod, "message")) my_service_message(&h, qs, ext);
+	else if (!strcmp(mod, "mbox"))    my_service_mbox   (&h, qs, ext);
 	else if (!strcmp(mod, "attach"))  my_service_attach (&h, qs, ext);
 	else if (!strcmp(mod, "mindex"))  my_service_mindex (&h, qs, ext);
 	else if (!strcmp(mod, "search"))  my_service_search (&h, qs, ext);
-	else if (!strcmp(mod, "splash"))  my_service_lists  (&h, qs, ext);
+	else if (!strcmp(mod, "splash"))  my_service_splash (&h, qs, ext);
 	else if (!strcmp(mod, "thread"))  my_service_thread (&h, qs, ext);
 	else
 	{
