@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.88 2002-08-16 19:27:59 terpstra Exp $
+/*  $Id: service.c,v 1.89 2002-08-16 20:33:49 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -420,12 +420,14 @@ static int my_service_write_time(
 
 static int my_service_write_url(
 	My_Service_Handle	h,
-	const char*		buf)
+	const char*		buf,
+	size_t			len)
 {
 	char hex[8];
 	const char* start;
+	const char* end = buf + len;
 
-	for (start = buf; *buf; buf++)
+	for (start = buf; buf != end; buf++)
 	{
 		if (	(*buf < 'a' || *buf > 'z') &&
 			(*buf < 'A' || *buf > 'Z') &&
@@ -451,6 +453,13 @@ static int my_service_write_url(
 	
 }
 
+static int my_service_write_url_str(
+	My_Service_Handle	h,
+	const char*		buf)
+{
+	return my_service_write_url(h, buf, strlen(buf));
+}
+
 static int my_service_write_url_email(
 	My_Service_Handle	h,
 	ADDRESS*		addr)
@@ -463,16 +472,16 @@ static int my_service_write_url_email(
 	
 	if (addr->personal)
 	{
-		if (my_service_write_url(h, "\"")           != 0) return -1;
-		if (my_service_write_url(h, addr->personal) != 0) return -1;
-		if (my_service_write_url(h, "\" ")          != 0) return -1;
+		if (my_service_write_url_str(h, "\"")           != 0) return -1;
+		if (my_service_write_url_str(h, addr->personal) != 0) return -1;
+		if (my_service_write_url_str(h, "\" ")          != 0) return -1;
 	}
 	
-	if (my_service_write_url(h, "<")           != 0) return -1;
-	if (my_service_write_url(h, addr->mailbox) != 0) return -1;
-	if (my_service_write_url(h, "@")           != 0) return -1;
-	if (my_service_write_url(h, addr->host)    != 0) return -1;
-	if (my_service_write_url(h, ">")           != 0) return -1;
+	if (my_service_write_url_str(h, "<")           != 0) return -1;
+	if (my_service_write_url_str(h, addr->mailbox) != 0) return -1;
+	if (my_service_write_url_str(h, "@")           != 0) return -1;
+	if (my_service_write_url_str(h, addr->host)    != 0) return -1;
+	if (my_service_write_url_str(h, ">")           != 0) return -1;
 	
 	return 0;
 }
@@ -567,7 +576,7 @@ static int my_service_addresses(
 		{
 			if (my_service_buffer_write(h, " address=\"") != 0) return -1;
 			if (my_service_write_str   (h, addr->mailbox) != 0) return -1;
-			if (my_service_buffer_write(h, "@"          ) != 0) return -1;
+			if (my_service_buffer_write(h, "&#64;"      ) != 0) return -1;
 			if (my_service_write_str   (h, addr->host   ) != 0) return -1;
 			if (my_service_buffer_write(h, "\""         ) != 0) return -1;
 		}
@@ -1055,14 +1064,14 @@ static int my_service_list_email_cb(
 		}
 		else
 		{
-			if (my_service_write_url(d->h, ", ") != 0) return -1;
+			if (my_service_write_url_str(d->h, ", ") != 0) return -1;
 		}
 		
-		if (my_service_write_url(d->h, "\"")       != 0) return -1;
-		if (my_service_write_url(d->h, l->name)    != 0) return -1;
-		if (my_service_write_url(d->h, "\" <")     != 0) return -1;
-		if (my_service_write_url(d->h, l->address) != 0) return -1;
-		if (my_service_write_url(d->h, ">")        != 0) return -1;
+		if (my_service_write_url_str(d->h, "\"")       != 0) return -1;
+		if (my_service_write_url_str(d->h, l->name)    != 0) return -1;
+		if (my_service_write_url_str(d->h, "\" <")     != 0) return -1;
+		if (my_service_write_url_str(d->h, l->address) != 0) return -1;
+		if (my_service_write_url_str(d->h, ">")        != 0) return -1;
 	}
 	
 	return 0;
@@ -1086,7 +1095,7 @@ static int my_service_summary_body(
 	if (lu_summary_write_variable(
 		(int(*)(void*, const char*))        &my_service_buffer_write,
 		(int(*)(void*, const char*, size_t))&my_service_write_strl,
-/*!!!*/		(int(*)(void*, const char*, size_t))&my_service_write_url,
+		(int(*)(void*, const char*, size_t))&my_service_write_url,
 		h,
 		msg->flat_offset) != 0) return -1;
 	
@@ -1354,10 +1363,10 @@ static int my_service_reply_link(
 			if (my_service_buffer_write(h, "Subject=") != 0) return -1;
 			if (strchr(env->subject, ':') == 0)
 			{	/* Add a re: */
-				if (my_service_write_url(h, "Re:") != 0) return -1;
+				if (my_service_write_url_str(h, "Re: ") != 0) return -1;
 			}
 			
-			if (my_service_write_url(h, env->subject) != 0) return -1;
+			if (my_service_write_url_str(h, env->subject) != 0) return -1;
 			
 			if (env->message_id)
 			{	/* Connect the data */
@@ -1367,10 +1376,10 @@ static int my_service_reply_link(
 		
 		if (env->message_id)
 		{
-			if (my_service_buffer_write(h, "References=")        != 0) return -1;
-			if (my_service_write_url   (h, env->message_id)      != 0) return -1;
-			if (my_service_buffer_write(h, "&amp;In-Reply-To=")  != 0) return -1;
-			if (my_service_write_url   (h, env->message_id)      != 0) return -1;
+			if (my_service_buffer_write (h, "References=")        != 0) return -1;
+			if (my_service_write_url_str(h, env->message_id)      != 0) return -1;
+			if (my_service_buffer_write (h, "&amp;In-Reply-To=")  != 0) return -1;
+			if (my_service_write_url_str(h, env->message_id)      != 0) return -1;
 		}
 	}
 	
@@ -2544,7 +2553,7 @@ static int my_service_search(
  	for (demux = (char*)delim; *demux; demux++)
 		if (*demux == '/') *demux = 1;
 		
-	if (my_service_write_url(h, delim)              != 0) goto my_service_search_error1;
+	if (my_service_write_url_str(h, delim)          != 0) goto my_service_search_error1;
 	if (my_service_buffer_write(h, "</queryurl>\n") != 0) goto my_service_search_error1;
 	if (my_service_server(h, ttl)                   != 0) goto my_service_search_error1;
 	
