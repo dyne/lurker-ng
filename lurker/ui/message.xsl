@@ -109,7 +109,7 @@
   </xsl:attribute>
   <xsl:if test="photo"><img src="{photo}" class="photo"/></xsl:if>
   <div class="details"><xsl:apply-templates mode="body" select="details"/></div>
-  <xsl:apply-templates mode="body" select="data"/>
+  <div class="data"><xsl:apply-templates mode="body" select="data"/></div>
  </xsl:element>
 </xsl:template>
 

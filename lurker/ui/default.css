@@ -233,6 +233,10 @@ div.badsig div.details {
   background-color: #F00;
 }
 
+div.data {
+  padding: 5px;
+}
+
 img.photo {
  border: 0;
  margin: 0;
