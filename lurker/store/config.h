@@ -1,4 +1,4 @@
-/*  $Id: config.h,v 1.12 2002-05-04 03:41:21 terpstra Exp $
+/*  $Id: config.h,v 1.13 2002-05-22 12:20:42 terpstra Exp $
  *  
  *  config.h - Knows how to load the config file
  *  
@@ -27,7 +27,7 @@
 #include <sys/param.h>
 #include <sys/stat.h>
 
-/*------------------------------------------------ Public types */            
+/*------------------------------------------------ Public types */
 
 struct Lu_Config_Mmap
 {

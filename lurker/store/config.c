@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.11 2002-05-21 13:25:48 terpstra Exp $
+/*  $Id: config.c,v 1.12 2002-05-22 12:20:42 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -29,6 +29,7 @@
 
 #include "common.h"
 #include "io.h"
+#include "md5.h"
 
 #include "config.h"
 
@@ -727,7 +728,9 @@ int lu_config_init(const char* cfg)
 
 int lu_config_open()
 {
-	int error;
+	unsigned char		digest[16];
+	struct MD5Context	md5;
+	int			error;
 	
 	if ((error = db_env_create(&lu_config_env, 0)) != 0)
 	{
@@ -740,9 +743,13 @@ int lu_config_open()
 	lu_config_env->set_errfile(lu_config_env, stderr);
 #endif
 	
+	MD5Init(&md5);
+	MD5Update(&md5, lu_config_dbdir, strlen(lu_config_dbdir));
+	MD5Final(digest, &md5);
+	
 	/* Give ourselves a special and unique shared memory key */
 	if ((error = lu_config_env->set_shm_key(
-		lu_config_env, 0x4E12DA03UL)) != 0)
+		lu_config_env, *(long*)&digest[0])) != 0)
 	{
 		fprintf(stderr, "Setting db3 shared memory key: %s\n", 
 			db_strerror(error));
