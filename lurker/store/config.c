@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.2 2002-02-03 03:10:53 terpstra Exp $
+/*  $Id: config.c,v 1.3 2002-02-03 05:45:29 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -54,7 +54,8 @@ typedef struct My_Config_Mbox_Eat_Value_T
 
 /*------------------------------------------------ Private global vars */
 
-static DB* my_config_mbox_db;
+static DB*		my_config_mbox_db;
+static const char*	my_config_file;
 
 /*------------------------------------------------ Public global vars */
 
@@ -297,7 +298,7 @@ static int my_config_open_mboxs()
 	return ok;
 }
 
-static int my_config_load_config(const char* cfg)
+static int my_config_load_config()
 {
 	Lu_Config_List** target_list;
 	Lu_Config_Mbox** target_mbox;
@@ -319,9 +320,9 @@ static int my_config_load_config(const char* cfg)
 	target_list = &top;
 	target_mbox = 0;
 	
-	if ((c = fopen(cfg, "r")) == 0)
+	if ((c = fopen(my_config_file, "r")) == 0)
 	{
-		perror(cfg);
+		perror(my_config_file);
 		return -1;
 	}
 	
@@ -351,7 +352,7 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: error: "
 					"dbdir in list scope\n",
-					cfg, lines);
+					my_config_file, lines);
 				ok = -1;
 				continue;
 			}
@@ -360,12 +361,12 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: warning: "
 					"dbdir reset\n",
-					cfg, lines);
+					my_config_file, lines);
 				free(lu_config_dbdir);
 			}
 			
 			lu_config_dbdir = my_config_find_after(
-				&line[0], cfg, lines);
+				&line[0], my_config_file, lines);
 			if (!lu_config_dbdir)
 				ok = -1;
 		}
@@ -375,7 +376,7 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: error: "
 					"wwwdir in list scope\n",
-					cfg, lines);
+					my_config_file, lines);
 				ok = -1;
 				continue;
 			}
@@ -383,12 +384,12 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: warning: "
 					"wwwdir reset\n",
-					cfg, lines);
+					my_config_file, lines);
 				free(lu_config_wwwdir);
 			}
 			
 			lu_config_wwwdir = my_config_find_after(
-				&line[0], cfg, lines);
+				&line[0], my_config_file, lines);
 			if (!lu_config_wwwdir)
 				ok = -1;
 		}
@@ -398,7 +399,7 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: error: "
 					"pidfile in list scope\n",
-					cfg, lines);
+					my_config_file, lines);
 				ok = -1;
 				continue;
 			}
@@ -406,12 +407,12 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: warning: "
 					"pidfile reset\n",
-					cfg, lines);
+					my_config_file, lines);
 				free(lu_config_pidfile);
 			}
 			
 			lu_config_pidfile = my_config_find_after(
-				&line[0], cfg, lines);
+				&line[0], my_config_file, lines);
 			if (!lu_config_pidfile)
 				ok = -1;
 		}
@@ -421,7 +422,7 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: error: "
 					"missing numeric tag for list\n",
-					cfg, lines);
+					my_config_file, lines);
 				ok = -1;
 				continue;
 			}
@@ -430,12 +431,12 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: error: "
 					"id is not within bounds\n",
-					cfg, lines);
+					my_config_file, lines);
 				ok = -1;
 				continue;
 			}
 			
-			tmp = my_config_find_after(&line[0], cfg, lines);
+			tmp = my_config_find_after(&line[0], my_config_file, lines);
 			if (!tmp)
 			{
 				ok = -1;
@@ -447,7 +448,7 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: error: "
 					"out of memory\n",
-					cfg, lines);
+					my_config_file, lines);
 				free(tmp);
 				ok = -1;
 				continue;
@@ -470,7 +471,7 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: error: "
 					"description outside list scope\n",
-					cfg, lines);
+					my_config_file, lines);
 				ok = -1;
 				continue;
 			}
@@ -479,12 +480,12 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: warning: "
 					"description reset\n",
-					cfg, lines);
+					my_config_file, lines);
 				free(what->description);
 			}
 			
 			what->description = my_config_find_after
-				(&line[0], cfg, lines);
+				(&line[0], my_config_file, lines);
 			if (!what->description)
 				ok = -1;
 		}
@@ -494,7 +495,7 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: error: "
 					"address outside list scope\n",
-					cfg, lines);
+					my_config_file, lines);
 				ok = -1;
 				continue;
 			}
@@ -503,12 +504,12 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: warning: "
 					"address reset\n",
-					cfg, lines);
+					my_config_file, lines);
 				free(what->address);
 			}
 			
 			what->address = my_config_find_after
-				(&line[0], cfg, lines);
+				(&line[0], my_config_file, lines);
 			if (!what->address)
 				ok = -1;
 		}
@@ -518,7 +519,7 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: error: "
 					"mbox outside list scope\n",
-					cfg, lines);
+					my_config_file, lines);
 				ok = -1;
 				continue;
 			}
@@ -527,7 +528,7 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: error: "
 					"id is not within bounds\n",
-					cfg, lines);
+					my_config_file, lines);
 				ok = -1;
 				continue;
 			}
@@ -536,13 +537,13 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: error: "
 					"missing numeric tag for mbox\n",
-					cfg, lines);
+					my_config_file, lines);
 				ok = -1;
 				continue;
 			}
 			
 			tmp = my_config_find_after(
-				&line[0], cfg, lines);
+				&line[0], my_config_file, lines);
 			if (!tmp)
 			{
 				ok = -1;
@@ -554,7 +555,7 @@ static int my_config_load_config(const char* cfg)
 			{
 				fprintf(stderr, "%s:%d: error: "
 					"out of memory\n",
-					cfg, lines);
+					my_config_file, lines);
 				free(tmp);
 				ok = -1;
 				continue;
@@ -570,7 +571,7 @@ static int my_config_load_config(const char* cfg)
 		else
 		{
 			fprintf(stderr, "%s:%d: error: unknown keyword '%s'\n",
-				cfg, lines, &keyword[0]);
+				my_config_file, lines, &keyword[0]);
 			ok = -1;
 		}
 	}
@@ -580,21 +581,21 @@ static int my_config_load_config(const char* cfg)
 	if (!lu_config_pidfile)
 	{
 		fprintf(stderr, "%s: warning: pidfile not declared - "
-			"using: %s\n", cfg, DEFAULT_PID_FILE);
+			"using: %s\n", my_config_file, DEFAULT_PID_FILE);
 		lu_config_pidfile = strdup(DEFAULT_PID_FILE);
 	}
 	
 	if (!lu_config_wwwdir)
 	{
 		fprintf(stderr, "%s: warning: wwdir not declared - "
-			"using: %s\n", cfg, WWWDIR);
+			"using: %s\n", my_config_file, WWWDIR);
 		lu_config_wwwdir = strdup(WWWDIR);
 	}
 	
 	if (!lu_config_dbdir)
 	{
 		fprintf(stderr, "%s: warning: dbdir not declared - "
-			"using: %s\n", cfg, DBDIR);
+			"using: %s\n", my_config_file, DBDIR);
 		lu_config_dbdir = strdup(DBDIR);
 	}
 	
@@ -603,7 +604,7 @@ static int my_config_load_config(const char* cfg)
 		return ok;
 	}
 	
-	if (my_config_sort_configuration(top, cfg) != 0)
+	if (my_config_sort_configuration(top, my_config_file) != 0)
 	{
 		return -1;
 	}
@@ -703,16 +704,11 @@ int my_config_sync_mbox()
 }
 /*------------------------------------------------ Public component methods */
 
-int lu_config_init()
+int lu_config_init(const char* cfg)
 {
-	return 0;
-}
-
-int lu_config_open(const char* cfg)
-{
-	int error;
+	my_config_file = cfg;
 	
-	if (my_config_load_config(cfg) != 0)
+	if (my_config_load_config() != 0)
 	{
 		return -1;
 	}
@@ -722,6 +718,13 @@ int lu_config_open(const char* cfg)
 		perror(lu_config_dbdir);
 		return -1;
 	}
+	
+	return 0;
+}
+
+int lu_config_open()
+{
+	int error;
 	
 	if ((error = db_env_create(&lu_config_env, 0)) != 0)
 	{

@@ -8,6 +8,7 @@ sbin_PROGRAMS = @PACKAGE@d
 	wbuffer.h  wbuffer.c  \
 	indexer.h  indexer.c  \
 	summary.h  summary.c  \
+	mbox.h     mbox.c     \
 	breader.h  breader.c  \
 	search.h   search.c   \
 	service.h  service.c  \

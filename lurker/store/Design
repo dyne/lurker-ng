@@ -26,8 +26,8 @@ Component diagram:
 
 main--> service --------+------------\
   |        |            |            |
-  |        v            v            v
-  +---> summary      search -----> breader
+  v        v            v            v
+mbox--> summary      search -----> breader
   |        |                         |
   |        v                         |
   +---> config  <-----------------\  |
@@ -49,6 +49,7 @@ load order:
 	wbuffer
 	indexer
 	summary
+	mbox
 	breader
 	search
 	service
@@ -59,15 +60,19 @@ main:
 	Initializes the components
 	Hooks signals for clean shutdown
 	Opens up the service port
-	Fires up st:
-		-> watches mboxes for appends
-			-> adds the summary information for the message
-			-> invokes the indexer on the message
-			-> invokes the summary reply-to resolver
-		-> watches for new connects
-			-> creates a new thread
-			-> watches for requests
-			-> passes them off to the service
+	Fires up st
+	Connects the mbox tailer to libst
+	Watches for new connects
+		-> creates a new thread
+		-> watches for requests
+		-> passes them off to the service
+
+mbox:
+	Knows how to follow mboxes for appends and import messages
+	Detects mailbox append
+		-> adds the summary information for the message
+		-> invokes the indexer on the message
+		-> invokes the summary reply-to resolver
 
 service:
 	Knows how to deal with request from the cgi

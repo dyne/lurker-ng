@@ -1,4 +1,4 @@
-/*  $Id: config.h,v 1.1 2002-02-03 03:10:53 terpstra Exp $
+/*  $Id: config.h,v 1.2 2002-02-03 05:45:29 terpstra Exp $
  *  
  *  config.h - Knows how to load the config file
  *  
@@ -65,8 +65,8 @@ extern DB_ENV* lu_config_env;
 
 /*------------------------------------------------- Public component methods */
 
-extern int lu_config_init();
-extern int lu_config_open(const char* cfg);
+extern int lu_config_init(const char* cfg);
+extern int lu_config_open();
 extern int lu_config_sync();
 extern int lu_config_close();
 extern int lu_config_quit();
