@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.6 2003-04-25 22:27:10 terpstra Exp $
+/*  $Id: main.cpp,v 1.7 2003-04-25 23:22:36 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -249,7 +249,10 @@ int main(int argc, char** argv)
 	}
 	list = &i->second;
 	
-	db = ESort::Writer::open(cfg.dbdir + "/db");
+	// work around g++ 2.95 borkage
+	auto_ptr<ESort::Writer> dbt(ESort::Writer::open(cfg.dbdir + "/db"));
+	db = dbt;
+	
 	if (!db.get())
 	{
 		perror("opening database");
