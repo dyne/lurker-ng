@@ -1,4 +1,4 @@
-/*  $Id: handler.h,v 1.3 2002-02-10 07:11:51 terpstra Exp $
+/*  $Id: handler.h,v 1.4 2002-02-11 03:45:51 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -24,16 +24,18 @@
 
 #include <stdio.h>
 
+typedef enum lu_doctype_t { LU_HTML, LU_XML, LU_OTHER } lu_doctype;
+
 extern FILE* lu_server_link;
 
 extern FILE* lu_render_open(const char* parameter);
 extern int   lu_render_close(FILE* f);
 
-extern int lu_message_handler(char* parameter);
-extern int lu_thread_handler (char* parameter);
-extern int lu_mindex_handler (char* parameter);
-extern int lu_tindex_handler (char* parameter);
-extern int lu_search_handler (char* parameter);
+extern int lu_message_handler(char* parameter, const char* uri, lu_doctype t);
+extern int lu_thread_handler (char* parameter, const char* uri, lu_doctype t);
+extern int lu_mindex_handler (char* parameter, const char* uri, lu_doctype t);
+extern int lu_tindex_handler (char* parameter, const char* uri, lu_doctype t);
+extern int lu_search_handler (char* parameter, const char* uri, lu_doctype t);
 
 extern const char basic_error[];    /* %s %s %s */
 extern const char redirect_error[]; /* %s */

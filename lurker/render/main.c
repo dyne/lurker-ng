@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.4 2002-02-11 02:30:25 terpstra Exp $
+/*  $Id: main.c,v 1.5 2002-02-11 03:45:51 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -54,7 +54,7 @@
 
 FILE* lu_server_link;
 
-static const char not_found[] =
+const char not_found[] =
 "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
 "<html>\r\n"
 " <head><title>404 Not Found</title></head>\r\n"
@@ -95,11 +95,12 @@ inline int fromhex(char ch)
 
 FILE* lu_render_open(const char* parameter)
 {
-	char buf[LIMIT_URI + 10];
+	char buf[LIMIT_URI+10];
 	int fd;
 	FILE* out;
 	
 	snprintf(&buf[0], sizeof(buf), "%s.xml", parameter);
+	
 	fd = open(&buf[0], 
 		O_CREAT | O_RDWR | O_BINARY | O_EXCL,
 		LU_S_READ | LU_S_WRITE);
@@ -166,7 +167,7 @@ static int render_html(const char* parameter)
 			"Not able to create rendered file",
 			&buf[0],
 			strerror(errno));
-		return 0;
+		return -1;
 	}
 	
 	if ((out = fdopen(fd, "w")) == 0)
@@ -200,7 +201,6 @@ static int render_html(const char* parameter)
 
 int main(int argc, char* argv[])
 {
-	int	html;
 	char*	query;
 	char*	origuri;
 	char*	uri;
@@ -209,10 +209,14 @@ int main(int argc, char* argv[])
 	char*	module;
 	char*   r;
 	char*   w;
-	int   (*handler)(char* parameter);
+	int   (*handler)(char* parameter, const char* origuri, lu_doctype t);
 	int	fd;
 	char	buf[4096];
 	int	got;
+	int	len;
+	int	stat;
+	
+	lu_doctype	t;
 	
 	int			sun_fd;
 	struct sockaddr_un	sun_addr;
@@ -240,6 +244,18 @@ int main(int argc, char* argv[])
 			"The .htaccess file must be modified");
 		return 1;
 	}
+	
+	if (strlen(origuri) >= LIMIT_URI)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Unacceptable URI", 
+			origuri,
+			"too long");
+		return 1;
+	}
+	
 	uri = strdup(origuri);
 	
 	/* Try to connect to the server */
@@ -318,6 +334,10 @@ int main(int argc, char* argv[])
 	w = r = uri;
 	while (*r) switch (*r)
 	{
+	 case '+':
+	 	*w++ = ' ';
+	 	r++;
+	 	break;
 	 case '%':
 	 	if (*(r+1) && *(r+2))
 	 	{
@@ -331,35 +351,9 @@ int main(int argc, char* argv[])
 	*w = 0;
 	
 	/* Now, scan it and break it into pieces */
+	len = strlen(uri);
 	
-	for (suffix = uri + strlen(uri); suffix != uri;	suffix--)
-	{
-		if (*suffix == '.')
-		{
-			*suffix++ = 0;
-			break;
-		}
-	}
-	
-	if (suffix == uri)
-	{
-		printf("Status: 404 Not Found\r\n");
-		printf("Content-type: text/html\r\n\r\n");
-		printf(&not_found[0], origuri);
-		return 1;
-	}
-	
-	if      (!strcmp(suffix, "html")) html = 1;
-	else if (!strcmp(suffix, "xml"))  html = 0;
-	else
-	{
-		printf("Status: 404 Not Found\r\n");
-		printf("Content-type: text/html\r\n\r\n");
-		printf(&not_found[0], origuri);
-		return 1;
-	}
-	
-	for (parameter = suffix - 1; parameter != uri; parameter--)
+	for (parameter = uri + len; parameter != uri; parameter--)
 	{
 		if (*parameter == '/')
 		{
@@ -393,6 +387,22 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	
+	for (suffix = uri + len; suffix != parameter; suffix--)
+	{
+		if (*suffix == '.')
+		{
+			suffix++;
+			break;
+		}
+	}
+	
+	/* What kind of request is this? */
+	
+	if (suffix == parameter)		t = LU_OTHER;
+	else if (!strcmp(suffix, "html"))	t = LU_HTML;
+	else if (!strcmp(suffix, "xml")) 	t = LU_XML;
+	else					t = LU_OTHER;
+	
 	if      (!strcmp(module, "message")) handler = &lu_message_handler;
 	else if (!strcmp(module, "thread" )) handler = &lu_thread_handler;
 	else if (!strcmp(module, "mindex" )) handler = &lu_mindex_handler;
@@ -419,24 +429,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	
-	if (strlen(parameter) >= LIMIT_URI)
-	{
-		printf("Status: 200 OK\r\n");
-		printf("Content-type: text/html\r\n\r\n");
-		printf(&basic_error[0], 
-			"Requested URI is invalid",
-			parameter,
-			"too long");
-		return 1;
-	}
-	
-	*(suffix+0) = 'x';
-	*(suffix+1) = 'm';
-	*(suffix+2) = 'l';
-	*(suffix+3) = 0;
-	*(suffix-1) = '.';
-	
-	if (html && access("render.xslt", R_OK) == -1)
+	if (t == LU_HTML && access("render.xslt", R_OK) == -1)
 	{
 		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
@@ -447,66 +440,108 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	
-	if (access(parameter, R_OK) == -1)
+	if (access(parameter, R_OK) == 0)
 	{
-		*(suffix-1) = 0;
-		
-		/* Invoke the correct handler */
-		if ((fd = handler(parameter)) == -1)
-		{
-			return 1;
-		}
-		
-		/* Reseek to the start */
-		if (lseek(fd, 0, SEEK_SET) == -1)
-		{
-			printf("Status: 404 Not Found\r\n");
-			printf("Content-type: text/html\r\n\r\n");
-			printf(&not_found[0], origuri);
-			return 1;
-		}
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"File already exists",
+			parameter,
+			strerror(errno));
+		return 1;
 	}
-	else
+	
+	if (t != LU_HTML)
 	{
-		fd = -1;
-		*(suffix-1) = 0;
+		/* Invoke the correct handler */
+		if (t == LU_XML) *(suffix-1) = 0;
+		if ((fd = handler(parameter, origuri, t)) == -1)
+		{	/* handled completely */
+			return 0;
+		}
+		if (t == LU_XML) *(suffix-1) = '.';
 		
-		/* the file exists already - wtf - we're broken */
-		if (!html)
+		if (t == LU_OTHER)
 		{
 			printf("Status: 200 OK\r\n");
 			printf("Content-type: text/html\r\n\r\n");
 			printf(&basic_error[0], 
-				"File already exists",
+				"Unknown type not fully handled by handler",
 				parameter,
 				strerror(errno));
 			return 1;
 		}
 	}
-	
-	printf("Status: 200 OK\r\n");
-	
-	if (html)
-	{
-		printf("Content-type: text/html\r\n\r\n");
-		fflush(stdout);
+	else
+	{		
+		*(suffix+0) = 'x';
+		*(suffix+1) = 'm';
+		*(suffix+2) = 'l';
+		*(suffix+3) = 0;
+		stat = access(parameter, R_OK);
+		*(suffix+0) = 'h';
+		*(suffix+1) = 't';
+		*(suffix+2) = 'm';
+		*(suffix+3) = 'l';
 		
+		/* Make the XML to render from if it doesn't exist */
+		if (stat != 0)
+		{
+			*(suffix-1) = 0;
+			/* Invoke the correct handler */
+			if ((fd = handler(parameter, origuri, t)) == -1)
+			{	/* handled completely */
+				return 0;
+			}
+			*(suffix-1) = '.';
+		}
+		else
+		{
+			fd = -1;
+		}
+	}
+	
+	/* Reseek to the start */
+	if (fd != -1 && lseek(fd, 0, SEEK_SET) == -1)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Unable to rewind to start of output",
+			"reseek xml",
+			strerror(errno));
+		return 1;
+	}
+	
+	if (t == LU_HTML)
+	{
 		if (fd != -1) close(fd);
 		
 		/* Make stderr to stdout */
 		close(2);
 		dup(1);
 		
-		fd = render_html(parameter);
+		*(suffix-1) = 0;
+		if ((fd = render_html(parameter)) == -1)
+		{	/* failed somehow */
+			return 1;
+		}
 		
 		/* Reseek to the start */
 		if (lseek(fd, 0, SEEK_SET) == -1)
 		{
-			printf("Status: 404 Not Found\r\n");
+			printf("Status: 200 OK\r\n");
 			printf("Content-type: text/html\r\n\r\n");
-			printf(&not_found[0], origuri);
+			printf(&basic_error[0], 
+				"Unable to rewind to start of output",
+				"reseek html",
+				strerror(errno));
 			return 1;
 		}
+		
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		fflush(stdout);
 	}
 	else
 	{

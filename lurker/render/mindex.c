@@ -1,4 +1,4 @@
-/*  $Id: mindex.c,v 1.5 2002-02-11 00:00:59 terpstra Exp $
+/*  $Id: mindex.c,v 1.6 2002-02-11 03:45:51 terpstra Exp $
  *  
  *  mindex.c - output results from a mindex/ lookup
  *  
@@ -26,7 +26,10 @@
 #include "common.h"
 #include "protocol.h"
 
-int lu_mindex_handler(char* parameter)
+int lu_mindex_handler(
+	char* parameter, 
+	const char* uri, 
+	lu_doctype t)
 {
 	FILE* xml;
 	int i, j, fragment;
@@ -34,6 +37,14 @@ int lu_mindex_handler(char* parameter)
 	char	buf[4096];
 	size_t	got;
 	size_t  get;
+	
+	if (t != LU_XML && t != LU_HTML)
+	{	/* Don't know how to deal with other types */
+		printf("Status: 404 Not Found\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&not_found[0], uri);
+		return -1;
+	}
 	
 	if (sscanf(parameter, "%d@%d", &i, &j) != 2)
 	{

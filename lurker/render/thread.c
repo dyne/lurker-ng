@@ -1,4 +1,4 @@
-/*  $Id: thread.c,v 1.2 2002-02-10 10:52:17 terpstra Exp $
+/*  $Id: thread.c,v 1.3 2002-02-11 03:45:51 terpstra Exp $
  *  
  *  thread.c - output results from a thread/ lookup
  *  
@@ -25,7 +25,10 @@
 #include "common.h"
 #include "handler.h"
 
-int lu_thread_handler(char* parameter)
+int lu_thread_handler(
+	char* parameter, 
+	const char* uri, 
+	lu_doctype t)
 {
 	FILE* f;
 	

@@ -1,4 +1,4 @@
-/*  $Id: message.c,v 1.10 2002-02-10 07:11:51 terpstra Exp $
+/*  $Id: message.c,v 1.11 2002-02-11 03:45:51 terpstra Exp $
  *  
  *  message.c - output results from a message/ lookup
  *  
@@ -240,7 +240,10 @@ static void write_addresses(ADDRESS* addr, const char* name, FILE* out)
 	fprintf(out, "</%s>\n", name);
 }
 
-int lu_message_handler(char* parameter)
+int lu_message_handler(
+	char* parameter, 
+	const char* uri, 
+	lu_doctype t)
 {
 	FILE*			mbox;
 	FILE*			xml;
@@ -251,34 +254,8 @@ int lu_message_handler(char* parameter)
 	size_t			got;
 	int			mbox_fd;
 	struct msg*		email;
-	char*			uri;
-	char*			s;
-	char*			suf;
 	
 	id = atol(parameter);
-	sprintf(&buf[0], "%d", id);
-	if (strcmp(parameter, &buf[0]))
-	{	/* Incorrectly formated id, redirect them */
-		printf("Status: 303 Moved Permanently\r\n");
-		
-		uri = strdup(getenv("REQUEST_URI"));
-		suf = "";
-		for (s = uri + strlen(uri); s != uri; s--)
-		{
-			if (*s == '.')
-				suf = s;
-			if (*s == '/')
-				break;
-		}
-		*s = 0;
-		
-		snprintf(&buf[0], sizeof(buf), "%s/%d%s", uri, id, suf);
-		
-		printf("Location: %s\r\n", &buf[0]);
-		printf("Content-type: text/html\r\n\r\n");
-		printf(&redirect_error[0], &buf[0]);
-		return -1;
-	}
 	
 	fprintf(lu_server_link, "getmsg %d%c", id, LU_PROTO_ENDREQ);
 	if (fread(&msg, sizeof(Lu_Proto_Message), 1, lu_server_link) != 1)

@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.3 2002-02-11 00:00:59 terpstra Exp $
+/*  $Id: search.c,v 1.4 2002-02-11 03:45:51 terpstra Exp $
  *  
  *  search.c - output results from a search/ lookup
  *  
@@ -25,15 +25,91 @@
 #include "common.h"
 #include "handler.h"
 #include "protocol.h"
+#include "prefix.h"
 
-int lu_search_handler(char* parameter)
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+static void extract_keyword(
+	const char* parameter, 
+	char** w,
+	char* e,
+	const char* prefix,
+	const char* field)
+{
+	char* s;
+	
+	if ((s = strstr(parameter, field)) == 0)
+		return;
+	
+	s += strlen(field); /* skip the field */
+	if (!*s++) return;	/* skip the = */
+	if (!*s || *s == '&') return; /* empty field */
+	
+	if (*w != e) *(*w)++ = '+';
+	
+	for (; *w != e && *s; s++)
+	{
+		if (*s == '&') break;
+		*(*w)++ = *s;
+	}
+}
+
+int lu_search_handler(
+	char* parameter, 
+	const char* uri, 
+	lu_doctype t)
 {
 	FILE* xml;
 	int fragment;
 	
-	char	buf[4096];
-	size_t	got;
-	size_t  get;
+	char		buf[4096];
+	char*		w;
+	char*		e;
+	const char*	s;
+	size_t		got;
+	size_t 		get;
+	
+	if (!memcmp(parameter, "bounce", 6))
+	{	/* We were called like a real CGI - we need to redirect the
+		 * user to a document that we can create
+		 */
+		 
+		for (s = uri + strlen(uri); s != uri; s--)
+		{
+			if (*s == '/')
+				break;
+		}
+		
+		s++;
+		
+		snprintf(&buf[0], sizeof(buf), "%s/0", uri);
+		w = &buf[strlen(buf)];
+		e = &buf[sizeof(buf)-1];
+		
+		extract_keyword(s, &w, e, LU_KEYWORD_SUBJECT, "subject");
+		extract_keyword(s, &w, e, LU_KEYWORD_AUTHOR,  "author");
+		extract_keyword(s, &w, e, LU_KEYWORD_WORD,    "query");
+		
+		/*!!! No idea how xml searching will work */
+		for (s = ".html"; w != e && *s; s++)
+			*w++ = *s;
+		
+		printf("Status: 303 Moved Permanently\r\n");
+		printf("Location: %s\r\n", &buf[0]);
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&redirect_error[0], &buf[0]);
+		return -1;
+	}
+	
+	if (t != LU_XML && t != LU_HTML)
+	{	/* Can only handle wierd stuff in case above */
+		printf("Status: 404 Not Found\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&not_found[0], uri);
+		return -1;
+	}
 	
 	fprintf(lu_server_link, "%s%s%c", 
 		LU_PROTO_SEARCH, parameter, LU_PROTO_ENDREQ);
