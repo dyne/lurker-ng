@@ -7920,24 +7920,6 @@ _ACEOF
 
 prefix_backup="$prefix"
   exec_prefix_backup="$exec_prefix"
-  ac_define_dir_result=""${wwwdir}""
-  if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
-  if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
-  while echo "$ac_define_dir_result" | grep -q '\$'; do
-    ac_define_dir_result=`eval echo $ac_define_dir_result`
-  done
-  prefix="${prefix_backup}"
-  exec_prefix="${exec_prefix}"
-
-cat >>confdefs.h <<_ACEOF
-#define WWWDIR "$ac_define_dir_result"
-_ACEOF
-
-  WWWDIR_expand="$ac_define_dir_result"
-
-
-prefix_backup="$prefix"
-  exec_prefix_backup="$exec_prefix"
   ac_define_dir_result=""${dbdir}""
   if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
   if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
@@ -8571,7 +8553,6 @@ s,@RENDER_CFLAGS@,$RENDER_CFLAGS,;t t
 s,@RENDER_LIBS@,$RENDER_LIBS,;t t
 s,@SYSCONFDIR_expand@,$SYSCONFDIR_expand,;t t
 s,@LOCALSTATEDIR_expand@,$LOCALSTATEDIR_expand,;t t
-s,@WWWDIR_expand@,$WWWDIR_expand,;t t
 s,@DBDIR_expand@,$DBDIR_expand,;t t
 CEOF
 
