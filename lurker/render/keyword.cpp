@@ -1,4 +1,4 @@
-/*  $Id: keyword.cpp,v 1.4 2003-04-27 18:57:21 terpstra Exp $
+/*  $Id: keyword.cpp,v 1.5 2003-04-27 19:43:14 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -39,7 +39,7 @@ set<string> dups;
 
 int push_key(const char* keyword, void* arg)
 {
-	if (dups.find(keyword) != dups.end())
+	if (dups.find(keyword) == dups.end())
 	{
 		dups.insert(keyword);
 		keys.push_back(keyword);
