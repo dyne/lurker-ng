@@ -71,6 +71,15 @@
 <xsl:template match="splash" mode="body">
  <div id="listBlock">
  <table id="listTable">
+  <caption>
+   <xsl:value-of select="$lists"/>
+   <xsl:text> (</xsl:text>
+   <xsl:value-of select="sum(list/messages)"/>
+   <xsl:text> </xsl:text>
+   <xsl:value-of select="$mess"/>
+   <xsl:text>)</xsl:text>
+  </caption>
+  
   <xsl:variable name="size1" select="round((count(list)+3) div 4)"/>
   <xsl:variable name="size2" select="round((count(list)+2) div 4)"/>
   <xsl:variable name="size3" select="round((count(list)+1) div 4)"/>
@@ -95,15 +104,6 @@
    <colgroup id="col4"/>
   </xsl:if>
 
-  <caption>
-   <xsl:value-of select="$lists"/>
-   <xsl:text> (</xsl:text>
-   <xsl:value-of select="sum(list/messages)"/>
-   <xsl:text> </xsl:text>
-   <xsl:value-of select="$mess"/>
-   <xsl:text>)</xsl:text>
-  </caption>
-  
   <xsl:call-template name="format">
    <xsl:with-param name="col1" select="list[position() &gt;= $off1 and position() &lt; $off2]"/>
    <xsl:with-param name="col2" select="list[position() &gt;= $off2 and position() &lt; $off3]"/>
