@@ -86,6 +86,7 @@ EXTRA_DIST = Design
 
 @PACKAGE@d_SOURCES = \
 	config.h   config.c   \
+	decode.h   decode.c   \
 	md5.h      md5.c      \
 	flatfile.h flatfile.c \
 	wbuffer.h  wbuffer.c  \
@@ -107,7 +108,7 @@ CONFIG_CLEAN_FILES =
 sbin_PROGRAMS = @PACKAGE@d$(EXEEXT)
 PROGRAMS = $(sbin_PROGRAMS)
 
-am_@PACKAGE@d_OBJECTS = config.$(OBJEXT) md5.$(OBJEXT) \
+am_@PACKAGE@d_OBJECTS = config.$(OBJEXT) decode.$(OBJEXT) md5.$(OBJEXT) \
 	flatfile.$(OBJEXT) wbuffer.$(OBJEXT) indexer.$(OBJEXT) \
 	summary.$(OBJEXT) mbox.$(OBJEXT) breader.$(OBJEXT) \
 	search.$(OBJEXT) service.$(OBJEXT) main.$(OBJEXT) \
@@ -123,11 +124,12 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
 @AMDEP_TRUE@DEP_FILES = $(DEPDIR)/breader.Po $(DEPDIR)/config.Po \
-@AMDEP_TRUE@	$(DEPDIR)/expiry.Po $(DEPDIR)/flatfile.Po \
-@AMDEP_TRUE@	$(DEPDIR)/indexer.Po $(DEPDIR)/main.Po \
-@AMDEP_TRUE@	$(DEPDIR)/mbox.Po $(DEPDIR)/md5.Po \
-@AMDEP_TRUE@	$(DEPDIR)/search.Po $(DEPDIR)/service.Po \
-@AMDEP_TRUE@	$(DEPDIR)/summary.Po $(DEPDIR)/wbuffer.Po
+@AMDEP_TRUE@	$(DEPDIR)/decode.Po $(DEPDIR)/expiry.Po \
+@AMDEP_TRUE@	$(DEPDIR)/flatfile.Po $(DEPDIR)/indexer.Po \
+@AMDEP_TRUE@	$(DEPDIR)/main.Po $(DEPDIR)/mbox.Po \
+@AMDEP_TRUE@	$(DEPDIR)/md5.Po $(DEPDIR)/search.Po \
+@AMDEP_TRUE@	$(DEPDIR)/service.Po $(DEPDIR)/summary.Po \
+@AMDEP_TRUE@	$(DEPDIR)/wbuffer.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -185,6 +187,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/breader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/config.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/decode.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/expiry.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/flatfile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/indexer.Po@am__quote@

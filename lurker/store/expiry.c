@@ -1,4 +1,4 @@
-/*  $Id: expiry.c,v 1.8 2002-05-29 08:10:47 terpstra Exp $
+/*  $Id: expiry.c,v 1.9 2002-06-10 12:25:58 terpstra Exp $
  *  
  *  expiry.c - Record when pages should be destroyed
  *  
@@ -29,7 +29,6 @@
 
 #include "common.h"
 #include "io.h"
-#include "prefix.h"
 
 #include "config.h"
 #include "expiry.h"

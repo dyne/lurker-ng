@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.20 2002-06-07 10:29:19 terpstra Exp $
+/*  $Id: indexer.c,v 1.21 2002-06-10 12:25:58 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -29,7 +29,7 @@
 
 #include "common.h"
 #include "io.h"
-#include "prefix.h"
+#include "keyword.h"
 
 #include "mbox.h"
 #include "wbuffer.h"
@@ -87,27 +87,6 @@ static const char* my_indexer_mons[12] = {
 static const char* my_indexer_dows[7] = {
 	"sun", "mon", "tue", "wed", "thu", "fri", "sat" };
 
-/* These are characters which should be interpretted as both part of the word
- * and as a word seperator. eg: 'maul.sith.vpn' should be indexed as 'maul',
- * 'sith', 'vpn', and 'maul.sith.vpn' because '.' is listed here.
- */
-static const char my_indexer_word_splits[] =
-"$@./:\\-_~&=%?#+";
-static char my_indexer_is_split[256];
-
-/* These are characters which should be interpretted as word breaks.
- * No known language should use these as letters in a word.
- * All chars 000-037 fall in this category too.
- */
-static const char my_indexer_word_divs[] = WORD_BREAKS;
-static char my_indexer_is_div[256];
-
-/* These tables are the conversion for characters being written to keywords.
- */
-static const char my_indexer_orig[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-static const char my_indexer_dest[] = "abcdefghijklmnopqrstuvwxyz";
-static char my_indexer_conv[256];
-
 /*------------------------------------------------ Private helper methods */
 
 LU_BTREE_DEFINE(
@@ -118,29 +97,12 @@ LU_BTREE_DEFINE(
 	my_indexer_buf,
 	strcmp)
 
-/* Test the strings for equality - ignoring case */
-static int my_indexer_strcasecmp(
-	const char* a, 
-	const char* b)
-{
-	while (*a && *b)
-	{
-		int dif = my_indexer_conv[((int)*a++)] - 
-		          my_indexer_conv[((int)*b++)];
-		if (dif != 0) return dif;
-	}
-	
-	if (*b) return 1;
-	if (*a) return -1;
-	
-	return 0;
-}
-
 /* This function finds space in our tree to put the keyword in.
  * It does not enter it in the tree if we have already seen this key.
  */ 
 static int my_indexer_push_keyword(
-	const char* keyword)
+	const char*	keyword,
+	void*		arg)
 {
 	my_indexer_ptr tmp;
 	
@@ -175,133 +137,6 @@ static int my_indexer_push_keyword(
 	return 0;
 }
 
-/* Combine the prefix with the substring */
-static int my_indexer_index_hunk(
-	const char* buf,
-	const char* eos,
-	const char* prefix)
-{
-	char out[LU_KEYWORD_LEN+1];
-	char* w;
-	char* e;
-	
-	/* A quick check to avoid function calls */
-	if (prefix[0])
-	{
-		strcpy(&out[0], prefix);
-		w = &out[strlen(prefix)];
-	}
-	else
-	{
-		w = &out[0];
-	}
-	
-	e = &out[sizeof(out) - 1];
-	
-	/* Copy the range into the buffer while converting it */
-	while (w != e && buf != eos)
-	{
-		*w++ = my_indexer_conv[((int)*buf++)];
-	}
-	
-	*w = 0;
-	return my_indexer_push_keyword(&out[0]);
-}
-
-/* Look at a section of non-whitespace chars and decide what to do with it. */
-static int my_indexer_digest_hunk(
-	const char* buf, 
-	const char* eos, 
-	const char* prefix)
-{
-	const char* start;
-	const char* scan;
-	
-	/*!!! Make me work with non-romanian languages (eg. japanese) */
-	/* Japanese has no spaces to delineate words */
-	
-	/* Firstly, index the entire chunk, but without leading or trailing
-	 * chars from is_split.
-	 */
-	
-	while (buf != eos && my_indexer_is_split[((int)*buf)])    buf++;
-	
-	/* Don't index the ether */
-	if (buf == eos) return 0;
-	
-	/* We know there's at least one non-split char so we can keep
-	 * knocking off the eos without testing for emptiness.
-	 */
-	while (my_indexer_is_split[((int)*(eos-1))]) eos--;
-	
-	/* Index the entire hunk. */
-	if (my_indexer_index_hunk(buf, eos, prefix) != 0)
-		return -1;
-	
-	/* Now, divide the chunk into bits which we will keyword index */
-	start = buf;
-	for (scan = buf; scan != eos; scan++)
-	{
-		if (my_indexer_is_split[((int)*scan)])
-		{
-			if (start != scan)
-			{
-				if (my_indexer_index_hunk(start, scan, prefix) != 0)
-					return -1;
-			}
-			
-			start = scan+1;
-		}
-	}
-	
-	if (start != eos)
-	{
-		if (my_indexer_index_hunk(start, eos, prefix) != 0)
-			return -1;
-	}
-	
-	return 0;
-}
-
-/* Run through a buffer looking for segments of non-divide characters.
- */
-static int my_indexer_keyword_scan(
-	const char* buf, 
-	int len, 
-	const char* prefix)
-{
-	const char* start;
-	const char* scan;
-	const char* eos = buf + len;
-	
-	start = 0;
-	for (scan = buf; scan != eos; scan++)
-	{
-		if (my_indexer_is_div[((int)*scan)])
-		{
-			if (start)
-			{
-				my_indexer_digest_hunk(start, scan, prefix);
-				start = 0;
-			}
-		}
-		else
-		{
-			if (!start)
-			{
-				start = scan;
-			}
-		}
-	}
-	
-	if (start)
-	{
-		my_indexer_digest_hunk(start, eos, prefix);
-	}
-	
-	return 0;
-}
-
 /*
  * Traverse a message, looking for plaintext parts.  When
  * such a part is located, we'll index all of the words
@@ -324,25 +159,21 @@ static void my_indexer_traverse(
 	switch ((int)body->type)
 	{
 		case TYPEMESSAGE:
-			/*
-			 * This part contains an encapsulated message.
+			/* This part contains an encapsulated message.
 			 */
-			if (my_indexer_strcasecmp(body->subtype, "rfc822"))
-				break;
-
+			 
 			my_indexer_traverse(in, body->nested.msg->body);
 			break;
 
 		case TYPETEXT:
-			/*
-			 * This is what we want to index -- stop.
+			/* This is what we want to index -- stop.
 			 */
-			if (my_indexer_strcasecmp(body->subtype, "plain"))
-				break;
 
 			buffer = lu_mbox_select_body(in, body, &length, &nfree);
-			my_indexer_keyword_scan(buffer, length,
-				LU_KEYWORD_WORD);
+			my_keyword_digest_string(
+				buffer, length,
+				LU_KEYWORD_WORD,
+				&my_indexer_push_keyword, 0, 1);
 			if (nfree)
 				fs_give((void **)&buffer);
 
@@ -368,10 +199,10 @@ static int my_indexer_push_address(
 	
 	if (address->personal)
 	{
-		my_indexer_keyword_scan(
-			address->personal, 
-			strlen(address->personal),
-			LU_KEYWORD_AUTHOR);
+		my_keyword_digest_string(
+			address->personal, strlen(address->personal),
+			LU_KEYWORD_AUTHOR,
+			&my_indexer_push_keyword, 0, 1);
 	}
 	
 	if (address->mailbox && address->host)
@@ -381,24 +212,24 @@ static int my_indexer_push_address(
 			address->mailbox,
 			address->host);
 	
-		my_indexer_keyword_scan(
-			&buf[0],
-			strlen(&buf[0]),
-			LU_KEYWORD_AUTHOR);
+		my_keyword_digest_string(
+			&buf[0], strlen(&buf[0]),
+			LU_KEYWORD_AUTHOR,
+			&my_indexer_push_keyword, 0, 1);
 	}
 	else if (address->mailbox)
 	{
-		my_indexer_keyword_scan(
-			address->mailbox,
-			strlen(address->mailbox),
-			LU_KEYWORD_AUTHOR);
+		my_keyword_digest_string(
+			address->mailbox, strlen(address->mailbox),
+			LU_KEYWORD_AUTHOR,
+			&my_indexer_push_keyword, 0, 1);
 	}
 	else if (address->host)
 	{
-		my_indexer_keyword_scan(
-			address->host,
-			strlen(address->host),
-			LU_KEYWORD_AUTHOR);
+		my_keyword_digest_string(
+			address->host, strlen(address->host),
+			LU_KEYWORD_AUTHOR,
+			&my_indexer_push_keyword, 0, 1);
 	}
 	
 	return 0;
@@ -436,31 +267,6 @@ static int my_indexer_dump_words(
 
 int lu_indexer_init()
 {
-	int i;
-	
-	/* Clear the lookup tables */
-	memset(&my_indexer_is_split[0], 0, sizeof(my_indexer_is_split));
-	memset(&my_indexer_is_div  [0], 0, sizeof(my_indexer_is_div));
-	
-	/* Bootstrap the lookup tables */
-	for (i = 0; i < sizeof(my_indexer_word_splits)-1; i++)
-		my_indexer_is_split[((int)my_indexer_word_splits[i])] = 1;
-	for (i = 0; i < sizeof(my_indexer_word_divs)-1; i++)
-		my_indexer_is_div[((int)my_indexer_word_divs[i])] = 1;
-	
-	/* All control characters divide words */
-	for (i = 0; i < 040; i++)
-		my_indexer_is_div[i] = 1;
-	
-	/* Initialize conversion table */
-	for (i = 0; i < 256; i++)
-		my_indexer_conv[i] = i;
-	
-	/* Fill the conversion entries */
-	for (i = 0; i < sizeof(my_indexer_orig)-1; i++)
-		my_indexer_conv[((int)my_indexer_orig[i])] = 
-			my_indexer_dest[i];
-	
 	my_indexer_buf = malloc(LU_INDEXER_MAX_KEYS * sizeof(My_Indexer_Tree) +
 				LU_INDEXER_MAX_DYNAMIC);
 	if (!my_indexer_buf)
@@ -514,8 +320,6 @@ void lu_indexer_prep()
 void lu_indexer_location(
 	lu_word		list,
 	lu_word		mbox,
-	message_id	thread,
-	int		is_head,
 	message_id*	offset)
 {
 	char			buf[LU_KEYWORD_LEN+1];
@@ -524,27 +328,35 @@ void lu_indexer_location(
 	snprintf(&buf[0], sizeof(buf), "%s%d", 
 		LU_KEYWORD_LIST, list);
 	*offset = lu_breader_quick_records(&buf[0]);
-	my_indexer_push_keyword(&buf[0]);
+	my_indexer_push_keyword(&buf[0], 0);
 	
 	/* Push the mail box keyword. */
 	snprintf(&buf[0], sizeof(buf), "%s%d:%d", 
 		LU_KEYWORD_MBOX, list, mbox);
-	my_indexer_push_keyword(&buf[0]);
+	my_indexer_push_keyword(&buf[0], 0);
+}
+
+void lu_indexer_threading(
+	lu_word		list,
+	message_id	thread,
+	int		is_head)
+{
+	char buf[LU_KEYWORD_LEN+1];
 	
 	/* Push the thread keyword. */
 	snprintf(&buf[0], sizeof(buf), "%s%d",
 		LU_KEYWORD_THREAD, thread);
-	my_indexer_push_keyword(&buf[0]);
+	my_indexer_push_keyword(&buf[0], 0);
 	
 	if (is_head)
 	{
 		/* Push the head keyword */
 		snprintf(&buf[0], sizeof(buf), "%s%d",
 			LU_KEYWORD_LIST_THREADS, list);
-		my_indexer_push_keyword(&buf[0]);
+		my_indexer_push_keyword(&buf[0], 0);
 	}
 }
-
+	
 void lu_indexer_message(
 	struct Lu_Mbox_Message*	body, 
 	time_t		stamp,
@@ -558,23 +370,23 @@ void lu_indexer_message(
 	
 	snprintf(&buf[0], sizeof(buf), "%s%d",
 		LU_KEYWORD_YEAR, when->tm_year + 1900);
-	my_indexer_push_keyword(&buf[0]);
+	my_indexer_push_keyword(&buf[0], 0);
 	
 	snprintf(&buf[0], sizeof(buf), "%s%s", 
 		LU_KEYWORD_MONTH, my_indexer_mons[when->tm_mon]);
-	my_indexer_push_keyword(&buf[0]);
+	my_indexer_push_keyword(&buf[0], 0);
 	
 	snprintf(&buf[0], sizeof(buf), "%s%d",
 		LU_KEYWORD_DAY_OF_MONTH, when->tm_mday);
-	my_indexer_push_keyword(&buf[0]);
+	my_indexer_push_keyword(&buf[0], 0);
 		
 	snprintf(&buf[0], sizeof(buf), "%s%d", 
 		LU_KEYWORD_HOUR, when->tm_hour);
-	my_indexer_push_keyword(&buf[0]);
+	my_indexer_push_keyword(&buf[0], 0);
 		
 	snprintf(&buf[0], sizeof(buf), "%s%s", 
 		LU_KEYWORD_WEEKDAY, my_indexer_dows[when->tm_wday]);
-	my_indexer_push_keyword(&buf[0]);
+	my_indexer_push_keyword(&buf[0], 0);
 	
 	/* Now, push keywords for the reply-to */
 	if (*reply_id)
@@ -582,7 +394,7 @@ void lu_indexer_message(
 		snprintf(&buf[0], sizeof(buf), "%s%s",
 			LU_KEYWORD_REPLY_TO, 
 			reply_id);
-		my_indexer_push_keyword(&buf[0]);
+		my_indexer_push_keyword(&buf[0], 0);
 	}
 	
 	/* Now, push keywords for all source addresses */
@@ -604,15 +416,15 @@ void lu_indexer_message(
 	/* If we have a subject index it as both body and subject */
 	if (body->env->subject)
 	{
-		my_indexer_keyword_scan(
-			body->env->subject, 
-			strlen(body->env->subject),
-			LU_KEYWORD_SUBJECT);
+		my_keyword_digest_string(
+			body->env->subject, strlen(body->env->subject),
+			LU_KEYWORD_SUBJECT,
+			&my_indexer_push_keyword, 0, 1);
 			
-		my_indexer_keyword_scan(
-			body->env->subject, 
-			strlen(body->env->subject),
-			LU_KEYWORD_WORD);
+		my_keyword_digest_string(
+			body->env->subject, strlen(body->env->subject),
+			LU_KEYWORD_WORD,
+			&my_indexer_push_keyword, 0, 1);
 	}
 	
 	/* Now, scan all the keywords in the body */

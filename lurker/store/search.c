@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.6 2002-06-09 22:07:32 terpstra Exp $
+/*  $Id: search.c,v 1.7 2002-06-10 12:25:58 terpstra Exp $
  *  
  *  search.h - Uses the breader to execute a given search
  *  
@@ -28,7 +28,7 @@
 /* #define DEBUG 1 */
 
 #include "common.h"
-#include "prefix.h"
+#include "keyword.h"
 
 #include "breader.h"
 #include "search.h"

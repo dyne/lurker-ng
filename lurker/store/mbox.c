@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.29 2002-05-31 15:09:12 terpstra Exp $
+/*  $Id: mbox.c,v 1.30 2002-06-10 12:25:58 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -29,8 +29,9 @@
 
 #include "common.h"
 #include "io.h"
-#include "prefix.h"
+#include "keyword.h"
 
+#include "decode.h"
 #include "mbox.h"
 #include "config.h"
 #include "summary.h"
@@ -273,7 +274,7 @@ static int my_mbox_process_mbox(
 	{
 		if (m.env->reply_to->personal)
 		{
-			lu_common_decode_header(
+			lu_decode_header(
 				m.env->reply_to->personal,
 				&author_name[0],
 				sizeof(author_name),
@@ -281,7 +282,7 @@ static int my_mbox_process_mbox(
 		}
 		else if (m.env->from && m.env->from->personal)
 		{
-			lu_common_decode_header(
+			lu_decode_header(
 				m.env->from->personal,
 				&author_name[0],
 				sizeof(author_name),
@@ -299,7 +300,7 @@ static int my_mbox_process_mbox(
 	{
 		if (m.env->from->personal)
 		{
-			lu_common_decode_header(
+			lu_decode_header(
 				m.env->from->personal,
 				&author_name[0],
 				sizeof(author_name),
@@ -316,7 +317,7 @@ static int my_mbox_process_mbox(
 	{
 		if (m.env->sender->personal)
 		{
-			lu_common_decode_header(
+			lu_decode_header(
 				m.env->sender->personal,
 				&author_name[0],
 				sizeof(author_name),
@@ -332,7 +333,7 @@ static int my_mbox_process_mbox(
 	
 	if (m.env->subject)
 	{
-		lu_common_decode_header(
+		lu_decode_header(
 			m.env->subject,
 			&decode_subj[0],
 			sizeof(decode_subj),
@@ -348,7 +349,7 @@ static int my_mbox_process_mbox(
 	message_id[0] = reply_to[0] = 0;
 	
 	if (m.env->message_id)
-		strcpy(&message_id[0], lu_common_cleanup_id(m.env->message_id));
+		strcpy(&message_id[0], lu_decode_id(m.env->message_id));
 	if (!strchr(&message_id[0], '@'))
 	{	/* We only like message-ids with an '@' in them. */
 		message_id[0] = 0;
@@ -378,21 +379,21 @@ static int my_mbox_process_mbox(
 	
 	if (!reply_to[0] && m.env->in_reply_to)
 	{
-		strcpy(&reply_to[0], lu_common_cleanup_id(m.env->in_reply_to));
+		strcpy(&reply_to[0], lu_decode_id(m.env->in_reply_to));
 		if (!strchr(&reply_to[0], '@'))
 			reply_to[0] = 0;
 	}
 	
 	if (!reply_to[0] && m.env->followup_to)
 	{
-		strcpy(&reply_to[0], lu_common_cleanup_id(m.env->followup_to));
+		strcpy(&reply_to[0], lu_decode_id(m.env->followup_to));
 		if (!strchr(&reply_to[0], '@'))
 			reply_to[0] = 0;
 	}
 	
 	if (!reply_to[0] && m.env->references)
 	{
-		strcpy(&reply_to[0], lu_common_cleanup_id(m.env->references));
+		strcpy(&reply_to[0], lu_decode_id(m.env->references));
 		if (!strchr(&reply_to[0], '@'))
 			reply_to[0] = 0;
 	}
@@ -433,23 +434,23 @@ static int my_mbox_process_mbox(
 	}
 	
 	new_message = (error == 0);
-	
-	error = lu_summary_reply_to_resolution(
-		id,
-		&message_id[0],
-		&reply_to[0]);
-	if (error != 0)
-	{
-		lu_mbox_destroy_message(&m);
-		return -1;
-	}
-	
 	if (new_message)
 	{
 		lu_indexer_message(
 			&m, 
 			stamp,
 			&reply_to[0]);
+		
+		error = lu_summary_reply_to_resolution(
+			id,
+			&message_id[0],
+			&reply_to[0]);
+		
+		if (error != 0)
+		{
+			lu_mbox_destroy_message(&m);
+			return -1;
+		}
 	}
 	
 	error = lu_indexer_dump(id);
@@ -836,7 +837,7 @@ const char* lu_mbox_find_charset(
 			(scan->attribute[6] == 't' || scan->attribute[6] == 'T') &&
 			!scan->attribute[7])
 		{
-			return lu_common_charset_maps(scan->value);
+			return lu_decode_charset(scan->value);
 		}
 	}
 	
@@ -1002,4 +1003,27 @@ int lu_mbox_destroy_message(
 	mail_free_body(&m->body);
 	mail_free_envelope(&m->env);
 	return 0;
+}
+
+/* We'll stub out c-client's ``callback'' functions, since we
+ * don't need them anyway.  (What a horrible interface.)
+ */
+void mm_dlog	(char *p1) {}
+void mm_fatal	(char *p1) {}
+void mm_log	(char *p1, long p2) {}
+void mm_status	(MAILSTREAM *p1, char *p2, MAILSTATUS *p3) {}
+void mm_searched(MAILSTREAM *p1, unsigned long p2) {}
+void mm_exists	(MAILSTREAM *p1, unsigned long p2) {}
+void mm_expunged(MAILSTREAM *p1, unsigned long p2) {}
+void mm_flags	(MAILSTREAM *p1, unsigned long p2) {}
+void mm_list	(MAILSTREAM *p1, int p2, char *p3, long p4) {}
+void mm_lsub	(MAILSTREAM *p1, int p2, char *p3, long p4) {}
+void mm_login	(NETMBX *p1, char *p2, char *p3, long p4) {}
+void mm_notify	(MAILSTREAM *p1, char *p2, long p3) {}
+void mm_critical(MAILSTREAM *p1) {}
+
+void mm_nocritical(MAILSTREAM *p1) {}
+long mm_diskerror (MAILSTREAM *p1, long p2, long p3)
+{
+	return (0);
 }

@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.62 2002-06-09 22:06:01 terpstra Exp $
+/*  $Id: service.c,v 1.63 2002-06-10 12:25:58 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -29,8 +29,9 @@
 
 #include "common.h"
 #include "io.h"
-#include "prefix.h"
+#include "keyword.h"
 
+#include "decode.h"
 #include "config.h"
 #include "summary.h"
 #include "search.h"
@@ -408,7 +409,7 @@ static int my_service_write_ehead(
 	char buf[1024];
 	
 	/* This will transform the string into raw binary encoded utf-8 */
-	lu_common_decode_header(header, &buf[0], sizeof(buf), coding);
+	lu_decode_header(header, &buf[0], sizeof(buf), coding);
 	
 	/* Now, write it as an xml escaped string */
 	return my_service_write_str(h, &buf[0]);
@@ -1773,7 +1774,7 @@ static int my_service_message(
 	{
 		snprintf(&keyword[0], sizeof(keyword), "%s%s",
 			LU_KEYWORD_REPLY_TO,
-			lu_common_cleanup_id(mmsg.env->message_id));
+			lu_decode_id(mmsg.env->message_id));
 		
 		b = lu_breader_new(&keyword[0]);
 		if (b == 0)

@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.20 2002-06-09 22:06:01 terpstra Exp $
+/*  $Id: summary.c,v 1.21 2002-06-10 12:25:58 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -29,7 +29,7 @@
 
 #include "common.h"
 #include "io.h"
-#include "prefix.h"
+#include "keyword.h"
 
 #include "config.h"
 #include "breader.h"
@@ -38,6 +38,7 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <netinet/in.h> /* ntohl */
 
 /*------------------------------------------------ Constant parameters */
 
@@ -180,11 +181,10 @@ static int my_summary_squishy_subject(
 		else
 		{
 			if (*r == ':' && (w - target) > 8 &&
-				tolower(*(r-1)) == 'w' &&
+				tolower(*(r-1)) == 's' &&
 				tolower(*(r-2)) == 'a' &&
-				tolower(*(r-3)) == 's')
+				tolower(*(r-3)) == 'w')
 			{	/* Nasty colons! */
-				if (ws) *w++ = ' ';
 				break;
 			}
 			
@@ -228,7 +228,6 @@ static int my_summary_squishy_subject(
  * Also, he must insert himself into the record for the thread.
  */
 int my_summary_find_thread(
-	lu_word		list, 
 	message_id	id,
 	const char*	subject, 
 	time_t		timestamp,
@@ -254,6 +253,7 @@ int my_summary_find_thread(
 	
 	/* Get the key for where this thread lies */
 	tm = timestamp;
+	tm = htonl(tm);
 	thread_key_len = 0;
 	thread_key_len += my_summary_squishy_subject(subject, &thread_key[thread_key_len]);
 	memcpy(&thread_key[thread_key_len], &tm, sizeof(lu_quad));
@@ -316,6 +316,7 @@ int my_summary_find_thread(
 	{
 		memcpy(&prior_time, &thread_key[key.size-sizeof(lu_quad)], 
 			sizeof(lu_quad));
+		prior_time = ntohl(prior_time);
 		
 		/* Ok, we now have the data loaded, do a quick consistency check */
 		if (prior_time > squishy_val.end_time || 
@@ -729,16 +730,7 @@ int lu_summary_import_message(
 		goto lu_summary_import_message_error0;
 	}
 	
-	/* What thread to put it in? */
-	if (my_summary_find_thread(list, id, subject, timestamp,
-		&thread_id) != 0)
-	{
-		goto lu_summary_import_message_error0;
-	}
-	
-	/* Write out location keywords */
-	lu_indexer_location(list, mbox, thread_id, thread_id == id, &loff);
-	
+	/* Write out the list occurance info */
 	key.data = &id;
 	key.size = sizeof(message_id);
 	val.data = &offsets[0];
@@ -759,14 +751,17 @@ int lu_summary_import_message(
 		if (offsets[i].list == list)
 			break;
 	
-	if (i == val.size/sizeof(My_Summary_Offset))
+	if (i == sizeof(offsets)/sizeof(My_Summary_Offset))
 	{
-		if (i == sizeof(offsets)/sizeof(My_Summary_Offset))
-		{
-			syslog(LOG_WARNING, "Ridiculous number of list occurances in message: %s (%d)",
-				mmessage_id, id);
-			goto lu_summary_import_message_error0;
-		}
+		syslog(LOG_WARNING, "Ridiculous number of list occurances in message: %s (%d)",
+			mmessage_id, id);
+	}
+	else if (i == val.size/sizeof(My_Summary_Offset))
+	{
+		/* Write out location keywords -- but only do this if
+		 * the message has not already been pushed.
+		 */
+		lu_indexer_location(list, mbox, &loff);
 		
 		val.size += sizeof(My_Summary_Offset);
 		offsets[i].list   = list;
@@ -786,8 +781,19 @@ int lu_summary_import_message(
 	if (id < my_summary_msg_free)
 	{	/* This is an old message; we're done. */
 		*out = id;
-		return 0;
+		return 1;
 	}
+	
+	/* What thread to put it in? */
+	if (my_summary_find_thread(id, subject, timestamp, &thread_id) != 0)
+	{
+		goto lu_summary_import_message_error0;
+	}
+	
+	lu_indexer_threading(
+		list,
+		thread_id,
+		thread_id == id);
 	
 	/* Start writing variable length data */
 	var_off = lseek(my_summary_variable_fd, 0, SEEK_END);

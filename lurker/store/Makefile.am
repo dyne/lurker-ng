@@ -10,6 +10,7 @@ EXTRA_DIST = Design
 
 @PACKAGE@d_SOURCES = \
 	config.h   config.c   \
+	decode.h   decode.c   \
 	md5.h      md5.c      \
 	flatfile.h flatfile.c \
 	wbuffer.h  wbuffer.c  \

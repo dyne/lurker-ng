@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.13 2002-06-07 10:29:19 terpstra Exp $
+/*  $Id: breader.c,v 1.14 2002-06-10 12:25:58 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -29,7 +29,7 @@
 
 #include "common.h"
 #include "io.h"
-#include "prefix.h"
+#include "keyword.h"
 
 #include "flatfile.h"
 #include "breader.h"
