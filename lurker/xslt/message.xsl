@@ -121,11 +121,11 @@
 
 <xsl:template match="url">
  <xsl:choose>
-  <xsl:when test="substring(., 1, 7) = 'http://'">
-    <a class="url" href="{.}"><xsl:value-of select="."/></a>
+  <xsl:when test="substring(., 1, 4) = 'www.'">
+    <a class="url" href="http://{.}"><xsl:value-of select="."/></a>
   </xsl:when>
   <xsl:otherwise>
-    <a class="url" href="http://{.}"><xsl:value-of select="."/></a>
+    <a class="url" href="{.}"><xsl:value-of select="."/></a>
   </xsl:otherwise>
  </xsl:choose>
 </xsl:template>
