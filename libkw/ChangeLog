@@ -4,6 +4,8 @@ v1.0:
 	Added FORWARD/BACKWARD to match conventional C++
 	Renamed seek() with prefix to seekp() for cross-language consistency
 	Standardized FORWARD=1, BACKWARD=2
+	Default to FORWARD when seeking
+	Flushed out all the paramater names so cross-language help works
 	Scrapped the concept of versioned databases
 	Added C bindings -- header + library
 	Added Perl bindings
