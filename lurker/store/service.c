@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.51 2002-05-22 12:35:30 terpstra Exp $
+/*  $Id: service.c,v 1.52 2002-05-22 18:42:56 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -736,7 +736,8 @@ static struct mail_bodystruct* my_service_attach_id(
 static int my_service_list(
 	My_Service_Handle h,
 	Lu_Config_List* l,
-	message_id msgs)
+	message_id msgs,
+	message_id offset)
 {
 	if (my_service_buffer_write(h, " <list>\n  <id>")       != 0) return -1;
 	if (my_service_write_int(h, l->id)                      != 0) return -1;
@@ -747,6 +748,13 @@ static int my_service_list(
 		if (my_service_buffer_write(h, "  <messages>")  != 0) return -1;
 		if (my_service_write_int(h, msgs)               != 0) return -1;
 		if (my_service_buffer_write(h, "</messages>\n") != 0) return -1;
+	}
+	
+	if (offset != lu_common_minvalid)
+	{
+		if (my_service_buffer_write(h, "  <offset>")    != 0) return -1;
+		if (my_service_write_int(h, offset)             != 0) return -1;
+		if (my_service_buffer_write(h, "</offset>\n")   != 0) return -1;
 	}
 	
 	if (my_service_buffer_write(h, "  <email") != 0) return -1;
@@ -775,6 +783,22 @@ static int my_service_list(
 	}
 	
 	if (my_service_buffer_write(h, " </list>\n") != 0) return -1;
+	
+	return 0;
+}
+
+static int my_service_list_cb(
+	void*		arg,
+	lu_word		list,
+	message_id	offset)
+{
+	Lu_Config_List* l = lu_config_find_list(list);
+	
+	if (l)
+	{
+		return my_service_list((My_Service_Handle)arg, l,
+		                lu_common_minvalid, offset);
+	}
 	
 	return 0;
 }
@@ -1523,7 +1547,6 @@ static int my_service_message(
 	if (my_service_xml_head(h)                       != 0) goto my_service_message_error3;
 	if (my_service_buffer_write(h, "<message>\n")    != 0) goto my_service_message_error3;
 	if (my_service_server(h)                         != 0) goto my_service_message_error3;
-	if (my_service_list(h, list, lu_common_minvalid) != 0) goto my_service_message_error3;
 	
 	if (my_service_buffer_write(h, " <id>")                 != 0) goto my_service_message_error3;
 	if (my_service_write_int   (h, id)                      != 0) goto my_service_message_error3;
@@ -1532,6 +1555,8 @@ static int my_service_message(
 	if (my_service_buffer_write(h, "</timestamp>\n <time>") != 0) goto my_service_message_error3;
 	if (my_service_write_time  (h, msg.timestamp)           != 0) goto my_service_message_error3;
 	if (my_service_buffer_write(h, "</time>\n")             != 0) goto my_service_message_error3;
+	
+	if (lu_summary_write_lists(&my_service_list_cb, h, id) != 0) goto my_service_message_error3;
 	
 	if (my_service_buffer_write(h, " <threading>\n  <id>")  != 0) goto my_service_message_error3;
 	if (my_service_write_int   (h, msg.thread)              != 0) goto my_service_message_error3;
@@ -1769,7 +1794,7 @@ static int my_service_mindex(
 	
 	if (my_service_server(h) != 0) goto my_service_mindex_error1;
 	
-	if (my_service_list(h, l, lu_breader_records(b)) != 0) goto my_service_mindex_error1;
+	if (my_service_list(h, l, lu_breader_records(b), offset) != 0) goto my_service_mindex_error1;
 	lu_breader_free(b);
 	
 	for (i = 0; i < count; i++)
@@ -2097,6 +2122,7 @@ static int my_service_splash(
 {
 	Lu_Config_List*		scan;
 	char			key[40];
+	message_id		messages;
 	
 	if (strcmp(request, "index"))
 	{
@@ -2127,8 +2153,12 @@ static int my_service_splash(
 		scan++)
 	{
 		snprintf(&key[0], sizeof(key), "%s%d", LU_KEYWORD_LIST, scan->id);
-		if (my_service_list(h, scan, 
-			lu_breader_quick_records(&key[0])) != 0)
+		messages = lu_breader_quick_records(&key[0]);
+		if (my_service_list(
+			h, 
+			scan, 
+			messages, 
+			(messages - 1) / LU_PROTO_INDEX * LU_PROTO_INDEX) != 0)
 		{
 			return -1;
 		}

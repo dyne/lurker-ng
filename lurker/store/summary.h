@@ -1,4 +1,4 @@
-/*  $Id: summary.h,v 1.6 2002-05-09 06:28:58 terpstra Exp $
+/*  $Id: summary.h,v 1.7 2002-05-22 18:42:56 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -44,7 +44,10 @@ typedef struct Lu_Summary_Message_T
 	/* timestamp of the message */
 	lu_quad		timestamp;
 	
-	/* number of messages in-reply-to this */
+	/* number of messages in-reply-to this
+	 * in the future we can use this in threading to denote a position
+	 * where thread drift occures.
+	 */
 	lu_quad		replies;
 	
 	/* message that this is in-reply-to */
@@ -81,15 +84,21 @@ extern message_id lu_summary_lookup_mid(
 extern Lu_Summary_Message lu_summary_read_msummary(
 	message_id mid);
 
-/** This writes 'subject<null>authorname<null>authoremail<null>' to the
- *  specified file. This should be all the is required outside the db.c
- *  module. The flat_offset can be found in a message summary record.
+/** This writes the variable information out via the given callbacks.
+ *  The flat_offset can be found in a message summary record.
  */
 extern int lu_summary_write_variable(
 	int (*write)(void* arg, const char* str),
 	int (*quote)(void* arg, const char* str, size_t len),
 	void* arg,
 	lu_addr flat_offset);
+
+/* This will call a method for each list a message occures in.
+ */
+extern int lu_summary_write_lists(
+	int (*write)(void* arg, lu_word list, message_id offset),
+	void* arg,
+	message_id id);
 
 /** Pass the timestamp of the server arrival time and the client send
  *  time. The heuristic of forward import is used to calculate a real

@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.18 2002-05-11 19:24:59 terpstra Exp $
+/*  $Id: summary.c,v 1.19 2002-05-22 18:42:56 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -43,38 +43,6 @@
 
 #define LU_SQUISHY_MAX	80
 
-/*------------------------------------------------ Private types */
-
-/** Thread merging meta-data key - merge.hash
- *  Size - ?
- */
-typedef struct Lu_Summary_Thread_Merge_Key_T
-{
-	lu_word		list_index;
-	char		squishy_subject[0];
-	/* Followed by:
-	 * lu_quad	start;
-	 */
-} Lu_Summary_Thead_Merge_Key;
-
-typedef struct My_Summary_List_Ref_T
-{
-	lu_word		list;
-	message_id	index;
-} Lu_Summary_List_Ref;
-
-/*------------------------------------------------ Private global vars */
-
-static int my_summary_message_fd  = -1;
-static int my_summary_variable_fd = -1;
-static DB* my_summary_merge_db    = 0;
-static DB* my_summary_mid_db      = 0;
-
-static message_id	my_summary_msg_free;
-static time_t		my_summary_last_time;
-
-/*------------------------------------------------ Private helper methods */
-
 /* By default, if two messages with similar subject arrive within 14 days
  * on the same mailing list, we consider them the same thread. If they have
  * the same squishy subject and a reply-to linkage, we may merge threads
@@ -82,16 +50,42 @@ static time_t		my_summary_last_time;
  */
 #define LU_THREAD_OVERLAP_TIME	60*60*24*30
 
+/*------------------------------------------------ Private types */
+
 /* The squishy merge db has keys like:
- *  <list><squishy subject><timestamp>
- * And keys like:
+ *  <squishy subject><timestamp>
+ * And vals like:
  */
 typedef struct My_Summary_SquishyVal_T
 {
 	message_id	thread;		/* thread head */
 	lu_quad		end_time;	/* ending timestamp */
 } My_Summary_SquishyVal;
-#define LU_THREAD_KEY_MAX (sizeof(lu_word) + LU_SQUISHY_MAX + sizeof(lu_quad))
+#define LU_THREAD_KEY_MAX (LU_SQUISHY_MAX + sizeof(lu_quad))
+
+/* The key for the offset db is simply the message id.
+ */
+
+/* The list of offsets of this message.
+ */
+typedef struct My_Summary_Offest_T
+{
+	lu_quad		list;
+	message_id	offset;
+} My_Summary_Offset;
+
+/*------------------------------------------------ Private global vars */
+
+static int my_summary_message_fd  = -1;
+static int my_summary_variable_fd = -1;
+static DB* my_summary_merge_db    = 0;
+static DB* my_summary_mid_db      = 0;
+static DB* my_summary_offset_db   = 0;
+
+static message_id	my_summary_msg_free;
+static time_t		my_summary_last_time;
+
+/*------------------------------------------------ Private helper methods */
 
 static int my_summary_squishy_subject(
 	const char* subject, 
@@ -230,8 +224,8 @@ static int my_summary_squishy_subject(
  * threads. However, because we have guaranteed import order, a missing link
  * is an impossibility. It can only possibly connect to the previous thread.
  * 
- * The caller is responsible for either setting his thread to the returned
- * id. Also, he must insert himself into the record for the thread.
+ * The caller is responsible for setting his thread to the returned id.
+ * Also, he must insert himself into the record for the thread.
  */
 int my_summary_find_thread(
 	lu_word		list, 
@@ -260,8 +254,7 @@ int my_summary_find_thread(
 	
 	/* Get the key for where this thread lies */
 	tm = timestamp;
-	thread_key_len = sizeof(lu_word);
-	memcpy(&thread_key[0], &list, thread_key_len);
+	thread_key_len = 0;
 	thread_key_len += my_summary_squishy_subject(subject, &thread_key[thread_key_len]);
 	memcpy(&thread_key[thread_key_len], &tm, sizeof(lu_quad));
 	thread_key_len += sizeof(lu_quad);
@@ -593,6 +586,44 @@ int lu_summary_write_variable(
 	return 0;
 }
 
+int lu_summary_write_lists(
+	int (*write)(void* arg, lu_word list, message_id offset),
+	void* arg,
+	message_id id)
+{
+	DBT			key;
+	DBT			val;
+	int			error;
+	
+	My_Summary_Offset	offsets[20];
+	int			i;
+	
+	/* Check to see if we were already loaded */
+	memset(&key, 0, sizeof(DBT));
+	memset(&val, 0, sizeof(DBT));
+	
+	key.data = &id;
+	key.size = sizeof(message_id);
+	val.data = &offsets[0];
+	val.size = 0;
+	val.ulen = sizeof(offsets);
+	val.flags = DB_DBT_USERMEM;
+	
+	error = my_summary_offset_db->get(
+		my_summary_offset_db, 0, &key, &val, 0);
+	if (error && error != DB_NOTFOUND)
+	{
+		syslog(LOG_ERR, "Could not read occurance db: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+	
+	for (i = 0; i < val.size/sizeof(My_Summary_Offset); i++)
+		(*write)(arg, offsets[i].list, offsets[i].offset);
+	
+	return 0;
+}
+
 /** Here we generally assume that the server is smarter than the client when
  *  it comes to timestamps. However, due to mail delays it is conceivable that
  *  that the client message could arrive up to 3 days after it was sent.
@@ -655,10 +686,14 @@ int lu_summary_import_message(
 	message_id		id;
 	Lu_Summary_Message	sum;
 	message_id		thread_id;
+	message_id		loff;
 	
-	DBT		key;
-	DBT		val;
-	int		error;
+	DBT			key;
+	DBT			val;
+	int			error;
+	
+	My_Summary_Offset	offsets[20];
+	int			i;
 	
 	if (!subject) subject = "";
 	
@@ -698,7 +733,51 @@ int lu_summary_import_message(
 	}
 	
 	/* Write out location keywords */
-	lu_indexer_location(list, mbox, thread_id, thread_id == id);
+	lu_indexer_location(list, mbox, thread_id, thread_id == id, &loff);
+	
+	key.data = &id;
+	key.size = sizeof(message_id);
+	val.data = &offsets[0];
+	val.size = 0;
+	val.ulen = sizeof(offsets);
+	val.flags = DB_DBT_USERMEM;
+	
+	error = my_summary_offset_db->get(
+		my_summary_offset_db, 0, &key, &val, 0);
+	if (error && error != DB_NOTFOUND)
+	{
+		syslog(LOG_ERR, "Could not read occurance db: %s\n",
+			db_strerror(error));
+		goto lu_summary_import_message_error0;
+	}
+	
+	for (i = 0; i < val.size/sizeof(My_Summary_Offset); i++)
+		if (offsets[i].list == list)
+			break;
+	
+	if (i == val.size/sizeof(My_Summary_Offset))
+	{
+		if (i == sizeof(offsets)/sizeof(My_Summary_Offset))
+		{
+			syslog(LOG_WARNING, "Ridiculous number of list occurances in message: %s (%d)",
+				mmessage_id, id);
+			goto lu_summary_import_message_error0;
+		}
+		
+		val.size += sizeof(My_Summary_Offset);
+		offsets[i].list   = list;
+		offsets[i].offset = loff;
+		
+		error = my_summary_offset_db->put(
+			my_summary_offset_db, 0, &key, &val, 0);
+		
+		if (error)
+		{
+			syslog(LOG_ERR, "Could not write occurance db: %s\n",
+				db_strerror(error));
+			goto lu_summary_import_message_error0;
+		}
+	}
 	
 	if (id < my_summary_msg_free)
 	{	/* This is an old message; we're done. */
@@ -927,6 +1006,13 @@ int lu_summary_open()
 		return -1;
 	}
 	
+	if ((error = db_create(&my_summary_offset_db, lu_config_env, 0)) != 0)
+	{
+		fprintf(stderr, "Creating a db3 database: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+	
 	if ((error = my_summary_merge_db->open(
 		my_summary_merge_db, "merge.btree", 0,
 		DB_BTREE, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
@@ -941,6 +1027,15 @@ int lu_summary_open()
 		DB_HASH, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
 	{
 		fprintf(stderr, "Opening db3 database: mid.hash: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+	
+	if ((error = my_summary_offset_db->open(
+		my_summary_offset_db, "offset.hash", 0,
+		DB_HASH, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
+	{
+		fprintf(stderr, "Opening db3 database: offset.hash: %s\n",
 			db_strerror(error));
 		return -1;
 	}
@@ -994,6 +1089,13 @@ int lu_summary_sync()
 			db_strerror(error));
 	}
 	
+	if ((error = my_summary_offset_db->sync(
+		my_summary_offset_db, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Syncing db3 database: offset.hash: %s\n",
+			db_strerror(error));
+	}
+	
 	return 0;
 }
 
@@ -1014,6 +1116,14 @@ int lu_summary_close()
 		my_summary_mid_db, 0)) != 0)
 	{
 		syslog(LOG_ERR, "Closing db3 database: mid.hash: %s\n",
+			db_strerror(error));
+		fail = -1;
+	}
+	
+	if ((error = my_summary_offset_db->close(
+		my_summary_offset_db, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Closing db3 database: offset.hash: %s\n",
 			db_strerror(error));
 		fail = -1;
 	}

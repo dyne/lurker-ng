@@ -1,4 +1,4 @@
-/*  $Id: indexer.h,v 1.8 2002-05-09 06:28:58 terpstra Exp $
+/*  $Id: indexer.h,v 1.9 2002-05-22 18:42:56 terpstra Exp $
  *  
  *  indexer.h - Handles indexing a message for keyword searching
  *  
@@ -44,7 +44,8 @@ void lu_indexer_location(
 	lu_word		list,
 	lu_word		mbox,
 	message_id	thread,
-	int		is_head);
+	int		is_head,
+	message_id*	list_off);
 
 /** Call this to push all the keywords related to this message
  */

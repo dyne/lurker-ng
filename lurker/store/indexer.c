@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.17 2002-05-11 19:24:59 terpstra Exp $
+/*  $Id: indexer.c,v 1.18 2002-05-22 18:42:55 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -35,6 +35,7 @@
 #include "wbuffer.h"
 #include "indexer.h"
 #include "btree.h"
+#include "breader.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -513,13 +514,15 @@ void lu_indexer_location(
 	lu_word		list,
 	lu_word		mbox,
 	message_id	thread,
-	int		is_head)
+	int		is_head,
+	message_id*	offset)
 {
-	char buf[LU_KEYWORD_LEN+1];
+	char			buf[LU_KEYWORD_LEN+1];
 	
 	/* Push the mailing list keyword. */
 	snprintf(&buf[0], sizeof(buf), "%s%d", 
 		LU_KEYWORD_LIST, list);
+	*offset = lu_breader_quick_records(&buf[0]);
 	my_indexer_push_keyword(&buf[0]);
 	
 	/* Push the mail box keyword. */
