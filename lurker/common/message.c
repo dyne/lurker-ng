@@ -1,5 +1,5 @@
 /*
- * $Id: message.c,v 1.12 2002-01-28 12:05:49 cbond Exp $
+ * $Id: message.c,v 1.13 2002-05-11 19:24:59 terpstra Exp $
  *  
  *  message.c - parse mail.
  *  
@@ -23,6 +23,9 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
+
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/mman.h>
@@ -34,7 +37,7 @@
 
 #include "message.h"
 
-static char *strnstr(const char *, const char *, size_t);
+static char* my_strnstr(const char *, const char *, size_t);
 static int message_offset(char *, size_t *);
 
 /*
@@ -90,10 +93,10 @@ mail_parse(int fd, off_t offset)
 		 * the end of this message as well.
 		 */
 		if (maplog > 1 << 10)
-			end = strnstr(out->buffer + (maplog / 2), "\nFrom ",
+			end = my_strnstr(out->buffer + (maplog / 2), "\nFrom ",
 				maplog / 2);
 		else
-			end = strnstr(out->buffer, "\nFrom ", maplog);
+			end = my_strnstr(out->buffer, "\nFrom ", maplog);
 		if (end == NULL && maplog >= sb.st_size - offset)
 			end = out->buffer + maplog;
 	}
@@ -194,7 +197,7 @@ mail_free(struct msg *in)
  * Find substring s2 in s, which is not NULL-terminated.
  */
 char *
-strnstr(const char *s, const char *s2, size_t len)
+my_strnstr(const char *s, const char *s2, size_t len)
 {
 	const char *orig;
 	size_t len2;

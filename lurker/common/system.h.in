@@ -46,8 +46,8 @@
 /* Define to 1 if you have the `getpagesize' function. */
 #undef HAVE_GETPAGESIZE
 
-/* Define to 1 if you have the <iconv.h> header file. */
-#undef HAVE_ICONV_H
+/* Define if you have the iconv() function. */
+#undef HAVE_ICONV
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -98,9 +98,6 @@
 /* Define to 1 if you have the <sys/file.h> header file. */
 #undef HAVE_SYS_FILE_H
 
-/* Define to 1 if you have the <sys/iconv.h> header file. */
-#undef HAVE_SYS_ICONV_H
-
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #undef HAVE_SYS_MMAN_H
 
@@ -125,6 +122,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define as const if the declaration of iconv() needs const. */
+#undef ICONV_CONST
 
 /* Where do we keep our pid? */
 #undef LOCALSTATEDIR

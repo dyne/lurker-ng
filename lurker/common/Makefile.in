@@ -61,6 +61,7 @@ CC = @CC@
 DEPDIR = @DEPDIR@
 EXEEXT = @EXEEXT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LIBICONV = @LIBICONV@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PKG_CONFIG = @PKG_CONFIG@
@@ -74,7 +75,6 @@ install_sh = @install_sh@
 wwwdir = @wwwdir@
 
 noinst_LIBRARIES = libcommon.a
-noinst_PROGRAMS = test
 EXTRA_DIST = system.h.in
 
 libcommon_a_SOURCES = \
@@ -82,9 +82,6 @@ libcommon_a_SOURCES = \
 	message.c message.h \
 	stub.c io.h prefix.h
 
-
-test_SOURCES = main.c
-test_LDADD = @STORAGE_LIBS@ libcommon.a
 subdir = common
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = system.h
@@ -96,13 +93,6 @@ libcommon_a_LIBADD =
 am_libcommon_a_OBJECTS = common.$(OBJEXT) message.$(OBJEXT) \
 	stub.$(OBJEXT)
 libcommon_a_OBJECTS = $(am_libcommon_a_OBJECTS)
-noinst_PROGRAMS = test$(EXEEXT)
-PROGRAMS = $(noinst_PROGRAMS)
-
-am_test_OBJECTS = main.$(OBJEXT)
-test_OBJECTS = $(am_test_OBJECTS)
-test_DEPENDENCIES = libcommon.a
-test_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I.
@@ -110,16 +100,16 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/common.Po $(DEPDIR)/main.Po \
-@AMDEP_TRUE@	$(DEPDIR)/message.Po $(DEPDIR)/stub.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/common.Po $(DEPDIR)/message.Po \
+@AMDEP_TRUE@	$(DEPDIR)/stub.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
-DIST_SOURCES = $(libcommon_a_SOURCES) $(test_SOURCES)
+DIST_SOURCES = $(libcommon_a_SOURCES)
 DIST_COMMON = ./stamp-h.in Makefile.am Makefile.in system.h.in
-SOURCES = $(libcommon_a_SOURCES) $(test_SOURCES)
+SOURCES = $(libcommon_a_SOURCES)
 
 all: system.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -168,12 +158,6 @@ libcommon.a: $(libcommon_a_OBJECTS) $(libcommon_a_DEPENDENCIES)
 	$(libcommon_a_AR) libcommon.a $(libcommon_a_OBJECTS) $(libcommon_a_LIBADD)
 	$(RANLIB) libcommon.a
 
-clean-noinstPROGRAMS:
-	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
-test$(EXEEXT): $(test_OBJECTS) $(test_DEPENDENCIES) 
-	@rm -f test$(EXEEXT)
-	$(LINK) $(test_LDFLAGS) $(test_OBJECTS) $(test_LDADD) $(LIBS)
-
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
 
@@ -181,7 +165,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/common.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/message.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/stub.Po@am__quote@
 
@@ -257,7 +240,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LIBRARIES) $(PROGRAMS) system.h
+all-am: Makefile $(LIBRARIES) system.h
 
 installdirs:
 
@@ -286,8 +269,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-noinstLIBRARIES clean-noinstPROGRAMS \
-	mostlyclean-am
+clean-am: clean-generic clean-noinstLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 
@@ -323,15 +305,15 @@ mostlyclean-am: mostlyclean-compile mostlyclean-generic
 uninstall-am: uninstall-info-am
 
 .PHONY: GTAGS all all-am check check-am clean clean-generic \
-	clean-noinstLIBRARIES clean-noinstPROGRAMS distclean \
-	distclean-compile distclean-depend distclean-generic \
-	distclean-hdr distclean-tags distdir dvi dvi-am info info-am \
-	install install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic tags uninstall \
-	uninstall-am uninstall-info-am
+	clean-noinstLIBRARIES distclean distclean-compile \
+	distclean-depend distclean-generic distclean-hdr distclean-tags \
+	distdir dvi dvi-am info info-am install install-am install-data \
+	install-data-am install-exec install-exec-am install-info \
+	install-info-am install-man install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic tags uninstall uninstall-am \
+	uninstall-info-am
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -1,4 +1,4 @@
-/*  $Id: expiry.c,v 1.4 2002-05-04 04:39:10 terpstra Exp $
+/*  $Id: expiry.c,v 1.5 2002-05-11 19:24:59 terpstra Exp $
  *  
  *  expiry.c - Record when pages should be destroyed
  *  
@@ -22,7 +22,9 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _GNU_SOURCE
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
+
 /* #define DEBUG 1 */
 
 #include "common.h"

@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.1 2002-02-03 03:10:53 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.2 2002-05-11 19:24:59 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that delays appends to the flatfile
  *  
@@ -22,8 +22,10 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _GNU_SOURCE
-// #define DEBUG 1
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
+
+/* #define DEBUG 1 */
 
 #include "common.h"
 #include "io.h"

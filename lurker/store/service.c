@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.46 2002-05-11 08:00:32 terpstra Exp $
+/*  $Id: service.c,v 1.47 2002-05-11 19:24:59 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -22,7 +22,9 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _GNU_SOURCE
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
+
 /* #define DEBUG 1 */
 
 #include "common.h"
@@ -40,14 +42,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
-
-#if defined(HAVE_ICONV_H)
 #include <iconv.h>
-#elif defined(HAVE_SYS_ICONV_H)
-#include <sys/iconv.h>
-#else
-#error Missing iconv
-#endif
 
 #define LU_PROTO_INDEX	20
 
@@ -578,7 +573,7 @@ static int my_service_dump(
 	{
 		fill = sizeof(buf);
 		b = &buf[0];
-		tmp = iconv(ic, (char**)&dat, &len, &b, &fill);
+		tmp = iconv(ic, (ICONV_CAST)&dat, &len, &b, &fill);
 		
 		/*!!! Search the message for URLs, email address, quotations, etc */
 		if (my_service_write_strl(h, &buf[0], sizeof(buf) - fill) != 0)

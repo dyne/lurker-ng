@@ -1,4 +1,4 @@
-/*  $Id: flatfile.c,v 1.8 2002-02-25 08:49:08 terpstra Exp $
+/*  $Id: flatfile.c,v 1.9 2002-05-11 19:24:59 terpstra Exp $
  *  
  *  flatfile.c - Knows how to manage the keyword flatfile database
  *  
@@ -22,8 +22,10 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _GNU_SOURCE
-// #define DEBUG 1
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
+
+/* #define DEBUG 1 */
 
 #include "common.h"
 #include "io.h"

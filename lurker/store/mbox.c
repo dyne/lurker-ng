@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.26 2002-05-10 01:12:41 terpstra Exp $
+/*  $Id: mbox.c,v 1.27 2002-05-11 19:24:59 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -22,7 +22,8 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _GNU_SOURCE
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
 
 /* #define DEBUG 1 */
 

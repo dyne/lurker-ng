@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.2 2002-02-10 23:26:26 terpstra Exp $
+/*  $Id: search.c,v 1.3 2002-05-11 19:24:59 terpstra Exp $
  *  
  *  search.h - Uses the breader to execute a given search
  *  
@@ -22,8 +22,10 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _GNU_SOURCE
-// #define DEBUG 1
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
+
+/* #define DEBUG 1 */
 
 #include "common.h"
 #include "prefix.h"

@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.15 2002-05-11 08:00:31 terpstra Exp $
+/*  $Id: common.c,v 1.16 2002-05-11 19:24:59 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -22,21 +22,15 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _POSIX_SOURCE
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
 
 #include "common.h"
 #include "prefix.h"
 
 #include <ctype.h>
 #include <string.h>
-
-#if defined(HAVE_ICONV_H)
 #include <iconv.h>
-#elif defined(HAVE_SYS_ICONV_H)
-#include <sys/iconv.h>
-#else
-#error Missing iconv
-#endif
 
 /*------------------------------------------------ Private global vars */
 
@@ -132,7 +126,7 @@ static char* my_common_quoted(
 		bl = sizeof(buf) - (be - b);
 		
 		b = &buf[0];
-		tmp = iconv(ic, &b, &bl, &w, &wl);
+		tmp = iconv(ic, (ICONV_CAST)&b, &bl, &w, &wl);
 		
 		/* Shift any remaining partial bytes in the buffer over */
 		memmove(&buf[0], b, bl);
@@ -237,7 +231,7 @@ static char* my_common_base64(
 		bl = sizeof(buf) - (be - b);
 		
 		b = &buf[0];
-		tmp = iconv(ic, &b, &bl, &w, &wl);
+		tmp = iconv(ic, (ICONV_CAST)&b, &bl, &w, &wl);
 		
 		/* Shift any remaining partial bytes in the buffer over */
 		memmove(&buf[0], b, bl);
@@ -320,7 +314,7 @@ void lu_common_decode_header(
 		
 		rlen = r - start;
 		wlen = e - w;
-		iconv(dc, (char**)&start, &rlen, &w, &wlen);
+		iconv(dc, (ICONV_CAST)&start, &rlen, &w, &wlen);
 		
 		if (!*r || w == e) break;
 		

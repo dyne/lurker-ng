@@ -22,7 +22,7 @@ EXTRA_DIST = Design
 	main.c     btree.h    \
 	expiry.c   expiry.h
 
-@PACKAGE@d_LDADD = @STORAGE_LIBS@ ../common/libcommon.a
+@PACKAGE@d_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV}
 
 install-data-local:
 	@list='$(REQUESTS)'; for p in $$list; do \

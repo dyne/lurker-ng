@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.18 2002-05-06 23:01:58 terpstra Exp $
+/*  $Id: main.c,v 1.19 2002-05-11 19:24:59 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -21,6 +21,9 @@
  *    along with this program; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
 
 #include "common.h"
 #include "io.h"

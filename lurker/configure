@@ -839,6 +839,7 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-wwwdir           www directory (default: PREFIX/var/www/lurker)
   --with-dbdir            db directory (default: PREFIX/var/lib/lurker)
+  --with-libiconv-prefix=DIR  search for libiconv in DIR/include and DIR/lib
 
 Some influential environment variables:
   CC          C compiler command
@@ -4597,9 +4598,7 @@ fi
 
 
 
-
-
-for ac_header in iconv.h sys/iconv.h unistd.h signal.h fcntl.h io.h time.h sys/mman.h sys/time.h sys/file.h assert.h sys/fcntl.h errno.h syslog.h
+for ac_header in unistd.h signal.h fcntl.h io.h time.h sys/mman.h sys/time.h sys/file.h assert.h sys/fcntl.h errno.h syslog.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
@@ -5827,6 +5826,203 @@ fi
 rm -f conftest*
 fi
 
+
+
+
+# Check whether --with-libiconv-prefix or --without-libiconv-prefix was given.
+if test "${with_libiconv_prefix+set}" = set; then
+  withval="$with_libiconv_prefix"
+
+    for dir in `echo "$withval" | tr : ' '`; do
+      if test -d $dir/include; then CPPFLAGS="$CPPFLAGS -I$dir/include"; fi
+      if test -d $dir/lib; then LDFLAGS="$LDFLAGS -L$dir/lib"; fi
+    done
+
+fi;
+
+  echo "$as_me:$LINENO: checking for iconv" >&5
+echo $ECHO_N "checking for iconv... $ECHO_C" >&6
+if test "${am_cv_func_iconv+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+    am_cv_func_iconv="no, consider installing GNU libiconv"
+    am_cv_lib_iconv=no
+    cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+#include <stdlib.h>
+#include <iconv.h>
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+iconv_t cd = iconv_open("","");
+       iconv(cd,NULL,NULL,NULL,NULL);
+       iconv_close(cd);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  am_cv_func_iconv=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+    if test "$am_cv_func_iconv" != yes; then
+      am_save_LIBS="$LIBS"
+      LIBS="$LIBS -liconv"
+      cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+#include <stdlib.h>
+#include <iconv.h>
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+iconv_t cd = iconv_open("","");
+         iconv(cd,NULL,NULL,NULL,NULL);
+         iconv_close(cd);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  am_cv_lib_iconv=yes
+        am_cv_func_iconv=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+      LIBS="$am_save_LIBS"
+    fi
+
+fi
+echo "$as_me:$LINENO: result: $am_cv_func_iconv" >&5
+echo "${ECHO_T}$am_cv_func_iconv" >&6
+  if test "$am_cv_func_iconv" = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_ICONV 1
+_ACEOF
+
+    echo "$as_me:$LINENO: checking for iconv declaration" >&5
+echo $ECHO_N "checking for iconv declaration... $ECHO_C" >&6
+    if test "${am_cv_proto_iconv+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+      cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+#include <stdlib.h>
+#include <iconv.h>
+extern
+#ifdef __cplusplus
+"C"
+#endif
+#if defined(__STDC__) || defined(__cplusplus)
+size_t iconv (iconv_t cd, char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);
+#else
+size_t iconv();
+#endif
+
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  am_cv_proto_iconv_arg1=""
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+am_cv_proto_iconv_arg1="const"
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+      am_cv_proto_iconv="extern size_t iconv (iconv_t cd, $am_cv_proto_iconv_arg1 char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);"
+fi
+
+    am_cv_proto_iconv=`echo "$am_cv_proto_iconv" | tr -s ' ' | sed -e 's/( /(/'`
+    echo "$as_me:$LINENO: result: ${ac_t:-
+         }$am_cv_proto_iconv" >&5
+echo "${ECHO_T}${ac_t:-
+         }$am_cv_proto_iconv" >&6
+
+cat >>confdefs.h <<_ACEOF
+#define ICONV_CONST $am_cv_proto_iconv_arg1
+_ACEOF
+
+  fi
+  LIBICONV=
+  if test "$am_cv_lib_iconv" = yes; then
+    LIBICONV="-liconv"
+  fi
+
+
+
+if test "x$am_cv_func_iconv" != "xyes"; then
+  { { echo "$as_me:$LINENO: error: Need iconv to function" >&5
+echo "$as_me: error: Need iconv to function" >&2;}
+   { (exit 1); exit 1; }; }
+fi
 
 
   succeeded=no
@@ -8749,6 +8945,7 @@ s,@RANLIB@,$RANLIB,;t t
 s,@ac_ct_RANLIB@,$ac_ct_RANLIB,;t t
 s,@CPP@,$CPP,;t t
 s,@ALLOCA@,$ALLOCA,;t t
+s,@LIBICONV@,$LIBICONV,;t t
 s,@PKG_CONFIG@,$PKG_CONFIG,;t t
 s,@STORAGE_CFLAGS@,$STORAGE_CFLAGS,;t t
 s,@STORAGE_LIBS@,$STORAGE_LIBS,;t t

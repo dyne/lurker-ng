@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.26 2002-05-03 05:21:27 terpstra Exp $
+/*  $Id: main.c,v 1.27 2002-05-11 19:24:59 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -22,8 +22,10 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _GNU_SOURCE
-// #define DEBUG 1
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
+
+/* #define DEBUG 1 */
 
 #include "common.h"
 #include "io.h"

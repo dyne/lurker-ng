@@ -20,6 +20,9 @@
  * Still in the public domain.
  */
 
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
+
 #include "common.h"
 #include "md5.h"
 

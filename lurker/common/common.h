@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.8 2002-05-03 20:57:42 terpstra Exp $
+/*  $Id: common.h,v 1.9 2002-05-11 19:24:59 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -99,6 +99,12 @@ typedef long time_t;
 
 #ifndef assert
 #define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
+#endif
+
+#ifdef ICONV_CONST
+#define ICONV_CAST	const char**
+#else
+#define ICONV_CAST	char**
 #endif
 
 /*------------------------------------------------ Public types */

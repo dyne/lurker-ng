@@ -61,6 +61,7 @@ CC = @CC@
 DEPDIR = @DEPDIR@
 EXEEXT = @EXEEXT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LIBICONV = @LIBICONV@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PKG_CONFIG = @PKG_CONFIG@
@@ -97,7 +98,7 @@ EXTRA_DIST = Design
 	expiry.c   expiry.h
 
 
-@PACKAGE@d_LDADD = @STORAGE_LIBS@ ../common/libcommon.a
+@PACKAGE@d_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV}
 subdir = store
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/system.h

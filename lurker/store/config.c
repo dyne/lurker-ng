@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.9 2002-05-04 03:41:21 terpstra Exp $
+/*  $Id: config.c,v 1.10 2002-05-11 19:24:59 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -22,8 +22,10 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _GNU_SOURCE
-// #define DEBUG 1
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
+
+/* #define DEBUG 1 */
 
 #include "common.h"
 #include "io.h"

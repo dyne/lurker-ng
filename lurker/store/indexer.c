@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.16 2002-05-09 06:28:58 terpstra Exp $
+/*  $Id: indexer.c,v 1.17 2002-05-11 19:24:59 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -22,8 +22,10 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _GNU_SOURCE
-// #define DEBUG 1
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
+
+/* #define DEBUG 1 */
 
 #include "common.h"
 #include "io.h"
