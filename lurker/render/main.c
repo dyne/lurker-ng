@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.3 2002-02-10 07:11:51 terpstra Exp $
+/*  $Id: main.c,v 1.4 2002-02-11 02:30:25 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -201,6 +201,7 @@ static int render_html(const char* parameter)
 int main(int argc, char* argv[])
 {
 	int	html;
+	char*	query;
 	char*	origuri;
 	char*	uri;
 	char*	suffix;
@@ -216,6 +217,17 @@ int main(int argc, char* argv[])
 	int			sun_fd;
 	struct sockaddr_un	sun_addr;
 	int			sun_len;
+	
+	if ((query = getenv("QUERY_STRING")) == 0)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Not invoked as a get cgi", 
+			"possibly a shell invokation or post",
+			"The .htaccess file must be modified");
+		return 1;
+	}
 	
 	/* What URL are we rendering? */
 	if ((origuri = getenv("REQUEST_URI")) == 0)
@@ -258,14 +270,13 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	
-	/*!!! use some parameter to the cgi instead */\
-	if (chdir(DBDIR) != 0)
+	if (chdir(*query?query:DBDIR) != 0)
 	{
 		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
-			"Unable to connect to server", 
-			"chdir",
+			"Unable to connect to server - chdir failed", 
+			*query?query:DBDIR,
 			strerror(errno));
 		return 1;
 	}
