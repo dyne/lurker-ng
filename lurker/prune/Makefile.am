@@ -1,0 +1,10 @@
+bin_PROGRAMS = lurker-prune
+
+AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/libesort
+LDADD = ../common/libcommon.a ../libesort/libesort.a
+
+lurker_prune_SOURCES = \
+	prune.cpp PTable.cpp attach.cpp list.cpp mbox.cpp message.cpp \
+	mindex.cpp search.cpp splash.cpp thread.cpp PTable.h
+
+dist_man_MANS = lurker-prune.1

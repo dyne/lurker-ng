@@ -1,6 +1,17 @@
-AC_INIT(lurker, pre-0.10, wesley@terpstra.ca)
-AC_CONFIG_SRCDIR(Jamrules.in)
+AC_INIT(lurker.conf.in)
+AC_CONFIG_AUX_DIR(tools)
 AC_PREREQ(2.57)
+AM_INIT_AUTOMAKE(lurker, 1.0)
+
+AC_SUBST(VERSION)
+AM_CONFIG_HEADER(tools/config.h)
+AM_MAINTAINER_MODE
+
+AC_PROG_INSTALL
+AC_PROG_RANLIB
+
+AC_PROG_CC
+AC_PROG_CXX
 
 AC_LANG(C++)
 
@@ -30,11 +41,6 @@ AC_SEARCH_EXPRESSION_LIBS([gzFile f = gzdopen(0, "r")],
   [$with_zlib_libname zlib z libz], [#include <zlib.h>],,
   [AC_MSG_ERROR(Need zlib to link)])
 
-AC_PATH_PROG(JAM, jam)
-if test "x${JAM}" = "x"; then
-  AC_MSG_ERROR([cannot build - jam required])
-fi
-
 AC_ARG_WITH([mimelib-local],   AC_HELP_STRING([--with-mimelib-local],
                                               [Use internal lurker/mimelib/*]),,
             [with_mimelib_local="no"])
@@ -44,13 +50,13 @@ AC_ARG_WITH([mimelib-include], AC_HELP_STRING([--with-mimelib-include=DIR],
             [with_mimelib_include=""])
 
 if test "x$with_mimelib_local" != "xno"; then
+ AM_CONDITIONAL(LOCAL_MIMELIB, true)
  AC_MSG_CHECKING(for mimelib)
  AC_MSG_RESULT(local)
- LOCAL_MIMELIB=yes
  CPPFLAGS="$CPPFLAGS -I\$(TOP)/mimelib"
  LIBS="-L\$(TOP)/mimelib -lmimelib $LIBS"
 else
- LOCAL_MIMELIB=no
+ AM_CONDITIONAL(LOCAL_MIMELIB, false)
  AC_SEARCH_HEADER_DIRS(
    [mimelib/message.h], 
    [$with_mimelib_include /usr/include/kde /usr/local/include /usr/local/include/kde],, 
@@ -64,15 +70,12 @@ else
    [$with_mimelib_libname mimelib mimepp], [#include <mimelib/message.h>],,
    [AC_MSG_ERROR(Need mimelib to link)])
 fi
-AC_SUBST(LOCAL_MIMELIB, ${LOCAL_MIMELIB})
 
-AC_DEFINE_DIR(BINDIR,  "${bindir}")
-AC_DEFINE_DIR(LIBDIR,  "${libdir}")
-AC_DEFINE_DIR(INCDIR,  "${includedir}")
-AC_DEFINE_DIR(VARDIR,  "${localstatedir}")
-AC_DEFINE_DIR(ETCDIR,  "${sysconfdir}")
-AC_DEFINE_DIR(DATADIR, "${datadir}")
-AC_DEFINE_DIR(MANDIR,  "${mandir}")
+wwwdir="${localstatedir}/www/${PACKAGE}"
+AC_SUBST(wwwdir)
 
-AC_CONFIG_FILES(Jamrules lurker.conf common/Version.h)
+AC_CONFIG_FILES([
+	Makefile libesort/Makefile common/Makefile index/Makefile
+	ui/Makefile imgs/Makefile prune/Makefile render/Makefile
+	lurker.conf])
 AC_OUTPUT

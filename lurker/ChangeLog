@@ -16,6 +16,7 @@ v0.10:
 	Added a heuristic to try and detect unescaped 'From ' lines
 	Include links from the threading page to the list overview pages
 	Keep different Japanese subjects in different threads
+	Switch back to evil automake; too few systems have jam
 
 v0.9:
 	Don't segfault in rare cases if using '-d' on import (zero restart)
