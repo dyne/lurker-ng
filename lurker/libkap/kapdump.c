@@ -1,4 +1,4 @@
-/*  $Id: kapdump.c,v 1.8 2002-07-09 22:42:45 terpstra Exp $
+/*  $Id: kapdump.c,v 1.9 2002-07-11 16:24:31 terpstra Exp $
  *  
  *  kapdump.c - Export a kap database to a human readable flat text file
  *  
@@ -37,6 +37,8 @@
 #include <errno.h>
 #endif
 
+#include <locale.h>
+
 #ifdef HAVE_GETTEXT
 #include <libintl.h>
 #else
@@ -49,7 +51,7 @@
 
 #define BLOCK	4096
 
-void help()
+void help(void)
 {
 	fputs("\n", stderr);
 	fputs(_("kapdump [options] <file>\n"), stderr);
@@ -84,7 +86,7 @@ int main(int argc, char * const * argv)
 	
 	const char*	file;
 	char*		key;
-	char*		data;
+	unsigned char*	data;
 	KRecord		kr;
 	ssize_t		len;
 	size_t		klen;

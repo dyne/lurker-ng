@@ -1,4 +1,4 @@
-/*  $Id: kapmake.c,v 1.8 2002-07-09 22:42:45 terpstra Exp $
+/*  $Id: kapmake.c,v 1.9 2002-07-11 16:24:31 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool from kapdump raw text
  *  
@@ -33,14 +33,16 @@
 #include <stdlib.h>
 #include <stdio.h>	
 
+#ifdef HAVE_ERRNO_H
+# include <errno.h>
+#endif
+
+#include <locale.h>
+
 #ifdef HAVE_GETTEXT
 #include <libintl.h>
 #else
 #include "../intl/libgnuintl.h"
-#endif
-
-#ifdef HAVE_ERRNO_H
-# include <errno.h>
 #endif
 
 #define _(String) gettext (String)
@@ -49,7 +51,7 @@
 
 #define BLOCK 4096
 
-void help()
+void help(void)
 {
 	fputs("\n", stderr);
 	fputs(_("kapmake [options] <file>\n"), stderr);
@@ -83,7 +85,7 @@ int main(int argc, char * const * argv)
 	
 	const char*	file;
 	char*		key;
-	char*		data;
+	unsigned char*	data;
 	ssize_t		len, klen;
 	size_t		i, amt;
 	char*		buf;
