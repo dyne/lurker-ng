@@ -18,7 +18,7 @@
    <img src="../imgs/a.png"/>
   </xsl:if>
   <xsl:if test="next">
-   <a href="{next}%20{queryurl}.{$ext}}"><img border="0" src="../imgs/next.png"/></a>
+   <a href="{next}%20{queryurl}.{$ext}"><img border="0" src="../imgs/next.png"/></a>
   </xsl:if>
   <xsl:if test="not(next)">
    <img src="../imgs/a.png"/>
@@ -28,7 +28,7 @@
   
   Search - Messages
   <xsl:value-of select="offset"/>-<xsl:value-of select="string(number(offset)+count(summary)-1)"/>
-  / <xsl:value-of select="hits"/>
+  / ~<xsl:value-of select="hits"/>
  </h2>
  
  <p/>
