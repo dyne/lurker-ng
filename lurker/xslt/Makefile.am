@@ -1,6 +1,6 @@
 fmtdir = @wwwdir@/fmt
 
-fmt_DATA = \
+dist_fmt_DATA = \
 	render.xsl render-html.xsl common.xsl \
 	error.xsl splash.xsl message.xsl mindex.xsl search.xsl thread.xsl \
 	english.xsl \
