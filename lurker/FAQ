@@ -1,7 +1,7 @@
 Why are the dates broken on messages imported from a maildir?
 Why is lurker warning about From lines during my import?
 How do I add support for my language to lurker?
-How do I change the output lanaguge?
+How do I change the output language?
 Why are all my dates off by a fixed hour / don't use "From " header?
 Why shouldn't I open the lurker mboxs with a mail reader?
 Why do I get "opening database: Operation not supported" on MacOS?
@@ -66,7 +66,7 @@ A: First, find out your ISO 639 language code.
    can benefit from your work!
 
 
-Q: How do I change the output lanaguge?
+Q: How do I change the output language?
 
 A: This used to be a global setting; hence this FAQ entry.
    Now the language is selected from the user interface.
@@ -157,12 +157,14 @@ A: Lurker is designed to hold lots of email. Many other programs need
 
 Q: How can I delete a mailing list?
 
-A: Short answer: you can't.
-   Long answer: delete the database and reimport.
+A: Bad  answer: 'lurker-search -c lurker.conf -d ml:listid -v'
+   Good answer: delete the mailbox and reimport.
    
-   Lurker uses a very special insert-only database. 
+   You can certainly perform the delete command shown above, but
+   cross-posted emails will then also be deleted. Furthermore, if you are
+   deleting that many messages, you probably want your disk space back.
    
-   In a future version there will be a special 'deleted' keyword which can
-   be used to "delete" specific mail. That is; mark it as not for display.
-   However, marking a lot of messages in this manner would waste a lot of
-   disk space and your time, so reimporting is probably your best bet.
+   A better solution is to remove the mailing list entry in the lurker.conf,
+   delete it's mailbox in the database directory, and run lurker-regenerate.
+   Cross-posted messages will remain in the database, and you will recover
+   your disk space.
