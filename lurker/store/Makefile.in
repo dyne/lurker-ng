@@ -80,11 +80,11 @@ INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common
 
 REQUESTS = message mindex search splash mbox attach thread jump
 
-sbin_PROGRAMS = @PACKAGE@d
+sbin_PROGRAMS = lurkerd
 dist_db_DATA = DB_CONFIG
 EXTRA_DIST = Design
 
-@PACKAGE@d_SOURCES = \
+lurkerd_SOURCES = \
 	config.h   config.c   \
 	decode.h   decode.c   \
 	md5.h      md5.c      \
@@ -100,22 +100,22 @@ EXTRA_DIST = Design
 	expiry.c   expiry.h
 
 
-@PACKAGE@d_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV}
+lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV}
 subdir = store
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/system.h
 CONFIG_CLEAN_FILES =
-sbin_PROGRAMS = @PACKAGE@d$(EXEEXT)
+sbin_PROGRAMS = lurkerd$(EXEEXT)
 PROGRAMS = $(sbin_PROGRAMS)
 
-am_@PACKAGE@d_OBJECTS = config.$(OBJEXT) decode.$(OBJEXT) md5.$(OBJEXT) \
+am_lurkerd_OBJECTS = config.$(OBJEXT) decode.$(OBJEXT) md5.$(OBJEXT) \
 	flatfile.$(OBJEXT) wbuffer.$(OBJEXT) indexer.$(OBJEXT) \
 	summary.$(OBJEXT) mbox.$(OBJEXT) breader.$(OBJEXT) \
 	search.$(OBJEXT) service.$(OBJEXT) main.$(OBJEXT) \
 	expiry.$(OBJEXT)
-@PACKAGE@d_OBJECTS = $(am_@PACKAGE@d_OBJECTS)
-@PACKAGE@d_DEPENDENCIES = ../common/libcommon.a
-@PACKAGE@d_LDFLAGS =
+lurkerd_OBJECTS = $(am_lurkerd_OBJECTS)
+lurkerd_DEPENDENCIES = ../common/libcommon.a
+lurkerd_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/common
@@ -135,11 +135,11 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
-DIST_SOURCES = $(@PACKAGE@d_SOURCES)
+DIST_SOURCES = $(lurkerd_SOURCES)
 DATA = $(dist_db_DATA)
 
 DIST_COMMON = $(dist_db_DATA) Makefile.am Makefile.in
-SOURCES = $(@PACKAGE@d_SOURCES)
+SOURCES = $(lurkerd_SOURCES)
 
 all: all-am
 
@@ -175,9 +175,9 @@ uninstall-sbinPROGRAMS:
 
 clean-sbinPROGRAMS:
 	-test -z "$(sbin_PROGRAMS)" || rm -f $(sbin_PROGRAMS)
-@PACKAGE@d$(EXEEXT): $(@PACKAGE@d_OBJECTS) $(@PACKAGE@d_DEPENDENCIES) 
-	@rm -f @PACKAGE@d$(EXEEXT)
-	$(LINK) $(@PACKAGE@d_LDFLAGS) $(@PACKAGE@d_OBJECTS) $(@PACKAGE@d_LDADD) $(LIBS)
+lurkerd$(EXEEXT): $(lurkerd_OBJECTS) $(lurkerd_DEPENDENCIES) 
+	@rm -f lurkerd$(EXEEXT)
+	$(LINK) $(lurkerd_LDFLAGS) $(lurkerd_OBJECTS) $(lurkerd_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core

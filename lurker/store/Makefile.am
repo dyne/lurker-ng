@@ -4,11 +4,11 @@ INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common
 
 REQUESTS = message mindex search splash mbox attach thread jump
 
-sbin_PROGRAMS = @PACKAGE@d
+sbin_PROGRAMS = lurkerd
 dist_db_DATA = DB_CONFIG
 EXTRA_DIST = Design
 
-@PACKAGE@d_SOURCES = \
+lurkerd_SOURCES = \
 	config.h   config.c   \
 	decode.h   decode.c   \
 	md5.h      md5.c      \
@@ -23,7 +23,7 @@ EXTRA_DIST = Design
 	main.c     btree.h    \
 	expiry.c   expiry.h
 
-@PACKAGE@d_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV}
+lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV}
 
 install-data-local:
 	@list='$(REQUESTS)'; for p in $$list; do \

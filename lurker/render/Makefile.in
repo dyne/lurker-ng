@@ -78,58 +78,58 @@ wwwdir = @wwwdir@
 
 INCLUDES = @RENDER_CFLAGS@ -I${top_srcdir}/common
 
-www_PROGRAMS = @PACKAGE@.cgi @PACKAGE@.xslt \
-		@PACKAGE@-search.cgi @PACKAGE@-jump.cgi
+www_PROGRAMS = lurker.cgi lurker.xslt \
+		lurker-search.cgi lurker-jump.cgi
 
 www_DATA = .htaccess
 
-@PACKAGE@_cgi_SOURCES = \
+lurker_cgi_SOURCES = \
 	main.c \
 	error.h
 
 
-@PACKAGE@_xslt_SOURCES = \
+lurker_xslt_SOURCES = \
 	xslt.c
 
 
-@PACKAGE@_search_cgi_SOURCES = \
+lurker_search_cgi_SOURCES = \
 	search.c \
 	error.h
 
 
-@PACKAGE@_jump_cgi_SOURCES = \
+lurker_jump_cgi_SOURCES = \
 	jump.c \
 	error.h
 
 
-@PACKAGE@_xslt_LDADD = @RENDER_LIBS@
-@PACKAGE@_search_cgi_LDADD = ../common/libcommon.a
+lurker_xslt_LDADD = @RENDER_LIBS@
+lurker_search_cgi_LDADD = ../common/libcommon.a
 subdir = render
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/system.h
 CONFIG_CLEAN_FILES = .htaccess
-www_PROGRAMS = @PACKAGE@.cgi$(EXEEXT) @PACKAGE@.xslt$(EXEEXT) \
-	@PACKAGE@-search.cgi$(EXEEXT) @PACKAGE@-jump.cgi$(EXEEXT)
+www_PROGRAMS = lurker.cgi$(EXEEXT) lurker.xslt$(EXEEXT) \
+	lurker-search.cgi$(EXEEXT) lurker-jump.cgi$(EXEEXT)
 PROGRAMS = $(www_PROGRAMS)
 
-am_@PACKAGE@_jump_cgi_OBJECTS = jump.$(OBJEXT)
-@PACKAGE@_jump_cgi_OBJECTS = $(am_@PACKAGE@_jump_cgi_OBJECTS)
-@PACKAGE@_jump_cgi_LDADD = $(LDADD)
-@PACKAGE@_jump_cgi_DEPENDENCIES =
-@PACKAGE@_jump_cgi_LDFLAGS =
-am_@PACKAGE@_search_cgi_OBJECTS = search.$(OBJEXT)
-@PACKAGE@_search_cgi_OBJECTS = $(am_@PACKAGE@_search_cgi_OBJECTS)
-@PACKAGE@_search_cgi_DEPENDENCIES = ../common/libcommon.a
-@PACKAGE@_search_cgi_LDFLAGS =
-am_@PACKAGE@_cgi_OBJECTS = main.$(OBJEXT)
-@PACKAGE@_cgi_OBJECTS = $(am_@PACKAGE@_cgi_OBJECTS)
-@PACKAGE@_cgi_LDADD = $(LDADD)
-@PACKAGE@_cgi_DEPENDENCIES =
-@PACKAGE@_cgi_LDFLAGS =
-am_@PACKAGE@_xslt_OBJECTS = xslt.$(OBJEXT)
-@PACKAGE@_xslt_OBJECTS = $(am_@PACKAGE@_xslt_OBJECTS)
-@PACKAGE@_xslt_DEPENDENCIES =
-@PACKAGE@_xslt_LDFLAGS =
+am_lurker_jump_cgi_OBJECTS = jump.$(OBJEXT)
+lurker_jump_cgi_OBJECTS = $(am_lurker_jump_cgi_OBJECTS)
+lurker_jump_cgi_LDADD = $(LDADD)
+lurker_jump_cgi_DEPENDENCIES =
+lurker_jump_cgi_LDFLAGS =
+am_lurker_search_cgi_OBJECTS = search.$(OBJEXT)
+lurker_search_cgi_OBJECTS = $(am_lurker_search_cgi_OBJECTS)
+lurker_search_cgi_DEPENDENCIES = ../common/libcommon.a
+lurker_search_cgi_LDFLAGS =
+am_lurker_cgi_OBJECTS = main.$(OBJEXT)
+lurker_cgi_OBJECTS = $(am_lurker_cgi_OBJECTS)
+lurker_cgi_LDADD = $(LDADD)
+lurker_cgi_DEPENDENCIES =
+lurker_cgi_LDFLAGS =
+am_lurker_xslt_OBJECTS = xslt.$(OBJEXT)
+lurker_xslt_OBJECTS = $(am_lurker_xslt_OBJECTS)
+lurker_xslt_DEPENDENCIES =
+lurker_xslt_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/common
@@ -144,13 +144,12 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
-DIST_SOURCES = $(@PACKAGE@_jump_cgi_SOURCES) \
-	$(@PACKAGE@_search_cgi_SOURCES) $(@PACKAGE@_cgi_SOURCES) \
-	$(@PACKAGE@_xslt_SOURCES)
+DIST_SOURCES = $(lurker_jump_cgi_SOURCES) $(lurker_search_cgi_SOURCES) \
+	$(lurker_cgi_SOURCES) $(lurker_xslt_SOURCES)
 DATA = $(www_DATA)
 
 DIST_COMMON = .htaccess.in Makefile.am Makefile.in
-SOURCES = $(@PACKAGE@_jump_cgi_SOURCES) $(@PACKAGE@_search_cgi_SOURCES) $(@PACKAGE@_cgi_SOURCES) $(@PACKAGE@_xslt_SOURCES)
+SOURCES = $(lurker_jump_cgi_SOURCES) $(lurker_search_cgi_SOURCES) $(lurker_cgi_SOURCES) $(lurker_xslt_SOURCES)
 
 all: all-am
 
@@ -188,18 +187,18 @@ uninstall-wwwPROGRAMS:
 
 clean-wwwPROGRAMS:
 	-test -z "$(www_PROGRAMS)" || rm -f $(www_PROGRAMS)
-@PACKAGE@-jump.cgi$(EXEEXT): $(@PACKAGE@_jump_cgi_OBJECTS) $(@PACKAGE@_jump_cgi_DEPENDENCIES) 
-	@rm -f @PACKAGE@-jump.cgi$(EXEEXT)
-	$(LINK) $(@PACKAGE@_jump_cgi_LDFLAGS) $(@PACKAGE@_jump_cgi_OBJECTS) $(@PACKAGE@_jump_cgi_LDADD) $(LIBS)
-@PACKAGE@-search.cgi$(EXEEXT): $(@PACKAGE@_search_cgi_OBJECTS) $(@PACKAGE@_search_cgi_DEPENDENCIES) 
-	@rm -f @PACKAGE@-search.cgi$(EXEEXT)
-	$(LINK) $(@PACKAGE@_search_cgi_LDFLAGS) $(@PACKAGE@_search_cgi_OBJECTS) $(@PACKAGE@_search_cgi_LDADD) $(LIBS)
-@PACKAGE@.cgi$(EXEEXT): $(@PACKAGE@_cgi_OBJECTS) $(@PACKAGE@_cgi_DEPENDENCIES) 
-	@rm -f @PACKAGE@.cgi$(EXEEXT)
-	$(LINK) $(@PACKAGE@_cgi_LDFLAGS) $(@PACKAGE@_cgi_OBJECTS) $(@PACKAGE@_cgi_LDADD) $(LIBS)
-@PACKAGE@.xslt$(EXEEXT): $(@PACKAGE@_xslt_OBJECTS) $(@PACKAGE@_xslt_DEPENDENCIES) 
-	@rm -f @PACKAGE@.xslt$(EXEEXT)
-	$(LINK) $(@PACKAGE@_xslt_LDFLAGS) $(@PACKAGE@_xslt_OBJECTS) $(@PACKAGE@_xslt_LDADD) $(LIBS)
+lurker-jump.cgi$(EXEEXT): $(lurker_jump_cgi_OBJECTS) $(lurker_jump_cgi_DEPENDENCIES) 
+	@rm -f lurker-jump.cgi$(EXEEXT)
+	$(LINK) $(lurker_jump_cgi_LDFLAGS) $(lurker_jump_cgi_OBJECTS) $(lurker_jump_cgi_LDADD) $(LIBS)
+lurker-search.cgi$(EXEEXT): $(lurker_search_cgi_OBJECTS) $(lurker_search_cgi_DEPENDENCIES) 
+	@rm -f lurker-search.cgi$(EXEEXT)
+	$(LINK) $(lurker_search_cgi_LDFLAGS) $(lurker_search_cgi_OBJECTS) $(lurker_search_cgi_LDADD) $(LIBS)
+lurker.cgi$(EXEEXT): $(lurker_cgi_OBJECTS) $(lurker_cgi_DEPENDENCIES) 
+	@rm -f lurker.cgi$(EXEEXT)
+	$(LINK) $(lurker_cgi_LDFLAGS) $(lurker_cgi_OBJECTS) $(lurker_cgi_LDADD) $(LIBS)
+lurker.xslt$(EXEEXT): $(lurker_xslt_OBJECTS) $(lurker_xslt_DEPENDENCIES) 
+	@rm -f lurker.xslt$(EXEEXT)
+	$(LINK) $(lurker_xslt_LDFLAGS) $(lurker_xslt_OBJECTS) $(lurker_xslt_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core

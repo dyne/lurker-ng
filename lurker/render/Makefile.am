@@ -2,24 +2,24 @@ wwwdir = @wwwdir@
 
 INCLUDES = @RENDER_CFLAGS@ -I${top_srcdir}/common
 
-www_PROGRAMS = @PACKAGE@.cgi @PACKAGE@.xslt \
-		@PACKAGE@-search.cgi @PACKAGE@-jump.cgi
+www_PROGRAMS = lurker.cgi lurker.xslt \
+		lurker-search.cgi lurker-jump.cgi
 www_DATA = .htaccess
 
-@PACKAGE@_cgi_SOURCES = \
+lurker_cgi_SOURCES = \
 	main.c \
 	error.h
 
-@PACKAGE@_xslt_SOURCES = \
+lurker_xslt_SOURCES = \
 	xslt.c
 
-@PACKAGE@_search_cgi_SOURCES = \
+lurker_search_cgi_SOURCES = \
 	search.c \
 	error.h
 
-@PACKAGE@_jump_cgi_SOURCES = \
+lurker_jump_cgi_SOURCES = \
 	jump.c \
 	error.h
 
-@PACKAGE@_xslt_LDADD = @RENDER_LIBS@
-@PACKAGE@_search_cgi_LDADD = ../common/libcommon.a
+lurker_xslt_LDADD = @RENDER_LIBS@
+lurker_search_cgi_LDADD = ../common/libcommon.a
