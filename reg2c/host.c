@@ -1,4 +1,4 @@
-/*  $Id: host.c,v 1.12 2003-06-12 21:28:50 terpstra Exp $
+/*  $Id: host.c,v 1.13 2003-06-12 22:15:18 terpstra Exp $
  *  
  *  host.c - collection of useful web regexps for reg2c
  *  
@@ -48,12 +48,12 @@
 #define EMAIL_REG       "(" USER_REG "@" HOST_REG "\\." TOKEN_REG ")"
 
 #define NOT_LF		"[\001-\011\013-\377]"
-#define QUOTE_REG       "(\n" INDENT_REG NOT_LF "*\n(" INDENT_REG NOT_LF "*\n)*)"
+#define QUOTE_REG       "(\n" INDENT_REG NOT_LF "*(\n" INDENT_REG NOT_LF "*)*)"
 
 #define SIGBLOCK_REG	"(-- (\n" NOT_LF "+)+)"
 #define ART_REG		"([\t ]" NOT_LF "+)"
 
-#define ASCII_PIC_REG   "(\n(" SIGBLOCK_REG "|" ART_REG "))+"
+#define ASCII_PIC_REG   "(\n(" SIGBLOCK_REG "|" ART_REG "))+\n"
 
 int main(int argc, const char** argv)
 {
