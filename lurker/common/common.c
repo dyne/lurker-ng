@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.4 2002-02-20 03:40:37 terpstra Exp $
+/*  $Id: common.c,v 1.5 2002-02-20 05:22:50 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -47,7 +47,7 @@ const char* lu_common_cleanup_id(
 	w = &buf[0];
 	e = &buf[sizeof(buf) - 1];
 	
-	while (w != e)
+	while (*id && w != e)
 	{
 		if (isspace(*id) || *id == '>') break;
 		*w++ = *id++;
