@@ -25,7 +25,7 @@
 </xsl:template>
 
 <xsl:template match="mindex" mode="title">
- <xsl:value-of select="list/email/@name"/> -
+ <xsl:value-of select="list/email/@name"/>
 </xsl:template>
 
 <xsl:template match="mindex" mode="body">
