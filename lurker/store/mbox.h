@@ -1,4 +1,4 @@
-/*  $Id: mbox.h,v 1.2 2002-02-10 21:50:38 terpstra Exp $
+/*  $Id: mbox.h,v 1.3 2002-02-12 07:32:22 cbond Exp $
  *  
  *  mbox.h - Knows how to follow mboxes for appends and import messages
  *  
@@ -21,6 +21,23 @@
  *    along with this program; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
+#include <c-client/mail.h>
+#include <c-client/rfc822.h>
+#include <c-client/fs.h>
+
+/*------------------------------------------------- Public types */
+
+struct	msg {
+	struct	mail_envelope *env;
+	struct	mail_bodystruct *body;
+	STRING	bss;
+	char*	buffer;
+};
+
+/*------------------------------------------------- Public methods */
+
+extern char *mbox_select_body(struct msg *, BODY *, size_t *, int *);
 
 /*------------------------------------------------- Public component methods */
 

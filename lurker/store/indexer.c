@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.7 2002-02-12 06:03:51 terpstra Exp $
+/*  $Id: indexer.c,v 1.8 2002-02-12 07:32:22 cbond Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -27,9 +27,9 @@
 
 #include "common.h"
 #include "io.h"
-#include "message.h"
 #include "prefix.h"
 
+#include "mbox.h"
 #include "wbuffer.h"
 #include "indexer.h"
 #include "btree.h"
@@ -271,7 +271,7 @@ static void my_indexer_traverse(
 			if (my_indexer_strcasecmp(body->subtype, "plain"))
 				break;
 
-			buffer = mail_select(in, body, &length, &nfree);
+			buffer = mbox_select_body(in, body, &length, &nfree);
 			my_indexer_keyword_scan(buffer, length,
 				LU_KEYWORD_WORD);
 			if (nfree)

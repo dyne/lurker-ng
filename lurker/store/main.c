@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.24 2002-02-10 20:47:42 terpstra Exp $
+/*  $Id: main.c,v 1.25 2002-02-12 07:32:22 cbond Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -27,14 +27,13 @@
 
 #include "common.h"
 #include "io.h"
-#include "message.h"
 
 #include "config.h"
 #include "flatfile.h"
 #include "wbuffer.h"
+#include "mbox.h"
 #include "indexer.h"
 #include "summary.h"
-#include "mbox.h"
 #include "breader.h"
 #include "search.h"
 #include "service.h"

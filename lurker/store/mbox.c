@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.9 2002-02-12 05:38:36 terpstra Exp $
+/*  $Id: mbox.c,v 1.10 2002-02-12 07:32:22 cbond Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -29,12 +29,15 @@
 
 #include "common.h"
 #include "io.h"
-#include "message.h"
 
+#include "mbox.h"
 #include "config.h"
 #include "summary.h"
 #include "indexer.h"
 
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/mman.h>
 #include <st.h>
 #include <string.h>
 
@@ -87,9 +90,51 @@ static int my_mbox_lock_mbox(
 	if (lockf(mbox->fd, F_TLOCK, 0) == -1)
 		return -1;
 #endif
-	
+
+	memset(&mbox->map, 0, sizeof(mbox->map));
 	mbox->locked = 1;
 	return 0;
+}
+
+static int my_mbox_mmap(
+	Lu_Config_Mbox* mbox,
+	off_t off,
+	size_t msize)
+{
+	off_t round;
+
+	/*
+	 * Some systems expect the mmap offset to be aligned to the VM
+	 * page size, some don't.  Do it just to be safe -- it won't waste
+	 * much space.
+	 */
+	round = off & ~(getpagesize() - 1);
+	mbox->map.off = off;
+	mbox->map.size = msize + off - round;
+
+	/*
+	 * Don't map past the end of the file.
+	 */
+	if (mbox->map.size + round > mbox->sb.st_size)
+		mbox->map.size = mbox->sb.st_size - round;
+
+	mbox->map.addr = mmap(NULL, mbox->map.size, PROT_READ | PROT_WRITE,
+				MAP_PRIVATE, mbox->fd, round);
+	if (mbox->map.addr) {
+		mbox->map.start = (int8_t *)mbox->map.addr + off - round;
+		return 0;
+	}
+	return 1;
+}
+
+static void my_mbox_unmap(
+	Lu_Config_Mbox *mbox)
+{
+	if (mbox->map.addr)
+	{
+		munmap(mbox->map.addr, mbox->map.size);
+		mbox->map.addr = NULL;
+	}
 }
 
 static int my_mbox_unlock_mbox(
@@ -115,9 +160,45 @@ static int my_mbox_unlock_mbox(
 #elif defined(USE_LOCK_LOCKF)
 	lockf(mbox->fd, F_ULOCK, 0);
 #endif
-	
+
+	if (mbox->map.addr)
+		my_mbox_unmap(mbox);
+
 	mbox->locked = 0;
 	return 0;
+}
+
+static char *local_strnstr(
+	const char* s,
+	const char* d,
+	ssize_t slen)
+{
+	const char* orig;
+	size_t dlen;
+
+	dlen = strlen(d);
+	for (orig = s; slen > s - orig; ++s)
+		if (*s == *d && strncmp(s + 1, d + 1, dlen - 1) == 0)
+			return (char *)s;
+	return NULL;
+}
+
+/*
+ * Calculate the actual offset of a message.
+ */
+static int message_offset(
+	char *buffer,
+	size_t *offset)
+{
+	char *calc;
+
+	if ((calc = strstr(buffer, "\r\n\r\n")) != NULL)
+		calc += 4;
+	else
+		if ((calc = strstr(buffer, "\n\n")) != NULL)
+			calc += 2;
+	*offset = (size_t)(calc - buffer);
+	return (calc == NULL);
 }
 
 static void my_mbox_process_mbox(
@@ -126,11 +207,15 @@ static void my_mbox_process_mbox(
 	time_t stamp)
 {
 	off_t		old, new;
-	struct msg*	m;
 	message_id	id;
+	struct msg	m;
 	char*		author_name;
+	char*		end;
 	char		author_email[200];
 	int		error;
+	size_t		off;
+
+	assert(mbox->locked);
 	
 	assert(mbox->locked);
 	
@@ -139,99 +224,151 @@ static void my_mbox_process_mbox(
 	{
 		return;
 	}
-	
-	m = mail_parse(mbox->fd, old);
-	if (m)
+
+	lseek(mbox->fd, 0, SEEK_SET);
+	if (fstat(mbox->fd, &mbox->sb))
+		return;
+	lseek(mbox->fd, old, SEEK_SET);
+
+	/*
+	 * If this offset extends past the currently mapped region, or
+	 * we have less than 1K of this message, remap it starting at
+	 * `old.'  Otherwise if no previous map exists, allocate 128K
+	 * as a starting point.
+	 */
+	if (mbox->map.addr)
+		if (mbox->map.off + mbox->map.size - old < 1024)
+			my_mbox_unmap(mbox);
+	if (mbox->map.addr == NULL && my_mbox_mmap(mbox, old, 1 << 17))
+		return;
+
+	/*
+	 * Look for an end to the message.  (This is either an EOF or
+	 * an unmangled '\nFrom'.)
+	 */
+	while (1)
 	{
-		author_name = "";
-		author_email[0] = 0;
-		
-		if (m->env->reply_to)
+		end = local_strnstr((const char *)map_off(mbox, old),
+				"\nFrom ", map_end(mbox) - map_off(mbox, old));
+		if (end)
+			break;
+		if (mbox->map.off + mbox->map.size >= mbox->sb.st_size)
 		{
-			if (m->env->reply_to->personal)
-				author_name = m->env->reply_to->personal;
-			if (m->env->reply_to->mailbox && m->env->reply_to->host)
-			{
-				snprintf(&author_email[0], sizeof(author_email),
-					"%s@%s", m->env->reply_to->mailbox, m->env->reply_to->host);
-			}
+			end = map_end(mbox);
+			break;
 		}
-		else if (m->env->from)
-		{
-			if (m->env->from->personal)
-				author_name = m->env->from->personal;
-			if (m->env->from->mailbox && m->env->from->host)
-			{
-				snprintf(&author_email[0], sizeof(author_email),
-					"%s@%s", m->env->from->mailbox, m->env->from->host);
-			}
-		}
-		else if (m->env->sender)
-		{
-			if (m->env->sender->personal)
-				author_name = m->env->sender->personal;
-			if (m->env->sender->mailbox && m->env->sender->host)
-			{
-				snprintf(&author_email[0], sizeof(author_email),
-					"%s@%s", m->env->sender->mailbox, m->env->sender->host);
-			}
-		}
-		
-		id = lu_summary_import_message(
-			list->id, 
-			mbox->id, 
-			old, 
-			stamp,
-			m->env->subject, 
-			author_name, 
-			&author_email[0]);
-		
-		if (id == lu_common_minvalid)
-		{
-			if (lseek(mbox->fd, old, SEEK_SET) != old)
-			{
-				syslog(LOG_ERR, "Eep - failed to import message and unable to seek back for retry: %s\n",
-					strerror(errno));
-			}
-			
-			mail_free(m);
+
+		my_mbox_unmap(mbox);
+		if (my_mbox_mmap(mbox, old, 2 * mbox->map.size))
 			return;
-		}
-		
-		error = lu_indexer_import(
-			m, 
-			list->id,
-			mbox->id,
-			stamp,
-			id);
-		
-		if (error != 0)
-		{
-			if (lseek(mbox->fd, old, SEEK_SET) != old)
-			{
-				syslog(LOG_ERR, "Eep - failed to import message and unable to seek back for retry: %s\n",
-					strerror(errno));
-			}
-			
-			mail_free(m);
-			return;
-		}
-		
-		/*!!! Unwind the indexer pushes if reply_to fails */
-		lu_summary_reply_to_resolution(
-			id,
-			m->env->message_id,
-			m->env->in_reply_to);
-		
-#ifdef DEBUG
-		printf("."); fflush(stdout);
-#endif
-		
-		mail_free(m);
 	}
+
+	/* Seek to the end of this message for the next call. */
+	if (lseek(mbox->fd, end - map_off(mbox, old) + 1, SEEK_CUR) < 0)
+		return;
+
+	end[0] = '\0';
+	if (message_offset(map_off(mbox, old), &off))
+		return;
+
+	/* Parse the message. */
+	m.buffer = map_off(mbox, old) + off;
+	INIT(&m.bss, mail_string, m.buffer, (size_t)(end - m.buffer));
+	rfc822_parse_msg(&m.env, &m.body, map_off(mbox, old), off, &m.bss,
+		"localhost", 0);
+
+	author_name = "";
+	author_email[0] = 0;
+		
+	if (m.env->reply_to)
+	{
+		if (m.env->reply_to->personal)
+			author_name = m.env->reply_to->personal;
+		if (m.env->reply_to->mailbox && m.env->reply_to->host)
+		{
+			snprintf(&author_email[0], sizeof(author_email),
+				"%s@%s", m.env->reply_to->mailbox,
+				m.env->reply_to->host);
+		}
+	}
+	else if (m.env->from)
+	{
+		if (m.env->from->personal)
+			author_name = m.env->from->personal;
+		if (m.env->from->mailbox && m.env->from->host)
+		{
+			snprintf(&author_email[0], sizeof(author_email),
+				"%s@%s", m.env->from->mailbox,
+				m.env->from->host);
+		}
+	}
+	else if (m.env->sender)
+	{
+		if (m.env->sender->personal)
+			author_name = m.env->sender->personal;
+		if (m.env->sender->mailbox && m.env->sender->host)
+		{
+			snprintf(&author_email[0], sizeof(author_email),
+				"%s@%s", m.env->sender->mailbox,
+				m.env->sender->host);
+		}
+	}
+		
+	id = lu_summary_import_message(
+		list->id, 
+		mbox->id, 
+		old, 
+		stamp,
+		m.env->subject, 
+		author_name, 
+		&author_email[0]);
+
+	if (id == lu_common_minvalid)
+	{
+		if (lseek(mbox->fd, old, SEEK_SET) != old)
+		{
+			syslog(LOG_ERR, "Eep - failed to import message and unable to seek back for retry: %s\n",
+				strerror(errno));
+		}
+
+		mail_free_body(&m.body);
+		mail_free_envelope(&m.env);
+		return;
+	}
+		
+	error = lu_indexer_import(
+		&m, 
+		list->id,
+		mbox->id,
+		stamp,
+		id);
+		
+	if (error != 0)
+	{
+		if (lseek(mbox->fd, old, SEEK_SET) != old)
+		{
+			syslog(LOG_ERR, "Eep - failed to import message and unable to seek back for retry: %s\n",
+				strerror(errno));
+		}
+		
+		mail_free_body(&m.body);
+		mail_free_envelope(&m.env);
+		return;
+	}
+
+	/*!!! Unwind the indexer pushes if reply_to fails */
+	lu_summary_reply_to_resolution(
+		id,
+		m.env->message_id,
+		m.env->in_reply_to);
 	
+	/*!!! don't forget to remove this in release */
+	printf("."); fflush(stdout);
+		
 	/* even if we can't parse it, we want to use what the parser said the
 	 * new offset should be. -> get past junk
+	 *
+	 * !!! I don't think this test is necessary any longer.
 	 */
 	new = lseek(mbox->fd, 0, SEEK_CUR);
 	if (new == -1)
@@ -246,6 +383,41 @@ static void my_mbox_process_mbox(
 	}
 	
 	lu_config_move_mbox_end(mbox, list, new);
+	mail_free_body(&m.body);
+	mail_free_envelope(&m.env);
+}
+
+char *mbox_select_body(
+	struct msg *in,
+	BODY *body,
+	size_t *len,
+	int *nfr)
+{
+	char *(*output)(unsigned char *, unsigned long, unsigned long *);
+	char *input;
+
+	switch ((int)body->encoding)
+	{
+		case ENCQUOTEDPRINTABLE:
+			output = (char *(*)())rfc822_qprint;
+			break;
+		case ENCBASE64:
+			output = (char *(*)())rfc822_base64;
+			break;
+		default:
+			output = NULL;
+	}
+
+	input = in->buffer + body->contents.offset;
+	if (output)
+	{
+		nfr[0] = 1;
+		return (output((unsigned char *)input, body->contents.text.size,
+				(unsigned long *)len));
+	}
+	nfr[0] = 0;
+	len[0] = body->contents.text.size;
+	return input;
 }
 
 static time_t my_mbox_convert_date_mbox(
@@ -304,6 +476,8 @@ static time_t my_mbox_extract_timestamp(
 	char*	t2;
 	off_t	old;
 	ssize_t	got;
+
+	assert(mbox->locked);
 	
 	assert(mbox->locked);
 	
@@ -464,7 +638,7 @@ static void* my_mbox_watch(
 			mbox->next_message = 0;
 			
 			count++;
-			if (count == 40)
+			if (count == 80)
 			{
 				count = 0;
 				my_mbox_unlock_mbox(mbox);
