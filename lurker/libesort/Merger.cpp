@@ -1,4 +1,4 @@
-/*  $Id: Merger.cpp,v 1.3 2003-04-24 23:52:36 terpstra Exp $
+/*  $Id: Merger.cpp,v 1.4 2003-04-25 14:00:35 terpstra Exp $
  *  
  *  Merger.cpp - Combine segments to obtain a database view
  *  
@@ -30,6 +30,8 @@
 
 #include "Merger.h"
 #include "Source.h"
+
+#include <iostream>
 
 namespace ESort
 {
@@ -109,13 +111,14 @@ int Merger::advance()
 		Source*  ps = point->source;
 		
 		// The key with the most in common must be smaller
+		// (it must be larger if going backwards too)
 		if (ps->dup < ms->dup)
 		{	// min has more in common!
-			point->min = forward ? ms : ps;
+			point->min = ms;
 		}
 		else if (ps->dup > ms->dup)
 		{	// point has more in common
-			point->min = forward ? ps : ms;
+			point->min = ps;
 		}
 		else
 		{	// string compare
@@ -184,7 +187,11 @@ int Merger::advance()
 			int out = s->dup;
 			
 			if (s->advance() != 0)
-			{	// This entry is empty.
+			{
+				// Pass the error through
+				if (errno != 0) return -1;
+				
+				// This entry is empty.
 				Sources::iterator i = sources.begin();
 				i += int(point - bov);
 				
@@ -246,6 +253,7 @@ int Merger::skiptill(const string& k, bool forward)
 				point = eov;
 				return 0;
 			}
+//			else std::cout << "SKIP: " << key << std::endl;
 		}
 	}
 	
