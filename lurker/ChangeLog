@@ -1,6 +1,8 @@
 v0.1e:
 	Don't warn if a maildrop adds whitespace before "From ..."
 	Allow port numbers in URLs ("http://localhost:8080/foo")
+	Report total number of messages on the front page
+	Include an Expires http-equiv if provided on in the <server> section
 
 v0.1d:
 	Fixed an off by one error in btree.c (could assert-fail)

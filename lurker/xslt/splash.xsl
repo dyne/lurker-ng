@@ -95,7 +95,14 @@
    <colgroup id="col4"/>
   </xsl:if>
 
-  <caption><xsl:value-of select="$lists"/></caption>
+  <caption>
+   <xsl:value-of select="$lists"/>
+   <xsl:text> (</xsl:text>
+   <xsl:value-of select="sum(list/messages)"/>
+   <xsl:text> </xsl:text>
+   <xsl:value-of select="$mess"/>
+   <xsl:text>)</xsl:text>
+  </caption>
   
   <xsl:call-template name="format">
    <xsl:with-param name="col1" select="list[position() &gt;= $off1 and position() &lt; $off2]"/>
