@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.6 2002-06-21 18:11:23 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.7 2002-06-23 11:47:08 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that delays appends to the flatfile
  *  
@@ -369,6 +369,9 @@ static void my_calc_storage(int yield)
 	my_wbuffer_kptr	kw;
 	my_wbuffer_sptr	scan;
 	my_wbuffer_sptr	cutoff;
+	
+	if (my_wbuffer_kcache_fill == 0)
+		return;
 	
 	/* Pick an okay place to stop cache.
 	 */
