@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.29 2003-06-23 14:38:41 terpstra Exp $
+/*  $Id: main.cpp,v 1.30 2003-06-26 20:13:19 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -24,6 +24,12 @@
 
 #define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
+
+#include <mimelib/headers.h>
+#include <mimelib/body.h>
+#include <mimelib/bodypart.h>
+#include <mimelib/enum.h>
+#include <mimelib/utility.h>
 
 #include <Config.h>
 #include <esort.h>
@@ -104,6 +110,53 @@ int commit()
 	return 0;
 }
 
+void look_for_from(DwEntity& e)
+{
+	if (e.Headers().HasContentTransferEncoding() &&
+	    e.Headers().ContentTransferEncoding().AsEnum() == DwMime::kCteBase64)
+		return; // base64 is already fine
+	
+	const DwString& body = e.Body().AsString();
+	if (body.substr(0, 5) != "From " && body.find("\nFrom") == DwString::npos)
+		return; // no From to kill
+	
+	// We have to kill the 'From '. Let's just make it quoted-printable.
+	DwString coded;
+	e.Headers().ContentTransferEncoding().FromEnum(DwMime::kCteQuotedPrintable);
+	DwEncodeQuotedPrintable(body, coded);
+	e.Body().FromString(coded);
+}
+
+void recursively_kill_from(DwEntity& e)
+{
+	// if (e.hasHeaders() && 
+	if (e.Headers().HasContentType())
+	{
+		DwMediaType& t = e.Headers().ContentType();
+		switch (t.Type())
+		{
+		case DwMime::kTypeMessage:
+			if (e.Body().Message()) 
+				recursively_kill_from(*e.Body().Message());
+			break;
+			
+		case DwMime::kTypeMultipart:
+			// index all alternatives in multipart
+			for (DwBodyPart* p = e.Body().FirstBodyPart(); p != 0; p = p->Next())
+				recursively_kill_from(*p);
+			break;
+			
+		default:
+			look_for_from(e);
+			break;
+		}
+	}
+	else
+	{
+		look_for_from(e);
+	}
+}
+
 int index(const DwString& msg, long batch, bool check, bool compress)
 {
 //	cout << msg.c_str() << endl;
@@ -113,6 +166,12 @@ int index(const DwString& msg, long batch, bool check, bool compress)
 		count = 0;
 		if (commit() != 0) return -1;
 	}
+	
+	DwMessage message(msg);
+	
+	message.Parse();
+	recursively_kill_from(message);
+	message.Assemble();
 	
 	off_t start = length + append.length();
 	string::size_type unwind = append.length();
@@ -232,7 +291,7 @@ int index(const DwString& msg, long batch, bool check, bool compress)
 		append.append(msg.c_str(), msg.length());
 	}
 	
-	Index i(msg, db.get(), *list, start, msg.length() + strlen(prefix));
+	Index i(message, db.get(), *list, start, msg.length() + strlen(prefix));
 	
 	bool exist;
 	if (i.index(arrival, import, check, exist) != 0)

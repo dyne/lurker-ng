@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.25 2003-06-23 14:38:41 terpstra Exp $
+/*  $Id: Index.cpp,v 1.26 2003-06-26 20:13:19 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -623,7 +623,6 @@ int Index::index_keywords(DwEntity& e, const string& parentCharset)
 int Index::index(time_t envelope, time_t import, bool check, bool& exist)
 {
 	exist = false;
-	message.Parse();
 	
 //	cout << message.Headers().Subject().AsString().c_str() << endl;
 	

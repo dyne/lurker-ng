@@ -11,6 +11,7 @@ v0.10:
 	New config options specify how to handle gpg signatures
 	Verify gpg signatures and format them for the user
 	All displayed dates will be browser local time if javascript is on
+	Mail with an unescaped From is now converted to quoted-printable
 
 v0.9:
 	Don't segfault in rare cases if using '-d' on import (zero restart)

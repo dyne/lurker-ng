@@ -21,6 +21,5 @@ BUGS:
 	There is a slight bug in advance() pre-commit post-insert.
 		(you don't always see fresh keys if partially past it)
 		(... but this doesn't affect lurker, so not priority)
-	Escape 'From ' in messages we store with -m
 	Sometimes we get blank pages until reload
 	Jump / search are in UTC ...

@@ -1,4 +1,4 @@
-/*  $Id: Index.h,v 1.7 2003-06-20 12:04:46 terpstra Exp $
+/*  $Id: Index.h,v 1.8 2003-06-26 20:13:19 terpstra Exp $
  *  
  *  Index.h - Insert all the keywords from the given email
  *  
@@ -34,7 +34,7 @@
 
 struct Index
 {
-	DwMessage	message;
+	DwMessage&	message;
 	ESort::Writer*	writer;
 	List		list;
 	off_t		off;
@@ -46,8 +46,8 @@ struct Index
 	string		author_email;
 	string		subject;
 	
-	Index(const DwString& str, ESort::Writer* w, const List& l, off_t o, long x)
-	 : message(str), writer(w), list(l), off(o), len(x) { }
+	Index(DwMessage& m, ESort::Writer* w, const List& l, off_t o, long x)
+	 : message(m), writer(w), list(l), off(o), len(x) { }
 	
 	int index(time_t envelope, time_t import, bool check, bool& exist);
 	
