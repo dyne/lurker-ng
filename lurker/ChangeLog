@@ -1,9 +1,5 @@
 v1.0:
 	Froze the 1.* series against all changes other than bug fixes
-	Worked around how Solaris #defines open
-	Renamed Config.h to ConfigFile.h for windows
-	Fixed rendering in konqueror
-	Got subject/author clipping working in IE+Konqueror
 
 v0.10:
 	New-Topics and Old-Topics should show the subject
@@ -27,6 +23,10 @@ v0.10:
 	Tweaked the css for better IE support
 	Reorder thread by in-reply-to + references if date sequence is wrong
 	More strict enforcement of sanity on dates
+	Worked around how Solaris #defines open
+	Renamed Config.h to ConfigFile.h for windows
+	Fixed rendering in konqueror
+	Got subject/author clipping working in IE+Konqueror
 
 v0.9:
 	Don't segfault in rare cases if using '-d' on import (zero restart)
