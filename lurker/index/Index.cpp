@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.10 2003-05-10 20:08:52 terpstra Exp $
+/*  $Id: Index.cpp,v 1.11 2003-05-16 15:32:24 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -290,6 +290,9 @@ int Index::index_summary(bool check, bool& exist)
 		subject = message.Headers().Subject().AsString().c_str();
 		subject = decode_header(subject, charset.c_str());
 	}
+	
+	if (subject == "")
+		subject = "[...]";
 	
 	string mbox = prefix + LU_MESSAGE_MBOX + list.mbox + '\0';
 	
