@@ -1,3 +1,5 @@
+EXTRA_DIST = lurker-drop-rlimit.cpp lurker-regenerate
+
 bin_PROGRAMS = lurker-index lurker-list lurker-params
 
 AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/libesort
