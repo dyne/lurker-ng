@@ -118,7 +118,7 @@
      <table class="index squash">
       <col width="60%" align="left"/>
       <col width="30%" align="left"/>
-      <col width="160" align="left"/>
+      <col width="170" align="left"/>
       <tr>
        <th align="left"><xsl:value-of select="$subject"/></th>
        <th align="left"><xsl:value-of select="$author"/></th>
