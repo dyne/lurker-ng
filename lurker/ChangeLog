@@ -1,3 +1,7 @@
+v1.3:
+	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE
+	Included French localization
+
 v1.2:
 	Fixed a bug where 'From "john doe"@foo.com Mon Jan 1 10:11:11' was not
 	  a message break due to quoted email address.

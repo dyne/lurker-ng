@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.12 2004-08-27 17:53:44 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.13 2004-10-09 14:48:18 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -216,7 +216,7 @@ void lstring::prep_c()
 		{"", ""}
 	};
 	
-	for (unsigned int i = 0; code[i][0] != ""; ++i)
+	for (unsigned int i = 0; code[i][0][0]; ++i)
 		(*c)[code[i][0]] = code[i][1];
 }
 

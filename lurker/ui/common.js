@@ -1,23 +1,14 @@
-var oldColor = "ffffff";
+var oldClass = "";
 
 function rollOut(thisItem)
 {
-	thisItem.style.background      = oldColor;
-	thisItem.style.backgroundColor = oldColor;
+	thisItem.className = oldClass;
 }
 
 function rollIn(thisItem)
 {
-	if (thisItem.style.background)
-	{
-		oldColor = thisItem.style.background; 
-		thisItem.style.background = "CCAACC"; 
-	}
-	else
-	{
-		oldColor = thisItem.style.backgroundColor;
-		thisItem.style.backgroundColor = "CCAACC";
-	}
+	oldClass = thisItem.className;
+	thisItem.className = "rowover";
 }
 
 function twostr(num)

@@ -92,6 +92,7 @@ tr { vertical-align:top; text-align:left; font-family: Arial, sans-serif; paddin
 tr.lit  { background-color:#77F }  /* even rows in mindex/thread/search tables */
 tr.row1 { background-color:#DDD }  /* even rows in mindex/thread/search tables */
 tr.row2 { background-color:#EEE }  /* odd rows in mindex/thread/search tables  */
+tr.rowover { background-color:#CAC } /* active (= mouseOver) rows in mindex/thread/search tables */
 
 div.body {
   padding: 1em;
