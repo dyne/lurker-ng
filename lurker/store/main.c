@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.29 2002-06-14 11:16:59 terpstra Exp $
+/*  $Id: main.c,v 1.30 2002-06-16 08:46:41 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -167,6 +167,12 @@ static void* lu_sched_sync(void* die)
 	exit(0);
 }
 
+static void lu_parachute(int sig)
+{
+	syslog(LOG_CRIT, _("Segmentation Fault - attempting to salvage db"));
+	lu_sched_sync((void*)1);
+}
+
 static void lu_sync_buffers(int sig)
 {
 	st_thread_create(&lu_sched_sync, (void*)0, 0, 0);
@@ -276,11 +282,25 @@ int main(int argc, const char* argv[])
 		openlog(STORAGE, LOG_PID | LOG_PERROR, LOG_MAIL);
 
 #ifdef HAVE_SIGNAL_H
+	/* These signals will trigger a safe db cleanup after the current task
+	 * has been completed.
+	 */
 	signal(SIGHUP,  &lu_sync_buffers);
 	signal(SIGINT,  &lu_cleanup_quit);
 	signal(SIGQUIT, &lu_cleanup_quit);
 	signal(SIGABRT, &lu_cleanup_quit);
 	signal(SIGTERM, &lu_cleanup_quit);
+	
+	/* I am getting sick of starting imports over again during debugging.
+	 * Because we could be mid-operation, this is not guaranteed to save
+	 * from a corrupt database, however, it is better than nothing.
+	 */
+	signal(SIGSEGV, &lu_parachute);
+	signal(SIGILL,  &lu_parachute);
+	signal(SIGBUS,  &lu_parachute);
+	signal(SIGABRT, &lu_parachute);
+	signal(SIGFPE,  &lu_parachute);
+	signal(SIGPIPE, &lu_parachute);
 #endif
 	
 	if (my_main_open() != 0)
