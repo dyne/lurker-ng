@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.6 2003-08-17 11:21:40 terpstra Exp $
+/*  $Id: esort.h,v 1.7 2003-08-17 12:54:39 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -151,7 +151,7 @@ class Reader
  	 *  
  	 *  This operation never fails; you must call advance() before use.
  	 */
- 	virtual auto_ptr<Walker> seek(const string& k, Direction dir) = 0;
+ 	virtual auto_ptr<Walker> seek(const string& key, Direction direction) = 0;
  	
  	/** Obtain a record Walker over only those records which are
  	 *  prefixed by 'prefix'. When the last such is passed, eof is
@@ -159,7 +159,7 @@ class Reader
  	 *  
  	 *  This operation never failes; you must call advance() before use.
  	 */
- 	virtual auto_ptr<Walker> seekp(const string& prefix, const string& k, Direction dir) = 0;
+ 	virtual auto_ptr<Walker> seekp(const string& prefix, const string& key, Direction direction) = 0;
  	
  	/** Open an existing database for reading.
  	 *  0 is returned and errno set on error.
@@ -169,7 +169,7 @@ class Reader
  	 *  the ABI stays consistent regardless of backend changes.
  	 */
  	static auto_ptr<Reader> opendb(
- 		const string& db, 
+ 		const string& database, 
  		const Parameters& p = Parameters::minimize(Parameters()));
 };
 
@@ -188,7 +188,7 @@ class Writer : public Reader
  	 *  If an error occures, -1 is returned and errno set, else 0.
  	 *  Be sure the key is smaller than keySize on pain of EINVAL.
  	 */
- 	virtual int insert(const string& k) = 0;
+ 	virtual int insert(const string& key) = 0;
  	
  	/** Commit the changes to the database.
  	 *  On success invalidates all Walkers obtained prior to the call.
@@ -213,7 +213,7 @@ class Writer : public Reader
  	 *  the ABI stays consistent regardless of backend changes.
  	 */
  	static auto_ptr<Writer> opendb(
- 		const string& db, const Parameters& p = Parameters(), 
+ 		const string& database, const Parameters& p = Parameters(), 
  		int mode = 0666);
 };
 
