@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.6 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: thread.cpp,v 1.7 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  thread.cpp - Cleanup after a thread/ command
  *  
@@ -44,6 +44,13 @@ void PTable::calc_thread(KSI ks)
 	 *   kill if older than a fixed time
 	 *   kill if no recent accesses
 	 */
+	
+	if (!MessageId::is_full(ks->first.c_str() + 7))
+	{
+		if (verbose)
+			cout << ks->first << ": not a lurker file." << endl;
+		return;
+	}
 	
 	MessageId id(ks->first.c_str() + 7);
 	if (id.timestamp() == 0)

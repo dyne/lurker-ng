@@ -1,4 +1,4 @@
-/*  $Id: MessageId.cpp,v 1.6 2003-06-23 14:38:41 terpstra Exp $
+/*  $Id: MessageId.cpp,v 1.7 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  MessageId.cpp - Helper class for manipulating internal message ids
  *  
@@ -33,8 +33,8 @@
 
 inline int dehex(char x)
 {
-	if (x >= 'a' && x <= 'z') return x - 'a' + 10;
-	if (x >= 'A' && x <= 'Z') return x - 'A' + 10;
+	if (x >= 'a' && x <= 'f') return x - 'a' + 10;
+	if (x >= 'A' && x <= 'F') return x - 'A' + 10;
 	return x - '0';
 }
 
@@ -56,6 +56,9 @@ time_t my_timegm(struct tm* tm)
 	hack.tm_sec += delta;
 	return mktime(&hack);
 }
+
+const unsigned int MessageId::time_len = 15;
+const unsigned int MessageId::full_len = 24;
 
 /** Note; the serialized time is always in UTC!
  *  
@@ -122,4 +125,38 @@ string MessageId::serialize() const
 		hash_[0], hash_[1], hash_[2], hash_[3]);
 	
 	return buf;
+}
+
+static inline bool is_digit(char c)
+{
+	return (c >= '0' && c <= '9');
+}
+
+static inline bool is_hex(char c)
+{
+	return (c >= '0' && c <= '9') ||
+	       (c >= 'a' && c <= 'f') ||
+	       (c >= 'A' && c <= 'F');
+}
+
+bool MessageId::is_time(const char* s)
+{
+	return	is_digit(s[0]) && is_digit(s[1]) && 
+		is_digit(s[2]) && is_digit(s[3]) &&
+		is_digit(s[4]) && is_digit(s[5]) &&
+		is_digit(s[6]) && is_digit(s[7]) &&
+		s[8] == '.' &&
+		is_digit(s[ 9]) && is_digit(s[10]) &&
+		is_digit(s[11]) && is_digit(s[12]) &&
+		is_digit(s[13]) && is_digit(s[14]);
+}
+
+bool MessageId::is_full(const char* s)
+{
+	return	is_time(s) &&
+		s[15] == '.' &&
+		is_hex(s[16]) && is_hex(s[17]) &&
+		is_hex(s[18]) && is_hex(s[19]) &&
+		is_hex(s[20]) && is_hex(s[21]) &&
+		is_hex(s[22]) && is_hex(s[23]);
 }

@@ -1,3 +1,9 @@
+v1.2:
+	Fixed a bug where 'From "john doe"@foo.com Mon Jan 1 10:11:11' was not
+	  a message break due to quoted email address.
+	Lurker-prune now only deletes files which appear to be generated
+	Lurker rendering and pruning are now equally picky about formatting
+
 v1.1:
 	Create mbox and attach directory upon install
 	Add spaces between "version1.1" "by:foo"

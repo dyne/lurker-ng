@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.4 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: search.cpp,v 1.5 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  mbox.cpp - Cleanup after an mbox/ command
  *  
@@ -42,6 +42,16 @@ void PTable::calc_search(KSI ks)
 	 * Policy:
 	 *   kill it after a short expiry
 	 */
+	
+	/* format: id@keywords.* */
+	string::size_type o = ks->first.find('@', 7);
+	if (o == string::npos || o != MessageId::full_len + 7 ||
+	    !MessageId::is_full(ks->first.c_str() + 7))
+	{
+		if (verbose)
+			cout << ks->first << ": not a lurker file." << endl;
+		return;
+	}
 	
 	if (ks->second.mtime <= config)
 	{	// die - it's older than the config file

@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.10 2004-01-06 20:02:05 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.11 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  mindex.cpp - Handle a mindex/ command
  *  
@@ -53,14 +53,10 @@ int mindex_format_error(const string& param)
 int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 {
 	string::size_type o = param.find('@');
-	if (o == string::npos || param.length() - o < 1 + 15 + 4)
+	if (o == string::npos || !MessageId::is_full(param.c_str()+o+1))
 		return mindex_format_error(param);
 	
 	MessageId id(param.c_str()+o+1);
-	
-	if (id.timestamp() == 0)
-		return mindex_format_error(param);
-	
 	string listn(param, 0, o);
 	
 	if (cfg.lists.find(listn) == cfg.lists.end())

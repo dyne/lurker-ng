@@ -1,4 +1,4 @@
-/*  $Id: PTable.h,v 1.4 2003-06-11 01:33:00 terpstra Exp $
+/*  $Id: PTable.h,v 1.5 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -32,6 +32,7 @@
 #include <ctime>
 
 #include <MessageId.h>
+#include <ConfigFile.h>
 #include <esort.h>
 
 using std::set;
@@ -63,6 +64,7 @@ class PTable
 	
 	typedef map<string, KillState>::iterator KSI;
 	
+	const Config&		cfg;
 	ESort::Reader*		reader;
 	time_t			config;
 	time_t			stamp;
@@ -93,7 +95,7 @@ class PTable
 	string loadLists();
 	
  public:
- 	PTable(ESort::Reader* reader, time_t config, time_t stamp, 
+ 	PTable(const Config& cfg, ESort::Reader* reader, time_t config, time_t stamp, 
  		bool verbose, time_t modifiedLimit, time_t accessedLimit);
 	
 	string load();	// pull all summaries off disk

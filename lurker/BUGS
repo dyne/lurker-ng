@@ -1,24 +1,29 @@
-lurker-prune should not kill .* in cache dirs
-Get rid of date dependency
+Set timestamp to config file + all used messages
+Access two databases at once
+Track what config files are included --- all of them are depends for prune
+Apply german spelling fix
+delete a message? Easy if - keyword support is added
+off-site mailing list links?
+
+Get rid of date dependency (2005 in xslt)
 Fix manpages utf8 -
 Add 'or' searching
-Make groups use or searching internally
-Maildir support
-Language control from web?
-Disable mbox/ attachment/ as an option?
+Make groups use 'or' searching internally (allows regrouping)
+Maildir support for import
+Language control from web
+Disable mbox/ attachment/ as an option
+
+Message count estimates for searches / indexes
 
 Ideas:
 	Maybe exclude tab indented paragraphs from pre-formatting
-	Printable css?
-	In-message forward/backward for search results?
-	Pack the threading tree more densely somehow?
-	Boolean "or" in search?
-	Phrase searching?
-	Message count estimates for searches / indexes?
-	Hover over tree pops up some of the subtree?
-	Multi-level btree style files (faster search, slower import)?
-	Deleted message keyword?
-	Re-add optional lurkerd to watch mboxs?
+	Printable css
+	In-message forward/backward for search results
+	Pack the threading tree more densely somehow
+	Phrase searching
+	Hover over tree pops up some of the subtree
+	Multi-level btree style files (faster search, slower import)
+	Re-add optional lurkerd to watch mboxs
 
 BUGS:
 	There is a slight bug in advance() pre-commit post-insert.

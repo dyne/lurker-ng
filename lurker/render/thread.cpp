@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.7 2004-01-06 20:02:05 terpstra Exp $
+/*  $Id: thread.cpp,v 1.8 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  thread.cpp - Handle a thread/ command
  *  
@@ -33,9 +33,7 @@
 
 int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 {
-	MessageId id(param.c_str());
-	
-	if (id.timestamp() == 0)
+	if (!MessageId::is_full(param.c_str()))
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
@@ -46,6 +44,7 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
+	MessageId id(param.c_str());
 	string ok;
 	
 	Summary source(id);

@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.6 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.7 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  mindex.cpp - Cleanup after a mindex/ command
  *  
@@ -44,6 +44,17 @@ void PTable::calc_mindex(KSI ks)
 	 *   kill if older than a fixed time
 	 *   kill if no recent accesses
 	 */
+	
+	/* format: list@msgid.* */
+	string::size_type o = ks->first.find('@', 7);
+	if (o == string::npos || 
+	    cfg.lists.find(string(ks->first, 7, o)) == cfg.lists.end() ||
+	    !MessageId::is_full(ks->first.c_str()+o+1))
+	{
+		if (verbose)
+			cout << ks->first << ": not a lurker file." << endl;
+		return;
+	}
 	
 	if (ks->second.mtime <= config)
 	{	// die - it's older than the config file

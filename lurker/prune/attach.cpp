@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.5 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: attach.cpp,v 1.6 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  attach.cpp - Cleanup after an attach/ command
  *  
@@ -40,6 +40,17 @@ void PTable::calc_attach(KSI ks)
 	 *   kill after a bounded lifetime
 	 *   kill after a period of no accesses
 	 */
+	
+	/* id@YYYYMMDD.HHMMSS.hashcode.* */
+	
+	string::size_type o = ks->first.find('@', 7);
+	if (o == string::npos || atol(ks->first.c_str()+7) ||
+	    !MessageId::is_full(ks->first.c_str()+o+1))
+	{
+		if (verbose)
+			cout << ks->first << ": not a lurker file." << endl;
+		return;
+	}
 	
 	if (now - ks->second.mtime >= modifiedLimit)
 	{

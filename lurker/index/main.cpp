@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.38 2003-07-01 15:49:04 terpstra Exp $
+/*  $Id: main.cpp,v 1.39 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -384,6 +384,17 @@ string::size_type find_message_boundary(const string& str, string::size_type o)
 		// if there is an '@' sign then this must be ok
 		while (*d && *d != ' ' && *d != '\t')
 		{
+			if (*d == '\"')
+			{	/* quoted email address - nasty! */
+				++d;
+				while (*d != '\"')
+				{
+					if (*d == '\\') ++d;
+					if (!*d) break;
+					++d;
+				}
+				if (!*d) break;
+			}
 			if (*d == '@') email = true;
 			++d;
 		}

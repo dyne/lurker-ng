@@ -1,4 +1,4 @@
-/*  $Id: splash.cpp,v 1.7 2003-06-23 14:38:43 terpstra Exp $
+/*  $Id: splash.cpp,v 1.8 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  splash.cpp - Handle a splash/ command
  *  
@@ -31,6 +31,17 @@
 int handle_splash(const Config& cfg, ESort::Reader* db, const string& param)
 {
 	Cache cache(cfg, "splash", param);
+	
+	if (string(param, 0, 6) != "index.")
+	{
+		cout << "Status: 200 OK\r\n";
+		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout << error(_("Bad request"), param,
+			_("The given parameter was not of the correct format. "
+			  "A splash request must be formatted like: "
+			  "splash/index.xml"));
+		return 1;
+	}
 	
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/splash.xsl\"?>\n"

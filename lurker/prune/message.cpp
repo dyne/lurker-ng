@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.6 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: message.cpp,v 1.7 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  message.cpp - Cleanup after a message/ command
  *  
@@ -47,15 +47,14 @@ void PTable::calc_message(KSI ks)
 	 *   kill if no recent accesses
 	 */
 	
-	MessageId id(ks->first.c_str() + 8);
-	if (id.timestamp() == 0)
+	if (!MessageId::is_full(ks->first.c_str() + 8))
 	{
-		ks->second.kill = true; // shouldn't be in here
 		if (verbose)
 			cout << ks->first << ": not a lurker file." << endl;
 		return;
 	}
 	
+	MessageId id(ks->first.c_str() + 8);
 	if (ks->second.mtime <= config)
 	{	// die - it's older than the config file
 		ks->second.kill = true;

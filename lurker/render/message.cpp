@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.34 2004-01-08 22:14:46 terpstra Exp $
+/*  $Id: message.cpp,v 1.35 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -666,12 +666,7 @@ string MBox::load(ESort::Reader* db, const MessageId& rel, const Config& conf)
 
 int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 {
-	MessageId id(param.c_str());
-	
-	pgp_config = &cfg; // hackish
-	pgp_name_prefix = id.serialize();
-	
-	if (id.timestamp() == 0)
+	if (!MessageId::is_full(param.c_str()))
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
@@ -681,6 +676,11 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 			  "message/YYYYMMDD.HHMMSS.hashcode.xml"));
 		return 1;
 	}
+	
+	MessageId id(param.c_str());
+	
+	pgp_config = &cfg; // hackish
+	pgp_name_prefix = id.serialize();
 	
 	string ok;
 	

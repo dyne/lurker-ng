@@ -1,4 +1,4 @@
-/*  $Id: mbox.cpp,v 1.5 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: mbox.cpp,v 1.6 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  mbox.cpp - Cleanup after an mbox/ command
  *  
@@ -40,6 +40,13 @@ void PTable::calc_mbox(KSI ks)
 	 *   kill after a bounded lifetime
 	 *   kill after a period of no accesses
 	 */
+	
+	if (!MessageId::is_full(ks->first.c_str() + 5))
+	{
+		if (verbose)
+			cout << ks->first << ": not a lurker file." << endl;
+		return;
+	}
 	
 	if (now - ks->second.mtime >= modifiedLimit)
 	{

@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.8 2004-01-06 20:02:05 terpstra Exp $
+/*  $Id: attach.cpp,v 1.9 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  attach.cpp - Handle a attach/ command
  *  
@@ -99,15 +99,13 @@ string unfold_header(const char* hdr)
 int handle_attach(const Config& cfg, ESort::Reader* db, const string& param)
 {
 	string::size_type o = param.find('@');
-	if (o == string::npos || param.length() - o < 1 + 15 + 4)
-		return attach_format_error(param);
-	
 	long n = atol(param.c_str());
-	MessageId id(param.c_str()+o+1);
 	
-	if (n <= 0 || id.timestamp() == 0)
+	if (o == string::npos || n <= 0 || 
+	    !MessageId::is_full(param.c_str()+o+1))
 		return attach_format_error(param);
 	
+	MessageId id(param.c_str()+o+1);
 	string ok;
 	
 	Summary source(id);

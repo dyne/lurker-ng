@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.11 2004-01-06 20:02:05 terpstra Exp $
+/*  $Id: search.cpp,v 1.12 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -188,12 +188,10 @@ string Search::pull(int n, vector<Summary>& o)
 int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 {
 	string::size_type o = param.find('@');
-	if (o == string::npos || o != 24)
+	if (o == string::npos || o != MessageId::full_len)
 		return search_format_error(param);
 	
-	MessageId id(param.c_str());
-	
-	if (id.timestamp() == 0)
+	if (!MessageId::is_full(param.c_str()))
 		return search_format_error(param);
 	
 	string::size_type e = param.rfind('.');
@@ -202,6 +200,8 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	vector<string> tokens;
 	++o;
+	
+	MessageId id(param.c_str());
 	string raw = decipherHalf(param.substr(o, e-o));
 	string keys(raw);
 	// we need to translate '!' to '/'

@@ -1,4 +1,4 @@
-/*  $Id: MessageId.h,v 1.4 2003-04-25 15:36:07 terpstra Exp $
+/*  $Id: MessageId.h,v 1.5 2004-08-15 10:54:32 terpstra Exp $
  *  
  *  MessageId.h - Helper class for manipulating internal message ids
  *  
@@ -164,6 +164,12 @@ class MessageId
  	bool operator >  (const MessageId& o) const { return   o < *this;  }
  	bool operator >= (const MessageId& o) const { return !(*this < o); }
  	bool operator <= (const MessageId& o) const { return !(o < *this); }
+ 	
+ 	static const unsigned int time_len; // 15
+ 	static const unsigned int full_len; // 24
+ 	
+ 	static bool is_time(const char* s);
+ 	static bool is_full(const char* s);
 };
 
 #endif
