@@ -26,9 +26,6 @@
 
 <xsl:template match="mindex" mode="title">
  <xsl:value-of select="list/email/@name"/> -
- <xsl:value-of select="$mess"/>
- <xsl:text> </xsl:text>
- <xsl:value-of select="offset"/>-<xsl:value-of select="string(number(offset)+count(summary)-1)"/>
 </xsl:template>
 
 <xsl:template match="mindex" mode="body">

@@ -4,7 +4,7 @@
     version="1.0">
 
 <xsl:template match="thread" mode="title">
- <xsl:value-of select="summary/subject"/>
+ <xsl:value-of select="row/summary/subject"/>
 </xsl:template>
 
 <xsl:template match="thread" mode="body">

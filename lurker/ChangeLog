@@ -18,6 +18,7 @@ v0.8:
 	Implemented a smart cache manager: lurker-prune
 	Improved the man pages with helpful information
 	Include a subject for emails without one
+	Fixed title display bug
 
 v0.7:
 	Made VERSION controlled by one place: configure.ac
