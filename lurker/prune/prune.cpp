@@ -1,4 +1,4 @@
-/*  $Id: prune.cpp,v 1.4 2003-05-13 21:43:25 terpstra Exp $
+/*  $Id: prune.cpp,v 1.5 2003-05-14 10:36:13 terpstra Exp $
  *  
  *  prune.cpp - Prune obsolete / stale cache files
  *  
@@ -178,18 +178,6 @@ int main(int argc, char** argv)
 	
 	PTable ptable(db.get(), cbuf.st_mtime, dbuf.st_mtime, verbose);
 	string ok;
-	
-	if ((ok = ptable.pull()) != "")
-	{
-		cerr << "pull: " << ok << endl;
-		return 1;
-	}
-	
-	if ((ok = ptable.prep()) != "")
-	{
-		cerr << "prep: " << ok << endl;
-		return 1;
-	}
 	
 	if ((ok = ptable.load()) != "")
 	{

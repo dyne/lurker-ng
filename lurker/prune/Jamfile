@@ -5,6 +5,12 @@ SubDirHdrs $(TOP) common ;
 Main lurker-prune :
 	prune.cpp
 	PTable.cpp
+	attach.cpp
+	mbox.cpp
+	message.cpp
+	search.cpp
+	splash.cpp
+	thread.cpp
 	;
 
 LinkLibraries lurker-prune : libesort libcommon ;
