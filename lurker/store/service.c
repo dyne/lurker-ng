@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.65 2002-06-11 13:44:48 terpstra Exp $
+/*  $Id: service.c,v 1.66 2002-06-11 13:50:14 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -47,8 +47,8 @@
 
 #define LU_PROTO_INDEX	20
 
-/* #define PACK_STRATEGY_DEEP_FIRST */
-#define PACK_STRATEGY_SPACE_WASTE
+#define PACK_STRATEGY_DEEP_FIRST
+/* #define PACK_STRATEGY_SPACE_WASTE */
 
 #define	EMPTY_CELL	"<a/>"
 #define BAR_NS		"<b/>"
