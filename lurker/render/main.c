@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.19 2002-05-11 19:24:59 terpstra Exp $
+/*  $Id: main.c,v 1.20 2002-05-21 13:23:06 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -44,6 +44,16 @@
 FILE*	lu_server_link;
 FILE*	lu_output;
 char	cwd[1024];
+
+const char redirect_error[] = 
+"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
+"<html><head>\r\n"
+"<title>301 Moved Permanently</title>\r\n"
+"</head><body>\r\n"
+"<h1>Moved Permanently</h1>\r\n"
+"The document has moved <a href=\"%s\">here</a>.\r\n"
+"<p><hr>\r\n"
+"</body></html>\r\n";
 
 int lu_forward_data()
 {
@@ -170,11 +180,10 @@ int main(int argc, char* argv[])
 	int	fd;
 	int	got;
 	
-	printf("Status: 200 OK\r\n");
-	
 	/* What URL are we rendering? */
 	if ((uri = getenv("REQUEST_URI")) == 0)
 	{
+		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
 			"Not invoked as an ErrorDocument", 
@@ -183,11 +192,13 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	
+	uri = strdup(uri);
 	ext = strrchr(uri, '.');
 	qs = strrchr(uri, '/');
 	
 	if (!qs || ext <= qs)
 	{
+		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0],
 			"Improper request",
@@ -202,6 +213,7 @@ int main(int argc, char* argv[])
 	
 	if (!mod)
 	{
+		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0],
 			"Improper request",
@@ -209,7 +221,7 @@ int main(int argc, char* argv[])
 			"Missing the request directory");
 		return 1;
 	}
-	mod++;
+	*mod++ = 0;
 	
 	/* Decode the query string */
 	for (w = r = qs; *r; )
@@ -238,6 +250,7 @@ int main(int argc, char* argv[])
 	
 	if (getcwd(&cwd[0], sizeof(cwd)) == 0)
 	{
+		printf("Status: 200 OK\r\n");
 		printf("Content-Type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
 			"Saving location of cgi", 
@@ -248,6 +261,7 @@ int main(int argc, char* argv[])
 	
 	if (chdir(mod) != 0)
 	{
+		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
 			"Invalid request", 
@@ -261,6 +275,36 @@ int main(int argc, char* argv[])
 	
 	/* Get back into the directory; connect leaves it. */
 	chdir(mod);
+	
+	/* Create the file immediately. The server might delete it due to
+	 * import WHILE we are generating it. It must be around to get 
+	 * unlinked already.
+	 */
+	snprintf(&buf[0], sizeof(buf), "%s.%s", qs, ext);
+	fd = open(&buf[0], O_RDWR | O_BINARY | O_CREAT | O_EXCL,
+		LU_S_READ | LU_S_WRITE);
+	
+	if (fd == -1 && errno != EEXIST)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0],
+			"Unable to create cache file",
+			&buf[0],
+			strerror(errno));
+		return 1;
+	}
+	
+	if (fd == -1) /* errno = EEXIST */
+	{
+		printf("Status: 303 Moved Permanently\r\n");
+		printf("Location: %s\r\n", getenv("REQUEST_URI"));
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&redirect_error[0], getenv("REQUEST_URI"));
+		return 0;
+	}
+	
+	printf("Status: 200 OK\r\n");
 	
 	/* Send the server the request */
 	fprintf(lu_server_link, "%s\n%s\n%s\n%s\n", &cwd[0], mod, qs, ext);
@@ -293,20 +337,17 @@ int main(int argc, char* argv[])
 	}
 	fflush(stdout);
 	
-	snprintf(&buf[0], sizeof(buf), "%s.%s", qs, ext);
-	fd = -1;
-	
 	/* Redirect stdout to cache file */
-	if (cache[0] != '0')
+	stdoutfd = dup(1);
+	close(1);
+	dup(fd);
+	
+	/* If we are not supposed to cache, kill the file now. We will
+	 * still have a handle to it. 
+	 */
+	if (cache[0] == '0')
 	{
-		if ((fd = open(&buf[0], O_RDWR | O_BINARY | O_CREAT,
-			LU_S_READ | LU_S_WRITE)) != -1)
-		{
-			/* could cache, so do it */
-			stdoutfd = dup(1);
-			close(1);
-			dup(fd);
-		}
+		unlink(&buf[0]);
 	}
 	
 	/* If we need xslt conversion, prep it */
@@ -321,37 +362,26 @@ int main(int argc, char* argv[])
 	if (!strcmp(type, "text/xml") && strcmp(ext, "xml"))
 		pclose(lu_output);
 	
-	/* Output the data if we cached it */	
-	if (fd != -1)
+	/* Reclaim our stdout */
+	fflush(stdout);
+	close(1);
+	dup(stdoutfd);
+	close(stdoutfd);
+	
+	/* Reseek to the start */
+	if (lseek(fd, 0, SEEK_SET) == -1)
 	{
-		/* Decide if we should delete it anyways */
-		fgets(&cache[0], sizeof(cache), lu_server_link);
-		if (cache[0] == '0') 
-		{
-			unlink(&buf[0]);
-		}
-		
-		/* Reclaim out stdout */
-		fflush(stdout);
-		close(1);
-		dup(stdoutfd);
-		
-		/* Reseek to the start */
-		if (lseek(fd, 0, SEEK_SET) == -1)
-		{
-			printf(&basic_error[0], 
-				"Unable to rewind to start of output",
-				"reseek xml",
-				strerror(errno));
-			return 1;
-		}
-		
-		/* Pipe it through */
-		while ((got = read(fd, &buf[0], sizeof(buf))) > 0)
-			write(1, &buf[0], got);
-		
-		close(fd);
+		printf(&basic_error[0], 
+			"Unable to rewind to start of output",
+			"reseek cache file",
+			strerror(errno));
+		return 1;
 	}
 	
+	/* Pipe it through */
+	while ((got = read(fd, &buf[0], sizeof(buf))) > 0)
+		write(1, &buf[0], got);
+	
+	close(fd);
 	return 0;
 }
