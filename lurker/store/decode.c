@@ -1,4 +1,4 @@
-/*  $Id: decode.c,v 1.6 2002-07-11 20:30:10 terpstra Exp $
+/*  $Id: decode.c,v 1.7 2002-07-12 19:02:00 terpstra Exp $
  *  
  *  decode.c - decode definitions and types for all tools
  *  
@@ -32,6 +32,10 @@
 #include <ctype.h>
 #include <string.h>
 #include <iconv.h>
+
+#ifdef DMALLOC
+# include <dmalloc.h>
+#endif
 
 /*------------------------------------------------ Private global vars */
 

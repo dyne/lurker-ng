@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.6 2002-07-11 23:50:54 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.7 2002-07-12 19:02:00 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -49,6 +49,10 @@
 
 #ifndef assert
 # define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
+#endif
+
+#ifdef DMALLOC
+# include <dmalloc.h>
 #endif
 
 

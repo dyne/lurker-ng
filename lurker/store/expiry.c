@@ -1,4 +1,4 @@
-/*  $Id: expiry.c,v 1.12 2002-07-12 15:12:06 terpstra Exp $
+/*  $Id: expiry.c,v 1.13 2002-07-12 19:02:00 terpstra Exp $
  *  
  *  expiry.c - Record when pages should be destroyed
  *  
@@ -39,6 +39,10 @@
 #include <stdlib.h>
 
 #include <st.h>
+
+#ifdef DMALLOC
+# include <dmalloc.h>
+#endif
 
 /*------------------------------------------------ Constant parameters */
 

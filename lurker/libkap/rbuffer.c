@@ -1,4 +1,4 @@
-/*  $Id: rbuffer.c,v 1.2 2002-07-12 12:55:39 terpstra Exp $
+/*  $Id: rbuffer.c,v 1.3 2002-07-12 19:02:00 terpstra Exp $
  *  
  *  rbuffer.c - Implements a buffering system that read combines
  *  
@@ -46,6 +46,10 @@
 
 #ifndef assert
 # define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
+#endif
+
+#ifdef DMALLOC
+# include <dmalloc.h>
 #endif
 
 /* Now, what's the plan... We want to cache reads.

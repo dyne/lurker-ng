@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.10 2002-07-11 16:38:14 terpstra Exp $
+/*  $Id: kap.c,v 1.11 2002-07-12 19:02:00 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -86,6 +86,10 @@
 #define USE_LOCK_LOCKF
 #else
 #warning Not locking KAP databases on open
+#endif
+
+#ifdef DMALLOC
+# include <dmalloc.h>
 #endif
 
 const char* kap_strerror(int error)

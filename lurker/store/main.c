@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.35 2002-07-11 20:44:54 terpstra Exp $
+/*  $Id: main.c,v 1.36 2002-07-12 19:02:00 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -50,6 +50,10 @@
 #include <signal.h>
 #endif
 
+#ifdef DMALLOC
+# include <dmalloc.h>
+#endif
+
 /*------------------------------------------------ Private helper methods */
 
 static int my_main_init(const char* c)
@@ -83,8 +87,8 @@ static int my_main_sync(void)
 	int fail = 0;
 	
 	if (lu_service_sync()  != 0) fail = -1;
-	if (lu_mbox_sync()     != 0) return -1;
-	if (lu_expiry_sync()   != 0) return -1;
+	if (lu_mbox_sync()     != 0) fail = -1;
+	if (lu_expiry_sync()   != 0) fail = -1;
 	if (lu_summary_sync()  != 0) fail = -1; 
 	if (lu_search_sync()   != 0) fail = -1;
 	if (lu_indexer_sync()  != 0) fail = -1;
@@ -98,8 +102,8 @@ static int my_main_close(void)
 	int fail = 0;
 	
 	if (lu_service_close()  != 0) fail = -1;
-	if (lu_mbox_close()     != 0) return -1;
-	if (lu_expiry_close()   != 0) return -1;
+	if (lu_mbox_close()     != 0) fail = -1;
+	if (lu_expiry_close()   != 0) fail = -1;
 	if (lu_summary_close()  != 0) fail = -1; 
 	if (lu_search_close()   != 0) fail = -1;
 	if (lu_indexer_close()  != 0) fail = -1;
@@ -113,8 +117,8 @@ static int my_main_quit(void)
 	int fail = 0;
 	
 	if (lu_service_quit()  != 0) fail = -1;
-	if (lu_mbox_quit()     != 0) return -1;
-	if (lu_expiry_quit()   != 0) return -1;
+	if (lu_mbox_quit()     != 0) fail = -1;
+	if (lu_expiry_quit()   != 0) fail = -1;
 	if (lu_summary_quit()  != 0) fail = -1; 
 	if (lu_search_quit()   != 0) fail = -1;
 	if (lu_indexer_quit()  != 0) fail = -1;

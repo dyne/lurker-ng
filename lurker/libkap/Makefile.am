@@ -7,10 +7,10 @@ libkap_a_SOURCES = \
 	btree.c append.c wbuffer.c kap.c
 
 kapmake_SOURCES = kapmake.c
-kapmake_LDADD = libkap.a -lm
+kapmake_LDADD = libkap.a -lm @MAINT@ -ldmalloc
 
 kapdump_SOURCES = kapdump.c
-kapdump_LDADD = libkap.a -lm
+kapdump_LDADD = libkap.a -lm @MAINT@ -ldmalloc
 
 tests:	test-append test-btree test-full test-avl profile
 	./test-avl

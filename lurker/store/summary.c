@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.31 2002-07-12 15:18:33 terpstra Exp $
+/*  $Id: summary.c,v 1.32 2002-07-12 19:02:00 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -40,6 +40,10 @@
 #include <ctype.h>
 #include <string.h>
 #include <netinet/in.h> /* ntohl */
+
+#ifdef DMALLOC
+# include <dmalloc.h>
+#endif
 
 /*------------------------------------------------ Constant parameters */
 
@@ -1109,21 +1113,21 @@ int lu_summary_close()
 	int error;
 	int fail = 0;
 	
-	if ((error = kap_close(my_summary_merge_db)) != 0)
+	if ((error = kap_destroy(my_summary_merge_db)) != 0)
 	{
 		syslog(LOG_ERR, _("Closing kap database: merge.btree: %s\n"),
 			kap_strerror(error));
 		fail = -1;
 	}
 	
-	if ((error = kap_close(my_summary_mid_db)) != 0)
+	if ((error = kap_destroy(my_summary_mid_db)) != 0)
 	{
 		syslog(LOG_ERR, _("Closing kap database: mid.btree: %s\n"),
 			kap_strerror(error));
 		fail = -1;
 	}
 	
-	if ((error = kap_close(my_summary_offset_db)) != 0)
+	if ((error = kap_destroy(my_summary_offset_db)) != 0)
 	{
 		syslog(LOG_ERR, _("Closing kap database: offset.*: %s\n"),
 			kap_strerror(error));

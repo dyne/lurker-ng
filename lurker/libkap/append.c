@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.14 2002-07-12 12:55:39 terpstra Exp $
+/*  $Id: append.c,v 1.15 2002-07-12 19:01:59 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -77,6 +77,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef DMALLOC
+# include <dmalloc.h>
+#endif
 
 /* Now, how is this file laid out?
  * Why, simple I saw! It's simply a big ass flat file.

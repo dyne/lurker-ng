@@ -107,10 +107,10 @@ libkap_a_SOURCES = \
 
 
 kapmake_SOURCES = kapmake.c
-kapmake_LDADD = libkap.a -lm
+kapmake_LDADD = libkap.a -lm @MAINT@ -ldmalloc
 
 kapdump_SOURCES = kapdump.c
-kapdump_LDADD = libkap.a -lm
+kapdump_LDADD = libkap.a -lm @MAINT@ -ldmalloc
 subdir = libkap
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h

@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.19 2002-07-12 15:15:04 terpstra Exp $
+/*  $Id: config.c,v 1.20 2002-07-12 19:02:00 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -37,6 +37,10 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+
+#ifdef DMALLOC
+# include <dmalloc.h>
+#endif
 
 /*------------------------------------------------ Private global vars */
 

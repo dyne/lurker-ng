@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.21 2002-07-12 13:31:46 terpstra Exp $
+/*  $Id: btree.c,v 1.22 2002-07-12 19:02:00 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -77,6 +77,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef DMALLOC
+# include <dmalloc.h>
+#endif
 
 /* Okay, what is the format of this file?
  * 

@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.36 2002-07-11 20:54:36 terpstra Exp $
+/*  $Id: mbox.c,v 1.37 2002-07-12 19:02:00 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -46,6 +46,10 @@
 #include <sys/mman.h>
 #include <st.h>
 #include <string.h>
+
+#ifdef DMALLOC
+# include <dmalloc.h>
+#endif
 
 /*------------------------------------------------ Constant parameters */
 

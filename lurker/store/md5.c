@@ -31,6 +31,10 @@
 #include <sys/types.h>		/* for stupid systems */
 #include <netinet/in.h>		/* for ntohl() */
 
+#ifdef DMALLOC
+# include <dmalloc.h>
+#endif
+
 #ifdef WORDS_BIGENDIAN
 void
 byteSwap(UWORD32 *buf, unsigned words)

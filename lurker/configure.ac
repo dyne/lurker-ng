@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1c)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.35 2002-07-12 17:14:32 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.36 2002-07-12 19:01:57 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -13,7 +13,7 @@ AM_MAINTAINER_MODE
 ALL_LINGUAS=""
 
 if test "x$USE_MAINTAINER_MODE" != "xno"; then
-  CFLAGS="-Wall -O2 -g -ansi -pedantic -Wtraditional -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wnested-externs -Winline"
+  CFLAGS="-Wall -DDMALLOC -DDMALLOC_FUNC_CHECK -O2 -g -ansi -pedantic -Wtraditional -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wnested-externs -Winline"
 fi
 
 AC_ARG_WITH(wwwdir, AC_HELP_STRING(

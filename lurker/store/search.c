@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.12 2002-07-12 12:58:14 terpstra Exp $
+/*  $Id: search.c,v 1.13 2002-07-12 19:02:00 terpstra Exp $
  *  
  *  search.c - Uses libkap to execute a given search
  *  
@@ -38,6 +38,10 @@
 #include <st.h>
 #include <ctype.h>
 #include <stdio.h>
+
+#ifdef DMALLOC
+# include <dmalloc.h>
+#endif
 
 /* Our search algorithm does a simple set intersection on several ordered 
  * lists. This is done by walking the lists in order. However, the underlying

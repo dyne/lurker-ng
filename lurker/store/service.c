@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.79 2002-07-12 17:54:19 terpstra Exp $
+/*  $Id: service.c,v 1.80 2002-07-12 19:02:00 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -43,6 +43,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <iconv.h>
+
+#ifdef DMALLOC
+# include <dmalloc.h>
+#endif
 
 #define LU_PROTO_INDEX	20
 
@@ -1167,6 +1171,7 @@ my_service_thread_load_error2:
 my_service_thread_load_error1:
 	kap_kclose(lu_config_keyword, &kr, &key[0]);
 my_service_thread_load_error0:
+	*out_tree = 0;
 	return -1;
 }
 
@@ -1935,7 +1940,7 @@ static int my_service_message(
 	if (my_service_buffer_write(h, "</message>\n")  != 0) goto my_service_message_error3;
 	
 	if (out == 0) kap_kclose(lu_config_keyword, &kr, &keyword[0]);
-	if (tree != 0) free(tree);
+	free(tree);
 	lu_mbox_destroy_message(&mmsg);
 	lu_mbox_destroy_map(&cmsg);
 	return 0;
