@@ -46,6 +46,59 @@ AC_DEFUN(XSLT_CHECK, [
   fi
 ])
 
+AC_DEFUN(ST_CHECK,
+[ AC_MSG_CHECKING(for the st library)
+
+  AC_ARG_WITH(stdir, AC_HELP_STRING(
+	[--with-stdir], 
+	[st installation directory (default: none)]))
+  if test "x$with_stdir" != "x"; then
+    ST_LTEST="-L$with_stdir/lib -L$with_stdir"
+    ST_ITEST="-I$with_stdir/include -I$with_stdir"
+  fi
+
+  for search in $ST_LTEST '' '-L/usr/local/lib'; do
+    save="$LIBS"
+    LIBS="$LIBS $search -lst"
+    AC_TRY_LINK([], [st_thread_create()],
+	[AC_MSG_RESULT(yes)
+	 break],
+	[LIBS="$save"])
+  done
+
+  if test "$save" = "$LIBS"; then
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR([This requires libst to build])
+  else
+    $1_LIBS="$$1_LIBS $search -lst"
+    LIBS="$save"
+  fi
+
+  AC_MSG_CHECKING(for st header files)
+
+  for search in $ST_ITEST '' '-I/usr/local/'; do
+    save="$CFLAGS";
+    CFLAGS="$CFLAGS $search";
+
+    AC_TRY_COMPILE(
+      [#include <st.h>],
+      [ st_sleep(1); return 0;],
+      [AC_MSG_RESULT(yes)
+       break],
+      [CFLAGS="$save"])
+  done
+
+  if test "$save" = "$CFLAGS"; then
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR([Unable to locate st header files])
+  else
+    $1_CFLAGS="$$1_CFLAGS $search"
+    CFLAGS="$save"
+  fi
+
+  AC_SUBST($1_LIBS)
+  AC_SUBST($1_CFLAGS)])
+
 AC_DEFUN(C_CLIENT_CHECK, [
   AC_MSG_CHECKING(for c-client)
   
@@ -84,8 +137,20 @@ dnl be called variously `db3' and `db-3.')
 AC_DEFUN(DB3_CHECK, 
 [ AC_MSG_CHECKING(for the db3 library)
 
-  for id in 'db-3' 'db3'; do
-    for search in '' '-L/usr/local/lib'; do
+  AC_ARG_WITH(db3dir, AC_HELP_STRING(
+	[--with-db3dir], 
+	[db3 installation directory (default: none)]))
+  if test "x$with_db3dir" != "x"; then
+    DB_LTEST="-L$with_db3dir/lib -L$with_db3dir"
+    DB_ITEST="-I$with_db3dir/include -I$with_db3dir"
+  fi
+
+  AC_ARG_WITH(db3dir, AC_HELP_STRING(
+	[--with-db3name], 
+	[db3 library name (default: db-3 or db3)]))
+
+  for id in $with_db3name 'db-3' 'db3'; do
+    for search in $DB_LTEST '' '-L/usr/local/lib'; do
       save="$LIBS"
       LIBS="$LIBS $search -l$id"
 
@@ -106,7 +171,7 @@ AC_DEFUN(DB3_CHECK,
 
   AC_MSG_CHECKING(for db3.2 header files)
 
-  for search in '' '-I/usr/include/db3' '-I/usr/local/include/db3'; do
+  for search in $DB_ITEST '' '-I/usr/include/db3' '-I/usr/local/include/db3'; do
     save="$CFLAGS";
     CFLAGS="$CFLAGS $search";
 

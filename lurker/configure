@@ -846,6 +846,9 @@ Optional Packages:
   --with-url              url location (default: http://this.host/lurker)
   --with-localedir        locale directory (default: DATADIR/locale)
   --with-dbdir            db directory (default: PREFIX/var/lib/lurker)
+  --with-stdir            st installation directory (default: none)
+  --with-db3dir           db3 installation directory (default: none)
+  --with-db3name          db3 library name (default: db-3 or db3)
   --with-libiconv-prefix=DIR  search for libiconv in DIR/include and DIR/lib
   --with-included-gettext use the GNU gettext library included here
 
@@ -4626,131 +4629,6 @@ _ACEOF
 fi
 
 
-
-
-
-
-
-
-
-
-
-
-
-for ac_header in unistd.h signal.h fcntl.h io.h time.h sys/mman.h sys/time.h sys/file.h assert.h sys/fcntl.h errno.h syslog.h
-do
-as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
-if eval "test \"\${$as_ac_Header+set}\" = set"; then
-  echo "$as_me:$LINENO: checking for $ac_header" >&5
-echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
-if eval "test \"\${$as_ac_Header+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
-else
-  # Is the header compilable?
-echo "$as_me:$LINENO: checking $ac_header usability" >&5
-echo $ECHO_N "checking $ac_header usability... $ECHO_C" >&6
-cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-#include "confdefs.h"
-$ac_includes_default
-#include <$ac_header>
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_header_compiler=yes
-else
-  echo "$as_me: failed program was:" >&5
-cat conftest.$ac_ext >&5
-ac_header_compiler=no
-fi
-rm -f conftest.$ac_objext conftest.$ac_ext
-echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
-echo "${ECHO_T}$ac_header_compiler" >&6
-
-# Is the header present?
-echo "$as_me:$LINENO: checking $ac_header presence" >&5
-echo $ECHO_N "checking $ac_header presence... $ECHO_C" >&6
-cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-#include "confdefs.h"
-#include <$ac_header>
-_ACEOF
-if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
-  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
-  ac_status=$?
-  egrep -v '^ *\+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } >/dev/null; then
-  if test -s conftest.err; then
-    ac_cpp_err=$ac_c_preproc_warn_flag
-  else
-    ac_cpp_err=
-  fi
-else
-  ac_cpp_err=yes
-fi
-if test -z "$ac_cpp_err"; then
-  ac_header_preproc=yes
-else
-  echo "$as_me: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  ac_header_preproc=no
-fi
-rm -f conftest.err conftest.$ac_ext
-echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
-echo "${ECHO_T}$ac_header_preproc" >&6
-
-# So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc in
-  yes:no )
-    { echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
-echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
-echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;};;
-  no:yes )
-    { echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
-echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header: check for missing prerequisite headers?" >&5
-echo "$as_me: WARNING: $ac_header: check for missing prerequisite headers?" >&2;}
-    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
-echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;};;
-esac
-echo "$as_me:$LINENO: checking for $ac_header" >&5
-echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
-if eval "test \"\${$as_ac_Header+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  eval "$as_ac_Header=$ac_header_preproc"
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
-
-fi
-if test `eval echo '${'$as_ac_Header'}'` = yes; then
-  cat >>confdefs.h <<_ACEOF
-#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-
 # The Ultrix 4.2 mips builtin alloca declared by alloca.h only works
 # for constant arguments.  Useless!
 echo "$as_me:$LINENO: checking for working alloca.h" >&5
@@ -5421,6 +5299,551 @@ _ACEOF
 fi
 rm -f conftest.mmap
 
+
+ echo "$as_me:$LINENO: checking for the st library" >&5
+echo $ECHO_N "checking for the st library... $ECHO_C" >&6
+
+
+# Check whether --with-stdir or --without-stdir was given.
+if test "${with_stdir+set}" = set; then
+  withval="$with_stdir"
+
+fi;
+  if test "x$with_stdir" != "x"; then
+    ST_LTEST="-L$with_stdir/lib -L$with_stdir"
+    ST_ITEST="-I$with_stdir/include -I$with_stdir"
+  fi
+
+  for search in $ST_LTEST '' '-L/usr/local/lib'; do
+    save="$LIBS"
+    LIBS="$LIBS $search -lst"
+    cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+st_thread_create()
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+	 break
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+LIBS="$save"
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+  done
+
+  if test "$save" = "$LIBS"; then
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    { { echo "$as_me:$LINENO: error: This requires libst to build" >&5
+echo "$as_me: error: This requires libst to build" >&2;}
+   { (exit 1); exit 1; }; }
+  else
+    STORAGE_LIBS="$STORAGE_LIBS $search -lst"
+    LIBS="$save"
+  fi
+
+  echo "$as_me:$LINENO: checking for st header files" >&5
+echo $ECHO_N "checking for st header files... $ECHO_C" >&6
+
+  for search in $ST_ITEST '' '-I/usr/local/'; do
+    save="$CFLAGS";
+    CFLAGS="$CFLAGS $search";
+
+    cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+#include <st.h>
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+ st_sleep(1); return 0;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+       break
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+CFLAGS="$save"
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+  done
+
+  if test "$save" = "$CFLAGS"; then
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    { { echo "$as_me:$LINENO: error: Unable to locate st header files" >&5
+echo "$as_me: error: Unable to locate st header files" >&2;}
+   { (exit 1); exit 1; }; }
+  else
+    STORAGE_CFLAGS="$STORAGE_CFLAGS $search"
+    CFLAGS="$save"
+  fi
+
+
+
+ echo "$as_me:$LINENO: checking for the db3 library" >&5
+echo $ECHO_N "checking for the db3 library... $ECHO_C" >&6
+
+
+# Check whether --with-db3dir or --without-db3dir was given.
+if test "${with_db3dir+set}" = set; then
+  withval="$with_db3dir"
+
+fi;
+  if test "x$with_db3dir" != "x"; then
+    DB_LTEST="-L$with_db3dir/lib -L$with_db3dir"
+    DB_ITEST="-I$with_db3dir/include -I$with_db3dir"
+  fi
+
+
+# Check whether --with-db3dir or --without-db3dir was given.
+if test "${with_db3dir+set}" = set; then
+  withval="$with_db3dir"
+
+fi;
+
+  for id in $with_db3name 'db-3' 'db3'; do
+    for search in $DB_LTEST '' '-L/usr/local/lib'; do
+      save="$LIBS"
+      LIBS="$LIBS $search -l$id"
+
+      cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+db_env_create()
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+	 break 2
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+LIBS="$save"
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+    done
+  done
+
+  if test "$save" = "$LIBS"; then
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    { { echo "$as_me:$LINENO: error: This requires libdb >= 3.2 to build" >&5
+echo "$as_me: error: This requires libdb >= 3.2 to build" >&2;}
+   { (exit 1); exit 1; }; }
+  else
+    STORAGE_LIBS="$STORAGE_LIBS $search -l$id"
+    LIBS="$save"
+  fi
+
+  echo "$as_me:$LINENO: checking for db3.2 header files" >&5
+echo $ECHO_N "checking for db3.2 header files... $ECHO_C" >&6
+
+  for search in $DB_ITEST '' '-I/usr/include/db3' '-I/usr/local/include/db3'; do
+    save="$CFLAGS";
+    CFLAGS="$CFLAGS $search";
+
+    cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+#include <db.h>
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+
+#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2
+	return 0;
+#else
+#error
+#endif
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+       break
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+CFLAGS="$save"
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+  done
+
+  if test "$save" = "$CFLAGS"; then
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    { { echo "$as_me:$LINENO: error: Unable to locate libdb >= 3.2 header files" >&5
+echo "$as_me: error: Unable to locate libdb >= 3.2 header files" >&2;}
+   { (exit 1); exit 1; }; }
+  else
+    STORAGE_CFLAGS="$STORAGE_CFLAGS $search"
+    CFLAGS="$save"
+  fi
+
+
+
+
+  echo "$as_me:$LINENO: checking for c-client" >&5
+echo $ECHO_N "checking for c-client... $ECHO_C" >&6
+
+  save_LIBS=$LIBS
+  LIBS="$LIBS -L/usr/local/lib -lc-client"
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+void mm_expunged() {}
+void mm_diskerror() {}
+void mm_lsub() {}
+void mm_flags() {}
+void mm_fatal() {}
+void mm_nocritical() {}
+void mm_notify() {}
+void mm_searched() {}
+void mm_status() {}
+void mm_login() {}
+void mm_list() {}
+void mm_critical() {}
+void mm_exists() {}
+void mm_log() {}
+void mm_dlog() {}
+void rfc822_parse_msg_full();
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+ rfc822_parse_msg_full();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+{ { echo "$as_me:$LINENO: error: need c-client" >&5
+echo "$as_me: error: need c-client" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+  LIBS=$save_LIBS
+
+  STORAGE_LIBS="$STORAGE_LIBS -lc-client"
+
+
+
+  if test -z "$XSLT_CONFIG"; then
+    # Extract the first word of "xslt-config", so it can be a program name with args.
+set dummy xslt-config; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_path_XSLT_CONFIG+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $XSLT_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_XSLT_CONFIG="$XSLT_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_XSLT_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+  test -z "$ac_cv_path_XSLT_CONFIG" && ac_cv_path_XSLT_CONFIG="no"
+  ;;
+esac
+fi
+XSLT_CONFIG=$ac_cv_path_XSLT_CONFIG
+
+if test -n "$XSLT_CONFIG"; then
+  echo "$as_me:$LINENO: result: $XSLT_CONFIG" >&5
+echo "${ECHO_T}$XSLT_CONFIG" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  fi
+
+  if test "$XSLT_CONFIG" = "no" ; then
+     echo "*** The xslt-config script could not be found. Make sure it is"
+     echo "*** in your path, or set the XSLT_CONFIG environment variable"
+     echo "*** to the full path to xslt-config."
+     { { echo "$as_me:$LINENO: error: Need xslt to compile" >&5
+echo "$as_me: error: Need xslt to compile" >&2;}
+   { (exit 1); exit 1; }; }
+  else
+     echo "$as_me:$LINENO: checking for libxslt" >&5
+echo $ECHO_N "checking for libxslt... $ECHO_C" >&6
+     xslt_CFLAGS=`$XSLT_CONFIG --cflags || echo no`
+     if test "x$RENDER_CFLAGS" = "xno"; then
+       { { echo "$as_me:$LINENO: error: Need xslt to compile" >&5
+echo "$as_me: error: Need xslt to compile" >&2;}
+   { (exit 1); exit 1; }; }
+     fi
+
+     xslt_LIBS=`$XSLT_CONFIG --libs || echo no`
+     if test "x$RENDER_LIBS" = "xno"; then
+       { { echo "$as_me:$LINENO: error: Need xslt to compile" >&5
+echo "$as_me: error: Need xslt to compile" >&2;}
+   { (exit 1); exit 1; }; }
+     fi
+
+     echo "$as_me:$LINENO: result: have it" >&5
+echo "${ECHO_T}have it" >&6
+
+     RENDER_CFLAGS="$RENDER_CFLAGS $xslt_CFLAGS"
+     RENDER_LIBS="$RENDER_LIBS $xslt_LIBS"
+
+
+
+  fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+for ac_header in unistd.h signal.h fcntl.h io.h time.h sys/mman.h sys/time.h sys/file.h assert.h sys/fcntl.h errno.h syslog.h
+do
+as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking $ac_header usability" >&5
+echo $ECHO_N "checking $ac_header usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+$ac_includes_default
+#include <$ac_header>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_header_compiler=no
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking $ac_header presence" >&5
+echo $ECHO_N "checking $ac_header presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+#include <$ac_header>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  egrep -v '^ *\+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_c_preproc_warn_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc in
+  yes:no )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;};;
+  no:yes )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
+echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: $ac_header: check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;};;
+esac
+echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  eval "$as_ac_Header=$ac_header_preproc"
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+
+fi
+if test `eval echo '${'$as_ac_Header'}'` = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
 
 
 
@@ -7540,376 +7963,6 @@ if test "x$am_cv_func_iconv" != "xyes"; then
 echo "$as_me: error: Need iconv to function" >&2;}
    { (exit 1); exit 1; }; }
 fi
-
-
-  succeeded=no
-
-  if test -z "$PKG_CONFIG"; then
-    # Extract the first word of "pkg-config", so it can be a program name with args.
-set dummy pkg-config; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_path_PKG_CONFIG+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  case $PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-  test -z "$ac_cv_path_PKG_CONFIG" && ac_cv_path_PKG_CONFIG="no"
-  ;;
-esac
-fi
-PKG_CONFIG=$ac_cv_path_PKG_CONFIG
-
-if test -n "$PKG_CONFIG"; then
-  echo "$as_me:$LINENO: result: $PKG_CONFIG" >&5
-echo "${ECHO_T}$PKG_CONFIG" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-  fi
-
-  if test "$PKG_CONFIG" = "no" ; then
-     echo "*** The pkg-config script could not be found. Make sure it is"
-     echo "*** in your path, or set the PKG_CONFIG environment variable"
-     echo "*** to the full path to pkg-config."
-     echo "*** Or see http://www.freedesktop.org/software/pkgconfig to get pkg-config."
-  else
-     PKG_CONFIG_MIN_VERSION=0.9.0
-     if $PKG_CONFIG --atleast-pkgconfig-version $PKG_CONFIG_MIN_VERSION; then
-        echo "$as_me:$LINENO: checking for st >= 1.3" >&5
-echo $ECHO_N "checking for st >= 1.3... $ECHO_C" >&6
-
-        if $PKG_CONFIG --exists "st >= 1.3" ; then
-            echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-            succeeded=yes
-
-            echo "$as_me:$LINENO: checking STORAGE_CFLAGS" >&5
-echo $ECHO_N "checking STORAGE_CFLAGS... $ECHO_C" >&6
-            STORAGE_CFLAGS=`$PKG_CONFIG --cflags "st >= 1.3"`
-            echo "$as_me:$LINENO: result: $STORAGE_CFLAGS" >&5
-echo "${ECHO_T}$STORAGE_CFLAGS" >&6
-
-            echo "$as_me:$LINENO: checking STORAGE_LIBS" >&5
-echo $ECHO_N "checking STORAGE_LIBS... $ECHO_C" >&6
-            STORAGE_LIBS=`$PKG_CONFIG --libs "st >= 1.3"`
-            echo "$as_me:$LINENO: result: $STORAGE_LIBS" >&5
-echo "${ECHO_T}$STORAGE_LIBS" >&6
-        else
-            STORAGE_CFLAGS=""
-            STORAGE_LIBS=""
-            ## If we have a custom action on failure, don't print errors, but
-            ## do set a variable so people can do so.
-            STORAGE_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "st >= 1.3"`
-            echo $STORAGE_PKG_ERRORS
-        fi
-
-
-
-     else
-        echo "*** Your version of pkg-config is too old. You need version $PKG_CONFIG_MIN_VERSION or newer."
-        echo "*** See http://www.freedesktop.org/software/pkgconfig"
-     fi
-  fi
-
-  if test $succeeded = yes; then
-     :
-  else
-     { { echo "$as_me:$LINENO: error: Library requirements (st >= 1.3) not met; consider adjusting the PKG_CONFIG_PATH environment variable if your libraries are in a nonstandard prefix so pkg-config can find them." >&5
-echo "$as_me: error: Library requirements (st >= 1.3) not met; consider adjusting the PKG_CONFIG_PATH environment variable if your libraries are in a nonstandard prefix so pkg-config can find them." >&2;}
-   { (exit 1); exit 1; }; }
-  fi
-
- echo "$as_me:$LINENO: checking for the db3 library" >&5
-echo $ECHO_N "checking for the db3 library... $ECHO_C" >&6
-
-  for id in 'db-3' 'db3'; do
-    for search in '' '-L/usr/local/lib'; do
-      save="$LIBS"
-      LIBS="$LIBS $search -l$id"
-
-      cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-#include "confdefs.h"
-
-#ifdef F77_DUMMY_MAIN
-#  ifdef __cplusplus
-     extern "C"
-#  endif
-   int F77_DUMMY_MAIN() { return 1; }
-#endif
-int
-main ()
-{
-db_env_create()
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-	 break 2
-else
-  echo "$as_me: failed program was:" >&5
-cat conftest.$ac_ext >&5
-LIBS="$save"
-fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-    done
-  done
-
-  if test "$save" = "$LIBS"; then
-    echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-    { { echo "$as_me:$LINENO: error: This requires libdb >= 3.2 to build" >&5
-echo "$as_me: error: This requires libdb >= 3.2 to build" >&2;}
-   { (exit 1); exit 1; }; }
-  else
-    STORAGE_LIBS="$STORAGE_LIBS $search -l$id"
-    LIBS="$save"
-  fi
-
-  echo "$as_me:$LINENO: checking for db3.2 header files" >&5
-echo $ECHO_N "checking for db3.2 header files... $ECHO_C" >&6
-
-  for search in '' '-I/usr/include/db3' '-I/usr/local/include/db3'; do
-    save="$CFLAGS";
-    CFLAGS="$CFLAGS $search";
-
-    cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-#include "confdefs.h"
-#include <db.h>
-#ifdef F77_DUMMY_MAIN
-#  ifdef __cplusplus
-     extern "C"
-#  endif
-   int F77_DUMMY_MAIN() { return 1; }
-#endif
-int
-main ()
-{
-
-#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2
-	return 0;
-#else
-#error
-#endif
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-       break
-else
-  echo "$as_me: failed program was:" >&5
-cat conftest.$ac_ext >&5
-CFLAGS="$save"
-fi
-rm -f conftest.$ac_objext conftest.$ac_ext
-  done
-
-  if test "$save" = "$CFLAGS"; then
-    echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-    { { echo "$as_me:$LINENO: error: Unable to locate libdb >= 3.2 header files" >&5
-echo "$as_me: error: Unable to locate libdb >= 3.2 header files" >&2;}
-   { (exit 1); exit 1; }; }
-  else
-    STORAGE_CFLAGS="$STORAGE_CFLAGS $search"
-    CFLAGS="$save"
-  fi
-
-
-
-
-  echo "$as_me:$LINENO: checking for c-client" >&5
-echo $ECHO_N "checking for c-client... $ECHO_C" >&6
-
-  save_LIBS=$LIBS
-  LIBS="$LIBS -L/usr/local/lib -lc-client"
-  cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-#include "confdefs.h"
-void mm_expunged() {}
-void mm_diskerror() {}
-void mm_lsub() {}
-void mm_flags() {}
-void mm_fatal() {}
-void mm_nocritical() {}
-void mm_notify() {}
-void mm_searched() {}
-void mm_status() {}
-void mm_login() {}
-void mm_list() {}
-void mm_critical() {}
-void mm_exists() {}
-void mm_log() {}
-void mm_dlog() {}
-void rfc822_parse_msg_full();
-#ifdef F77_DUMMY_MAIN
-#  ifdef __cplusplus
-     extern "C"
-#  endif
-   int F77_DUMMY_MAIN() { return 1; }
-#endif
-int
-main ()
-{
- rfc822_parse_msg_full();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-else
-  echo "$as_me: failed program was:" >&5
-cat conftest.$ac_ext >&5
-{ { echo "$as_me:$LINENO: error: need c-client" >&5
-echo "$as_me: error: need c-client" >&2;}
-   { (exit 1); exit 1; }; }
-fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-  LIBS=$save_LIBS
-
-  STORAGE_LIBS="$STORAGE_LIBS -lc-client"
-
-
-
-  if test -z "$XSLT_CONFIG"; then
-    # Extract the first word of "xslt-config", so it can be a program name with args.
-set dummy xslt-config; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_path_XSLT_CONFIG+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  case $XSLT_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_XSLT_CONFIG="$XSLT_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_XSLT_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-  test -z "$ac_cv_path_XSLT_CONFIG" && ac_cv_path_XSLT_CONFIG="no"
-  ;;
-esac
-fi
-XSLT_CONFIG=$ac_cv_path_XSLT_CONFIG
-
-if test -n "$XSLT_CONFIG"; then
-  echo "$as_me:$LINENO: result: $XSLT_CONFIG" >&5
-echo "${ECHO_T}$XSLT_CONFIG" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-  fi
-
-  if test "$XSLT_CONFIG" = "no" ; then
-     echo "*** The xslt-config script could not be found. Make sure it is"
-     echo "*** in your path, or set the XSLT_CONFIG environment variable"
-     echo "*** to the full path to xslt-config."
-     { { echo "$as_me:$LINENO: error: Need xslt to compile" >&5
-echo "$as_me: error: Need xslt to compile" >&2;}
-   { (exit 1); exit 1; }; }
-  else
-     echo "$as_me:$LINENO: checking for libxslt" >&5
-echo $ECHO_N "checking for libxslt... $ECHO_C" >&6
-     xslt_CFLAGS=`$XSLT_CONFIG --cflags || echo no`
-     if test "x$RENDER_CFLAGS" = "xno"; then
-       { { echo "$as_me:$LINENO: error: Need xslt to compile" >&5
-echo "$as_me: error: Need xslt to compile" >&2;}
-   { (exit 1); exit 1; }; }
-     fi
-
-     xslt_LIBS=`$XSLT_CONFIG --libs || echo no`
-     if test "x$RENDER_LIBS" = "xno"; then
-       { { echo "$as_me:$LINENO: error: Need xslt to compile" >&5
-echo "$as_me: error: Need xslt to compile" >&2;}
-   { (exit 1); exit 1; }; }
-     fi
-
-     echo "$as_me:$LINENO: result: have it" >&5
-echo "${ECHO_T}have it" >&6
-
-     RENDER_CFLAGS="$RENDER_CFLAGS $xslt_CFLAGS"
-     RENDER_LIBS="$RENDER_LIBS $xslt_LIBS"
-
-
-
-  fi
-
 
 if test "x$GCC" = "xyes"; then
   case " $CFLAGS " in
@@ -10524,6 +10577,11 @@ s,@RANLIB@,$RANLIB,;t t
 s,@ac_ct_RANLIB@,$ac_ct_RANLIB,;t t
 s,@CPP@,$CPP,;t t
 s,@ALLOCA@,$ALLOCA,;t t
+s,@STORAGE_LIBS@,$STORAGE_LIBS,;t t
+s,@STORAGE_CFLAGS@,$STORAGE_CFLAGS,;t t
+s,@XSLT_CONFIG@,$XSLT_CONFIG,;t t
+s,@RENDER_CFLAGS@,$RENDER_CFLAGS,;t t
+s,@RENDER_LIBS@,$RENDER_LIBS,;t t
 s,@build@,$build,;t t
 s,@build_cpu@,$build_cpu,;t t
 s,@build_vendor@,$build_vendor,;t t
@@ -10553,12 +10611,6 @@ s,@INSTOBJEXT@,$INSTOBJEXT,;t t
 s,@GENCAT@,$GENCAT,;t t
 s,@MKINSTALLDIRS@,$MKINSTALLDIRS,;t t
 s,@INTL_LIBTOOL_SUFFIX_PREFIX@,$INTL_LIBTOOL_SUFFIX_PREFIX,;t t
-s,@PKG_CONFIG@,$PKG_CONFIG,;t t
-s,@STORAGE_CFLAGS@,$STORAGE_CFLAGS,;t t
-s,@STORAGE_LIBS@,$STORAGE_LIBS,;t t
-s,@XSLT_CONFIG@,$XSLT_CONFIG,;t t
-s,@RENDER_CFLAGS@,$RENDER_CFLAGS,;t t
-s,@RENDER_LIBS@,$RENDER_LIBS,;t t
 s,@SYSCONFDIR_expand@,$SYSCONFDIR_expand,;t t
 s,@DATADIR_expand@,$DATADIR_expand,;t t
 s,@WWWDIR_expand@,$WWWDIR_expand,;t t
