@@ -63,7 +63,10 @@
   </a>
   <br/>
  </xsl:if>
- <xsl:apply-templates mode="attach" select="mime"/>
+ <xsl:apply-templates mode="attach" select="mime|signed"/>
+</xsl:template>
+<xsl:template match="signed" mode="attach">
+ <xsl:apply-templates mode="attach" select="data/mime"/>
 </xsl:template>
 <xsl:template name="attachments">
  <table class="attachments">
