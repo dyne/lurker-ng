@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.22 2003-06-12 20:37:25 terpstra Exp $
+/*  $Id: Index.cpp,v 1.23 2003-06-14 00:22:48 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -221,6 +221,18 @@ void build_message_hash(const char* str, unsigned char* hash)
 	hash[3] = buf[3] ^ buf[7] ^ buf[11] ^ buf[15];
 }
 
+int feed_writer(const char* keyword, void* arg)
+{
+	Index* i = (Index*)arg;
+	
+	string x(LU_KEYWORD);
+	x += keyword;
+	x += '\0';
+	x += i->id.raw();
+	
+	return i->writer->insert(x);
+}
+
 int Index::index_id(time_t server)
 {
 	time_t stamp = server;
@@ -278,12 +290,9 @@ int Index::index_id(time_t server)
 	
 	id = MessageId(stamp, hash);
 	
-	if (messageId.length() && writer->insert(
-		LU_KEYWORD
-		LU_KEYWORD_MESSAGE_ID + 
-		messageId + 
-		'\0' + 
-		id.raw()) != 0)
+	if (messageId.length() && my_keyword_digest_string(
+		messageId.c_str(), messageId.length(),
+		LU_KEYWORD_MESSAGE_ID, &feed_writer, this, 0) != 0)
 	{
 		cerr << "Failed to insert message id keyword!" << endl;
 		return -1;
@@ -439,18 +448,6 @@ int Index::index_threading()
 	return 0;
 }
 
-int feed_writer(const char* keyword, void* arg)
-{
-	Index* i = (Index*)arg;
-	
-	string x(LU_KEYWORD);
-	x += keyword;
-	x += '\0';
-	x += i->id.raw();
-	
-	return i->writer->insert(x);
-}
-
 int Index::index_control(time_t import)
 {
 	bool ok = true;
@@ -503,12 +500,10 @@ int Index::index_control(time_t import)
 		vector<string> ids = extract_message_ids(
 			message.Headers().InReplyTo().AsString().c_str());
 		for (vector<string>::iterator i = ids.begin(); i != ids.end(); ++i)
-			if (writer->insert(
-				LU_KEYWORD 
-				LU_KEYWORD_REPLY_TO +
-				*i + 
-				'\0' + 
-				id.raw()) != 0) ok = false;
+			if (my_keyword_digest_string(
+				i->c_str(), i->length(),
+				LU_KEYWORD_REPLY_TO, &feed_writer, this, 0) != 0)
+				ok = false;
 	}
 	
 #if 0	// this is questionable...
@@ -517,12 +512,10 @@ int Index::index_control(time_t import)
 		vector<string> ids = extract_message_ids(
 			message.Headers().References().AsString().c_str());
 		for (vector<string>::iterator i = ids.begin(); i != ids.end(); ++i)
-			if (writer->insert(
-				LU_KEYWORD 
-				LU_KEYWORD_REPLY_TO +
-				*i + 
-				'\0' + 
-				id.raw()) != 0) ok = false;
+			if (my_keyword_digest_string(
+				i->c_str(), i->length(),
+				LU_KEYWORD_REPLY_TO, &feed_writer, this, 0) != 0)
+				ok = false;
 	}
 #endif
 	
