@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.28 2002-07-12 13:41:45 terpstra Exp $
+/*  $Id: summary.c,v 1.29 2002-07-12 13:47:16 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -752,7 +752,7 @@ int lu_summary_import_message(
 		my_summary_offset_db,
 		&key[0],
 		&occurance[0],
-		4+sizeof(message_id));
+		1);
 	if (error)
 	{
 			syslog(LOG_ERR, _("Could not write occurance db: %s\n"),
