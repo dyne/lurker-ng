@@ -8,6 +8,8 @@ table { border-collapse:collapse; border:hidden }
 tr.header { background-color:#BBF; font-size:120% }  /* headers for splash page list table */
 hr.search { width:500px; color:#66B; height:3px }  /* search component seperator */
 
+/* Mark the image as selected */
+img.selected { background-color:#BBF; }
 
 #listblock { width:100%; text-align:center }  /* contains splash page list tables */
 /* when less than 8 entries, only listtable0 is present.               */

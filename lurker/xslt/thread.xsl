@@ -15,8 +15,8 @@
  <h2>
   <xsl:value-of select="summary/subject"/>
  </h2>
+ 
  <p/>
-
  <table cellpadding="0" cellspacing="0" border="0">
     <tr><th align="left">Threading</th>
         <th align="left">Author</th>

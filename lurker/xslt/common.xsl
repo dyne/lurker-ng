@@ -48,17 +48,17 @@
 
 <!-- Format summary lists -->
 
-<xsl:template match="a"><img src="i/a.png"/></xsl:template>
-<xsl:template match="b"><img src="i/b.png"/></xsl:template>
-<xsl:template match="c"><img src="i/c.png"/></xsl:template>
-<xsl:template match="d"><img src="i/d.png"/></xsl:template>
-<xsl:template match="e"><img src="i/e.png"/></xsl:template>
-<xsl:template match="f"><a href="../message/{../../mid}.{$ext}"><img border="0" src="i/f.png"/></a></xsl:template>
-<xsl:template match="g"><a href="../message/{../../mid}.{$ext}"><img border="0" src="i/g.png"/></a></xsl:template>
-<xsl:template match="h"><a href="../message/{../../mid}.{$ext}"><img border="0" src="i/h.png"/></a></xsl:template>
-<xsl:template match="i"><a href="../message/{../../mid}.{$ext}"><img border="0" src="i/i.png"/></a></xsl:template>
-<xsl:template match="j"><a href="../message/{../../mid}.{$ext}"><img border="0" src="i/j.png"/></a></xsl:template>
-<xsl:template match="k"><a href="../message/{../../mid}.{$ext}"><img border="0" src="i/k.png"/></a></xsl:template>
+<xsl:template match="a"><img alt=" " src="i/a.png"/></xsl:template>
+<xsl:template match="b"><img alt="|" src="i/b.png"/></xsl:template>
+<xsl:template match="c"><img alt="-" src="i/c.png"/></xsl:template>
+<xsl:template match="d"><img alt="\" src="i/d.png"/></xsl:template>
+<xsl:template match="e"><img alt="+" src="i/e.png"/></xsl:template>
+<xsl:template match="f"><a href="../message/{../../mid}.{$ext}"><img alt="M" border="0" src="i/f.png"/></a></xsl:template>
+<xsl:template match="g"><a href="../message/{../../mid}.{$ext}"><img alt="M" border="0" src="i/g.png"/></a></xsl:template>
+<xsl:template match="h"><a href="../message/{../../mid}.{$ext}"><img alt="M" border="0" src="i/h.png"/></a></xsl:template>
+<xsl:template match="i"><a href="../message/{../../mid}.{$ext}"><img alt="M" border="0" src="i/i.png"/></a></xsl:template>
+<xsl:template match="j"><a href="../message/{../../mid}.{$ext}"><img alt="M" border="0" src="i/j.png"/></a></xsl:template>
+<xsl:template match="k"><a href="../message/{../../mid}.{$ext}"><img alt="M" border="0" src="i/k.png"/></a></xsl:template>
 
 <xsl:template match="summary">
  <tr>
