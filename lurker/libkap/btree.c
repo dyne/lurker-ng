@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.6 2002-07-01 15:51:19 terpstra Exp $
+/*  $Id: btree.c,v 1.7 2002-07-01 16:21:24 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -106,8 +106,8 @@ struct Kap_Btree
 
 struct Sector_Header
 {
-	unsigned leaf  : 1;
-	unsigned count : 15;
+	unsigned int	leaf  : 1  __attribute__ ((packed)),
+			count : 15 __attribute__ ((packed));
 };
 
 /***************************************** Strategies for accessing the disk */
@@ -119,7 +119,7 @@ struct Sector_Header
 static size_t round_mmap_up(size_t amt)
 {
 	size_t out = 0xC000; /* Can't quite map 2Gb- so use 110000... */
-	while (out < amt) out >>= 1;
+	while (out < amt) out <<= 1;
 	return out;
 }
 
@@ -941,7 +941,7 @@ static int kap_read_back(void* arg, unsigned char* buf, ssize_t* len)
 {
 	struct Read_Back* nfo = arg;
 	
-	memcpy(nfo->buf, buf, *len);
+	if (*len != -1) memcpy(nfo->buf, buf, *len);
 	*nfo->len = *len;
 	
 	return 0;
