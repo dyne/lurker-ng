@@ -1,4 +1,4 @@
-/*  $Id: Cache.cpp,v 1.5 2003-06-09 16:11:57 terpstra Exp $
+/*  $Id: Cache.cpp,v 1.6 2003-06-09 16:13:04 terpstra Exp $
  *  
  *  Cache.h - Helper which transforms xml -> html and caches files
  *  
@@ -28,6 +28,8 @@
 #include <cerrno>
 #include <cstring>
 #include <cassert>
+
+#include <unistd.h>
 
 class streambug : public std::streambuf
 {

@@ -20,6 +20,7 @@ v0.9:
 	Support searching for utf-8; german/russian/etc work
 	Make messages with no in-reply-to reachable in snippet view
 	Added new list page which include new topics
+	Current directory is now relative to generated content
 
 v0.8:
 	@ signs are legitimate inside urls
