@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.5 2002-07-01 15:41:46 terpstra Exp $
+/*  $Id: btree.c,v 1.6 2002-07-01 15:51:19 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -929,3 +929,77 @@ int kap_btree_op(Kap k, const char* key,
 		return travel_down(k, key, root, decide, arg);
 	}
 }
+
+struct Read_Back
+{
+	unsigned char*	buf;
+	size_t*		len;
+	
+};
+
+static int kap_read_back(void* arg, unsigned char* buf, ssize_t* len)
+{
+	struct Read_Back* nfo = arg;
+	
+	memcpy(nfo->buf, buf, *len);
+	*nfo->len = *len;
+	
+	return 0;
+}
+
+int kap_btree_read(Kap k, const char* key,
+	unsigned char* buf, ssize_t* len)
+{
+	int out;
+	struct Read_Back nfo;
+	
+	nfo.buf = buf;
+	nfo.len = len;
+	out = kap_btree_op(k, key, &kap_read_back, &nfo);
+	
+	if (out) return out;
+	if (*len == -1) return KAP_NOT_FOUND;
+	
+	return 0;
+}
+
+struct Write_Back
+{
+	const unsigned char*	buf;
+	const size_t*		len;
+	int			fail;
+};
+
+static int kap_write_back(void* arg, unsigned char* buf, ssize_t* len)
+{
+	struct Write_Back* nfo = arg;
+	
+	if (*len != -1)
+	{
+		nfo->fail = 1;
+		return 0;
+	}
+	
+	memcpy(buf, nfo->buf, *nfo->len);
+	*len = *nfo->len;
+	
+	return 1;
+}
+
+int kap_btree_write(Kap k, const char* key,
+	const unsigned char* buf, const ssize_t* len)
+{
+	int out;
+	struct Write_Back nfo;
+	
+	nfo.buf = buf;
+	nfo.len = len;
+	nfo.fail = 0;
+	out = kap_btree_op(k, key, &kap_write_back, &nfo);
+	
+	if (out) return out;
+	if (nfo.fail) return KAP_KEY_EXIST;
+	
+	return 0;
+}
+
