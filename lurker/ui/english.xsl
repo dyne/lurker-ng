@@ -12,7 +12,7 @@
 
 <xsl:variable name="tree-context" select="'This message is part of a thread which may be navigated here:'"/>
 <xsl:variable name="full-tree" select="'the complete thread tree sorted by date'"/>
-<xsl:variable name="appears-in" select="'This message was posted on all of the following mailing lists:'"/>
+<xsl:variable name="appears-in" select="'This message was posted to the following mailing lists:'"/>
 <xsl:variable name="list-info" select="'Mailing List Info'"/>
 <xsl:variable name="near-message" select="'Nearby Messages'"/>
 <xsl:variable name="old-topics" select="'Old-Topics'"/>

@@ -6,41 +6,28 @@
 
 <!-- Format the message header fields -->
 <xsl:template name="header-fields">
- <table class="emailHeaders">
-  <tr>
-   <th nowrap="NOWRAP"><xsl:value-of select="$author"/>:</th>
-   <td><xsl:apply-templates select="summary/email" mode="email-link"/></td>
-  </tr>
-  <tr>
-   <th nowrap="NOWRAP"><xsl:value-of select="$date"/>:</th>
-   <td><xsl:apply-templates select="summary" mode="date"/>&#160;UTC</td>
-  </tr>
-  <xsl:if test="to">
-   <tr>
-    <th nowrap="NOWRAP"><xsl:value-of select="$to"/>:</th>
-    <td><xsl:apply-templates mode="email-list" select="to/email"/></td>
-    <xsl:if test="not(to)"><xsl:value-of select="$unknown-address"/></xsl:if>
-   </tr>
-  </xsl:if>
-  <xsl:if test="cc">
-   <tr>
-    <th nowrap="NOWRAP"><xsl:value-of select="$cc"/>:</th>
-    <td><xsl:apply-templates mode="email-list" select="cc"/></td>
-   </tr>
-  </xsl:if>
-  <xsl:if test="threading/inreplyto">
-   <tr>
-    <th nowrap="NOWRAP"><xsl:value-of select="$old-topics"/>:</th>
-    <td><xsl:apply-templates mode="post-description-list" select="threading/inreplyto/summary"/></td>
-   </tr>
-  </xsl:if>
-  <xsl:if test="threading/drift">
-   <tr>
-    <th nowrap="NOWRAP"><xsl:value-of select="$new-topics"/>:</th>
-    <td><xsl:apply-templates mode="post-description-list" select="threading/drift/summary"/></td>
-   </tr>
-  </xsl:if>
- </table>
+ <b><xsl:value-of select="$author"/>:&#160;</b>
+ <xsl:apply-templates select="summary/email" mode="email-link"/><br/>
+ <b><xsl:value-of select="$date"/>:&#160;</b>
+ <xsl:apply-templates select="summary" mode="date"/>&#160;UTC<br/>
+ <xsl:if test="to">
+  <b><xsl:value-of select="$to"/>:&#160;</b>
+  <xsl:apply-templates mode="email-list" select="to/email"/><br/>
+ </xsl:if>
+ <xsl:if test="cc">
+  <b><xsl:value-of select="$cc"/>:&#160;</b>
+  <xsl:apply-templates mode="email-list" select="cc"/><br/>
+ </xsl:if>
+ <xsl:if test="threading/inreplyto">
+  <b><xsl:value-of select="$old-topics"/>:&#160;</b>
+  <xsl:apply-templates mode="post-description-list" select="threading/inreplyto/summary"/><br/>
+ </xsl:if>
+ <xsl:if test="threading/drift">
+  <b><xsl:value-of select="$new-topics"/>:&#160;</b>
+  <xsl:apply-templates mode="post-description-list" select="threading/drift/summary"/><br/>
+ </xsl:if>
+ <b><xsl:value-of select="$subject"/>:&#160;</b>
+ <xsl:value-of select="summary/subject"/><br/>
 </xsl:template>
 
 
@@ -92,6 +79,7 @@
  <i class="quote"><xsl:apply-templates mode="body"/></i>
 </xsl:template>
 <xsl:template mode="body" match="art">
+ <br/><!-- browsers ignore the first br before a pre, so we need one more -->
  <pre class="art"><xsl:apply-templates mode="body"/></pre>
 </xsl:template>
 <xsl:template mode="body" match="br">
@@ -116,7 +104,8 @@
     </td>
     <td align="left" width="50%">
      <a href="{prev/summary/id}.{$ext}#{list/id}">
-      <xsl:value-of select="prev/summary/subject"/>
+      <xsl:value-of select="substring(prev/summary/subject,0,40)"/>
+      <xsl:if test="string-length(prev/summary/subject) &gt; 40">&#x2026;</xsl:if>
      </a>
     </td>
    </xsl:when>
