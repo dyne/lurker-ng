@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.20 2002-08-24 18:11:13 terpstra Exp $
+/*  $Id: append.c,v 1.21 2002-08-24 19:15:39 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -31,7 +31,7 @@
 #include "private.h"
 
 /* #define DEBUG 1 */
-#define PROFILE 1
+/* #define PROFILE 1 */
 
 /* If you need appends larger than 2Gb you must define this: */
 /* #define DISABLE_MMAP 1 */
