@@ -1,4 +1,4 @@
-/*  $Id: mindex.c,v 1.3 2002-02-10 10:52:17 terpstra Exp $
+/*  $Id: mindex.c,v 1.4 2002-02-10 23:57:59 terpstra Exp $
  *  
  *  mindex.c - output results from a mindex/ lookup
  *  
@@ -29,10 +29,11 @@
 int lu_mindex_handler(char* parameter)
 {
 	FILE* xml;
-	int i, j;
+	int i, j, fragment;
 	
 	char	buf[4096];
 	size_t	got;
+	size_t  get;
 	
 	if (sscanf(parameter, "%d@%d", &i, &j) != 2)
 	{
@@ -52,11 +53,27 @@ int lu_mindex_handler(char* parameter)
 	if ((xml = lu_render_open(parameter)) == 0)
 		return -1;
 	
-	do
+	fragment = 0;
+	while (1)
 	{
-		got = fread(&buf[0], 1, sizeof(buf), lu_server_link);
+		if (fragment == 0)
+		{
+			if (fscanf(lu_server_link, "%d", &fragment) != 1)
+				break;
+			if (fgetc(lu_server_link) != '\n')
+				break;
+			if (fragment == 0)
+				break;
+		}
+		
+		get = sizeof(buf);
+		if (get > fragment) get = fragment;
+		
+		got = fread(&buf[0], 1, get, lu_server_link);
 		fwrite(&buf[0], 1, got, xml);
-	} while (got > 0);
+		
+		fragment -= got;
+	}
 	
 	return lu_render_close(xml);
 }
