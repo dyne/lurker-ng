@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.22 2003-06-06 12:24:07 terpstra Exp $
+/*  $Id: main.cpp,v 1.23 2003-06-06 15:35:02 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -117,7 +117,7 @@ int index(const DwString& msg, long batch, bool check)
 	
 	time_t import = time(0);
 	time_t arrival;
-
+	
 	const char* d = msg.c_str();
 	if (d[0] == 'F' && d[1] == 'r' && d[2] == 'o' && d[3] == 'm' && d[4] == ' ')
 	{
@@ -126,7 +126,12 @@ int index(const DwString& msg, long batch, bool check)
 		while (*d && *d != ' ' && *d != '\t') ++d;
 		while (*d && (*d == ' ' || *d == '\t')) ++d;
 		
-		arrival = get_date(d, &import);
+		const char* e;
+		for (e = d; *e; ++e) if (*e == '\r' || *e == '\n') break;
+		
+		string date(d, long(e)-long(d));
+		
+		arrival = get_date(date.c_str(), &import);
 	}
 	else
 	{
