@@ -1,4 +1,4 @@
-/*  $Id: message.c,v 1.5 2002-02-04 23:02:40 terpstra Exp $
+/*  $Id: message.c,v 1.6 2002-02-04 23:51:36 terpstra Exp $
  *  
  *  message.c - output results from a message/ lookup
  *  
@@ -61,35 +61,35 @@ static void write_xml_escaped(
 	 * to be escaped with predefined entities.  Write in
 	 * segments.
 	 */
-	start = buf;
-	for (end = buf + length; buf < end; ++buf)
+	end = buf + length;
+	for (start = buf; buf != end; ++buf)
 	{
 		switch (*buf) 
 		{
 		case '\'':
 			fwrite(start, 1, buf - start, out);
 			fputs("&apos;", out);
-			start = ++buf;
+			start = buf+1;
 			break;
 		case '<':
 			fwrite(start, 1, buf - start, out);
 			fputs("&lt;", out);
-			start = ++buf;
+			start = buf+1;
 			break;
 		case '>':
 			fwrite(start, 1, buf - start, out);
 			fputs("&gt;", out);
-			start = ++buf;
+			start = buf+1;
 			break;
 		case '"':
 			fwrite(start, 1, buf - start, out);
 			fputs("&quot;", out);
-			start = ++buf;
+			start = buf+1;
 			break;
 		case '&':
 			fwrite(start, 1, buf - start, out);
 			fputs("&amp;", out);
-			start = ++buf;
+			start = buf+1;
 			break;
 		}
 	}
@@ -347,8 +347,7 @@ int lu_message_handler(char* parameter)
 	if (email->env->message_id)
 	{
 		fputs(" <message-id>", xml);
-		write_xml_escaped(email->env->message_id,
-			strlen(email->env->message_id), xml);
+		write_xml_escaped_str(email->env->message_id, xml);
 		fputs("</message-id>\n", xml);
 	}
 	
