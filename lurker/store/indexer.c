@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.4 2002-02-10 03:41:53 terpstra Exp $
+/*  $Id: indexer.c,v 1.5 2002-02-10 04:19:08 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -157,7 +157,7 @@ static int my_indexer_index_hunk(
 	const char* eos,
 	const char* prefix)
 {
-	char out[200];
+	char out[LU_KEYWORD_LEN+1];
 	char* w;
 	char* e;
 	
@@ -295,7 +295,7 @@ static void my_indexer_traverse(
 static const char* my_indexer_cleanup_id(
 	const char* id)
 {
-	static char buf[100];
+	static char buf[80];
 	char* w;
 	char* e;
 	

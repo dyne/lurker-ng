@@ -1,4 +1,4 @@
-/*  $Id: btree.h,v 1.1 2002-02-10 03:24:29 terpstra Exp $
+/*  $Id: btree.h,v 1.2 2002-02-10 04:19:08 terpstra Exp $
  *  
  *  btree.h - Knows how manage a binary search tree
  *  
@@ -127,7 +127,7 @@ inline int my_btree_##PREFIX##_right_grown(RECTYPE* n) \
 					break; \
 				\
 				default: \
-					exit(1); \
+					assert(0); \
 				} \
 				\
 				TABLE[TABLE[TABLE[*n].right].left].skew = \
@@ -144,7 +144,7 @@ inline int my_btree_##PREFIX##_right_grown(RECTYPE* n) \
 		return LU_BTREE_BALANCE; \
 	\
 	default: \
-		exit(1); \
+		assert(0); \
 		return LU_BTREE_OK; \
 	} \
 } \
@@ -198,7 +198,7 @@ inline int my_btree_##PREFIX##_left_grown(RECTYPE* n) \
 					break; \
 				\
 				default: \
-					exit(1); \
+					assert(0); \
 				} \
 				\
 				TABLE[TABLE[TABLE[*n].left].right].skew = \
@@ -215,7 +215,7 @@ inline int my_btree_##PREFIX##_left_grown(RECTYPE* n) \
 		return LU_BTREE_BALANCE; \
 	\
 	default: \
-		exit(1); \
+		assert(0); \
 		return LU_BTREE_OK; \
 	} \
 } \
