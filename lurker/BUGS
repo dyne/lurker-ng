@@ -1,3 +1,7 @@
+Suggestion: errordocument failthrough configable
+Suggestion: include documentation in a mbox format in default lurker.com
+Suggestion: base path mboxes are relative to
+
 BUGS:
 2	Seperate lists can receive the same message.
 		-> If we implement insertion earlier in the id list, we
