@@ -59,25 +59,31 @@
 
 <xsl:template name="navigate-fields">
  <div align="right">
+  
+  <!-- Draw the prev link - otherwise, draw an image with the same size -->
   <xsl:if test="threading/prev">
    <xsl:apply-templates select="threading/prev" mode="snippet"/>
-   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
   </xsl:if>
   <xsl:if test="not(threading/prev)">
-   <img src="../imgs/a.png"/>
+   <img src="../imgs/a.png" alt="."/>
   </xsl:if>
+
+  <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
+
   <xsl:if test="reply">
    <a href="mailto:{reply}">(<xsl:value-of select="$reply"/>)</a>
   </xsl:if>
   <xsl:if test="not(reply)">
    <span class="na">(<xsl:value-of select="$reply"/>)</span>
   </xsl:if>
+  <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
+
+  <!-- Draw the next link - otherwise, draw an image with the same size -->
   <xsl:if test="threading/next">
-   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
    <xsl:apply-templates select="threading/next" mode="snippet"/>
   </xsl:if>
   <xsl:if test="not(threading/next)">
-   <img src="../imgs/a.png"/>
+   <img src="../imgs/a.png" alt="."/>
   </xsl:if>
  </div>
  <hr/>
