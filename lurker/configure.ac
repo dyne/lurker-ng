@@ -9,8 +9,8 @@ AC_SEARCH_HEADER_DIRS(
   [/usr/local/include],,
   [AC_MSG_ERROR(Need iconv.h to compile)])
 
-AC_SEARCH_LIBS(iconv,
-  [iconv],,
+AC_SEARCH_EXPRESSION_LIBS([iconv_t ic = iconv_open("ISO-8859-1", "UTF-8")],
+  [iconv], [#include <iconv.h>],,
   [AC_MSG_ERROR(Need iconv to link)])
 
 AC_ARG_WITH([mimelib-local],   AC_HELP_STRING([--with-mimelib-local],

@@ -26,6 +26,32 @@ AS_IF([test AS_VAR_GET(ac_Header) != no],
 AS_VAR_POPDEF([ac_Header])dnl
 ])
 
+# AC_SEARCH_EXPRESSION_LIBS(EXPR, SEARCH-LIBS, [INCLUDES]
+#                          [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND],
+#                          [OTHER-LIBRARIES])
+AC_DEFUN([AC_SEARCH_EXPRESSION_LIBS],
+[AS_VAR_PUSHDEF([ac_Expression], [ac_cv_expression_$1])dnl
+AC_CACHE_CHECK([how $1 links], ac_Expression,
+[ac_expression_search_save_LIBS=$LIBS
+AS_VAR_SET(ac_Expression, no)
+AC_LINK_IFELSE([AC_LANG_PROGRAM([$3],[$1])],
+               [AS_VAR_SET(ac_Expression, "standard")])
+if test "AS_VAR_GET(ac_Expression)" = "no"; then
+  for ac_lib in $2; do
+    LIBS="-l$ac_lib $6 $ac_expression_search_save_LIBS"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([$3], [$1])],
+                   [AS_VAR_SET(ac_Expression, -l$ac_lib)
+break])
+  done
+fi
+LIBS=$ac_expression_search_save_LIBS])
+AS_IF([test "AS_VAR_GET(ac_Expression)" != "no"],
+  [test "AS_VAR_GET(ac_Expression)" = "standard" || LIBS="AS_VAR_GET(ac_Expression) $LIBS"
+  $4],
+      [$5])dnl
+AS_VAR_POPDEF([ac_Expression])dnl
+])
+
 # AC_SEARCH_CLASS_LIBS(CLASS, SEARCH-LIBS, [INCLUDES]
 #                       [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND],
 #                       [OTHER-LIBRARIES])
