@@ -78,6 +78,8 @@ a img:hover { background-color:#55F }
 table {
   border-collapse: collapse;
   border: hidden;
+  border-width: 0;
+  border-spacing: 0;
 }
 
 tr { vertical-align:top; text-align:left; font-family: Arial, sans-serif; padding:0 }
