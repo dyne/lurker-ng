@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.19 2002-06-20 14:54:30 terpstra Exp $
+/*  $Id: breader.c,v 1.20 2002-06-20 14:57:59 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -82,7 +82,7 @@
 
 /* This is how many records about offset information we keep.
  */
-define LU_BOUNDARY_RECORDS	256
+#define LU_BOUNDARY_RECORDS	256
 
 /* This is how many cache records we keep for each keyword. Each one of them
  * holds LU_PULL_AT_ONCE records.
