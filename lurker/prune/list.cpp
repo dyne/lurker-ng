@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.1 2003-06-11 01:33:00 terpstra Exp $
+/*  $Id: list.cpp,v 1.2 2003-06-11 22:52:09 terpstra Exp $
  *  
  *  mindex.cpp - Cleanup after a mindex/ command
  *  
@@ -70,7 +70,7 @@ void PTable::calc_list(KSI ks)
 		return;
 	}
 	
-	string query(ks->first, 7, string::npos);
+	string query(ks->first, 5, string::npos);
 	string::size_type at = query.find('.');
 	if (at == string::npos)
 	{
