@@ -52,7 +52,7 @@
 </xsl:template>
 
 
-<!-- Format a message request -->
+<!-- Format a splash request -->
 <xsl:template match="splash">
  <html lang="{$lang}">
   <head>
@@ -63,22 +63,16 @@
    <div class="header">
     <table class="external">
      <tr>
-      <td width="100%">
-       <h1>
-        <xsl:value-of select="$front-page"/>
-       </h1>
-      </td>
+      <td width="100%"><h1><xsl:value-of select="$front-page"/></h1></td>
       <td nowrap="NOWRAP">
-       <h1>
-        <xsl:apply-templates mode="splash-link" select="server"/>
-       </h1>
+       <h1><xsl:apply-templates mode="splash-link" select="server"/></h1>
       </td>
      </tr>
     </table>
     
     <table class="navigation">
      <tr><th colspan="3"><xsl:value-of select="$search-menu"/></th></tr>
-     <tr><td width="50%">&#160;</td><td>
+     <tr><td width="50%">&#160;</td><td nowrap="NOWRAP">
       <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">
        <input type="hidden" name="doc-url" value="{server/doc-url}"/>
        <input type="hidden" name="format" value="{$ext}"/>

@@ -5,18 +5,18 @@
 <!-- xsl:import href="lang.xsl"/ -->
 <xsl:variable name="lang" select="'en'"/>
 
+<xsl:variable name="thread" select="'Thread'"/>
 <xsl:variable name="subject" select="'Subject'"/>
 <xsl:variable name="author" select="'Author'"/>
 <xsl:variable name="date" select="'Date'"/>
 <xsl:variable name="to" select="'To'"/>
 <xsl:variable name="cc" select="'CC'"/>
 
-<xsl:variable name="tree-context" select="'Thread Context'"/>
+<xsl:variable name="tree-context" select="'This message is part of a thread which may be navigated here:'"/>
 <xsl:variable name="full-tree" select="'the complete thread tree sorted by date'"/>
-<xsl:variable name="appears-in" select="'Message appears on the following lists:'"/>
+<xsl:variable name="appears-in" select="'This message was posted on all of the following mailing lists:'"/>
 <xsl:variable name="list-info" select="'Mailing List Info'"/>
 <xsl:variable name="near-message" select="'Nearby Messages'"/>
-<xsl:variable name="post-new" select="'Post New Thread'"/>
 <xsl:variable name="old-topics" select="'Old-Topics'"/>
 <xsl:variable name="new-topics" select="'New-Topics'"/>
 <xsl:variable name="raw-email" select="'Entire message'"/>
@@ -28,6 +28,17 @@
 <xsl:variable name="all-lists" select="'Any mailing list'"/>
 <xsl:variable name="all-groups" select="'Any mailing list group'"/>
 <xsl:variable name="search" select="'Search'"/>
+
+<xsl:variable name="jump-to-date" select="'Jump to those messages within this mailing list which are nearest to this date:'"/>
+<xsl:variable name="search-list" select="'Search for messages within this mailing list which contain these keywords:'"/>
+<xsl:variable name="jump" select="'Jump'"/>
+<xsl:variable name="use-special-word-list" select="'Use the keyword '"/>
+<xsl:variable name="to-search-list" select="' to restrict your search to this mailing list.'"/>
+<xsl:variable name="post-new" select="'Post New Thread'"/>
+<xsl:variable name="subscribe" select="'Visit Subscription Page'"/>
+<xsl:variable name="recent-poster" select="'Most Recent Poster'"/>
+<xsl:variable name="post-count" select="'# Posts'"/>
+<xsl:variable name="activity-chart" select="'Thread Activity'"/>
 
 <xsl:variable name="jan">January</xsl:variable>
 <xsl:variable name="feb">February</xsl:variable>

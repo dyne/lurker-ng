@@ -146,24 +146,16 @@
     <table class="external">
      <tr>
       <td width="100%">
-       <h1>
-        <xsl:value-of select="summary/subject"/>
-       </h1>
+       <h1><xsl:value-of select="summary/subject"/></h1>
       </td>
       <td nowrap="NOWRAP">
-       <h1>
-        <xsl:apply-templates mode="splash-link" select="server"/>
-       </h1>
+       <h1><xsl:apply-templates mode="splash-link" select="server"/></h1>
       </td>
      </tr>
     </table>
     
     <table class="navigation">
-     <tr>
-      <th colspan="2">
-       <xsl:value-of select="$tree-context"/>
-      </th>
-     </tr>
+     <tr><th colspan="2"><xsl:value-of select="$tree-context"/></th></tr>
      <tr>
       <td nowrap="NOWRAP">
        <xsl:apply-templates mode="tree" select="threading/snippet/tree[position()=1]"/>
