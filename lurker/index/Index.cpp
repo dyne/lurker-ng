@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.4 2003-04-24 12:50:41 terpstra Exp $
+/*  $Id: Index.cpp,v 1.5 2003-04-25 15:12:31 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -256,11 +256,10 @@ int Index::index_id(time_t server)
 
 	if (messageId.length() && writer->insert(
 		LU_KEYWORD
-		LU_BACKWARD
 		LU_KEYWORD_MESSAGE_ID + 
 		messageId + 
 		'\0' + 
-		id.serialize_backward()) != 0)
+		id.raw()) != 0)
 	{
 		cerr << "Failed to insert message id keyword!" << endl;
 		return -1;
@@ -271,7 +270,7 @@ int Index::index_id(time_t server)
 
 int Index::index_summary()
 {
-	string prefix = LU_SUMMARY + id.serialize_forward();
+	string prefix = LU_SUMMARY + id.raw();
 	
 	if (message.Headers().HasSubject())
 	{
@@ -313,18 +312,16 @@ int Index::index_summary()
 int Index::index_threading()
 {
 	string shash = subject_hash(subject.c_str());
-	string prefix = LU_THREADING + shash + '\0';
 	string suffix;
 	
 	unsigned char hash[4];
 	
 	if (writer->insert(
 		LU_KEYWORD
-		LU_BACKWARD
 		LU_KEYWORD_THREAD + 
 		shash + 
 		'\0' + 
-		id.serialize_backward()) != 0)
+		id.raw()) != 0)
 	{
 		cerr << "Failed to insert threading keyword" << endl;
 		return -1;
@@ -359,11 +356,11 @@ int Index::index_threading()
 		}
 	}
 	
-	string f = prefix + LU_FORWARD  + id.serialize_forward () + suffix;
-	string b = prefix + LU_BACKWARD + id.serialize_backward() + suffix;
-	
-	if (writer->insert(f) != 0 ||
-	    writer->insert(b) != 0)
+	if (writer->insert(
+		LU_THREADING
+		+ shash + '\0'
+		+ id.raw()
+		+ suffix) != 0)
 	{
 		cerr << "Failed to insert threading keys" << endl;
 		return -1;
@@ -376,10 +373,10 @@ int feed_writer(const char* keyword, void* arg)
 {
 	Index* i = (Index*)arg;
 	
-	string x(LU_KEYWORD LU_BACKWARD);
+	string x(LU_KEYWORD);
 	x += keyword;
 	x += '\0';
-	x += i->id.serialize_backward();
+	x += i->id.raw();
 	
 	return i->writer->insert(x);
 }
@@ -389,19 +386,10 @@ int Index::index_control()
 	bool ok = true;
 	if (writer->insert(
 		LU_KEYWORD 
-		LU_BACKWARD 
 		LU_KEYWORD_LIST +
 		list.mbox + 
 		'\0' + 
-		id.serialize_backward()) != 0) ok = false;
-	
-	if (writer->insert(
-		LU_KEYWORD
-		LU_FORWARD
-		LU_KEYWORD_LIST +
-		list.mbox + 
-		'\0' + 
-		id.serialize_forward()) != 0) ok = false;
+		id.raw()) != 0) ok = false;
 	
 	if (author_email.length())
 	{
@@ -434,11 +422,10 @@ int Index::index_control()
 		for (vector<string>::iterator i = ids.begin(); i != ids.end(); ++i)
 			if (writer->insert(
 				LU_KEYWORD 
-				LU_BACKWARD 
 				LU_KEYWORD_REPLY_TO +
 				*i + 
 				'\0' + 
-				id.serialize_backward()) != 0) ok = false;
+				id.raw()) != 0) ok = false;
 	}
 	
 #if 0	// this is questionable...
@@ -449,11 +436,10 @@ int Index::index_control()
 		for (vector<string>::iterator i = ids.begin(); i != ids.end(); ++i)
 			if (writer->insert(
 				LU_KEYWORD 
-				LU_BACKWARD 
 				LU_KEYWORD_REPLY_TO +
 				*i + 
 				'\0' + 
-				id.serialize_backward()) != 0) ok = false;
+				id.raw()) != 0) ok = false;
 	}
 #endif
 	

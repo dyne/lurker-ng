@@ -1,4 +1,4 @@
-/*  $Id: Keys.h,v 1.2 2003-04-21 18:25:31 terpstra Exp $
+/*  $Id: Keys.h,v 1.3 2003-04-25 15:12:21 terpstra Exp $
  *  
  *  Keys.h - What prefixs various database keys
  *  
@@ -36,9 +36,6 @@ using std::vector;
 #define LU_KEYWORD	"k"
 #define LU_SUMMARY	"s"
 
-#define LU_FORWARD	"f"
-#define LU_BACKWARD	"b"
-
 #define LU_MESSAGE_AUTHOR_EMAIL	'e'
 #define LU_MESSAGE_AUTHOR_NAME	'n'
 #define LU_MESSAGE_SUBJECT	's'
@@ -53,7 +50,6 @@ vector<string> extract_message_ids(const char* str);
  *   LU_THREADING 
  *   subject_hash 
  *   '\0'
- *   LU_FORWARD/BACKWARD
  *   message_id
  *   (reply_to_hash*)
  * 
@@ -68,7 +64,6 @@ vector<string> extract_message_ids(const char* str);
  *
  * Keyword:
  *  LU_KEYWORD
- *  LU_FORWARD/BACKWARD
  *  keyword
  *  '\0'
  *  mid
