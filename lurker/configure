@@ -3743,7 +3743,7 @@ EOF
 
 fi
 
-for ac_header in unistd.h fcntl.h io.h time.h sys/mman.h sys/time.h sys/file.h sys/fcntl.h errno.h syslog.h
+for ac_header in unistd.h fcntl.h io.h time.h sys/mman.h sys/time.h sys/file.h assert.h sys/fcntl.h errno.h syslog.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 echo "$as_me:3749: checking for $ac_header" >&5

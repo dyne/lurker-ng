@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.8 2002-01-26 08:52:40 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.9 2002-01-27 02:40:23 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -40,7 +40,7 @@ AC_C_INLINE
 AC_C_CHAR_UNSIGNED
 
 AC_HEADER_TIME
-AC_CHECK_HEADERS(unistd.h fcntl.h io.h time.h sys/mman.h sys/time.h sys/file.h sys/fcntl.h errno.h syslog.h)
+AC_CHECK_HEADERS(unistd.h fcntl.h io.h time.h sys/mman.h sys/time.h sys/file.h assert.h sys/fcntl.h errno.h syslog.h)
 
 AC_FUNC_ALLOCA
 AC_FUNC_MMAP

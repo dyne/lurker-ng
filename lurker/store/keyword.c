@@ -1,4 +1,4 @@
-/*  $Id: keyword.c,v 1.7 2002-01-27 01:47:27 terpstra Exp $
+/*  $Id: keyword.c,v 1.8 2002-01-27 02:40:23 terpstra Exp $
  *  
  *  keyword.c - manages a database for keyword searching
  *  
@@ -35,6 +35,14 @@
 
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
+#endif
+
+#ifdef HAVE_ASSERT_H
+#include <assert.h>
+#endif
+
+#ifndef assert
+#define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
 #endif
 
 #define DEBUG 1
@@ -151,12 +159,14 @@ static ssize_t lu_read_full(int fd, void* buf, size_t count, const char* msg)
 	{
 		did = read(fd, buf, count);
 		
-		if (did <= 0 && errno != EINTR)
+		if (did < 0 && errno != EINTR)
 		{
 			syslog(LOG_ERR, "%s keyword.flat: %s\n", 
 				msg, strerror(errno));
 			return -1;
 		}
+		
+		if (did == 0) return out;
 		
 		count -= did;
 		buf   += did;
@@ -318,8 +328,9 @@ static int lu_free_cell(off_t which, message_id msgs)
 	
 	while (1)
 	{
+		next_count = 0;
 		if (lu_sread(lu_keyword_fd, which + amount, &next_count, sizeof(message_id),
-			"detecting fragment on free") != sizeof(message_id))
+			"detecting fragment on free") == -1)
 		{
 			goto lu_free_cell_error0;
 		}
@@ -374,7 +385,7 @@ int lu_push_fragment_markers(off_t ind, message_id old, message_id new)
 	char		old_type = lu_cell_type(old);
 	char		new_type = lu_cell_type(new);
 	
-	amount = 1 << (old_type + 2);
+	amount = 1 << (new_type + 2);
 	amount *= sizeof(message_id);
 	while (new_type < old_type)
 	{
@@ -468,7 +479,8 @@ static int lu_locate_keyword(const char* keyword, off_t* out)
 	key.size = strlen(keyword);
 	
 	val.data = out;
-	val.size = sizeof(off_t);
+	val.ulen = sizeof(off_t);
+	val.flags = DB_DBT_USERMEM;
 	
 	error = lu_keyword_db->get(lu_keyword_db, 0, &key, &val, 0);
 	if (error == DB_NOTFOUND)
@@ -502,7 +514,7 @@ static int lu_reset_keyword(const char* keyword, off_t in)
 	val.data = &in;
 	val.size = sizeof(off_t);
 	
-	error = lu_keyword_db->get(lu_keyword_db, 0, &key, &val, 0);
+	error = lu_keyword_db->put(lu_keyword_db, 0, &key, &val, 0);
 	if (error)
 	{
 		syslog(LOG_ERR, "Writing keyword %s: %s\n", keyword, db_strerror(error));
@@ -595,7 +607,7 @@ static int lu_write_keyword_block(
 			
 			if (lu_reset_keyword(keyword, spot) != 0)
 			{
-				if (lu_free_cell(spot, count) != 0)
+				if (lu_free_cell(spot, new_records) != 0)
 					syslog(LOG_ERR, "Permanently lost storage\n");
 				
 				return -1;
@@ -1331,7 +1343,86 @@ int lu_test_index()
 #ifndef DEBUG
 	return 0;
 #else
-	printf("Running test on indexing methods...\n");
+	int stat;
+	off_t o1, o2, o3;
+	
+	printf("Running test on indexing methods... (must wipe db to succeed)\n");
+	
+	printf("  lu_cell_type: "); fflush(stdout);
+	assert(lu_cell_type( 0) == 0);
+	assert(lu_cell_type( 3) == 0);
+	assert(lu_cell_type( 4) == 1);
+	assert(lu_cell_type( 7) == 1);
+	assert(lu_cell_type( 8) == 2);
+	assert(lu_cell_type(15) == 2);
+	assert(lu_cell_type(16) == 3);
+	assert(lu_cell_type(31) == 3);
+	assert(lu_cell_type(32) == 4);
+	assert(lu_cell_type(lu_kw_invalid) == sizeof(message_id)*8-2);
+	assert(lu_cell_type(lu_kw_invalid>>1) == sizeof(message_id)*8-3);
+	printf("ok\n");
+	
+	printf("  lu_create_empty_record: "); fflush(stdout);
+	stat = lu_create_empty_record(1, &o1); assert(stat == 0);
+	stat = lu_create_empty_record(2, &o2); assert(stat == 0);
+	stat = lu_create_empty_record(0, &o3); assert(stat == 0);
+	assert(o2 == o1+8*sizeof(message_id));
+	assert(o3 == o2+16*sizeof(message_id));
+	printf("ok\n");
+	
+	printf("  lu_free_cell: "); fflush(stdout);
+	stat = lu_free_cell(o1, 7);  assert(stat == 0);
+	stat = lu_free_cell(o2, 15); assert(stat == 0);
+	stat = lu_free_cell(o3, 3);  assert(stat == 0);
+	printf("ok\n");
+	
+	printf("  lu_pop_free_list: "); fflush(stdout);
+	stat = lu_pop_free_list(2, &o1); assert(stat == 0);
+	stat = lu_pop_free_list(2, &o3); assert(stat == 0);
+	assert(o1 == o2);
+	assert(o3 == 0);
+	printf("ok\n");
+	
+	printf("  lu_push_fragment_markers: "); fflush(stdout);
+	stat = lu_push_fragment_markers(o1, 15, 0); assert(stat == 0);
+	stat = lu_free_cell(o1, 0); assert(stat == 0);
+	stat = lu_pop_free_list(2, &o2); assert(stat == 0);
+	assert(o2 == o1);
+	stat = lu_free_cell(o2, 0);
+	printf("ok\n");
+	
+	printf("  lu_allocate_cell: "); fflush(stdout);
+	stat = lu_allocate_cell(2, &o2); assert(stat == 0);
+	assert(o1 == o2);
+	stat = lu_allocate_cell(2, &o3); assert(stat == 0);
+	assert(o3 == o1+20*sizeof(message_id));
+	stat = lu_free_cell(o2, 15); assert(stat == 0);
+	stat = lu_free_cell(o3, 15); assert(stat == 0);
+	stat = lu_pop_free_list(2, &o1); assert(stat == 0);
+	assert(o1 == o3);
+	stat = lu_pop_free_list(2, &o1); assert(stat == 0);
+	assert(o1 == o2);
+	stat = lu_pop_free_list(2, &o1); assert(stat == 0);
+	assert(o1 == 0);
+	stat = lu_free_cell(o2, 15); assert(stat == 0);
+	stat = lu_free_cell(o3, 15); assert(stat == 0);
+	printf("ok\n");
+	
+	printf("  lu_reset_keyword: "); fflush(stdout);
+	stat = lu_reset_keyword("babar", 42); assert(stat == 0);
+	stat = lu_reset_keyword("bzzr",  10); assert(stat == 0);
+	stat = lu_reset_keyword("babar", 30); assert(stat == 0);
+	printf("ok\n");
+	
+	printf("  lu_locate_keyword: "); fflush(stdout);
+	stat = lu_locate_keyword("baz", &o1); assert(stat == 0);
+	assert(o1 == 0);
+	stat = lu_locate_keyword("babar", &o1); assert(stat == 0);
+	assert(o1 == 30);
+	stat = lu_locate_keyword("bzzr", &o1); assert(stat == 0);
+	assert(o1 == 10);
+	printf("ok\n");
+	
 	return -1;
 #endif
 }

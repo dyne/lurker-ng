@@ -1,4 +1,4 @@
-/*  $Id: db.c,v 1.6 2002-01-23 07:33:12 terpstra Exp $
+/*  $Id: db.c,v 1.7 2002-01-27 02:40:23 terpstra Exp $
  *  
  *  db.c - manage the databases
  *  
@@ -142,7 +142,8 @@ ThreadSummary lu_read_tsummary(message_id tid)
 	key.data = &tid;
 	key.size = sizeof(tid);
 	val.data = &out;
-	val.size = sizeof(out);
+	val.ulen = sizeof(out);
+	val.flags = DB_DBT_USERMEM;
 	
 	/* Retrieve it from the database.
 	 */
@@ -435,7 +436,8 @@ int lu_sync_mbox()
 			dkey.size = sizeof(key);
 			
 			dval.data = &val;
-			dval.size = sizeof(val);
+			dval.ulen = sizeof(val);
+			dval.flags = DB_DBT_USERMEM;
 			
 			key.list = list->id;
 			key.mbox = mbox->id;

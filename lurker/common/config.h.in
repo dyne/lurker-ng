@@ -17,6 +17,9 @@
 /* Define if you have <alloca.h> and it should be used (not on Ultrix). */
 #undef HAVE_ALLOCA_H
 
+/* Define if you have the <assert.h> header file. */
+#undef HAVE_ASSERT_H
+
 /* Define if you have the <dirent.h> header file, and it defines `DIR'. */
 #undef HAVE_DIRENT_H
 
