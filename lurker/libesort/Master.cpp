@@ -1,4 +1,4 @@
-/*  $Id: Master.cpp,v 1.6 2003-05-07 15:43:13 terpstra Exp $
+/*  $Id: Master.cpp,v 1.7 2003-05-07 16:15:32 terpstra Exp $
  *  
  *  Master.cpp - Coordinate commit+read interface
  *  
@@ -143,12 +143,17 @@ int Master::commit()
 	// done with the buffer
 	memory.flush();
 	
-	// Delete useless files
+	// Queue useless files for delete
+	std::set<string> killIds;
 	for (View::Files::iterator zap = view.files.begin(); zap != kill; ++zap)
-		man.killSub(zap->id);
+		killIds.insert(zap->id);
 	
-	// Purge useless files from the View
+	// Purge useless files from the View (closes them)
 	view.files.erase(view.files.begin(), kill);
+	
+	// Now that they are closed, delete them
+	for (std::set<string>::iterator del = killIds.begin(); del != killIds.end(); ++del)
+		man.killSub(*del);
 	
 	// Move the transaction to a File; thus becoming a part of the view
 	int fd = scopedData.fd;

@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.8 2003-05-07 16:01:13 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.9 2003-05-07 16:15:31 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -313,17 +313,16 @@ void DbMan::unlock_database_rw()
 
 int DbMan::commit(const Parameters& p, const std::set<string>& nids)
 {
+	assert (dblock != -1); // must be lock_database_rw'd
+	
 	int ok = lock_snapshot_rw();
 	if (ok != 0) return ok;
-	
-	assert (dblock != -1); // must be lock_database_rw'd
 	
 	// make sure the new file is on stable storage
 	if (p.synced())
 		if (dirfd != -1) fsync(dirfd); // sync the directory
 	
-	if (fseek(dbfile, 0, SEEK_SET) != 0 ||
-	    ftruncate(fileno(dbfile), 0) != 0)
+	if (fseek(dbfile, 0, SEEK_SET) != 0)
 	{
 		unlock_snapshot_rw();
 		return -1;
@@ -339,7 +338,8 @@ int DbMan::commit(const Parameters& p, const std::set<string>& nids)
 	for (std::set<string>::const_iterator i = nids.begin(); i != nids.end(); ++i)
 		fprintf(dbfile, "%s\n", i->c_str());
 	
-	if (fflush(dbfile) != 0)
+	if (fflush(dbfile) != 0 ||
+	    ftruncate(fileno(dbfile), ftell(dbfile)) != 0)
 	{
 		unlock_snapshot_rw();
 		return -1;
