@@ -1,4 +1,4 @@
-/*  $Id: protocol.h,v 1.2 2002-02-04 01:03:23 terpstra Exp $
+/*  $Id: protocol.h,v 1.3 2002-02-10 08:20:26 terpstra Exp $
  *  
  *  protocol.h - What do we use to communicate
  *  
@@ -24,6 +24,7 @@
 
 #define LU_PROTO_ENDREQ		'\n'
 #define LU_PROTO_GETMSG		"getmsg "
+#define LU_PROTO_MINDEX		"mindex "
 
 typedef struct Lu_Proto_Message_T
 {
@@ -46,3 +47,6 @@ typedef struct Lu_Proto_Message_T
 					 * the connection closing.
 					 */
 } Lu_Proto_Message;
+
+/* Messages to a page */
+#define LU_PROTO_INDEX	20
