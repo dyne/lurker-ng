@@ -1,4 +1,4 @@
-/*  $Id: io.h,v 1.1.1.1 2002-01-21 00:03:06 terpstra Exp $
+/*  $Id: io.h,v 1.2 2002-01-26 07:53:16 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -61,6 +61,10 @@
 
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
+#endif
+
+#ifdef HAVE_SYS_FILE_H
+#include <sys/file.h>
 #endif
 
 #include <stdio.h>

@@ -83,7 +83,7 @@ AC_DEFUN(DB3_CHECK, [
     AC_TRY_COMPILE(
       [#include <db.h>],
       [
-#if DB_VERSION_MAJOR > 3 || (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2)
+#if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2
 	return 0;
 #else
 #error

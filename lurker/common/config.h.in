@@ -23,11 +23,20 @@
 /* Define if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
 
+/* Define if you have the `fcntl' function. */
+#undef HAVE_FCNTL
+
 /* Define if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
+/* Define if you have the `flock' function. */
+#undef HAVE_FLOCK
+
 /* Define if you have the `fork' function. */
 #undef HAVE_FORK
+
+/* Do we have getlk fnctl? */
+#undef HAVE_F_GETLK
 
 /* Define if you have the `getpagesize' function. */
 #undef HAVE_GETPAGESIZE
@@ -37,6 +46,9 @@
 
 /* Define if you have the <io.h> header file. */
 #undef HAVE_IO_H
+
+/* Define if you have the `lockf' function. */
+#undef HAVE_LOCKF
 
 /* Define if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
@@ -70,6 +82,9 @@
 
 /* Define if you have the <sys/fcntl.h> header file. */
 #undef HAVE_SYS_FCNTL_H
+
+/* Define if you have the <sys/file.h> header file. */
+#undef HAVE_SYS_FILE_H
 
 /* Define if you have the <sys/mman.h> header file. */
 #undef HAVE_SYS_MMAN_H
