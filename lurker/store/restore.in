@@ -1,0 +1,22 @@
+#! /bin/bash -e
+
+DBDIR=@DBDIR_expand@
+BINDIR=@BINDIR_expand@
+DB=$1
+
+if ! test -f "$DB"; then
+  echo "Usage: ./restore <backup-file>"
+fi
+
+cd $DBDIR
+
+ar sx $DB merge.raw mid.raw mbox.raw offset.raw summary.flat variable.flat
+$BINDIR/kapmake -b -k 80 -l 8 -s 2048 merge < merge.raw
+$BINDIR/kapmake -b -k 80 -l 4 -s 2048 mid   < mid.raw
+$BINDIR/kapmake -b -k 24 -l 8 -s 1024 mbox  < mbox.raw
+$BINDIR/kapmake -k 12 -r 8 offset < offset.raw
+rm merge.raw mid.raw mbox.raw offset.raw
+
+ar sx $DB keyword.raw
+$BINDIR/kapmake keyword < keyword.raw
+rm keyword.raw

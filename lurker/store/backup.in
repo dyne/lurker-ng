@@ -1,0 +1,20 @@
+#! /bin/bash -e
+
+DBDIR=@DBDIR_expand@
+BINDIR=@BINDIR_expand@
+DB=$1
+
+if test -z "$DB" -o -f "$DB"; then
+  echo "Usage: ./backup <new-backup-file>"
+fi
+
+cd $DBDIR
+
+$BINDIR/kapdump -b -k 80 -l 8 -s 2048 merge > merge.raw
+$BINDIR/kapdump -b -k 80 -l 4 -s 2048 mid   > mid.raw
+$BINDIR/kapdump -b -k 24 -l 8 -s 1024 mbox  > mbox.raw
+$BINDIR/kapdump -k 12 -r 8 offset > offset.raw
+$BINDIR/kapdump keyword > keyword.raw
+
+tar cf $DB merge.raw mid.raw mbox.raw offset.raw keyword.raw summary.flat variable.flat
+rm merge.raw mid.raw mbox.raw offset.raw keyword.raw

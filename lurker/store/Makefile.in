@@ -103,6 +103,7 @@ INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common -I${top_srcdir}/libkap
 REQUESTS = message mindex search splash mbox attach thread jump
 
 sbin_PROGRAMS = lurkerd
+db_SCRIPTS = backup restore
 
 EXTRA_DIST = Design
 
@@ -124,7 +125,7 @@ lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ../libkap/libkap.a ${LIBICO
 subdir = store
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = backup restore
 sbin_PROGRAMS = lurkerd$(EXEEXT)
 PROGRAMS = $(sbin_PROGRAMS)
 
@@ -136,6 +137,8 @@ am_lurkerd_OBJECTS = config.$(OBJEXT) decode.$(OBJEXT) md5.$(OBJEXT) \
 lurkerd_OBJECTS = $(am_lurkerd_OBJECTS)
 lurkerd_DEPENDENCIES = ../common/libcommon.a ../libkap/libkap.a
 lurkerd_LDFLAGS =
+SCRIPTS = $(db_SCRIPTS)
+
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
@@ -156,7 +159,7 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
 DIST_SOURCES = $(lurkerd_SOURCES)
-DIST_COMMON = Makefile.am Makefile.in
+DIST_COMMON = Makefile.am Makefile.in backup.in restore.in
 SOURCES = $(lurkerd_SOURCES)
 
 all: all-am
@@ -170,6 +173,10 @@ Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.s
 	cd $(top_builddir) && \
 	  CONFIG_HEADERS= CONFIG_LINKS= \
 	  CONFIG_FILES=$(subdir)/$@ $(SHELL) ./config.status
+backup: $(top_builddir)/config.status backup.in
+	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= CONFIG_LINKS= $(SHELL) ./config.status
+restore: $(top_builddir)/config.status restore.in
+	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= CONFIG_LINKS= $(SHELL) ./config.status
 install-sbinPROGRAMS: $(sbin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(sbindir)
@@ -196,6 +203,27 @@ clean-sbinPROGRAMS:
 lurkerd$(EXEEXT): $(lurkerd_OBJECTS) $(lurkerd_DEPENDENCIES) 
 	@rm -f lurkerd$(EXEEXT)
 	$(LINK) $(lurkerd_LDFLAGS) $(lurkerd_OBJECTS) $(lurkerd_LDADD) $(LIBS)
+install-dbSCRIPTS: $(db_SCRIPTS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(dbdir)
+	@list='$(db_SCRIPTS)'; for p in $$list; do \
+	  f="`echo $$p|sed '$(transform)'`"; \
+	  if test -f $$p; then \
+	    echo " $(INSTALL_SCRIPT) $$p $(DESTDIR)$(dbdir)/$$f"; \
+	    $(INSTALL_SCRIPT) $$p $(DESTDIR)$(dbdir)/$$f; \
+	  elif test -f $(srcdir)/$$p; then \
+	    echo " $(INSTALL_SCRIPT) $(srcdir)/$$p $(DESTDIR)$(dbdir)/$$f"; \
+	    $(INSTALL_SCRIPT) $(srcdir)/$$p $(DESTDIR)$(dbdir)/$$f; \
+	  else :; fi; \
+	done
+
+uninstall-dbSCRIPTS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(db_SCRIPTS)'; for p in $$list; do \
+	  f="`echo $$p|sed '$(transform)'`"; \
+	  echo " rm -f $(DESTDIR)$(dbdir)/$$f"; \
+	  rm -f $(DESTDIR)$(dbdir)/$$f; \
+	done
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -290,10 +318,10 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(PROGRAMS) $(SCRIPTS)
 
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(sbindir)
+	$(mkinstalldirs) $(DESTDIR)$(sbindir) $(DESTDIR)$(dbdir)
 
 install: install-am
 install-exec: install-exec-am
@@ -335,7 +363,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-data-local
+install-data-am: install-data-local install-dbSCRIPTS
 
 install-exec-am: install-sbinPROGRAMS
 
@@ -353,18 +381,20 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-compile mostlyclean-generic
 
-uninstall-am: uninstall-info-am uninstall-local uninstall-sbinPROGRAMS
+uninstall-am: uninstall-dbSCRIPTS uninstall-info-am uninstall-local \
+	uninstall-sbinPROGRAMS
 
 .PHONY: GTAGS all all-am check check-am clean clean-generic \
 	clean-sbinPROGRAMS distclean distclean-compile distclean-depend \
 	distclean-generic distclean-tags distdir dvi dvi-am info \
 	info-am install install-am install-data install-data-am \
-	install-data-local install-exec install-exec-am install-info \
-	install-info-am install-man install-sbinPROGRAMS install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic tags uninstall uninstall-am \
-	uninstall-info-am uninstall-local uninstall-sbinPROGRAMS
+	install-data-local install-dbSCRIPTS install-exec \
+	install-exec-am install-info install-info-am install-man \
+	install-sbinPROGRAMS install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic tags \
+	uninstall uninstall-am uninstall-dbSCRIPTS uninstall-info-am \
+	uninstall-local uninstall-sbinPROGRAMS
 
 
 install-data-local:
