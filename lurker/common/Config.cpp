@@ -1,4 +1,4 @@
-/*  $Id: Config.cpp,v 1.9 2003-06-04 16:24:07 terpstra Exp $
+/*  $Id: Config.cpp,v 1.10 2003-06-04 16:27:53 terpstra Exp $
  *  
  *  Config.cpp - Knows how to load the config file
  *  
@@ -81,7 +81,7 @@ int Config::load(const string& file)
 	}
 	
 	string dir;
-	string::size_type x = file.find('/');
+	string::size_type x = file.rfind('/');
 	if (x != string::npos) dir.assign(file, 0, x+1);
 	
 	string line;
