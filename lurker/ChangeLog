@@ -11,6 +11,7 @@ v0.1d:
 	Reintegrated the read buffer into libkap -> faster searches
 	mmap is used for .append files to allow async writes
 	We preallocate storage for append to prevent wasted writes
+	Threads can span 3 months instead of 1
 
 v0.1c:
 	Added libkap which completely replaces all of libdb3 and flatfile

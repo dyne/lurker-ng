@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.32 2002-07-12 19:02:00 terpstra Exp $
+/*  $Id: summary.c,v 1.33 2002-07-19 20:36:45 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -49,12 +49,10 @@
 
 #define LU_SQUISHY_MAX	80
 
-/* By default, if two messages with similar subject arrive within 14 days
- * on the same mailing list, we consider them the same thread. If they have
- * the same squishy subject and a reply-to linkage, we may merge threads
- * at that time.
+/* By default, if two messages with similar subject arrive within 90 days,
+ * we consider them the same thread. 
  */
-#define LU_THREAD_OVERLAP_TIME	60*60*24*30
+#define LU_THREAD_OVERLAP_TIME	60*60*24*90
 
 /*------------------------------------------------ Private global vars */
 
