@@ -110,7 +110,7 @@
   <input type="hidden" name="doc-url" value="{server/doc-url}"/>
   <input type="hidden" name="format" value="{$ext}"/>
   <input type="text" name="query" class="longtext"/>
-  <input type="submit" name="submit" value="{$search}!"/>
+  <input type="submit" name="submit" value="{$search}"/>
  <hr id="searchHr"/>
   <table id="searchTable">
    <tr><th><xsl:value-of select="$subject"/></th>

@@ -15,7 +15,7 @@
    <xsl:with-param name="date" select="row/summary/id"/>
   </xsl:call-template>
   &#160;&#160;
-  <input type="submit" value="Go!"/> ]
+  <input type="submit" value="{$jump}"/> ]
  </form>
 </xsl:template>
 
@@ -70,7 +70,7 @@
   <input type="hidden" name="doc-url" value="{server/doc-url}"/>
   <input type="hidden" name="format"  value="{$ext}"/>
   <input type="text"   name="query"   value="ml:{list/id} " class="longtext"/>
-  <input type="submit" name="submit"  value="{$search}!"/><br/>
+  <input type="submit" name="submit"  value="{$search}"/><br/>
 
   <xsl:value-of select="$useMl1"/>
   <b>ml:<xsl:value-of select="list/id"/></b>

@@ -44,7 +44,8 @@
  <xsl:variable name="splash">Front Page</xsl:variable>
  <xsl:variable name="threading">Tree</xsl:variable>
  <xsl:variable name="lists">Mailing-Lists</xsl:variable>
- <xsl:variable name="search">Search</xsl:variable>
+ <xsl:variable name="search">Search!</xsl:variable>
+ <xsl:variable name="jump">Jump!</xsl:variable>
 
  <xsl:variable name="all-da">Sun-Sat</xsl:variable>
  <xsl:variable name="sun">Sunday</xsl:variable>

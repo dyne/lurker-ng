@@ -6,7 +6,7 @@
 
 <!-- Jump to useful dates -->
 <xsl:variable name="last-date">20380101.000000.00000000</xsl:variable>
-<xsl:variable name="jump-date">20040101.000000</xsl:variable>
+<xsl:variable name="jump-date">20040101.000000.00000000</xsl:variable>
 <xsl:variable name="first-date">19700101.000001.00000000</xsl:variable>
 
 <!-- Truncate long strings -->
@@ -68,8 +68,8 @@
 <xsl:template name="date-fields">
  <xsl:param name="date"/>
  
- <input type="hidden" name="sec" value="59"/>
- <input type="hidden" name="min" value="59"/>
+ <input type="hidden" name="sec" value="substring($date,14,2)"/>
+ <input type="hidden" name="min" value="substring($date,12,2)"/>
  <select name="hour">
   <xsl:call-template name="hour-range">
    <xsl:with-param name="start">0</xsl:with-param>
