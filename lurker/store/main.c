@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.42 2002-09-30 15:39:37 terpstra Exp $
+/*  $Id: main.c,v 1.43 2002-10-06 21:31:20 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -348,7 +348,6 @@ int main(int argc, char** argv)
 	signal(SIGBUS,  &lu_parachute);
 	signal(SIGABRT, &lu_parachute);
 	signal(SIGFPE,  &lu_parachute);
-	signal(SIGPIPE, &lu_parachute);
 #endif
 	
 	if (my_main_open() != 0)
