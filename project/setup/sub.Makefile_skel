@@ -1,0 +1,30 @@
+D      := @DIR@
+TOPDIR := @TOPDIR@
+
+MKOPTS := -r -R
+MKTOP  := $(MKOPTS) -C $(TOPDIR) -f .top.mk
+
+all:	noop
+	$(MAKE) $(MKTOP) $D/all
+
+# The noop makes us depend on something.
+# That makes us more important than builtin rules.
+# Since we can, lets make to support foo/../../foo/../bar :-)
+%:	noop
+	@if echo "$(@D)" | grep -qv "\.\."; then \
+		echo $(MAKE) $(MKTOP) $D/$@; \
+		$(MAKE) $(MKTOP) $D/$@; \
+	else \
+		echo $(MAKE) $(MKOPTS) -C $(@D) -f Makefile $(@F); \
+		$(MAKE) $(MKOPTS) -C $(@D) -f Makefile $(@F); \
+	fi
+
+# This command must do something or else make will ignore it
+noop:
+	@true
+
+# This turns off most of the rules make knows so it will use % above
+.SUFFIXES:
+
+# In case some joker runs "touch noop"
+.PHONY: noop

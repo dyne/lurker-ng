@@ -1,0 +1,23 @@
+### This file is auto-generated and will be rebuilt when needed
+
+D       := @DIR@
+ALLDIRS += $D
+SUBDIRS := $(patsubst %/dir.mk,%,$(wildcard $D/*/dir.mk))
+
+$D/all:		$(addsuffix /all,       $(SUBDIRS))
+$D/test:	$(addsuffix /test,      $(SUBDIRS))
+$D/install:	$(addsuffix /install,   $(SUBDIRS))
+$D/clean:	$(addsuffix /clean,     $(SUBDIRS))
+$D/config:	$(addsuffix /config,    $(SUBDIRS))
+$D/distclean:	$(addsuffix /distclean, $(SUBDIRS))
+
+# Include subdirectories if we have any
+ifdef SUBDIRS
+-include $(addsuffix /.dir.mk,$(SUBDIRS))
+endif
+
+# Reset variables after including sub-dirs
+D       := @DIR@
+SUBDIRS := $(patsubst %/dir.mk,%,$(wildcard $D/*/dir.mk))
+
+### Now follows user-written content from dir.mk

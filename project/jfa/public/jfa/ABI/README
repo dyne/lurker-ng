@@ -1,0 +1,9 @@
+Every file in this directory defines our ABI.
+Any changes to these files will change our ABI.
+Changes to these files *might* change the API.
+These files may ONLY include other ABI header files.
+
+New functions added to these files require a minor version increase.
+
+Functions removed or changed semantically in these files require a major
+version increase.

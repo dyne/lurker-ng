@@ -1,0 +1,105 @@
+#! /bin/bash -e
+
+# Where do we record options to
+optdir=".opt"
+
+# Make sure we are in the right place
+test -d setup || echo "Must be invoked from top source directory" >&2
+test -d setup || exit 1
+
+# Make the optdir
+test -d $optdir || mkdir $optdir
+
+# Find all the configure options for these packages
+files=`find | grep '/dir\.mk$'`
+vars=`cat $files | grep "^opt_" | sed 's/^opt_\([^= ]*\).*$/\1/' | sort | uniq`
+long=`echo $vars | sed 's/_/-/g;s/ /:,/g'`":"
+
+# Read in default values for these options from the packages
+cat $files | grep "^opt_.*=" | sed "s/ *= */='y/;s/\$/'/" | sort | uniq -t= -f1 > .config.defaults
+. .config.defaults
+rm -f .config.defaults
+
+# If the user has set any options already, retain his settings
+for var in $vars; do
+  if test -f "$optdir/$var"; then
+    eval opt_$var=\'y`cat "$optdir/$var"`\'
+  fi
+done
+
+# Invoke getopt for the sepcified options
+self="$0"
+TEMP=`getopt -o h --long help,$long -n 'configure' -- "$@"`
+
+# Parse the command-line options
+eval set -- "$TEMP"
+while true ; do
+  case "$1" in
+    -h|--help)
+      echo
+      echo "Usage: ./setup/configure [options]"
+      echo
+      echo "Supported options:"
+      for var in $vars; do
+        opt=`echo $var | sed 's/_/-/g'`
+        val=`eval echo \\$opt_$var`
+        if test "x$val" = "x"; then
+          printf "  --%-18s required option\n" "$opt"
+        else
+          val=`echo $val | sed 's/^y//'`
+          printf "  --%-18s [ %-30s ]\n" "$opt" "$val"
+        fi
+      done
+      echo
+      printf "  --%-18s %s\n" "help"     "Display this message"
+      echo
+      exit 0
+      ;;
+
+    --) 
+      shift
+      break
+      ;;
+
+    --*)
+      opt=`echo "$1" | sed 's/^--//;s/-/_/g'`
+      shift
+      eval opt_$opt='y$1'
+      shift
+      ;;
+  esac
+done
+
+# Fail on the remaining settings
+for arg do echo "configure: unexpected argument: \`$arg'" >&2; exit 1; done
+
+# Create the options file
+ok=1
+for opt in $vars; do
+  val=`eval echo \\$opt_$opt`
+  if test "x$val" = "x"; then
+    echo "configure: $opt: required option unset" >&2
+    ok=0
+  else
+    val=`echo $val | sed 's/^y//'`
+  
+    if test ! -f "$optdir/$opt" || test "x$val" != "x`cat \"$optdir/$opt\"`"
+    then echo "$val" >"$optdir/$opt"
+    fi
+  fi
+done
+
+if test "$ok" = "0"; then exit 1; fi
+
+# Rebuild the top-level Makefile
+cat setup/top.mk_header      > .top.mk.tmp
+echo "optdir=.opt"          >> .top.mk.tmp
+for opt in $vars; do
+  echo "opt_$opt=.opt/$opt" >> .top.mk.tmp
+done
+cat setup/top.mk_footer     >> .top.mk.tmp
+mv -f .top.mk.tmp .top.mk
+
+# Do whatever make considers configuration
+echo make -r -R -f .top.mk config
+make -r -R -f .top.mk config

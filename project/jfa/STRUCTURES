@@ -1,0 +1,92 @@
+How to use JFA:
+
+When analyzing your data, you should ask yourself "what do I need it for",
+"how will I use it", "how will I receive it", etc. Then, draw up an
+interface which describes these actions.
+
+Behind your abstract interface is where you use JFA. You should not expose
+it directly. In this way, if you ever need to change to another database
+library or JFA structure, it will less painful.
+
+When you use these datastructures, please be aware that they are intended to
+be used together in a complementary fashion. If you need blazing fast
+insertion with variable length keys and data for example, you can combine a
+Log and a Forest. Store the key for the Log in the record of the forest.
+(in this example, you would give up the ability to read ranges efficiently)
+
+If you find a particular use that does not fit well in JFA, please boil it
+down to what the minimal structural requirements are and mail them to me.
+
+Here I outline the datastructures available in JFA. I list the pros and cons
+with "++" amazing, "+" good", "." standard, "-" bad, "--" very bad.
+
+Vector:	
+	Simple partitioning of a volume into fixed-sized chunks.
+	
+	If you have data with a fixed-length or which is always under a
+	small fixed length in size, and it is indexed by an integer, then
+	Vector is possibly good for you.
+	
+	+ Jumping to a record incurs at most one seek
+	+ Reading in sequence incurs no seeks
+	+ You can rewrite records
+	+ Random access iterator
+	
+	. Appending to the structure repeatedly will not incur seeks
+	
+	- Data must be roughly fixed length
+	- Key must be integers assigned in sequence
+	- Cannot erase data (but can overwrite it)
+
+Log:
+	Append-only structure with variable sized records.
+	
+	If you have data which is variable sized, do not need to rewrite or
+	delete it, but need fast jumping, then Log is possibly good for you.
+	
+	+ Jumping to a record incurs at most one seek
+	+ Reading in sequence incurs no seeks
+	+ Data can be variable length (up to sector size)
+	
+	. Appending to the structure repeatedly will not incur seeks
+	
+	- Forward-only iterator
+	-- Cannot rewrite (or erase) data
+	-- Keys returned on a logging operation must be retained elsewhere
+
+BTree:
+	Text-book key->value maps.
+	
+	If you have keys and values with variable length that you will
+	be randomly seeking for (and not pulling ranges) more often than
+	inserting, then BTree is possibly good for you.
+	
+	+ Keys can be arbitrary strings (up to 255 bytes)
+	+ Data can be arbitrary strings (up to 255 bytes)
+	
+	0 Jumping to a record can incur logarithmic seeks
+	0 Bidirectional iterator
+	
+	- Reading in sequence incurs seeks
+	- Repeated insertion incurs seeks
+
+Forest:
+	The reason JFA was borne.
+	
+	Supposing you have to do more insertions and range-reading than
+	finds, or that your keys are tuples, and your values are fixed
+	length, then Forest may be for you.
+
+	++ Insertion will not incur seeks
+	++ Builtin compression allows for treating keys like tuples
+	   efficiently eg: "foobar,x" "foorbar,y" "foobar,z" will only
+	   require storing "foobar" once.
+	
+	+ Keys can be arbitrary strings (up to 255 bytes)
+	+ Reading in sequence incurs no seeks
+	
+	- Jumping to a record can incur logarithmic^2 seeks
+	- Forward-only iterator
+	- Data must be roughly fixed length
+
+Hash:	 not in JFA: ---iteration not possible (efficiently)

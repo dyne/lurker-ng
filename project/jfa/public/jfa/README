@@ -1,0 +1,5 @@
+Every file in this directory defines our API.
+Any changes to these files will change our API.
+
+Any addition to the API requires only a patchlevel version difference.
+Any removal/change to the API requires a major version difference.

@@ -1,0 +1,10 @@
+Make self-dependency:
+	Adding an old depend to an objects dependencies still means the
+	target must be rebuilt, but make will not do this.
+
+Move:
+	Under unix, doing a 'mv -f some-file.c some-dep-file.c' can
+	overwrite the target file thus requiring a rebuild. However, it
+	won't happen if some-file.c is older than the target
+
+.*.d:	renaming a file can lead to "cannot rebuild depfile" errors

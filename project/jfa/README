@@ -1,0 +1,88 @@
+What is JFA?
+
+	JFA "Just Fast Appends" is my attempt to bring sanity to the world
+	of databases.
+	
+	This database library serves as the framework within which all the
+	crazy new disk structures I think are useful get written.
+	
+	Even though it is largely a research platform, JFA is highly
+	practical and I am endeavouring to stick to the best software
+	engineering principles that I know.
+	
+	To decide if JFA is right for you, I suggest that you make sure that
+	the goals (and particularily the non-goals) of the library are what
+	you want from your database.
+	
+	Then check STRUCTURES to make sure that there are data structures
+	which are right for your particular needs.
+	
+	If you are looking for an enterprise-level, multi-tiered,
+	sql-compliant, microsoft-certified, buzzword-loaded data
+	processing unit, JFA is not for you.
+	
+	On a more serious note, if you are not sure of how you will be
+	processing your data, maybe SQL is a good choice [1]. In this
+	scenario you want probably something flexible, but not fast.
+
+
+Goals for libjfa:
+
+	As fast as possible at well-defined tasks
+	Large read transactions
+	As low  coupling as possible to the host binary
+	As high coupling as possible to the host language
+
+
+Non-Goals for libjfa:
+
+	SQL support                                [1]
+	On-line backup                             [2]
+	Separation of the database from the client [3]
+	Large write transactions (larger than 2M)
+	Disaster recovery (eg: your hard-disk explodes with no recent backups)
+
+
+To install libjfa:
+
+	./setup/configure	[4]
+	make
+	make install (as root)
+
+
+To write code which uses libjfa, read the provided documentation.
+
+
+
+---
+
+1:	For an in-depth explanation of why SQL is perhaps the worst thing to
+	ever happen to the performance database world, see my website.
+
+
+2:	I believe that on-line backup of a database is a misfeature. 
+	
+	The correct solution is to checkpoint the database, then do an
+	on-line snapshot of the block-device with software like LVM.
+	
+	This has a significantly lower performance impact and nicely
+	seperates the responsibilities between device and structure.
+
+
+3:	I have never understood why people consider this a plus.
+	
+	It is slower.
+	It requires that the service you want to connect to is running.
+	It reduces the robustness of the system by introducing unneeded IPC.
+	It makes setting up the software more difficult.
+	It is hard to represent run-time dependence 
+		(potentially across machines) in a packaging system.
+	
+	If you need to seperate the processing from the database for
+	performance reasons, then that is a good reason. So use corba!
+	
+	This is not database functionality, but RPC.
+
+
+4:	For an in-depth explanation of why GNU autotools are bad and how
+	this build system solves the problems, see my website.

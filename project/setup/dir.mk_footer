@@ -1,0 +1,13 @@
+
+### Here ends user-written content from dir.mk
+
+# Include automatic dependency info, if any
+ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),distclean)
+ifneq ($(MAKECMDGOALS),config)
+-include $D/.*.d
+endif
+endif
+endif
+
+.PHONY:	$D/all $D/install $D/clean $D/config $D/distclean $D/test

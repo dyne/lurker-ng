@@ -1,0 +1,76 @@
+
+### End of options variables
+
+ALLDIRS :=
+
+# These useful macros expand build options for rules and dependencies
+# Note that %.opts matches both .foo.opts and foo.opts (as we want)
+opts_cat_help=$(if $(strip $(1)),$(shell cat $(1)))
+opts=$(call opts_cat_help,$(filter $(optdir)/%,$^) $(filter %.opts,$^))
+deps=$(filter-out %.opts,$(filter-out $(optdir)/%,$^))
+
+-include .dir.mk
+
+# The only configuration we do is to build the helper makefiles
+config:		$(addsuffix /Makefile,$(ALLDIRS))
+		@echo
+		@echo Successfully configured. Type: 'make' to compile.
+		@echo
+
+# We call clean in this file so that all the subdir clean rules are invoked
+# before all the subdir distclean rules -- w/o the subdirs needing to
+# specify anything.
+distclean:	clean
+	rm -f $(addsuffix /Makefile,$(ALLDIRS))
+	rm -f $(addsuffix /.dir.mk,$(ALLDIRS)) .top.mk
+	rm -f $(addsuffix /.*.d,$(ALLDIRS))
+	rm -f $(addsuffix /.*.opts,$(ALLDIRS))
+	rm -f $(optdir)/*
+	rmdir $(optdir)
+
+# Helper substitution variables
+mk_dir=$(@D)
+mk_topdir=$(shell echo $(mk_dir) | sed 's@\./@@;s@[^/]\+@..@g')
+sub_subrule='s%@DIR@%$(mk_dir)%g;s%@TOPDIR@%$(mk_topdir)%g'
+top_subrule='s%@DIR@%.%g;s%@TOPDIR@%.%g'
+
+# Rebuild the real directory make file if the user changed the source
+.%.mk:  	%.mk setup/dir.mk_header setup/dir.mk_footer
+	@echo Generating $@
+	@sed $(sub_subrule) < setup/dir.mk_header > $@.tmp
+	@grep -v "^opt_" < $< >> $@.tmp || true
+	@sed $(sub_subrule) < setup/dir.mk_footer >> $@.tmp
+	@mv -f $@.tmp $@
+
+# Will not match top-level makefile
+%/Makefile:	setup/sub.Makefile_skel
+	@echo Creating sub-folder helper $@
+	@sed $(sub_subrule) < setup/sub.Makefile_skel > $@.tmp
+	@mv -f $@.tmp $@
+
+Makefile:	setup/sub.Makefile_skel
+	@echo Creating sub-folder helper $@
+	@sed $(top_subrule) < setup/sub.Makefile_skel > $@.tmp
+	@mv -f $@.tmp $@
+
+# This is always the first rule run since it is the top makefile
+# This is why the options files are always trustworthily timestamped
+.top.mk:	setup/configure \
+		setup/top.mk_footer setup/top.mk_header
+	@echo Rebuilding master Makefile
+	./setup/configure # our configure always retains values
+
+# Why .%.opts? Three reasons.
+# This way you don't specify "foo.lo: some.opts" which would lead make
+#   into thinking that it had a rule for building foo.lo in the absence of
+#   foo.cpp (a do nothing rule). Instead, we get a nice informative error.
+# Second, this allows passing the same options to more than one goal
+#   implicitly. Eg: .foo.opts can affect both foo.o and .foo.d
+# Third, the user can override options on a per-file basis if necessary.
+.%.opts:
+	echo "$(opts)" > $@
+
+# Don't delete dependency or option info made by chaining (for distclean)
+.PRECIOUS:	.%.d .%.opts
+# Don't use any nasty builtin suffix rules that would preempt our chaining
+.SUFFIXES:

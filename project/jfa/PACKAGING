@@ -1,0 +1,7 @@
+If you are packaging libjfa for use in a distribution, please read VERSIONING. 
+
+A quick summary of the important points:
+
+1. libjfa must NOT provide a static library
+2. a package including the compiled library should include the major version
+   number in it's name so that two major versions can coexist
