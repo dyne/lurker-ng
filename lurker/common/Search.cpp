@@ -1,4 +1,4 @@
-/*  $Id: Search.cpp,v 1.3 2004-08-25 12:51:05 terpstra Exp $
+/*  $Id: Search.cpp,v 1.4 2004-08-25 13:35:11 terpstra Exp $
  *  
  *  Search.cpp - Execute a keyword search
  *  
@@ -293,8 +293,9 @@ Searcher* OrSearcher::simplify()
 class WordSearcher : public Searcher
 {
  protected:
- 	int prefix;
  	Direction d;
+ 	bool first;
+ 	int prefix;
  	auto_ptr<Walker> walker;
  	
  public:
@@ -303,7 +304,7 @@ class WordSearcher : public Searcher
 };
 
 WordSearcher::WordSearcher(const Criterea& c, const string& word)
- : d(c.dir),
+ : d(c.dir), first(true),
    prefix(sizeof(LU_KEYWORD)-1 + word.length() + 1),
    walker(c.db->seek(LU_KEYWORD + word + '\0', c.source.raw(), c.dir))
 {
@@ -311,10 +312,11 @@ WordSearcher::WordSearcher(const Criterea& c, const string& word)
 
 bool WordSearcher::skipto(MessageId later_than)
 {
-	while ((d == Forward  && later_than > next_id) ||
+	while (first ||
+	       (d == Forward  && later_than > next_id) ||
 	       (d == Backward && later_than < next_id))
 	{
-		// later_than > next_id, so we are free to blindly advance.
+		// later_than > next_id, so we are free to advance.
 		int out = walker->advance();
 		
 		if (out == -1)
@@ -323,7 +325,8 @@ bool WordSearcher::skipto(MessageId later_than)
 		if (walker->key.length() != prefix + MessageId::raw_len)
 			return false; // corrupt!
 		
-		next_id = MessageId(walker->key.c_str() + prefix, 1);
+		next_id = MessageId(walker->key.c_str() + prefix, MessageId::raw_len);
+		first = false;
 	}
 	
 	return true;
