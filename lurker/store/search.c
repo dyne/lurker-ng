@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.11 2002-07-11 23:39:07 terpstra Exp $
+/*  $Id: search.c,v 1.12 2002-07-12 12:58:14 terpstra Exp $
  *  
  *  search.c - Uses libkap to execute a given search
  *  
@@ -32,6 +32,7 @@
 #include "keyword.h"
 
 #include "config.h"
+#include "summary.h"
 #include "search.h"
 
 #include <st.h>
@@ -88,6 +89,7 @@
 
 static KRecord		my_search_handle[LU_MAX_TERMS];
 static message_id	my_search_id[LU_MAX_TERMS];
+static message_id	my_search_min_ok;
 static int		my_search_handles = 0;
 static st_mutex_t	my_search_mutex;
 
@@ -97,7 +99,7 @@ static message_id	my_search_m11;	/* +1 */
 static double		my_search_z0;	/* +xy */
 static double		my_search_z1;	/* +y */
 
-/*------------------------------------------------- Public component methods */
+/*------------------------------------------------ Public component methods */
 
 int lu_search_init(void)
 {
@@ -126,28 +128,53 @@ int lu_search_quit(void)
 	return 0;
 }
 
-/*------------------------------------------------- Public component methods */
+/*------------------------------------------------ Public component methods */
+
+int lu_search_find_le(const void* arg, const void* rec)
+{
+	return *((const message_id*)rec) <= *((const message_id*)arg);
+}
 
 int lu_search_start(
 	const char* keywords,
-	const char** error)
+	const char** error,
+	time_t	begin,
+	time_t	end)
 {
 	message_id	predict;
 	char		buf[LU_KEYWORD_LEN+1];
 	char*		w;
 	char*		e;
 	int		out;
+	ssize_t		off;
+	message_id	last;
 	
 	st_mutex_lock(my_search_mutex);
 	
-	e = &buf[sizeof(buf)-1];
+	my_search_handles = 0;
+	my_search_z0 = my_search_z1 = 0;
+	my_search_m00 = my_search_m01 = my_search_m11 = 0;
 	
-	if (my_search_handles != 0)
-	{
-		*error = _("Already executing a search");
-		return -1;
+	/* Find the largest id such that everything prior to it is prior
+	 * to end.
+	 */
+	last = lu_summary_find_timestamp(end);
+	
+	/* The first hit must be earlier than last.
+	 */
+	if (last == 0)
+	{	/* There wil be no hits */
+		return 0;
 	}
+	else if (last != lu_common_minvalid)
+		last--;
 	
+	/* Everything prior to min_ok is before the start of the range 
+	 * Therefore, the last acceptable hit is min_ok.
+	 */
+	my_search_min_ok = lu_summary_find_timestamp(begin);
+	
+	e = &buf[sizeof(buf)-1];
 	while (*keywords)
 	{
 		/* Skip whitespace */
@@ -157,7 +184,6 @@ int lu_search_start(
 			*keywords && !isspace(*keywords) && w != e; 
 			keywords++, w++)
 		{
-			/* Special case work around file system */
 			*w = *keywords;
 		}
 		
@@ -190,26 +216,23 @@ int lu_search_start(
 				return -1;
 			}
 			
-			if (my_search_handle[my_search_handles].records == 0)
+			out = kap_append_find(
+				lu_config_keyword,
+				&my_search_handle[my_search_handles],
+				&lu_search_find_le,
+				&last,
+				&off,
+				&my_search_id[my_search_handles]);
+			
+			if (out == KAP_NOT_FOUND)
 			{
 				my_search_id[my_search_handles] = lu_common_minvalid;
 			}
-			else
+			else if (out != 0)
 			{
-				out = kap_kread(
-					lu_config_keyword,
-					&my_search_handle[my_search_handles],
-					&buf[0],
-					my_search_handle[my_search_handles].records-1,
-					&my_search_id[my_search_handles],
-					1);
-				
-				if (out != 0)
-				{
-					*error = _("Unable to obtain last record");
-					lu_search_end(&predict);
-					return -1;
-				}
+				*error = _("Unable to obtain last record");
+				lu_search_end(&predict);
+				return -1;
 			}
 			
 			my_search_handles++;
@@ -217,9 +240,6 @@ int lu_search_start(
 	}
 	
 
-	my_search_z0 = my_search_z1 = 0;
-	my_search_m00 = my_search_m01 = my_search_m11 = 0;
-	
 	return 0;
 }
 
@@ -229,10 +249,11 @@ int lu_search_result(
 	int		i;
 	int		which;
 	int		done;
+	int		out;
 	
 	message_id	largest;
 	message_id	smallest;
-	message_id	index;
+	ssize_t		off;
 	
 	done = 0;
 	
@@ -274,7 +295,13 @@ int lu_search_result(
 			*result = smallest;
 			done = 1;
 			
-			if (smallest == 0)
+			if (smallest < my_search_min_ok)
+			{	/* This hit is too old */
+				my_search_id[0] = lu_common_minvalid;
+				*result = lu_common_minvalid;
+				break;
+			}
+			if (smallest == my_search_min_ok)
 			{	/* There can't be any more hits */
 				my_search_id[0] = lu_common_minvalid;
 				break;
@@ -288,32 +315,20 @@ int lu_search_result(
 		}
 		
 		/* Ok, we know the smallest, largest, and which the largest is */
+		out = kap_append_find(
+			lu_config_keyword,
+			&my_search_handle[which],
+			&lu_search_find_le,
+			&smallest,
+			&off,
+			&my_search_id[which]);
 		
-		if (lu_breader_offset_id(
-			my_search_handle[which], 
-			smallest, 
-			&index) != 0)
-		{	/* The breader died! */
-			return -1;
-		}
-		
-		if (index == lu_common_minvalid)
-		{	/* No more results */
+		if (out == KAP_NOT_FOUND)
+		{
 			my_search_id[which] = lu_common_minvalid;
-			if (!done)
-			{
-				*result = lu_common_minvalid;
-			}
-			break;
 		}
-		
-		/* Ok, what is the value at this location? */
-		if (lu_breader_read(
-			my_search_handle[which], 
-			index,
-			1,
-			&my_search_id[which]) != 0)
-		{	/* The breader died! */
+		else if (out)
+		{
 			return -1;
 		}
 	}
