@@ -1,4 +1,4 @@
-/*  $Id: params.cpp,v 1.7 2003-07-01 15:49:04 terpstra Exp $
+/*  $Id: params.cpp,v 1.8 2004-02-18 14:58:07 terpstra Exp $
  *  
  *  params.cpp - Parse the config file for helper scripts
  *  
@@ -38,7 +38,7 @@ void help(const char* name)
 {
 	cerr << "Lurker-params (v" << VERSION << ") parses params from the config file.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> [-d -a -n -e -x -m -i -w]\n";
+	cerr << "Usage: " << name << " -c <config-file> [-d -a -n -e -x -m -i -w -h]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-d               Output only the dbdir parameter\n";
@@ -49,6 +49,7 @@ void help(const char* name)
 	cerr << "\t-m               Output only the mime pgp verifying command\n";
 	cerr << "\t-i               Output only the inline pgp verifying command\n";
 	cerr << "\t-w               Output only the web_cache state\n";
+	cerr << "\t-h               Output only the hide_email state\n";
 	cerr << "\n";
 	cerr << "Output various lurker settings from the config file for use in shell scripts.\n";
 	cerr << "Do not use sed/grep/etc, instead use this as it respects include.\n";
@@ -69,8 +70,9 @@ int main(int argc, char** argv)
 	bool        pgpv_mime     = false;
 	bool        pgpv_inline   = false;
 	bool        web_cache     = false;
+	bool        hide_email    = false;
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:danexmiw?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:danexmiwh?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -109,6 +111,10 @@ int main(int argc, char** argv)
 			++fields;
 			web_cache = true;
 			break;
+		case 'h':
+			++fields;
+			hide_email = true;
+			break;
 		default:
 			help(argv[0]);
 			return 1;
@@ -142,6 +148,7 @@ int main(int argc, char** argv)
 	if (!fields || pgpv_mime)     cout << cfg.pgpv_mime     << "\n";
 	if (!fields || pgpv_inline)   cout << cfg.pgpv_inline   << "\n";
 	if (!fields || web_cache)     cout << (cfg.web_cache?"on":"off") << "\n";
+	if (!fields || hide_email)    cout << (cfg.hide_email?"on":"off") << "\n";
 	
 	return 0;
 }

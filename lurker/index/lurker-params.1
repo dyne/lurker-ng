@@ -1,25 +1,23 @@
-.\" This -*- nroff -*- file has been generated from
-.\" DocBook SGML with docbook-to-man on Debian GNU/Linux.
-...\"
-...\"	transcript compatibility for postscript use.
-...\"
-...\"	synopsis:  .P! <file.ps>
-...\"
+.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-params.1,v 1.4 2004-02-18 14:58:07 terpstra Exp $
+.\"
+.\"	transcript compatibility for postscript use.
+.\"
+.\"	synopsis:  .P! <file.ps>
+.\"
 .de P!
-\\&.
+.fl
+\!!1 setgray
+.fl
+\\&.\"
+.fl
+\!!0 setgray
 .fl			\" force out current output buffer
-\\!%PB
-\\!/showpage{}def
-...\" the following is from Ken Flowers -- it prevents dictionary overflows
-\\!/tempdict 200 dict def tempdict begin
+\!!save /psv exch def currentpoint translate 0 0 moveto
+\!!/showpage{}def
 .fl			\" prolog
-.sy cat \\$1\" bring in postscript file
-...\" the following line matches the tempdict above
-\\!end % tempdict %
-\\!PE
-\\!.
-.sp \\$2u	\" move below the image
-..
+.sy sed -e 's/^/!/' \\$1\" bring in postscript file
+\!!psv restore
+.
 .de pF
 .ie     \\*(f1 .ds f1 \\n(.f
 .el .ie \\*(f2 .ds f2 \\n(.f
@@ -58,10 +56,10 @@
 lurker-params \(em parses parameters from the config file 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker-params\fP [-c <config-file>]  [-d -a -n -e -x -m -i -w]  
+\fBlurker-params\fR [-c <config-file>]  [-d -a -n -e -x -m -i -w -h]  
 .SH "DESCRIPTION" 
 .PP 
-\fBlurker-params\fP outputs various lurker settings 
+\fBlurker-params\fR outputs various lurker settings 
 from the config file for use in shell scripts.  Do not use sed/grep/etc, 
 instead use this as it respects include.   
 .SH "OPTIONS" 
@@ -83,6 +81,8 @@ Output only the mime pgp verifying command
 Output only the inline pgp verifying command 
 .IP "\fB-w\fP" 10 
 Output only the web_cache state 
+.IP "\fB-h\fP" 10 
+Output only the hide_email state 
 .SH "SEE ALSO" 
 .PP 
 lurker-index(1), lurker-prune(1), lurker-list(1) 
@@ -115,4 +115,4 @@ Before reporting a bug, please confirm that the bug you found is
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
 <lurker-users@lists.sourceforge.net>. 
-...\" created by instant / docbook-to-man, Wed 25 Jun 2003, 16:33 
+.\" created by instant / docbook-to-man, Wed 18 Feb 2004, 16:01 

@@ -57,7 +57,7 @@ lurker-params.1: lurker-params.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg>-c &lt;config-file&gt;</arg>
-      <arg>-d -a -n -e -x -m -i -w</arg>
+      <arg>-d -a -n -e -x -m -i -w -h</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -123,6 +123,12 @@ lurker-params.1: lurker-params.sgml
         <term><option>-w</option></term>
         <listitem>
           <para>Output only the web_cache state</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-h</option></term>
+        <listitem>
+          <para>Output only the hide_email state</para>
         </listitem>
       </varlistentry>
     </variablelist>
