@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.39 2002-07-26 15:27:02 terpstra Exp $
+/*  $Id: main.c,v 1.40 2002-08-30 11:24:02 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -52,6 +52,10 @@
 
 #ifdef DMALLOC
 # include <dmalloc.h>
+#endif
+
+#ifndef LOG_PERROR
+# define LOG_PERROR 0
 #endif
 
 /*------------------------------------------------ Private helper methods */
