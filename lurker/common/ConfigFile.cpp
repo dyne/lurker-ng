@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.1 2003-07-01 15:49:04 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.2 2004-01-06 19:20:19 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -42,7 +42,8 @@ Config::Config()
    xslt("cat -"),
    pgpv_mime("off"),
    pgpv_inline("off"),
-   web_cache(true)
+   web_cache(true),
+   hide_email(false)
 {
 }
 
@@ -280,6 +281,18 @@ int Config::process_command(const string& key, const string& val, const string& 
 		else
 		{
 			error << "web_cache must be set to on/off or true/false!" << endl;
+			return -1;
+		}
+	}
+	else if (key == "hide_email")
+	{
+		if (val == "off" || val == "false")
+			hide_email = false;
+		else if (val == "on" || val == "true")
+			hide_email = true;
+		else
+		{
+			error << "hide_email must be set to on/off or true/false!" << endl;
 			return -1;
 		}
 	}

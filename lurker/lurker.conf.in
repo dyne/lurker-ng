@@ -21,8 +21,8 @@ admin_address = nill@bitbucket.org
 # Lurker normally generates xml web pages from the database.
 # However, this is very badly supported in even mainstream browsers.
 # Thus lurker is designed to have the output xml transformed to html.
-# Default xslt stylesheets are included with lurker for this purpose.
-# Lurker itself does not provide facilities to perform the xslt transform.
+# Default XSLT style-sheets are included with lurker for this purpose.
+# Lurker itself does not provide facilities to perform the XSLT transform.
 # This command is fed xml via stdin and expected to produce html on stdout.
 
 xslt = xsltproc --nonet -
@@ -67,7 +67,7 @@ xslt = xsltproc --nonet -
 
 # The directory where lurker keeps the database.
 # 
-# This database directory should be writeable by lurker-index.
+# This database directory should be writable by lurker-index.
 # It should be readable by lurker.cgi and lurker-prune.
 # Do not mess with the files in this directory on pain of death.
 # Before taking a backup, make sure your MTA has a frozen mail queue.
@@ -77,7 +77,7 @@ dbdir = @vardir@
 # Include another file for additional configuration.
 # 
 # If you have a large number of mailing lists it may help to group them.
-# One strategy to keep organized is to have one config file per group.
+# One strategy to keep organised is to have one config file per group.
 # This also allows collaboratively maintained archives (different owners).
 # 
 # include = another.conf
@@ -92,6 +92,14 @@ dbdir = @vardir@
 # 
 # web_cache = off
 
+# Tell lurker to hide email addresses.
+# 
+# Normally, lurker includes all email addresses in the source email message.
+# Some people feel that this helps spammers with email address harvesting.
+# However, removing addresses makes your archive less useful to visitors.
+# This option will not affect display of mailing list or admin addresses.
+#
+# hide_email = off
 
 
 #############################################################################
@@ -102,7 +110,7 @@ dbdir = @vardir@
 # Lurker needs to be told all of the lists you will be archiving here.
 # Once lurker has imported any mail for a list, it must never be removed.
 # New mailing lists may be added at any time and the archive will adjust.
-# If you must remove a list, purge the database (rm -rf) and reimport.
+# If you must remove a list, purge the database (rm -rf) and re-import.
 # 
 # Mailing lists are collected into groups on the front page.
 # Each group has an id used for searching and urls and a heading.
