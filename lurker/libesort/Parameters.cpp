@@ -1,4 +1,4 @@
-/*  $Id: Parameters.cpp,v 1.6 2003-05-18 20:15:48 terpstra Exp $
+/*  $Id: Parameters.cpp,v 1.7 2003-06-07 12:28:32 terpstra Exp $
  *  
  *  Parameters.cpp - Control how the database is stored
  *  
@@ -54,9 +54,9 @@ Parameters::Parameters(
 
 bool Parameters::isWider(const Parameters& p)
 {
-	return version_   >= p.version_ &&
-	       blockSize_ >= p.blockSize_ &&
-	       keySize_  >= p.keySize_;
+	return version_   > p.version_   ||
+	       blockSize_ > p.blockSize_ ||
+	       keySize_   > p.keySize_;
 }
 
 }

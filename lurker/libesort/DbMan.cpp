@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.14 2003-05-18 20:15:48 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.15 2003-06-07 12:28:32 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -25,6 +25,8 @@
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
 #define _ISOC99_SOURCE
+
+// #define DEBUG 1
   
 #include "io.h"
 #include "DbMan.h"
@@ -50,6 +52,9 @@ static int shared_file_lock(int fd)
 	if (fcntl(fd, F_SETLKW, &lock) != 0) return -1;
 #endif
 #endif
+#ifdef DEBUG
+	cout << "+   " << getpid() << " SHARE LOCK!" << endl;
+#endif
 	return 0;
 }
 
@@ -66,6 +71,9 @@ static int exclusive_file_lock(int fd)
 	if (fcntl(fd, F_SETLKW, &lock) != 0) return -1;
 #endif
 #endif
+#ifdef DEBUG
+	cout << "+   " << getpid() << " OWN LOCK!" << endl;
+#endif
 	return 0;
 }
 
@@ -81,6 +89,9 @@ static int unlock_file_lock(int fd)
 	lock.l_whence = SEEK_SET;
 	if (fcntl(fd, F_SETLKW, &lock) != 0) return -1;
 #endif
+#endif
+#ifdef DEBUG
+	cout << "-   " << getpid() << " RELEASED LOCK!" << endl;
 #endif
 	return 0;
 }
@@ -139,10 +150,14 @@ int DbMan::scanFile(Parameters& p)
 	long blockSize, keySize;
 	char id[80];
 	
+#ifdef DEBUG
+	cout << " ??? " << getpid() << " SCANNING FILE" << endl;
+#endif
+		
 	rewind(dbfile);
 	if (fscanf(dbfile, "%d %ld %ld", &version, &blockSize, &keySize) != 3)
 		return -1;
-	p = Parameters(version, blockSize, keySize);
+	p = Parameters(p.synced(), p.unique(), version, blockSize, keySize);
 	
 	ids.clear();
 	fgets(id, sizeof(id), dbfile); // eat eof
@@ -215,9 +230,11 @@ int DbMan::open(View& view, const string& db, int mode)
 	assert (dbname == "");
 	
 	dbname = db;
+	cmode = mode;
 	if (qualify(dbname) != 0) return -1;
 	
-	cmode = mode;
+	if (lock_database_rw() != 0) return -1;
+	
 	int fd = ::open(dbname.c_str(), O_RDWR | O_CREAT, cmode);
 	if (fd == -1) return -1;
 	dbfile = fdopen(fd, "r+");
@@ -227,6 +244,7 @@ int DbMan::open(View& view, const string& db, int mode)
 	dirfd = ::open(dirname.c_str(), O_RDONLY);
 	// ignore the error; some OSes don't allow opening directories
 	
+	// We must lock rw since we may generate it
 	int ok = lock_snapshot_rw();
 	if (ok != 0) return ok;
 	
@@ -250,6 +268,7 @@ int DbMan::open(View& view, const string& db, int mode)
 		if (snapshot(view) != 0)
 		{
 			int o = errno;
+			if (o == 0) o = EINVAL;
 			unlock_snapshot_rw();
 			errno = o;
 			return -1;
@@ -300,6 +319,7 @@ int DbMan::lock_database_rw()
 	
 	string name = dbname + ".writer";
 	dblock = ::open(name.c_str(), O_RDWR | O_CREAT, cmode);
+	
 	return exclusive_file_lock(dblock);
 }
 
@@ -323,6 +343,10 @@ int DbMan::commit(const Parameters& p, const std::set<string>& nids)
 	if (p.synced())
 		if (dirfd != -1) fsync(dirfd); // sync the directory
 	
+#ifdef DEBUG
+	cout << " !!! " << getpid() << " COMMITING FILE" << endl;
+#endif
+		
 	// The underlying assumption here is that these calls all fit
 	// within one block and thus can't fail. This should be valid for
 	// even grossly enoromous databases on puny systems.
