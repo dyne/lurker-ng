@@ -68,17 +68,40 @@
 
 <!-- Format summary lists -->
 
+<xsl:template name="msg-thread">
+ <a href="../message/{../../mid}.{$ext}">
+  <xsl:element name="img">
+   <xsl:attribute name="alt">M</xsl:attribute>
+   <xsl:attribute name="border">0</xsl:attribute>
+   
+   <xsl:attribute name="src">
+    <xsl:text>i/</xsl:text>
+    <xsl:value-of select="local-name(.)"/>
+    <xsl:text>.png</xsl:text>
+   </xsl:attribute>
+   
+   <xsl:attribute name="class">
+    <xsl:choose>
+     <xsl:when test="@selected">selected</xsl:when>
+     <xsl:when test="@drift">drift</xsl:when>
+     <xsl:otherwise>normal</xsl:otherwise>
+    </xsl:choose>
+   </xsl:attribute>
+  </xsl:element>
+ </a>
+</xsl:template>
+
 <xsl:template match="a"><img alt="." src="i/a.png"/></xsl:template>
 <xsl:template match="b"><img alt="|" src="i/b.png"/></xsl:template>
 <xsl:template match="c"><img alt="-" src="i/c.png"/></xsl:template>
 <xsl:template match="d"><img alt="\" src="i/d.png"/></xsl:template>
 <xsl:template match="e"><img alt="+" src="i/e.png"/></xsl:template>
-<xsl:template match="f"><a href="../message/{../../mid}.{$ext}"><img alt="M" border="0" src="i/f.png"/></a></xsl:template>
-<xsl:template match="g"><a href="../message/{../../mid}.{$ext}"><img alt="M" border="0" src="i/g.png"/></a></xsl:template>
-<xsl:template match="h"><a href="../message/{../../mid}.{$ext}"><img alt="M" border="0" src="i/h.png"/></a></xsl:template>
-<xsl:template match="i"><a href="../message/{../../mid}.{$ext}"><img alt="M" border="0" src="i/i.png"/></a></xsl:template>
-<xsl:template match="j"><a href="../message/{../../mid}.{$ext}"><img alt="M" border="0" src="i/j.png"/></a></xsl:template>
-<xsl:template match="k"><a href="../message/{../../mid}.{$ext}"><img alt="M" border="0" src="i/k.png"/></a></xsl:template>
+<xsl:template match="f"><xsl:call-template name="msg-thread"/></xsl:template>
+<xsl:template match="g"><xsl:call-template name="msg-thread"/></xsl:template>
+<xsl:template match="h"><xsl:call-template name="msg-thread"/></xsl:template>
+<xsl:template match="i"><xsl:call-template name="msg-thread"/></xsl:template>
+<xsl:template match="j"><xsl:call-template name="msg-thread"/></xsl:template>
+<xsl:template match="k"><xsl:call-template name="msg-thread"/></xsl:template>
 
 <xsl:template match="summary">
  <xsl:element name="tr">
