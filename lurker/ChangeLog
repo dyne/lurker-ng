@@ -2,12 +2,17 @@ v0.1c:
 	Added libkap which completely replaces all of libdb3 and flatfile
 		-- this means the database needs to be reimported
 		-- we can now import >6Gb email with reasonable speed
+	Included a backup to text-file command
+		-- allows migration for future database versions
+		-- deals with cases of power-failure killing db
 	Improved the regexps for email markup
 	Added date-range keyword searching
 	configure no longer tries to rebuild Makefile.in / aclocal.m4 / etc
 	Japanese added
 	Thorough unit tests for the database
 	Much better conformance to strict ansi C
+	Beautified XSLT ala Max
+	Many smaller things that got lost in the frenzied switch to libkap
 
 v0.1b:
 	Improved installation documentation
