@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.48 2002-05-21 13:25:48 terpstra Exp $
+/*  $Id: service.c,v 1.49 2002-05-21 18:17:25 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -54,6 +54,9 @@
 #define MESSAGE_END	"<f/>"
 #define MESSAGE_DOWN	"<g/>"
 #define MESSAGE_BOTH	"<h/>"
+#define TOPMESSAGE_END	"<i/>"
+#define TOPMESSAGE_DOWN	"<j/>"
+#define TOPMESSAGE_BOTH	"<k/>"
 
 /*------------------------------------------------- Private types */
 
@@ -83,7 +86,6 @@ typedef struct My_Service_Reply_Tree_T
 	message_id		id;
 	Lu_Summary_Message	summary;
 	
-	int			borked_link;
 	int			replies;
 	int			replyee;
 	int			replyor_first;
@@ -1468,9 +1470,8 @@ static void my_service_init_tree(
 	
 	for (i = 0; i < tree_size; i++)
 	{
-		tree[i].borked_link = (tree[i].summary.in_reply_to == lu_common_minvalid);
-		tree[i].replyee = i-1;
-		if (!tree[i].borked_link)
+		tree[i].replyee = -1;
+		if (tree[i].summary.in_reply_to != lu_common_minvalid)
 		{
 			bs = bsearch(
 				&tree[i].summary.in_reply_to,
@@ -1483,7 +1484,7 @@ static void my_service_init_tree(
 				tree[i].replyee = (bs - tree);
 			
 			if (tree[i].replyee >= i)
-				tree[i].replyee = i-1;
+				tree[i].replyee = -1;
 		}
 		
 		if (tree[i].replyee >= 0) tree[tree[i].replyee].replies++;
@@ -1491,6 +1492,7 @@ static void my_service_init_tree(
 		tree[i].replies       = 0;
 		tree[i].replyor_first = -1;
 		tree[i].replyor_next  = -1;
+		tree[i].draw_next     = -1;
 		tree[i].depth         = i;
 		tree[i].consumed      = 0;
 	}
@@ -1498,7 +1500,8 @@ static void my_service_init_tree(
 	for (i = tree_size-1; i > 0; i--)
 	{
 		p = tree[i].replyee;
-		
+		if (p == -1) continue;
+				
 		if (tree[p].depth < tree[i].depth)
 			tree[p].depth = tree[i].depth;
 		
@@ -1556,23 +1559,37 @@ static void my_service_draw_row(
 	
 	col = 0;
 	w = head;
-	while (1)
+	while (*w != -1)
 	{
 		for (; col < tree[*w].column; col++)
 			my_service_buffer_write(h, EMPTY_CELL);
-		col++;
 		
 		if (*w == i) break;
+		
 		my_service_buffer_write(h, BAR_NS);
+		col++;
 		w = &tree[*w].draw_next;
 	}
 	
-	switch (tree[i].replies)
+	if (tree[i].replyee == -1)
 	{
-	case 0:  my_service_buffer_write(h, MESSAGE_END);  break;
-	case 1:  my_service_buffer_write(h, MESSAGE_DOWN); break;
-	default: my_service_buffer_write(h, MESSAGE_BOTH); break;
+		switch (tree[i].replies)
+		{
+		case 0:  my_service_buffer_write(h, TOPMESSAGE_END);  break;
+		case 1:  my_service_buffer_write(h, TOPMESSAGE_DOWN); break;
+		default: my_service_buffer_write(h, TOPMESSAGE_BOTH); break;
+		}
 	}
+	else
+	{
+		switch (tree[i].replies)
+		{
+		case 0:  my_service_buffer_write(h, MESSAGE_END);  break;
+		case 1:  my_service_buffer_write(h, MESSAGE_DOWN); break;
+		default: my_service_buffer_write(h, MESSAGE_BOTH); break;
+		}
+	}
+	col++;
 	
 	/* Cut ourselves out of the list and graft on our
 	 * children. While we're at it, draw the links.
@@ -1696,7 +1713,11 @@ static int my_service_thread(
 	}
 	
 	my_service_init_tree(tree, tree_size);
-	my_service_draw_tree(tree, 0, 0);
+	for (i = 0; i < tree_size; i++)
+	{
+		if (tree[i].replyee == -1)
+			my_service_draw_tree(tree, i, i);
+	}
 	
 	if (my_service_buffer_init(h, "text/xml\n", 1, 
 			lu_config_cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
@@ -1708,8 +1729,7 @@ static int my_service_thread(
 	if (my_service_buffer_write(h, "</id>\n")         != 0) goto my_service_thread_error2;
 	if (my_service_server(h)                          != 0) goto my_service_thread_error2;
 	
-	draw_head = 0;
-	tree[0].draw_next = -1;
+	draw_head = -1;
 	
 	for (i = 0; i < tree_size; i++)
 	{
