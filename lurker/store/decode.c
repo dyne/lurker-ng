@@ -1,4 +1,4 @@
-/*  $Id: decode.c,v 1.8 2002-10-30 19:05:43 terpstra Exp $
+/*  $Id: decode.c,v 1.9 2003-03-30 14:11:14 terpstra Exp $
  *  
  *  decode.c - decode definitions and types for all tools
  *  
@@ -40,9 +40,7 @@
 /*------------------------------------------------ Private global vars */
 
 static const char my_decode_enbase64[] = 
-"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-"abcdefghijklmnopqrstuvwxyz"
-"0123456789+/";
+"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static int  my_decode_base64_init = 0;
 static char my_decode_debase64[256];

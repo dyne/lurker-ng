@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.23 2002-07-22 10:30:52 terpstra Exp $
+/*  $Id: config.c,v 1.24 2003-03-30 14:11:14 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -55,7 +55,7 @@ Kap		lu_config_keyword = 0;
 
 /*------------------------------------------------ Private helper methods */
 
-#define	LU_INVALID	0xFFFFU
+#define	LU_INVALID	0xFFFFL
 
 static int my_config_compare_lists(
 	const void* pa, 

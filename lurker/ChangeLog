@@ -1,5 +1,7 @@
 v0.5:
 	Ignore reply-to address if equal to mailing list address
+	Fixes for things that gcc 3.2 correctly warns about
+	Updated build files to newer automake/autoconf
 
 v0.1f:
 	Fixed overlong browser caching of last mindex for a list
