@@ -24,16 +24,18 @@
 
 <xsl:template match="list">
   <tr>
-  <td><a href="../mindex/{id}@{string(floor(number(messages) div 20)*20)}.html"><xsl:value-of select="name"/></a></td>
+  <td><a href="../mindex/{id}@{string(floor(number(messages) div 20)*20)}.html">
+        <xsl:value-of select="email/@name"/></a></td>
+
+  <xsl:if test="email/@address">
+    <td><a href="mailto:{email/@address}"><xsl:value-of select="email/@address"/></a></td>
+  </xsl:if>
+  <xsl:if test="not(email/@address)"><td>-</td></xsl:if>
+
+  <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
+  <xsl:if test="not(description)"><td>-</td></xsl:if>
+
   <td align="right"><xsl:value-of select="messages"/></td>
-  <xsl:if test="address">
-    <td><a href="mailto:{address}"><xsl:value-of select="address"/></a></td>
-  </xsl:if>
-  <xsl:if test="not(address)"><td align="center">-</td></xsl:if>
-  <xsl:if test="description">
-    <td><xsl:value-of select="description"/></td>
-  </xsl:if>
-  <xsl:if test="not(description)"><td align="center">-</td></xsl:if>
   </tr>
 </xsl:template>
 
@@ -42,34 +44,30 @@
  <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
  <head>
   <title>
-    Lurker@some host
+    Lurker@<xsl:value-of select="/lists/server/hostname"/> - Front Page
   </title>
  </head>
  <body>
-  <h1>Lurker@some host
-  </h1>
-
-  <h2>Welcome</h2>
+  <h1>Lurker@<xsl:value-of select="/lists/server/hostname"/></h1>
 
   <table>
 
 <tr><th align="left">List</th>
-    <th align="center">Messages</th>
     <th align="left">Address</th>
-    <th align="left">Description</th></tr>
+    <th align="left">Description</th>
+    <th align="center">Messages</th></tr>
     <xsl:apply-templates select="/lists/list"/>
   </table>
   <hr/>
   <h1>Lurker search</h1>
   <p><form action="../search/bounce">
-    <input type="text" name="query" value=""/>
+    <input type="text" name="query" size="50" value=""/>
     <input type="submit" name="submit" value="Search!"/>
   <p><table>
-      <tr><td>Author </td><td><input type="text" name="author" value=""/></td></tr>
-      <tr><td>Subject</td><td><input type="text" name="author" value=""/></td></tr>
-  </table></p>
-  <hr/>
-  <p><select name="weekday">
+      <tr><td>Author </td><td><input type="text" name="author" size="50" value=""/></td></tr>
+      <tr><td>Subject</td><td><input type="text" name="author" size="50" value=""/></td></tr>
+      <tr><td>Date</td><td>
+     <select name="weekday">
        <option value="">Sun-Sat</option>
        <option value="sun">Sunday</option>
        <option value="mon">Monday</option>
@@ -153,9 +151,11 @@
        <option value="1982">1982</option>
        <option value="1981">1981</option>
        <option value="1980">1980</option>
-     </select>
+     </select></td></tr></table>
    </p>
   </form></p>
+ <hr/>
+ <p>Administrated by: <xsl:apply-templates select="/lists/server/email"/></p>
  </body>
  </html>
 </xsl:template>

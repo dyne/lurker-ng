@@ -35,24 +35,18 @@
  <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
  <head>
   <title>
-    Lurker@<xsl:value-of select="/mindex/list/name"/> -
-    index <xsl:value-of select="/mindex/offset"/>
+    Lurker@<xsl:value-of select="/mindex/server/hostname"/> 
+    - <xsl:value-of select="/mindex/list/email/@name"/>
+    - Messages <xsl:value-of select="/mindex/offset"/>-<xsl:value-of select="string(number(/mindex/offset)+count(/mindex/summary)-1)"/>
   </title>
  </head>
  <body>
-  <h1>Lurker@<xsl:value-of select="/mindex/list/name"/>
-      <xsl:if test="/mindex/list/address">
-        &lt;
-        <a href="mailto:{/mindex/list/address}">
-         <xsl:value-of select="/mindex/list/address"/>
-        </a>
-        &gt;
-      </xsl:if>
-  </h1>
+  <h1>Lurker@<xsl:value-of select="/mindex/server/hostname"/></h1>
+  <h2><xsl:apply-templates select="/mindex/list/email"/> - Messages
+      <xsl:value-of select="/mindex/offset"/>-<xsl:value-of select="string(number(/mindex/offset)+count(/mindex/summary)-1)"/>
+  </h2>
 
-  <h2>Messages <xsl:value-of select="/mindex/offset"/>
-      / <xsl:value-of select="/mindex/list/messages"/>
-  
+  <h2>
      <xsl:if test="/mindex/prev">
        <a href="{/mindex/list/id}@{/mindex/prev}.html">(&lt;&lt; prev)</a>
      </xsl:if>
@@ -68,6 +62,8 @@
     <xsl:apply-templates select="/mindex/summary"/>
   </table>
 
+ <hr/>
+ <p>Administrated by: <xsl:apply-templates select="/mindex/server/email"/></p>
  </body>
  </html>
 </xsl:template>

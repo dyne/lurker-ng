@@ -35,28 +35,27 @@
  <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
  <head>
   <title>
-    Lurker@this host -
-    index <xsl:value-of select="/search/offset"/>
+    Lurker@<xsl:value-of select="/search/server/hostname"/> - Search
+    <xsl:value-of select="/search/query"/>
   </title>
  </head>
  <body>
-  <h1>Lurker@this host</h1>
+  <h1>Lurker@<xsl:value-of select="/search/server/hostname"/></h1>
 
   <h2>Messages <xsl:value-of select="/search/offset"/>
       / <xsl:value-of select="/search/hits"/>
   
      <xsl:if test="/search/prev">
-       <a href="{/search/prev}%20{/search/query}.html">(&lt;&lt; prev)</a>
+       <a href="http:{/search/prev}%20{/search/queryurl}.html">(&lt;&lt; prev)</a>
      </xsl:if>
      <xsl:if test="/search/next">
-       <a href="{/search/next}%20{/search/query}.html">(next &gt;&gt;)</a>
+       <a href="{/search/next}%20{/search/queryurl}.html">(next &gt;&gt;)</a>
      </xsl:if>
   </h2>
   <p><form action="../search/bounce">Query: 
-              <input type="text" name="query" value="{/search/query}"/>
-              <input type="submit" name="submit" value="Search!"/>
-            </form>
-  </p>
+    <input type="text" name="query" value="{/search/query}"/>
+    <input type="submit" name="submit" value="Search!"/>
+  </form></p>
 
   <table border="1">
     <tr><th align="left">Subject</th>
@@ -65,6 +64,8 @@
     <xsl:apply-templates select="/search/summary"/>
   </table>
 
+ <hr/>
+ <p>Administrated by: <xsl:apply-templates select="/search/server/email"/></p>
  </body>
  </html>
 </xsl:template>
