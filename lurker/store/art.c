@@ -1,211 +1,223 @@
-/* Meticulously hand-crafted regex scanner for: art_scan */
-const char* art_scan_pass1(const char* s, const char* e)
+/* Copyright: Public domain
+ * Produced with reg2c for wesley@terpstra.ca
+ * cvs id tag: $Id: art.c,v 1.3 2002-07-11 22:36:48 terpstra Exp $
+ *
+ * Regular expression: 
+([-	-ÿ]+
+)*([-	-ÿ]*[-	-!-\-/-=?-ÿ]  [-	-ÿ]*[-	-!-\-/-=?-ÿ]  [-	-ÿ]*
+)([-	-ÿ]+
+)*([-	-ÿ]*[-	-!-\-/-=?-ÿ]  [-	-ÿ]*[-	-!-\-/-=?-ÿ]  [-	-ÿ]*
+)([-	-ÿ]+
+)*
+ */
+
+const unsigned char* art_scan_pass1(const unsigned char* s, const unsigned char* e)
 {
-	const char* last = 0;
-	goto art_scan_pass130;
+	const unsigned char* last = 0;
+	goto art_scan_pass129;
 	
-art_scan_pass11:
+art_scan_pass10:
 	last = e;
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x0a': 
+	case 10: 
+		goto art_scan_pass128;
+	case 0: 
 		goto art_scan_pass129;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass12;
+	default: goto art_scan_pass11;
 	}
-art_scan_pass12:
+art_scan_pass11:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x0a': 
-		goto art_scan_pass11;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass12;
+	case 10: 
+		goto art_scan_pass10;
+	case 0: 
+		goto art_scan_pass129;
+	default: goto art_scan_pass11;
+	}
+art_scan_pass113:
+	if (s == e) return last;
+	switch (*(--e))
+	{
+	case 32: 
+		goto art_scan_pass113;
+	case 46: case 62: 
+		goto art_scan_pass115;
+	case 10: 
+		goto art_scan_pass119;
+	case 0: 
+		goto art_scan_pass129;
+	default: goto art_scan_pass11;
 	}
 art_scan_pass114:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x20': 
-		goto art_scan_pass114;
-	case '\x2e': case '\x3e': 
-		goto art_scan_pass116;
-	case '\x0a': 
-		goto art_scan_pass120;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass12;
+	case 32: 
+		goto art_scan_pass113;
+	case 10: 
+		goto art_scan_pass119;
+	case 0: 
+		goto art_scan_pass129;
+	default: goto art_scan_pass115;
 	}
 art_scan_pass115:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x20': 
+	case 32: 
 		goto art_scan_pass114;
-	case '\x0a': 
-		goto art_scan_pass120;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass116;
+	case 10: 
+		goto art_scan_pass119;
+	case 0: 
+		goto art_scan_pass129;
+	default: goto art_scan_pass115;
 	}
 art_scan_pass116:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x20': 
-		goto art_scan_pass115;
-	case '\x0a': 
-		goto art_scan_pass120;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass116;
+	case 32: 
+		goto art_scan_pass116;
+	case 46: case 62: 
+		goto art_scan_pass118;
+	case 10: 
+		goto art_scan_pass119;
+	case 0: 
+		goto art_scan_pass129;
+	default: goto art_scan_pass115;
 	}
 art_scan_pass117:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x20': 
-		goto art_scan_pass117;
-	case '\x2e': case '\x3e': 
+	case 32: 
+		goto art_scan_pass116;
+	case 10: 
 		goto art_scan_pass119;
-	case '\x0a': 
-		goto art_scan_pass120;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass116;
+	case 0: 
+		goto art_scan_pass129;
+	default: goto art_scan_pass118;
 	}
 art_scan_pass118:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x20': 
+	case 32: 
 		goto art_scan_pass117;
-	case '\x0a': 
-		goto art_scan_pass120;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass119;
+	case 10: 
+		goto art_scan_pass119;
+	case 0: 
+		goto art_scan_pass129;
+	default: goto art_scan_pass118;
 	}
 art_scan_pass119:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x20': 
-		goto art_scan_pass118;
-	case '\x0a': 
-		goto art_scan_pass120;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass119;
+	case 32: 
+		goto art_scan_pass117;
+	case 10: 
+		goto art_scan_pass128;
+	case 0: 
+		goto art_scan_pass129;
+	default: goto art_scan_pass118;
 	}
 art_scan_pass120:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x20': 
-		goto art_scan_pass118;
-	case '\x0a': 
+	case 10: 
+		goto art_scan_pass119;
+	case 0: 
 		goto art_scan_pass129;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass119;
+	default: goto art_scan_pass120;
 	}
-art_scan_pass121:
+art_scan_pass123:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x0a': 
-		goto art_scan_pass120;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass121;
+	case 32: 
+		goto art_scan_pass123;
+	case 46: case 62: 
+		goto art_scan_pass125;
+	case 10: 
+		goto art_scan_pass128;
+	case 0: 
+		goto art_scan_pass129;
+	default: goto art_scan_pass120;
 	}
 art_scan_pass124:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x20': 
-		goto art_scan_pass124;
-	case '\x2e': case '\x3e': 
-		goto art_scan_pass126;
-	case '\x0a': 
+	case 32: 
+		goto art_scan_pass123;
+	case 10: 
+		goto art_scan_pass128;
+	case 0: 
 		goto art_scan_pass129;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass121;
+	default: goto art_scan_pass125;
 	}
 art_scan_pass125:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x20': 
+	case 32: 
 		goto art_scan_pass124;
-	case '\x0a': 
+	case 10: 
+		goto art_scan_pass128;
+	case 0: 
 		goto art_scan_pass129;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass126;
+	default: goto art_scan_pass125;
 	}
 art_scan_pass126:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x20': 
-		goto art_scan_pass125;
-	case '\x0a': 
+	case 32: 
+		goto art_scan_pass126;
+	case 10: case 46: case 62: 
+		goto art_scan_pass128;
+	case 0: 
 		goto art_scan_pass129;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass126;
+	default: goto art_scan_pass125;
 	}
 art_scan_pass127:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x20': 
-		goto art_scan_pass127;
-	case '\x0a': case '\x2e': case '\x3e': 
+	case 32: 
+		goto art_scan_pass126;
+	case 0: 
 		goto art_scan_pass129;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass126;
+	default: goto art_scan_pass128;
 	}
 art_scan_pass128:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x20': 
+	case 32: 
 		goto art_scan_pass127;
-	case '\x00': 
-		goto art_scan_pass130;
-	default: goto art_scan_pass129;
+	case 0: 
+		goto art_scan_pass129;
+	default: goto art_scan_pass128;
 	}
 art_scan_pass129:
 	if (s == e) return last;
 	switch (*(--e))
 	{
-	case '\x20': 
+	case 10: 
 		goto art_scan_pass128;
-	case '\x00': 
-		goto art_scan_pass130;
 	default: goto art_scan_pass129;
-	}
-art_scan_pass130:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case '\x0a': 
-		goto art_scan_pass129;
-	default: goto art_scan_pass130;
 	}
 }
 
-const char* art_scan_pass2(const char* s, const char* e)
+const unsigned char* art_scan_pass2(const unsigned char* s, const unsigned char* e)
 {
-	const char* last = 0;
+	const unsigned char* last = 0;
 	goto art_scan_pass22;
 	
 art_scan_pass20:
@@ -215,7 +227,7 @@ art_scan_pass21:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': case '\x0a': 
+	case 0: case 10: 
 		goto art_scan_pass20;
 	default: goto art_scan_pass29;
 	}
@@ -223,7 +235,7 @@ art_scan_pass22:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass23;
 	default: goto art_scan_pass20;
 	}
@@ -231,9 +243,9 @@ art_scan_pass23:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': case '\x0a': 
+	case 0: case 10: 
 		goto art_scan_pass20;
-	case '\x20': case '\x2e': case '\x3e': 
+	case 32: case 46: case 62: 
 		goto art_scan_pass25;
 	default: goto art_scan_pass26;
 	}
@@ -241,9 +253,9 @@ art_scan_pass24:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': case '\x0a': 
+	case 0: case 10: 
 		goto art_scan_pass20;
-	case '\x20': case '\x2e': case '\x3e': 
+	case 32: case 46: case 62: 
 		goto art_scan_pass230;
 	default: goto art_scan_pass213;
 	}
@@ -251,11 +263,11 @@ art_scan_pass25:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass23;
-	case '\x20': case '\x2e': case '\x3e': 
+	case 32: case 46: case 62: 
 		goto art_scan_pass25;
 	default: goto art_scan_pass26;
 	}
@@ -263,13 +275,13 @@ art_scan_pass26:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass23;
-	case '\x2e': case '\x3e': 
+	case 46: case 62: 
 		goto art_scan_pass25;
-	case '\x20': 
+	case 32: 
 		goto art_scan_pass215;
 	default: goto art_scan_pass26;
 	}
@@ -277,13 +289,13 @@ art_scan_pass27:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass23;
-	case '\x20': 
+	case 32: 
 		goto art_scan_pass216;
-	case '\x2e': case '\x3e': 
+	case 46: case 62: 
 		goto art_scan_pass224;
 	default: goto art_scan_pass27;
 	}
@@ -291,9 +303,9 @@ art_scan_pass28:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass24;
 	default: goto art_scan_pass28;
 	}
@@ -301,9 +313,9 @@ art_scan_pass29:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass21;
 	default: goto art_scan_pass29;
 	}
@@ -311,13 +323,13 @@ art_scan_pass211:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass24;
-	case '\x20': 
+	case 32: 
 		goto art_scan_pass220;
-	case '\x2e': case '\x3e': 
+	case 46: case 62: 
 		goto art_scan_pass228;
 	default: goto art_scan_pass211;
 	}
@@ -325,13 +337,13 @@ art_scan_pass213:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass24;
-	case '\x20': 
+	case 32: 
 		goto art_scan_pass222;
-	case '\x2e': case '\x3e': 
+	case 46: case 62: 
 		goto art_scan_pass230;
 	default: goto art_scan_pass213;
 	}
@@ -339,13 +351,13 @@ art_scan_pass215:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass23;
-	case '\x2e': case '\x3e': 
+	case 46: case 62: 
 		goto art_scan_pass25;
-	case '\x20': 
+	case 32: 
 		goto art_scan_pass224;
 	default: goto art_scan_pass26;
 	}
@@ -353,13 +365,13 @@ art_scan_pass216:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass23;
-	case '\x20': 
+	case 32: 
 		goto art_scan_pass28;
-	case '\x2e': case '\x3e': 
+	case 46: case 62: 
 		goto art_scan_pass224;
 	default: goto art_scan_pass27;
 	}
@@ -367,13 +379,13 @@ art_scan_pass220:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass24;
-	case '\x20': 
+	case 32: 
 		goto art_scan_pass29;
-	case '\x2e': case '\x3e': 
+	case 46: case 62: 
 		goto art_scan_pass228;
 	default: goto art_scan_pass211;
 	}
@@ -381,13 +393,13 @@ art_scan_pass222:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass24;
-	case '\x20': 
+	case 32: 
 		goto art_scan_pass228;
-	case '\x2e': case '\x3e': 
+	case 46: case 62: 
 		goto art_scan_pass230;
 	default: goto art_scan_pass213;
 	}
@@ -395,11 +407,11 @@ art_scan_pass224:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass23;
-	case '\x20': case '\x2e': case '\x3e': 
+	case 32: case 46: case 62: 
 		goto art_scan_pass224;
 	default: goto art_scan_pass27;
 	}
@@ -407,11 +419,11 @@ art_scan_pass228:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass24;
-	case '\x20': case '\x2e': case '\x3e': 
+	case 32: case 46: case 62: 
 		goto art_scan_pass228;
 	default: goto art_scan_pass211;
 	}
@@ -419,17 +431,17 @@ art_scan_pass230:
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case '\x00': 
+	case 0: 
 		goto art_scan_pass20;
-	case '\x0a': 
+	case 10: 
 		goto art_scan_pass24;
-	case '\x20': case '\x2e': case '\x3e': 
+	case 32: case 46: case 62: 
 		goto art_scan_pass230;
 	default: goto art_scan_pass213;
 	}
 }
 
-void art_scan(const char** s, const char** e)
+void art_scan(const unsigned char** s, const unsigned char** e)
 {
 	*s = art_scan_pass1(*s, *e);
 	if (*s) *e = art_scan_pass2(*s, *e);
