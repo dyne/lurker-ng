@@ -1,4 +1,4 @@
-/*  $Id: search.h,v 1.2 2002-02-10 21:50:38 terpstra Exp $
+/*  $Id: search.h,v 1.3 2002-02-10 23:26:26 terpstra Exp $
  *  
  *  search.h - Uses the breader to execute a given search
  *  
@@ -30,3 +30,24 @@ extern int lu_search_sync (void);
 extern int lu_search_close(void);
 extern int lu_search_quit (void);
 
+/*------------------------------------------------- Public search methods */
+
+/* Begin a search. Expects a space delimited, null terminated search string.
+ * Returns: -1 internal error
+ *          0  success
+ *          1  bad search string
+ *
+ * message holds information that should be displayed to the user.
+ */
+extern int lu_search_start(
+	const char* keywords,
+	const char** message);
+
+/* Retrieve the next result.
+ */
+extern int lu_search_result(
+	message_id* result);
+
+/* Shutdown the current search.
+ */
+extern int lu_search_end();
