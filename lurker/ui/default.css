@@ -210,6 +210,30 @@ div.squash {
   white-space: nowrap;
 }
 
+div.goodsig {
+  margin: 0px;
+  padding: 0px;
+  border: 1px solid #0F0;
+}
+div.goodsig div.details {
+  background-color: #0F0;
+}
+
+div.badsig {
+  margin: 0px;
+  padding: 0px;
+  border: 1px solid #F00;
+}
+div.badsig div.details {
+  background-color: #F00;
+}
+
+img.photo {
+ border: 0;
+ margin: 0;
+ padding: 0;
+ float: right;
+}
 .padded td { padding-bottom:1px }  /* Adds padding to output tables containing Discussion Tree icon */
 
 .na { color:#BBB }  /* used to fade text when link not available, but still has placeholder text */

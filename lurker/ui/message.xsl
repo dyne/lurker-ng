@@ -99,6 +99,23 @@
 <xsl:template mode="body" match="br">
  <xsl:if test="not(ancestor::art)"><br/></xsl:if>
 </xsl:template>
+<xsl:template mode="body" match="signed">
+ <xsl:element name="div">
+  <xsl:attribute name="class">
+   <xsl:choose>
+    <xsl:when test="@ok='yes'">goodsig</xsl:when>
+    <xsl:otherwise>badsig</xsl:otherwise>
+   </xsl:choose>
+  </xsl:attribute>
+  <div class="details">
+   <xsl:if test="photo">
+    <img src="{photo}" class="photo"/>
+   </xsl:if>
+   <xsl:apply-templates mode="body" select="details"/>
+  </div>
+  <xsl:apply-templates mode="body" select="data"/>
+ </xsl:element>
+</xsl:template>
 
 
 <!-- Format the mailing lists -->

@@ -20,8 +20,10 @@ xslt = xsltproc --nonet -
 # The photo id (if any) should be output to provided photo filename.
 # The substitutions %s, %b, and %p are the signature, body, and photo.
 # 
-# pgp_verify_mime   = gpg --photo-viewer "cat %i >%p" --show-photos --charset utf-8 --verify %s %b 2>&1 | cut -d: -f2-
-# pgp_verify_inline = gpg --photo-viewer "cat %i >%p" --show-photos --charset utf-8 --verify    %b 2>&1 | cut -d: -f2-
+# pgp_verify_mime   = gpg --photo-viewer "cat %i >%p" --show-photos --charset utf-8 --verify %s %b 2>&1
+# pgp_verify_inline = gpg --photo-viewer "cat %i >%p" --show-photos --charset utf-8 --verify    %b 2>&1
+# 
+# If you use gpg like above, you may also want --keyring /usr/share/keyrings/debian-keyring.gpg --no-default-keyring --homedir /tmp
 
 # The directory where lurker will keep it's database information.
 dbdir = @VARDIR@/lib/@PACKAGE_NAME@

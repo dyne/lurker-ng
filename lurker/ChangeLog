@@ -9,6 +9,7 @@ v0.10:
 	Unified all the copyrights to GPL v2
 	New config option can disable web cache for low traffic sites
 	New config options specify how to handle gpg signatures
+	Verify gpg signatures and format them for the user
 
 v0.9:
 	Don't segfault in rare cases if using '-d' on import (zero restart)

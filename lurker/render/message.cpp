@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.18 2003-06-25 14:34:09 terpstra Exp $
+/*  $Id: message.cpp,v 1.19 2003-06-25 16:48:23 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -45,6 +45,8 @@
 #include <XmlEscape.h>
 #include <Keys.h>
 
+#include <fstream>
+
 #include "commands.h"
 #include "Threading.h"
 #include "KeyReader.h"
@@ -59,6 +61,7 @@ void mailto_scan(const unsigned char** s, const unsigned char** e);
 void  quote_scan(const unsigned char** s, const unsigned char** e);
 
 #define us(x) ((const unsigned char**)x)
+
 
 void my_service_mailto(
 	ostream&		o,
@@ -156,6 +159,123 @@ void my_service_quote(
 	my_service_pic(o, s, e-s);
 }
 
+void find_and_replace(string& target, const string& token, const string& value)
+{
+	string::size_type x = 0;
+	while ((x = target.find(token, x)) != string::npos)
+		target.replace(x, token.length(), value);
+}
+
+const Config* pgp_config = 0;
+string pgp_name_prefix;
+int pgp_part = 0;
+
+string pgp_tmpfile(const string& type)
+{
+	char buf[10];
+	sprintf(buf, "%d", pgp_part);
+	return string("../attach/") + buf + "@" + pgp_name_prefix + "." + type;
+}
+
+void run_pgp(ostream& o, string& command)
+{
+	string photo = pgp_tmpfile("photo");
+	find_and_replace(command, "%p", photo);
+	
+	string details;
+	int status;
+	
+	FILE* pgp = popen(command.c_str(), "r");
+	if (pgp != 0)
+	{
+		char buf[1024];
+		size_t got;
+		while ((got = fread(buf, 1, sizeof(buf), pgp)) > 0)
+		{
+			details.append(buf, got);
+			if (got != sizeof(buf)) break;
+		}
+		
+		status = pclose(pgp);
+	}
+	else
+	{
+		details = command + " failed with " + strerror(errno);
+		status = 1;
+	}
+	
+	o << "<signed ok=\"" << (status==0?"yes":"no") << "\">"
+	  << "<details>" << xmlEscape << details << "</details>";
+	
+	if (access(photo.c_str(), R_OK) == 0)
+	{
+		o << "<photo>" << photo << "</photo>";
+	}
+}
+
+bool handle_signed_inline(ostream& o, DwEntity& e)
+{
+	string command = pgp_config->pgpv_inline;
+	if (command == "off") return false;
+	
+	string cleartext = pgp_tmpfile("cleartext");
+	find_and_replace(command, "%b", cleartext);
+	
+	if (1)
+	{ // create the cleartext
+		std::ofstream body(cleartext.c_str());
+		body.write(	e.Body().AsString().c_str(), 
+				e.Body().AsString().length());
+	}
+	
+	run_pgp(o, command);
+	return true;
+}
+
+bool handle_signed_mime(ostream& o, DwEntity& e)
+{
+	// rfc 1847 says we have 2 bodyparts:
+	//  1. the original data
+	//  2. the signature
+	
+	DwBodyPart* body = e.Body().FirstBodyPart();
+	if (!body) return false;
+	DwBodyPart* sig = body->Next();
+	if (!sig) return false;
+	if (sig->Next() != 0) return false;
+	
+	// signature has no type
+	if (!sig->Headers().HasContentType() ||
+	    sig->Headers().ContentType().Type() != DwMime::kTypeApplication ||
+	    sig->Headers().ContentType().Subtype() != DwMime::kSubtypePgpSignature)
+		return false;
+	
+	string command = pgp_config->pgpv_mime;
+	if (command == "off") return false;
+	
+	string cleartext = pgp_tmpfile("cleartext");
+	string signature = pgp_tmpfile("signature");
+	find_and_replace(command, "%b", cleartext);
+	find_and_replace(command, "%s", signature);
+	
+	if (1)
+	{ // create the cleartext
+		std::ofstream bodyf(cleartext.c_str());
+		bodyf.write(	body->AsString().c_str(), 
+				body->AsString().length());
+	}
+	
+	if (1)
+	{ // create the signature
+		std::ofstream sigf(signature.c_str());
+		sigf.write(	sig->Body().AsString().c_str(), 
+				sig->Body().AsString().length());
+	}
+	
+	run_pgp(o, command);
+	return true;
+}
+
 void message_display(ostream& o, DwEntity& e, const string& charset, bool html)
 {
 	DwString out;
@@ -216,7 +336,31 @@ void message_display(ostream& o, DwEntity& e, const string& charset, bool html)
 	}
 	else
 	{
-		my_service_quote(o, utf8.c_str(), utf8.length());
+		if (utf8.substr(0, sizeof(OLD_PGP_HEADER)-1) == OLD_PGP_HEADER
+		    && handle_signed_inline(o, e))
+		{	// this is an oldschool signed message!
+			o << "<data>";
+			
+			// find the end of the signed body
+			string::size_type start = sizeof(OLD_PGP_HEADER)+1;
+			
+			// skip the hash line
+			start = utf8.find('\n', start);
+			if (start == string::npos) start = utf8.length();
+			else ++start;
+			
+			string::size_type end = utf8.find(OLD_PGP_DIVIDER, start);
+			if (end == string::npos) end == utf8.length();
+			
+			// transform the signed body
+			my_service_quote(o, utf8.c_str() + start, end - start);
+			
+			o << "</data></signed>";
+		}
+		else
+		{
+			my_service_quote(o, utf8.c_str(), utf8.length());
+		}
 	}
 }
 
@@ -225,7 +369,7 @@ void message_build(ostream& o, DwEntity& e,
 	const string& parentCharset, bool dump, long& x)
 {
 	// We are the requested entity.
-	++x;
+	pgp_part = ++x;
 	
 	string charset = parentCharset;
 	string type = "text/plain";
@@ -264,6 +408,8 @@ void message_build(ostream& o, DwEntity& e,
 	if (name != "") o << " name=\"" << xmlEscape << ches.write(name) << "\"";
 	o << ">";
 	
+	bool signedopen = false;
+	
 	// if (e.hasHeaders() && 
 	if (e.Headers().HasContentType())
 	{
@@ -276,6 +422,14 @@ void message_build(ostream& o, DwEntity& e,
 			break;
 		
 		case DwMime::kTypeMultipart:
+			if (t.Subtype() == DwMime::kSubtypeSigned)
+			{	// verify the signature
+				signedopen = handle_signed_mime(o, e);
+			}
+			
+			// first body part is the signed data
+			if (signedopen)	o << "<data>";
+				
 			for (DwBodyPart* p = e.Body().FirstBodyPart(); p != 0; p = p->Next())
 			{
 				bool plain = false;
@@ -299,6 +453,12 @@ void message_build(ostream& o, DwEntity& e,
 				else
 				{
 					message_build(o, *p, charset, false, x);
+				}
+				
+				if (signedopen)
+				{	// done the first section which was signed
+					o << "</data></signed>";
+					signedopen = false;
 				}
 			}
 			break;
@@ -422,6 +582,9 @@ int rip_key(const char* keyword, void* arg)
 int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 {
 	MessageId id(param.c_str());
+	
+	pgp_config = &cfg; // hackish
+	pgp_name_prefix = id.serialize();
 	
 	if (id.timestamp() == 0)
 	{
