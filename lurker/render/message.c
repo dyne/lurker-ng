@@ -1,4 +1,4 @@
-/*  $Id: message.c,v 1.6 2002-02-04 23:51:36 terpstra Exp $
+/*  $Id: message.c,v 1.7 2002-02-05 00:20:21 terpstra Exp $
  *  
  *  message.c - output results from a message/ lookup
  *  
@@ -289,10 +289,10 @@ int lu_message_handler(char* parameter)
 		return -1;
 	}
 	
-	fprintf(xml, "<message>\n");
+	fputs("<?xml-stylesheet type=\"text/xml\" href=\"render.xslt\"?>\n", xml);
+	fputs("<message>\n", xml);
 	
-	fprintf(xml, " <list>\n");
-	fputs("  <name>", xml);
+	fputs(" <list>\n  <name>", xml);
 	write_xml_escaped_str(&msg.list_name[0], xml);
 	fputs("</name>\n  <address>", xml);
 	write_xml_escaped_str(&msg.list_address[0], xml);
