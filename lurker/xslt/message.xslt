@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <xsl:stylesheet 
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"                    
     xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
 
-<xsl:output method="html" indent="yes" encoding="ISO-8859-1"
+<xsl:output method="html" indent="yes" encoding="UTF-8"
     doctype-system="http://www.w3.org/TR/html4/strict.dtd"
     doctype-public="-//W3C//DTD HTML 4.01//EN"/>
 
