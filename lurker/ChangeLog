@@ -38,6 +38,7 @@ v1.2:
 	Added support for 3 digit language codes and 2 digit country code
 	Made the config file able to deal with translations in '[]'s
 	Added config file option 'regroupable' for large archives
+	Don't output CRs in message bodies
 
 v1.1:
 	Create mbox and attach directory upon install
