@@ -68,7 +68,7 @@
 
  <hr/>
 
- <form action="{server/cgi-url}/keyword.cgi" id="smSearch">
+ <form action="{server/cgi-url}/keyword.cgi" id="smSearch" accept-charset="UTF-8">
   <input type="hidden" name="doc-url" value="{server/doc-url}"/>
   <input type="hidden" name="format"  value="{$ext}"/>
   <input type="text"   name="query"   value="ml:{list/id} " class="longtext"/>

@@ -42,7 +42,7 @@
   </xsl:choose>
  </xsl:variable>
  <div id="smSearch">
-  <form action="{server/cgi-url}/keyword.cgi">
+  <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">
    <input type="hidden" name="doc-url" value="{server/doc-url}"/>
    <input type="hidden" name="format"  value="{$ext}"/>
    <input type="text"   name="query"   value="{translate(query,',',' ')}" class="longtext"/>
@@ -56,7 +56,7 @@
   </form>
  </div>
  <div id="smSearch">
-  <form action="{server/cgi-url}/keyword.cgi">
+  <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">
    <input type="hidden" name="doc-url" value="{server/doc-url}"/>
    <input type="hidden" name="format"  value="{$ext}"/>
    <input type="hidden" name="query"   value="{translate(query,',',' ')}"/>

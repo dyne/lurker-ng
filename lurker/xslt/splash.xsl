@@ -122,7 +122,7 @@
  <h2><xsl:value-of select="$titlesearch"/></h2>
 
  <table width="100%"><tr><td width="50%">&#160;</td><td>
- <form action="{server/cgi-url}/keyword.cgi">
+ <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">
   <input type="hidden" name="doc-url" value="{server/doc-url}"/>
   <input type="hidden" name="format" value="{$ext}"/>
   <input type="text" name="query" class="longtext"/>
