@@ -20,7 +20,7 @@ static PyMethodDef ESortMethods[] = {
 };
 
 PyMODINIT_FUNC
-initspam(void)
+initESort(void)
 {
-	(void) Py_InitModule("ESort", ESortMethods);
+	Py_InitModule("ESort", ESortMethods);
 }
