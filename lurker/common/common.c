@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.7 2002-02-25 03:48:47 terpstra Exp $
+/*  $Id: common.c,v 1.8 2002-02-25 04:25:26 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -163,7 +163,7 @@ static char* my_common_base64(
 	while (r != re && *r != '=' && w != we)
 	{
 		/* Firstly, decode a hunk of the string to binary */
-		for (; r != re && be - b >= 3; r++)
+		while (r != re && be - b >= 3)
 		{
 			lu_quad	tmp;
 			
