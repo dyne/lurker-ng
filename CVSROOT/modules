@@ -25,4 +25,5 @@
 # can be useful for creating a module that consists of many directories
 # spread out over the entire source repository.
 
-libesort &lurker/xslt &lurker/libesort
+libesort &lurker/fmt
+libesort &lurker/libesort
