@@ -1,4 +1,5 @@
 Why shouldn't I open the lurker mboxs with a mail reader?
+What does yellow mean on messages anyways?
 Why does lurker appear to use so much RAM?
 Why not store all the messages as XML instead of rendering them as it?
 What is better: one large mbox or lots of small ones?
@@ -25,6 +26,25 @@ A: Mail readers like to modify the X-Status header by adding or removing
           chown mail.youruser lurkers.mbox
           chmod 0640 lurkers.mbox
 
+
+Q: What does yellow mean on messages anyways?
+
+A: Well, that is a complicated topic. :-)
+   
+   The yellow colour is used to help indicate when the subject of a
+   discussion tree changed and thus started a new topic.
+   
+   In drawings of the discussion trees, a yellow background means that there
+   are messages that reply to the yellow message which are not shown in the
+   tree because they have a different topic. This applies to both the small
+   tree in the view of a single message and the large conversation tree.
+   
+   When looking at "Follow-Ups: " or "In-Reply-To: ", yellow denotes a
+   discussion-head. That is, if the message is the first in a new topic.
+   
+   So, if a message appears yellow in the conversation trees, then it must
+   have at least one yellow "Follow-Ups: " message which does not appear in
+   the conversation tree.
 
 Q: Why does lurker appear to use so much RAM?
 
