@@ -1,6 +1,5 @@
 ---- Agenda for 1.2:
 
-Make deleted message vanish from tree
 Reimport restores deleted messages... (fix)
 Access two databases at once
 
