@@ -1,4 +1,4 @@
-/*  $Id: breader.h,v 1.1 2002-02-03 03:10:53 terpstra Exp $
+/*  $Id: breader.h,v 1.2 2002-02-10 03:24:29 terpstra Exp $
  *  
  *  breader.h - Knows how to use the abstracted read interface for buffered access
  *  
@@ -22,6 +22,11 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/*------------------------------------------------- Public types */
+ 
+struct My_Breader_Handle_T;
+typedef struct My_Breader_Handle_T* Lu_Breader_Handle;
+
 /*------------------------------------------------- Public component methods */
 
 extern int lu_breader_init();
@@ -30,3 +35,32 @@ extern int lu_breader_sync();
 extern int lu_breader_close();
 extern int lu_breader_quit();
 
+/*-------------------------------------------------- Reader methods */
+
+/* Open a handle to a keyword with which to read.
+ */
+extern Lu_Breader_Handle lu_breader_new(
+	const char* keyword);
+
+/* Find the index which contains the largest id <= id.
+ * lu_common_minvalid if there is no such index.
+ * 0 for success, -1 on error
+ */
+extern int lu_breader_offset(
+	Lu_Breader_Handle h,
+	message_id  id,
+	message_id* index);
+
+/* Read [index, index+count) into out.
+ * 0 for success, -1 on error
+ */
+extern int lu_breader_read(
+	Lu_Breader_Handle h,
+	message_id index,
+	message_id count,
+	message_id* out);
+
+/* Close the handle.
+ */
+extern void lu_breader_free(
+	Lu_Breader_Handle h);

@@ -1,4 +1,4 @@
-/*  $Id: flatfile.c,v 1.4 2002-02-03 03:21:48 terpstra Exp $
+/*  $Id: flatfile.c,v 1.5 2002-02-10 03:24:29 terpstra Exp $
  *  
  *  flatfile.c - Knows how to manage the keyword flatfile database
  *  
@@ -83,11 +83,6 @@
  * How the direct access and search methods work are explained further down.
  */
 
-/*------------------------------------------------ Private global vars */
-
-static int my_flatfile_fd;
-static DB* my_flatfile_db;
-
 /*------------------------------------------------ Constant parameters */
 
 /* What is the maximum number of records we'll move to defragment on open?
@@ -119,6 +114,11 @@ struct My_Flatfile_Handle_T
 		off_t		where;
 	} index[LU_TABLE_SIZE+1];
 };
+
+/*------------------------------------------------ Private global vars */
+
+static int my_flatfile_fd;
+static DB* my_flatfile_db;
 
 /*------------------------------------------------ Private helper methods */
 
