@@ -5,13 +5,13 @@ v0.9:
 	Truncating long utf-8 fields fixed; spam is again viewable!
 	Truncate long personal names and message ids; fixes assertion failure
 	Timestamps of emails are clipped to [1970-01-01 00:00:01, now]
-	Capital bytes
+	Capital bytes during import
 	Allow up to 32 byte list ids instead of 16
 	Depend on zlib and find it like mimelib
 	Added lurker-list and lurker-params to facilitate script writing
 	Added a group option which can be used to categorize the splash
 	Searching by group is now supported
-	Support including files within configuration
+	Support 'include = ' files within configuration
 	Test mimelib last since mimelib local is not available during tests
 	Parse mailbox dates using GNU date's code
 
