@@ -202,7 +202,8 @@ td.clipped {
 
 div.squash {
   overflow: visible;
-  width: 1px;
+  width: 50px;
+  white-space: nowrap;
 }
 
 .padded td { padding-bottom:1px }  /* Adds padding to output tables containing Discussion Tree icon */
