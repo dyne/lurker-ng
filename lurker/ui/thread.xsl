@@ -14,11 +14,11 @@
     <xsl:otherwise>row2</xsl:otherwise>
    </xsl:choose>
   </xsl:attribute>
-  <td>
+  <td nowrap="NOWRAP">
    <xsl:apply-templates mode="tree" select="tree"/>
   </td>
-  <td><xsl:apply-templates mode="email-link" select="summary/email"/></td>
-  <td><xsl:apply-templates mode="date" select="summary"/></td>
+  <td nowrap="NOWRAP"><xsl:apply-templates mode="email-link" select="summary/email"/></td>
+  <td nowrap="NOWRAP"><xsl:apply-templates mode="date" select="summary"/></td>
  </xsl:element>
 </xsl:template>
 
