@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.9 2002-01-28 06:15:47 terpstra Exp $
+/*  $Id: main.c,v 1.10 2002-01-28 06:55:40 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -148,7 +148,7 @@ static int lu_move_mbox_end(Mbox* mbox, List* list, off_t now)
  * Determine where to split words, and index the
  * results in the database with lu_push_keyword.
  */
-static void index_keywords(char *buffer, size_t length)
+static void index_keywords(char *buffer, int length)
 {
 	const char *word, *adv;
 
@@ -224,19 +224,81 @@ void index_traverse(struct msg* in, struct mail_bodystruct* body)
 	}
 }
 
-static void process_mbox(Mbox* mbox, List* list)
+static void process_mbox(Mbox* mbox, List* list, time_t stamp)
 {
-	off_t old;
+	off_t old, new;
+	struct msg* m;
+	message_id id;
+	char* author_name;
+	char author_email[200];
 	
 	if (lu_lock_mbox(mbox->fd, mbox->path) == -1)
 		return;
 	
-	/*!!! Actually index the message here */
-	/* Make sure to move the file offset to the end of the message when done */
-	
 	old = lseek(mbox->fd, 0, SEEK_CUR);
-	if (old != -1)
-		lu_move_mbox_end(mbox, list, old);
+	if (old == -1)
+	{
+		lu_unlock_mbox(mbox->fd, mbox->path);
+		return;
+	}
+	
+	printf("PARSE!\n");
+	m = mail_parse(mbox->fd, old);
+	if (m)
+	{
+		printf("Find!\n");
+		author_name = "";
+		author_email[0] = 0;
+		
+		if (m->env->reply_to)
+		{
+			if (m->env->reply_to->personal)
+				author_name = m->env->reply_to->personal;
+			if (m->env->reply_to->mailbox && m->env->reply_to->host)
+			{
+				snprintf(&author_email[0], sizeof(author_email),
+					"%s@%s", m->env->reply_to->mailbox, m->env->reply_to->host);
+			}
+		}
+		else if (m->env->from)
+		{
+			if (m->env->from
+			->personal)
+				author_name = m->env->from->personal;
+			if (m->env->from->mailbox && m->env->from->host)
+			{
+				snprintf(&author_email[0], sizeof(author_email),
+					"%s@%s", m->env->from->mailbox, m->env->from->host);
+			}
+		}
+		else if (m->env->sender)
+		{
+			if (m->env->sender->personal)
+				author_name = m->env->sender->personal;
+			if (m->env->sender->mailbox && m->env->sender->host)
+			{
+				snprintf(&author_email[0], sizeof(author_email),
+					"%s@%s", m->env->sender->mailbox, m->env->sender->host);
+			}
+		}
+		
+		id = lu_import_message(list->id, mbox->id, old, stamp,
+			m->env->subject, author_name, &author_email[0]);
+		
+		lu_reply_to_resolution(id,
+			m->env->message_id,
+			m->env->in_reply_to);
+		
+		mail_free(m);
+	}
+	
+	/* even if we can't parse it, we want to use what the parser said the
+	 * new offset should be. -> get past junk
+	 */
+	new = lseek(mbox->fd, 0, SEEK_CUR);
+	if (new != -1)
+		lu_move_mbox_end(mbox, list, new);
+	
 	lu_unlock_mbox(mbox->fd, mbox->path);
 }
 
@@ -391,7 +453,7 @@ static void* watch_mboxs(void* arg)
 		
 		if (lowest_timestamp != 0)
 		{
-			process_mbox(lowest_mbox, lowest_list);
+			process_mbox(lowest_mbox, lowest_list, lowest_timestamp);
 			
 			/* Don't actually sleep, just reschedual to allow for
 			 * requests to be serviced

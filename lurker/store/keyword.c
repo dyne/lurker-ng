@@ -1,4 +1,4 @@
-/*  $Id: keyword.c,v 1.9 2002-01-27 03:57:48 terpstra Exp $
+/*  $Id: keyword.c,v 1.10 2002-01-28 06:55:40 terpstra Exp $
  *  
  *  keyword.c - manages a database for keyword searching
  *  
@@ -45,7 +45,7 @@
 #define assert(x) do { if (!x) { printf("\nASSERT FAILURE: %s:%i: '%s'\n", __FILE__, __LINE__, #x); exit(1); } } while (0)
 #endif
 
-#define DEBUG 1
+// #define DEBUG 1
 
 #ifndef DEBUG
 #ifdef HAVE_SYSLOG_H

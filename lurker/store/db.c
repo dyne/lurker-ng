@@ -1,4 +1,4 @@
-/*  $Id: db.c,v 1.7 2002-01-27 02:40:23 terpstra Exp $
+/*  $Id: db.c,v 1.8 2002-01-28 06:55:40 terpstra Exp $
  *  
  *  db.c - manage the databases
  *  
@@ -238,6 +238,8 @@ message_id lu_import_message(
 	 * 
 	 * Finally, we push keywords for the list, author, and subject.
 	 */
+	 
+	 printf("HOLA! %s <%s>\n", author_name, author_email);
 	 
 	 return 0;
 }
