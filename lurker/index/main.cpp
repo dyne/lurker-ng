@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.35 2003-06-26 22:12:51 terpstra Exp $
+/*  $Id: main.cpp,v 1.36 2003-07-01 12:41:35 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -242,8 +242,7 @@ int index(DwString& msg, long batch, bool check, bool compress)
 	}
 	
 	// Err, messages from the future? I don't think so.
-	// We have a day's worth of tolerance in case of a timezone issue
-	if (arrival > import + 24*60*60) arrival = import;
+	if (arrival > import) arrival = import;
 	
 	if (compress)
 	{

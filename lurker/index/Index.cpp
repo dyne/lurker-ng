@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.26 2003-06-26 20:13:19 terpstra Exp $
+/*  $Id: Index.cpp,v 1.27 2003-07-01 12:41:35 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -246,10 +246,9 @@ int Index::index_id(time_t server)
 		time_t user = message.Headers().Date().AsUnixTime();
 		
 		/* User time must be earlier; there is delivery delay!
-		 * ... except by one hour due to daylight savings
-		 * However, more than 3 day delivery time is unlikely.
+		 * However, more than 7 day delivery time is unlikely.
 		 */
-		if ((user <= server+60*60 && server < user+3*60*60*24) ||
+		if ((user <= server && server < user+7*60*60*24) ||
 		    server <= 0) // server is on crack?
 			stamp = user;
 	}

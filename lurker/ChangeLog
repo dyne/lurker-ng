@@ -18,6 +18,8 @@ v0.10:
 	Keep different Japanese subjects in different threads
 	Switch back to evil automake; too few systems have jam
 	Tweaked the css for better IE support
+	Reorder thread by in-reply-to + references if date sequence is wrong
+	More strict enforcement of sanity on dates
 
 v0.9:
 	Don't segfault in rare cases if using '-d' on import (zero restart)
