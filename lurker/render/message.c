@@ -1,4 +1,4 @@
-/*  $Id: message.c,v 1.13 2002-02-22 01:34:22 terpstra Exp $
+/*  $Id: message.c,v 1.14 2002-02-22 01:55:58 terpstra Exp $
  *  
  *  message.c - output results from a message/ lookup
  *  
@@ -29,6 +29,8 @@
 #include "handler.h"
 
 #include "io.h"
+
+#include <string.h>
 
 int lu_message_handler(
 	char* parameter, 
