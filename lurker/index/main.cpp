@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.27 2003-06-20 12:17:28 terpstra Exp $
+/*  $Id: main.cpp,v 1.28 2003-06-20 23:21:16 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -144,7 +144,7 @@ int index(const DwString& msg, long batch, bool check, bool compress)
 		/** Make a local-timezone timestamp for the message envelope.
 		 */
 		strftime(prefix, sizeof(prefix),
-		  "From lurker-index@localhost %a %b %2d %02H:%02M:%02S %Y\n",
+		  "From lurker-index@localhost %a %b %2d %02H:%02M:%02S %Y\r\n",
 		  localtime(&arrival));
 	}
 	
@@ -232,7 +232,7 @@ int index(const DwString& msg, long batch, bool check, bool compress)
 		append.append(msg.c_str(), msg.length());
 	}
 	
-	Index i(msg, db.get(), *list, start, msg.length());
+	Index i(msg, db.get(), *list, start, msg.length() + strlen(prefix));
 	
 	bool exist;
 	if (i.index(arrival, import, check, exist) != 0)
