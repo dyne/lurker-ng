@@ -3,29 +3,8 @@
 
 <xsl:import href="common.xsl"/>
 
-<!-- Format a new thread row -->
-<xsl:template name="max">
- <xsl:param name="args"/>
- <xsl:variable name="rest"  select="$args[position() &gt; 1]"/>
- <xsl:variable name="first">
-  <xsl:value-of select="$args[position()=1]"/>
- </xsl:variable>
- <xsl:variable name="best">
-  <xsl:choose>
-   <xsl:when test="count($args) &gt; 0">
-    <xsl:call-template name="max">
-     <xsl:with-param name="args" select="$rest"/>
-    </xsl:call-template>
-   </xsl:when>
-   <xsl:otherwise>0</xsl:otherwise>
-  </xsl:choose>
- </xsl:variable>
- <xsl:choose>
-  <xsl:when test="$best &gt; $first"><xsl:value-of select="$best"/></xsl:when>
-  <xsl:otherwise><xsl:value-of select="$first"/></xsl:otherwise>
- </xsl:choose>
-</xsl:template>
-<xsl:template match="row" mode="newthreads">
+<!-- Format a message row -->
+<xsl:template match="row" mode="message">
  <xsl:element name="tr">
   <xsl:attribute name="class">
    <xsl:choose>
@@ -36,9 +15,11 @@
   </xsl:attribute>
   <td nowrap="NOWRAP" class="clipped">
    <div class="squash">
-    <a href="../thread/{summary/id}.{$ext}">
+    <a href="../message/{summary/id}.{$ext}">
      <xsl:value-of select="summary/subject"/>
     </a>
+    <!-- make this the same height as thread -->
+    <img src="../imgs/a.png" width="1" height="24"/>
    </div>
   </td>
   <td nowrap="NOWRAP" class="clipped">
@@ -46,25 +27,15 @@
     <xsl:apply-templates mode="email-link" select="summary/email"/>
    </div>
   </td>
-  <td nowrap="NOWRAP" class="chart">
-   <xsl:variable name="maxval">
-    <xsl:call-template name="max">
-     <xsl:with-param name="args" select="day"/>
-    </xsl:call-template>
-   </xsl:variable>
-   <xsl:for-each select="day">
-    <img src="../imgs/bar.png" height="{(number(.)*21 div $maxval)+1}" width="5"/>
-   </xsl:for-each>
-  </td>
-  <td nowrap="NOWRAP" align="right">
-   <xsl:value-of select="sum(day)"/>
+  <td nowrap="NOWRAP">
+   <xsl:apply-templates mode="date" select="summary"/>
   </td>
  </xsl:element>
 </xsl:template>
 
 
-<!-- Format a list request -->
-<xsl:template match="list">
+<!-- Format a mindex request -->
+<xsl:template match="mindex">
  <html lang="{$lang}">
   <head>
    <link rel="stylesheet" href="../fmt/default.css" type="text/css"/>
@@ -84,28 +55,44 @@
     </table>
     
     <table class="navigation">
-     <tr><th colspan="2"><xsl:value-of select="$jump-to-date"/></th></tr>
+     <tr><th colspan="3"><xsl:value-of select="$jump-to-date"/></th></tr>
      <tr>
       <td>
-       <!-- make this the same height as mindex -->
-       <img src="../imgs/a.png" width="1" height="24"/>
+       <xsl:choose>
+        <xsl:when test="prev">
+         <a href="{list/id}@{prev}.{$ext}"><img alt="&lt;-" src="../imgs/prev.png"/></a>
+        </xsl:when>
+        <xsl:otherwise>
+         <img src="../imgs/a.png" alt=".."/>
+        </xsl:otherwise>
+       </xsl:choose>
       </td>
-      <td nowrap="NOWRAP" align="center" width="100%">
+      <td width="100%" nowrap="NOWRAP" align="center">
        <form action="{server/cgi-url}/jump.cgi">
         <input type="hidden" name="doc-url" value="{server/doc-url}"/>
         <input type="hidden" name="format" value="{$ext}"/>
         <input type="hidden" name="list" value="{list/id}"/>
         
         <xsl:call-template name="date-fields">
-         <xsl:with-param name="date" select="$jump-date"/>
+         <xsl:with-param name="date" select="row[position()=11]/summary/id"/>
         </xsl:call-template>
         <input type="submit" value="{$jump}!"/>
        </form>
       </td>
+      <td align="right">
+       <xsl:choose>
+        <xsl:when test="next">
+         <a href="{list/id}@{next}.{$ext}"><img alt="-&gt;" src="../imgs/next.png"/></a>
+        </xsl:when>
+        <xsl:otherwise>
+         <img src="../imgs/a.png" alt=".."/>
+        </xsl:otherwise>
+       </xsl:choose>
+      </td>
      </tr>
      <tr>
-      <td align="center" colspan="2">
-       [ <a href="../mindex/{list/id}@{$last-date}.{$ext}"><xsl:value-of select="$newest-messages"/></a> ]
+      <td colspan="3" align="center">
+       [ <a href="../list/{list/id}.{$ext}"><xsl:value-of select="$list-info"/></a> ]
        [ <a href="../splash/index.{$ext}#{list/group}"><xsl:value-of select="$jump-group"/></a> ]
        <xsl:if test="list/email/@address">
         [ <a href="mailto:{list/email/@address}"><xsl:value-of select="$post-new"/></a> ]
@@ -122,21 +109,12 @@
    <div class="body">
     <table class="index">
      <tr>
-      <th><xsl:value-of width="2*" select="$new-threads"/></th>
-      <th><xsl:value-of width="1*" select="$recent-poster"/></th>
-      <th><xsl:value-of width="0*" select="$activity-chart"/></th>
-      <th><xsl:value-of width="0*" select="$post-count"/></th>
+      <th><xsl:value-of width="2*" select="$subject"/></th>
+      <th><xsl:value-of width="1*" select="$author"/></th>
+      <th><xsl:value-of width="0*" select="$date"/> (UTC)</th>
      </tr>
-     <xsl:apply-templates mode="newthreads" select="row"/>
+     <xsl:apply-templates mode="message" select="row"/>
     </table>
-    
-<!-- this annoys me
-    <br/>
-    
-    <xsl:if test="list/description">
-     <h2><xsl:value-of select="list/description"/></h2>
-    </xsl:if>
--->
    </div>
    
    

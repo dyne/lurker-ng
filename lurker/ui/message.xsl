@@ -49,12 +49,11 @@
  <xsl:if test="translate(substring-before(@type,'/'),'MULTIPART','multipart')!='multipart'">
   <a href="../attach/{@id}@{/message/summary/id}.attach">
    <img src="../imgs/paperclip.png" alt="+"/>
-   <xsl:text> </xsl:text>
-   <xsl:choose>
-    <xsl:when test="@name"><xsl:value-of select="@name"/></xsl:when>
-    <xsl:otherwise>unnamed</xsl:otherwise>
-   </xsl:choose>
-   <xsl:text> (</xsl:text>
+   <xsl:if test="@name">
+    <xsl:text>&#160;</xsl:text>
+    <xsl:value-of select="@name"/>
+   </xsl:if>
+   <xsl:text>&#160;(</xsl:text>
    <xsl:value-of select="@type"/>
    <xsl:text>)</xsl:text>
   </a>
@@ -108,28 +107,36 @@
    <a href="../list/{list/id}.{$ext}"><xsl:value-of select="$list-info"/></a> |
    <a href="../mindex/{list/id}@{../summary/id}.{$ext}"><xsl:value-of select="$near-message"/></a>
   </td>
-  <td align="left" width="50%">
-   <xsl:choose>
-    <xsl:when test="prev">
+  <xsl:choose>
+   <xsl:when test="prev">
+    <td>
      <a href="{prev/summary/id}.{$ext}#{list/id}">
       <img src="../imgs/prev.png" alt="&lt;-"/>
+     </a>
+    </td>
+    <td align="left" width="50%">
+     <a href="{prev/summary/id}.{$ext}#{list/id}">
       <xsl:value-of select="prev/summary/subject"/>
      </a>
-    </xsl:when>
-    <xsl:otherwise>&#160;</xsl:otherwise>
-   </xsl:choose>
-  </td>
-  <td align="right" width="50%">
-   <xsl:choose>
-    <xsl:when test="next">
+    </td>
+   </xsl:when>
+   <xsl:otherwise><td>&#160;</td><td>&#160;</td></xsl:otherwise>
+  </xsl:choose>
+  <xsl:choose>
+   <xsl:when test="next">
+    <td align="right" width="50%">
      <a href="{next/summary/id}.{$ext}#{list/id}">
       <xsl:value-of select="next/summary/subject"/>
+     </a>
+    </td>
+    <td>
+     <a href="{next/summary/id}.{$ext}#{list/id}">
       <img src="../imgs/next.png" alt="&lt;-"/>
      </a>
-    </xsl:when>
-    <xsl:otherwise>&#160;</xsl:otherwise>
-   </xsl:choose>
-  </td>
+    </td>
+   </xsl:when>
+   <xsl:otherwise><td>&#160;</td><td>&#160;</td></xsl:otherwise>
+  </xsl:choose>
  </tr>
 </xsl:template>
 
@@ -138,7 +145,7 @@
 <xsl:template match="message">
  <html lang="{$lang}">
   <head>
-   <link rel="stylesheet" href="default.css" type="text/css"/>
+   <link rel="stylesheet" href="../fmt/default.css" type="text/css"/>
    <title><xsl:value-of select="summary/subject"/></title>
   </head>
   <body>
@@ -202,12 +209,8 @@
    </div>
    
    <div class="body">
-    <table class="header">
-     <tr>
-      <td><xsl:call-template name="header-fields"/></td>
-      <td align="right"><xsl:call-template name="attachments"/></td>
-     </tr>
-    </table>
+    <xsl:call-template name="attachments"/>
+    <xsl:call-template name="header-fields"/>
     <div class="messageBody">
      <xsl:apply-templates mode="body" select="mime"/>
     </div>
@@ -216,7 +219,7 @@
    <div class="footer">
     <table class="navigation">
      <tr>
-      <th colspan="3" align="left">
+      <th colspan="5" align="left">
        <xsl:value-of select="$appears-in"/>
       </th>
      </tr>
