@@ -7,6 +7,8 @@ v0.1d:
 	Quadrupled the cache dump frequency
 	Added command-line option for disabling import
 	Added command-line option for disabling service
+	Made the AVL trees reentrant
+	Reintegrated the read buffer into libkap -> faster searches
 
 v0.1c:
 	Added libkap which completely replaces all of libdb3 and flatfile

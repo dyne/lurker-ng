@@ -1,4 +1,4 @@
-/*  $Id: avl.h,v 1.5 2002-07-11 23:50:54 terpstra Exp $
+/*  $Id: avl.h,v 1.6 2002-07-19 14:40:34 terpstra Exp $
  *  
  *  avl.h - Manage a AVL search tree
  *  
@@ -41,8 +41,8 @@
 #define AVL_OK		0
 
 /* The user of this file should call:
- *   AVL_DEFINE_INSERT(PREFIX, RECTYPE, INVALID, STRUCT, TABLE, COMPARE)
- *   AVL_DEFINE_REMOVE(PREFIX, RECTYPE, INVALID, STRUCT, TABLE, COMPARE)
+ *   AVL_DEFINE_INSERT(PREFIX, RECTYPE, INVALID, STRUCT, COMPARE)
+ *   AVL_DEFINE_REMOVE(PREFIX, RECTYPE, INVALID, STRUCT, COMPARE)
  *
  *   PREFIX  -> an indetifier to prevent symbol conflict
  *   RECTYPE -> the type used to index the table
@@ -51,83 +51,82 @@
  *	RECTYPE left, right;
  *      sometype key;		<- sometype must be used by COMPARE function
  *      sometype skew;		<- sometype must have >= 2 bits of storage
- *   TABLE   -> the base table pointer of type STRUCT
  *   COMPARE -> a strcmp style compare method
  *
  * This will create the methods: 
- *   RECTYPE my_avl_PREFIX_insert(RECTYPE root, RECTYPE recno)
+ *   RECTYPE my_avl_PREFIX_insert(RECTYPE root, STRUCT* table, RECTYPE recno)
  *     -> you must have already set TABLE[recno].key to an appropriate value.
  *     -> INVALID if already in tree, the new root else (ok)
- *   RECTYPE my_avl_PREFIX_remove(RECTYPE root, RECTYPE recno)
+ *   RECTYPE my_avl_PREFIX_remove(RECTYPE root, STRUCT* table, RECTYPE recno)
  *     -> INVALID if not in tree, the new root else (ok)
  */
 
-#define AVL_DEFINE_INSERT(PREFIX, RECTYPE, INVALID, STRUCT, TABLE, COMPARE) \
+#define AVL_DEFINE_INSERT(PREFIX, RECTYPE, INVALID, STRUCT, COMPARE) \
 \
 \
-inline void my_avl_##PREFIX##_rot_left(RECTYPE* n) \
+inline void my_avl_##PREFIX##_rot_left(STRUCT* table, RECTYPE* n) \
 { \
 	RECTYPE tmp = *n; \
 	\
-	*n = TABLE[*n].right; \
-	TABLE[tmp].right = TABLE[*n].left; \
-	TABLE[*n].left = tmp; \
+	*n = table[*n].right; \
+	table[tmp].right = table[*n].left; \
+	table[*n].left = tmp; \
 } \
 \
 \
-inline void my_avl_##PREFIX##_rot_right(RECTYPE* n) \
+inline void my_avl_##PREFIX##_rot_right(STRUCT* table, RECTYPE* n) \
 { \
 	RECTYPE tmp = *n; \
 	\
-	*n = TABLE[*n].left; \
-	TABLE[tmp].left = TABLE[*n].right; \
-	TABLE[*n].right = tmp; \
+	*n = table[*n].left; \
+	table[tmp].left = table[*n].right; \
+	table[*n].right = tmp; \
 } \
 \
-inline int my_avl_##PREFIX##_right_grown(RECTYPE* n) \
+inline int my_avl_##PREFIX##_right_grown(STRUCT* table, RECTYPE* n) \
 { \
-	switch (TABLE[*n].skew) \
+	switch (table[*n].skew) \
 	{ \
 	case AVL_LEFT: \
-		TABLE[*n].skew = AVL_EQUAL; \
+		table[*n].skew = AVL_EQUAL; \
 		return AVL_OK; \
 	\
 	case AVL_RIGHT: \
-		if (TABLE[TABLE[*n].right].skew == AVL_RIGHT) \
+		if (table[table[*n].right].skew == AVL_RIGHT) \
 		{ \
-			TABLE[*n].skew = TABLE[TABLE[*n].right].skew = \
+			table[*n].skew = table[table[*n].right].skew = \
 				AVL_EQUAL; \
-			my_avl_##PREFIX##_rot_left(n); \
+			my_avl_##PREFIX##_rot_left(table, n); \
 		} \
 		else \
 		{ \
-			if (TABLE[TABLE[*n].right].skew == AVL_RIGHT) \
+			if (table[table[*n].right].skew == AVL_RIGHT) \
 			{ \
-				TABLE[*n].skew = \
-					TABLE[TABLE[*n].right].skew = \
+				table[*n].skew = \
+					table[table[*n].right].skew = \
 						AVL_EQUAL; \
 				\
-				my_avl_##PREFIX##_rot_left(n); \
+				my_avl_##PREFIX##_rot_left(table, n); \
 			} \
 			else \
 			{ \
-				switch (TABLE[TABLE[TABLE[*n].right].left].skew) \
+				switch (table[table[table[*n].right].left].skew) \
 				{ \
 				case AVL_RIGHT: \
-					TABLE[*n].skew = AVL_LEFT; \
-					TABLE[TABLE[*n].right].skew = \
+					table[*n].skew = AVL_LEFT; \
+					table[table[*n].right].skew = \
 						AVL_EQUAL; \
 					break; \
 				\
 				case AVL_LEFT: \
-					TABLE[*n].skew = AVL_EQUAL; \
-					TABLE[TABLE[*n].right].skew = \
+					table[*n].skew = AVL_EQUAL; \
+					table[table[*n].right].skew = \
 						AVL_RIGHT; \
 					break; \
 				\
 				case AVL_EQUAL: \
-					TABLE[*n].skew = AVL_EQUAL; \
-					TABLE[TABLE[*n].right].skew = \
+					table[*n].skew = AVL_EQUAL; \
+					table[table[*n].right].skew = \
 						AVL_EQUAL; \
 					break; \
 				\
@@ -135,17 +134,17 @@ inline int my_avl_##PREFIX##_right_grown(RECTYPE* n) \
 					assert(0); \
 				} \
 				\
-				TABLE[TABLE[TABLE[*n].right].left].skew = \
+				table[table[table[*n].right].left].skew = \
 					AVL_EQUAL; \
-				my_avl_##PREFIX##_rot_right(&TABLE[*n].right); \
-				my_avl_##PREFIX##_rot_left(n); \
+				my_avl_##PREFIX##_rot_right(table, &table[*n].right); \
+				my_avl_##PREFIX##_rot_left(table, n); \
 			} \
 		} \
 		\
 		return AVL_OK; \
 	\
 	case AVL_EQUAL: \
-		TABLE[*n].skew = AVL_RIGHT; \
+		table[*n].skew = AVL_RIGHT; \
 		return AVL_BALANCE; \
 	\
 	default: \
@@ -155,50 +154,50 @@ inline int my_avl_##PREFIX##_right_grown(RECTYPE* n) \
 } \
 \
 \
-inline int my_avl_##PREFIX##_left_grown(RECTYPE* n) \
+inline int my_avl_##PREFIX##_left_grown(STRUCT* table, RECTYPE* n) \
 { \
-	switch (TABLE[*n].skew) \
+	switch (table[*n].skew) \
 	{ \
 	case AVL_RIGHT: \
-		TABLE[*n].skew = AVL_EQUAL; \
+		table[*n].skew = AVL_EQUAL; \
 		return AVL_OK; \
 	\
 	case AVL_LEFT: \
-		if (TABLE[TABLE[*n].left].skew == AVL_LEFT) \
+		if (table[table[*n].left].skew == AVL_LEFT) \
 		{ \
-			TABLE[*n].skew = TABLE[TABLE[*n].left].skew = \
+			table[*n].skew = table[table[*n].left].skew = \
 				AVL_EQUAL; \
-			my_avl_##PREFIX##_rot_right(n); \
+			my_avl_##PREFIX##_rot_right(table, n); \
 		} \
 		else \
 		{ \
-			if (TABLE[TABLE[*n].left].skew == AVL_LEFT) \
+			if (table[table[*n].left].skew == AVL_LEFT) \
 			{ \
-				TABLE[*n].skew = \
-					TABLE[TABLE[*n].left].skew = \
+				table[*n].skew = \
+					table[table[*n].left].skew = \
 						AVL_EQUAL; \
 				\
-				my_avl_##PREFIX##_rot_right(n); \
+				my_avl_##PREFIX##_rot_right(table, n); \
 			} \
 			else \
 			{ \
-				switch (TABLE[TABLE[TABLE[*n].left].right].skew) \
+				switch (table[table[table[*n].left].right].skew) \
 				{ \
 				case AVL_LEFT: \
-					TABLE[*n].skew = AVL_RIGHT; \
-					TABLE[TABLE[*n].left].skew = \
+					table[*n].skew = AVL_RIGHT; \
+					table[table[*n].left].skew = \
 						AVL_EQUAL; \
 					break; \
 				\
 				case AVL_RIGHT: \
-					TABLE[*n].skew = AVL_EQUAL; \
-					TABLE[TABLE[*n].left].skew = \
+					table[*n].skew = AVL_EQUAL; \
+					table[table[*n].left].skew = \
 						AVL_LEFT; \
 					break; \
 				\
 				case AVL_EQUAL: \
-					TABLE[*n].skew = AVL_EQUAL; \
-					TABLE[TABLE[*n].left].skew = \
+					table[*n].skew = AVL_EQUAL; \
+					table[table[*n].left].skew = \
 						AVL_EQUAL; \
 					break; \
 				\
@@ -206,17 +205,17 @@ inline int my_avl_##PREFIX##_left_grown(RECTYPE* n) \
 					assert(0); \
 				} \
 				\
-				TABLE[TABLE[TABLE[*n].left].right].skew = \
+				table[table[table[*n].left].right].skew = \
 					AVL_EQUAL; \
-				my_avl_##PREFIX##_rot_left(&TABLE[*n].left); \
-				my_avl_##PREFIX##_rot_right(n); \
+				my_avl_##PREFIX##_rot_left(table, &table[*n].left); \
+				my_avl_##PREFIX##_rot_right(table, n); \
 			} \
 		} \
 		\
 		return AVL_OK; \
 	\
 	case AVL_EQUAL: \
-		TABLE[*n].skew = AVL_LEFT; \
+		table[*n].skew = AVL_LEFT; \
 		return AVL_BALANCE; \
 	\
 	default: \
@@ -226,7 +225,7 @@ inline int my_avl_##PREFIX##_left_grown(RECTYPE* n) \
 } \
 \
 \
-static int my_avl_##PREFIX##_ins(RECTYPE* n, RECTYPE recno) \
+static int my_avl_##PREFIX##_ins(STRUCT* table, RECTYPE* n, RECTYPE recno) \
 { \
 	int tmp, dir; \
 	\
@@ -234,29 +233,29 @@ static int my_avl_##PREFIX##_ins(RECTYPE* n, RECTYPE recno) \
 	{ \
 		*n = recno; \
 		\
-		TABLE[recno].left = TABLE[recno].right = INVALID; \
-		TABLE[recno].skew = AVL_EQUAL; \
+		table[recno].left = table[recno].right = INVALID; \
+		table[recno].skew = AVL_EQUAL; \
 		return AVL_BALANCE; \
 	} \
 	\
-	dir = COMPARE(TABLE[recno].key, TABLE[*n].key); \
+	dir = COMPARE(table[recno].key, table[*n].key); \
 	\
 	if (dir < 0) \
 	{ \
-		tmp = my_avl_##PREFIX##_ins(&TABLE[*n].left, recno); \
+		tmp = my_avl_##PREFIX##_ins(table, &table[*n].left, recno); \
 		if (tmp == AVL_BALANCE) \
 		{ \
-			return my_avl_##PREFIX##_left_grown(n); \
+			return my_avl_##PREFIX##_left_grown(table, n); \
 		} \
 		return tmp; \
 	} \
 	\
 	if (dir > 0) \
 	{ \
-		tmp = my_avl_##PREFIX##_ins(&TABLE[*n].right, recno); \
+		tmp = my_avl_##PREFIX##_ins(table, &table[*n].right, recno); \
 		if (tmp == AVL_BALANCE) \
 		{ \
-			return my_avl_##PREFIX##_right_grown(n); \
+			return my_avl_##PREFIX##_right_grown(table, n); \
 		} \
 		\
 		return tmp; \
@@ -266,9 +265,9 @@ static int my_avl_##PREFIX##_ins(RECTYPE* n, RECTYPE recno) \
 } \
 \
 \
-static RECTYPE my_avl_##PREFIX##_insert(RECTYPE root, RECTYPE recno) \
+static RECTYPE my_avl_##PREFIX##_insert(STRUCT* table, RECTYPE root, RECTYPE recno) \
 { \
-	if (my_avl_##PREFIX##_ins(&root, recno) == AVL_ALREADY_THERE) \
+	if (my_avl_##PREFIX##_ins(table, &root, recno) == AVL_ALREADY_THERE) \
 		return INVALID; \
 	\
 	return root; \
@@ -278,60 +277,60 @@ static RECTYPE my_avl_##PREFIX##_insert(RECTYPE root, RECTYPE recno) \
 
 
 
-#define AVL_DEFINE_REMOVE(PREFIX, RECTYPE, INVALID, STRUCT, TABLE, COMPARE) \
+#define AVL_DEFINE_REMOVE(PREFIX, RECTYPE, INVALID, STRUCT, COMPARE) \
 \
 \
-inline int my_avl_##PREFIX##_left_shrunk(RECTYPE* n) \
+inline int my_avl_##PREFIX##_left_shrunk(STRUCT* table, RECTYPE* n) \
 { \
-	switch (TABLE[*n].skew) \
+	switch (table[*n].skew) \
 	{ \
 	case AVL_LEFT: \
-		TABLE[*n].skew = AVL_EQUAL; \
+		table[*n].skew = AVL_EQUAL; \
 		return AVL_BALANCE; \
 		\
 	case AVL_EQUAL: \
-		TABLE[*n].skew = AVL_RIGHT; \
+		table[*n].skew = AVL_RIGHT; \
 		return AVL_OK; \
 		\
 	case AVL_RIGHT: \
-		switch (TABLE[TABLE[*n].right].skew) \
+		switch (table[table[*n].right].skew) \
 		{ \
 		case AVL_RIGHT: \
-			TABLE[*n].skew = TABLE[TABLE[*n].right].skew = AVL_EQUAL; \
-			my_avl_##PREFIX##_rot_left(n); \
+			table[*n].skew = table[table[*n].right].skew = AVL_EQUAL; \
+			my_avl_##PREFIX##_rot_left(table, n); \
 			return AVL_BALANCE; \
 			\
 		case AVL_EQUAL: \
-			TABLE[*n].skew = AVL_RIGHT; \
-			TABLE[TABLE[*n].right].skew = AVL_LEFT; \
-			my_avl_##PREFIX##_rot_left(n); \
+			table[*n].skew = AVL_RIGHT; \
+			table[table[*n].right].skew = AVL_LEFT; \
+			my_avl_##PREFIX##_rot_left(table, n); \
 			return AVL_OK; \
 			\
 		case AVL_LEFT: \
-			switch (TABLE[TABLE[TABLE[*n].right].left].skew) \
+			switch (table[table[table[*n].right].left].skew) \
 			{ \
 			case AVL_LEFT: \
-				TABLE[*n].skew = AVL_EQUAL; \
-				TABLE[TABLE[*n].right].skew = AVL_RIGHT; \
+				table[*n].skew = AVL_EQUAL; \
+				table[table[*n].right].skew = AVL_RIGHT; \
 				break; \
 				\
 			case AVL_RIGHT: \
-				TABLE[*n].skew = AVL_LEFT; \
-				TABLE[TABLE[*n].right].skew = AVL_EQUAL; \
+				table[*n].skew = AVL_LEFT; \
+				table[table[*n].right].skew = AVL_EQUAL; \
 				break; \
 				\
 			case AVL_EQUAL: \
-				TABLE[*n].skew = AVL_EQUAL; \
-				TABLE[TABLE[*n].right].skew = AVL_EQUAL; \
+				table[*n].skew = AVL_EQUAL; \
+				table[table[*n].right].skew = AVL_EQUAL; \
 				break; \
 				\
 			default: \
 				assert(0); \
 			} \
 			\
-			TABLE[TABLE[TABLE[*n].right].left].skew = AVL_EQUAL; \
-			my_avl_##PREFIX##_rot_right(&TABLE[*n].right); \
-			my_avl_##PREFIX##_rot_left(n); \
+			table[table[table[*n].right].left].skew = AVL_EQUAL; \
+			my_avl_##PREFIX##_rot_right(table, &table[*n].right); \
+			my_avl_##PREFIX##_rot_left(table, n); \
 			return AVL_BALANCE; \
 			\
 		default: \
@@ -345,57 +344,57 @@ inline int my_avl_##PREFIX##_left_shrunk(RECTYPE* n) \
 } \
 \
 \
-inline int my_avl_##PREFIX##_right_shrunk(RECTYPE* n) \
+inline int my_avl_##PREFIX##_right_shrunk(STRUCT* table, RECTYPE* n) \
 { \
-	switch (TABLE[*n].skew) \
+	switch (table[*n].skew) \
 	{ \
 	case AVL_RIGHT: \
-		TABLE[*n].skew = AVL_EQUAL; \
+		table[*n].skew = AVL_EQUAL; \
 		return AVL_BALANCE; \
 		\
 	case AVL_EQUAL: \
-		TABLE[*n].skew = AVL_LEFT; \
+		table[*n].skew = AVL_LEFT; \
 		return AVL_OK; \
 		\
 	case AVL_LEFT: \
-		switch (TABLE[TABLE[*n].left].skew) \
+		switch (table[table[*n].left].skew) \
 		{ \
 		case AVL_LEFT: \
-			TABLE[*n].skew = TABLE[TABLE[*n].left].skew = AVL_EQUAL; \
-			my_avl_##PREFIX##_rot_right(n); \
+			table[*n].skew = table[table[*n].left].skew = AVL_EQUAL; \
+			my_avl_##PREFIX##_rot_right(table, n); \
 			return AVL_BALANCE; \
 			\
 		case AVL_EQUAL: \
-			TABLE[*n].skew = AVL_LEFT; \
-			TABLE[TABLE[*n].left].skew = AVL_RIGHT; \
-			my_avl_##PREFIX##_rot_right(n); \
+			table[*n].skew = AVL_LEFT; \
+			table[table[*n].left].skew = AVL_RIGHT; \
+			my_avl_##PREFIX##_rot_right(table, n); \
 			return AVL_OK; \
 			\
 		case AVL_RIGHT: \
-			switch (TABLE[TABLE[TABLE[*n].left].right].skew) \
+			switch (table[table[table[*n].left].right].skew) \
 			{ \
 			case AVL_RIGHT: \
-				TABLE[*n].skew = AVL_EQUAL; \
-				TABLE[TABLE[*n].left].skew = AVL_LEFT; \
+				table[*n].skew = AVL_EQUAL; \
+				table[table[*n].left].skew = AVL_LEFT; \
 				break; \
 				\
 			case AVL_LEFT: \
-				TABLE[*n].skew = AVL_RIGHT; \
-				TABLE[TABLE[*n].left].skew = AVL_EQUAL; \
+				table[*n].skew = AVL_RIGHT; \
+				table[table[*n].left].skew = AVL_EQUAL; \
 				break; \
 				\
 			case AVL_EQUAL: \
-				TABLE[*n].skew = AVL_EQUAL; \
-				TABLE[TABLE[*n].left].skew = AVL_EQUAL; \
+				table[*n].skew = AVL_EQUAL; \
+				table[table[*n].left].skew = AVL_EQUAL; \
 				break; \
 				\
 			default: \
 				assert(0); \
 			} \
 			\
-			TABLE[TABLE[TABLE[*n].left].right].skew = AVL_EQUAL; \
-			my_avl_##PREFIX##_rot_left(&TABLE[*n].left); \
-			my_avl_##PREFIX##_rot_right(n); \
+			table[table[table[*n].left].right].skew = AVL_EQUAL; \
+			my_avl_##PREFIX##_rot_left(table, &table[*n].left); \
+			my_avl_##PREFIX##_rot_right(table, n); \
 			return AVL_BALANCE; \
 			\
 		default: \
@@ -408,51 +407,51 @@ inline int my_avl_##PREFIX##_right_shrunk(RECTYPE* n) \
 	} \
 } \
 \
-static int my_avl_##PREFIX##_kill_largest(RECTYPE* n, RECTYPE* w) \
+static int my_avl_##PREFIX##_kill_largest(STRUCT* table, RECTYPE* n, RECTYPE* w) \
 { \
 	int tmp; \
 	\
 	assert (*n != INVALID); \
 	\
-	if (TABLE[*n].right != INVALID) \
+	if (table[*n].right != INVALID) \
 	{ \
 		if ((tmp = my_avl_##PREFIX##_kill_largest( \
-			&TABLE[*n].right, w)) == AVL_BALANCE) \
+			table, &table[*n].right, w)) == AVL_BALANCE) \
 		{ \
-			return my_avl_##PREFIX##_right_shrunk(n); \
+			return my_avl_##PREFIX##_right_shrunk(table, n); \
 		} \
 		return tmp; \
 	} \
 	\
 	*w = *n; \
-	*n = TABLE[*n].left; \
+	*n = table[*n].left; \
 	\
 	return AVL_BALANCE; \
 } \
 \
-static int my_avl_##PREFIX##_kill_smallest(RECTYPE* n, RECTYPE* w) \
+static int my_avl_##PREFIX##_kill_smallest(STRUCT* table, RECTYPE* n, RECTYPE* w) \
 { \
 	int tmp; \
 	\
 	assert (*n != INVALID); \
 	\
-	if (TABLE[*n].left != INVALID) \
+	if (table[*n].left != INVALID) \
 	{ \
 		if ((tmp = my_avl_##PREFIX##_kill_smallest( \
-			&TABLE[*n].left, w)) == AVL_BALANCE) \
+			table, &table[*n].left, w)) == AVL_BALANCE) \
 		{ \
-			return my_avl_##PREFIX##_left_shrunk(n); \
+			return my_avl_##PREFIX##_left_shrunk(table, n); \
 		} \
 		return tmp; \
 	} \
 	\
 	*w = *n; \
-	*n = TABLE[*n].right; \
+	*n = table[*n].right; \
 	\
 	return AVL_BALANCE; \
 } \
 \
-static int my_avl_##PREFIX##_rmv(RECTYPE* n, RECTYPE victim) \
+static int my_avl_##PREFIX##_rmv(STRUCT* table, RECTYPE* n, RECTYPE victim) \
 { \
 	int dir, tmp; \
 	\
@@ -461,14 +460,14 @@ static int my_avl_##PREFIX##_rmv(RECTYPE* n, RECTYPE victim) \
 		return AVL_NOT_FOUND; \
 	} \
 	\
-	dir = COMPARE(TABLE[victim].key, TABLE[*n].key); \
+	dir = COMPARE(table[victim].key, table[*n].key); \
 	\
 	if (dir < 0) \
 	{ \
 		if ((tmp = my_avl_##PREFIX##_rmv( \
-			&TABLE[*n].left, victim)) == AVL_BALANCE) \
+			table, &table[*n].left, victim)) == AVL_BALANCE) \
 		{ \
-			return my_avl_##PREFIX##_left_shrunk(n); \
+			return my_avl_##PREFIX##_left_shrunk(table, n); \
 		} \
 		return tmp; \
 	} \
@@ -476,44 +475,44 @@ static int my_avl_##PREFIX##_rmv(RECTYPE* n, RECTYPE victim) \
 	if (dir > 0) \
 	{ \
 		if ((tmp = my_avl_##PREFIX##_rmv( \
-			&TABLE[*n].right, victim)) == AVL_BALANCE) \
+			table, &table[*n].right, victim)) == AVL_BALANCE) \
 		{ \
-			return my_avl_##PREFIX##_right_shrunk(n); \
+			return my_avl_##PREFIX##_right_shrunk(table, n); \
 		} \
 		return tmp; \
 	} \
 	\
 	assert (*n == victim); \
 	\
-	if (TABLE[*n].left != INVALID) \
+	if (table[*n].left != INVALID) \
 	{ \
 		RECTYPE tn; \
 		tmp = my_avl_##PREFIX##_kill_largest( \
-			&TABLE[*n].left, &tn); \
+			table, &table[*n].left, &tn); \
 		\
-		TABLE[tn].left  = TABLE[*n].left; \
-		TABLE[tn].right = TABLE[*n].right; \
-		TABLE[tn].skew  = TABLE[*n].skew; \
+		table[tn].left  = table[*n].left; \
+		table[tn].right = table[*n].right; \
+		table[tn].skew  = table[*n].skew; \
 		*n = tn; \
 		\
 		if (tmp == AVL_BALANCE) \
-			return my_avl_##PREFIX##_left_shrunk(n); \
+			return my_avl_##PREFIX##_left_shrunk(table, n); \
 		return tmp; \
 	} \
 	\
-	if (TABLE[*n].right != INVALID) \
+	if (table[*n].right != INVALID) \
 	{ \
 		RECTYPE tn; \
 		tmp = my_avl_##PREFIX##_kill_smallest( \
-			&TABLE[*n].right, &tn); \
+			table, &table[*n].right, &tn); \
 		\
-		TABLE[tn].left  = TABLE[*n].left; \
-		TABLE[tn].right = TABLE[*n].right; \
-		TABLE[tn].skew  = TABLE[*n].skew; \
+		table[tn].left  = table[*n].left; \
+		table[tn].right = table[*n].right; \
+		table[tn].skew  = table[*n].skew; \
 		*n = tn; \
 		\
 		if (tmp == AVL_BALANCE) \
-			return my_avl_##PREFIX##_right_shrunk(n); \
+			return my_avl_##PREFIX##_right_shrunk(table, n); \
 		return tmp; \
 	} \
 	\
@@ -521,9 +520,9 @@ static int my_avl_##PREFIX##_rmv(RECTYPE* n, RECTYPE victim) \
 	return AVL_BALANCE; \
 } \
 \
-static RECTYPE my_avl_##PREFIX##_remove(RECTYPE root, RECTYPE recno) \
+static RECTYPE my_avl_##PREFIX##_remove(STRUCT* table, RECTYPE root, RECTYPE recno) \
 { \
-	if (my_avl_##PREFIX##_rmv(&root, recno) == AVL_NOT_FOUND) \
+	if (my_avl_##PREFIX##_rmv(table, &root, recno) == AVL_NOT_FOUND) \
 		return INVALID; \
 	\
 	return root; \

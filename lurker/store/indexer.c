@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.30 2002-07-12 19:02:00 terpstra Exp $
+/*  $Id: indexer.c,v 1.31 2002-07-19 14:40:34 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -100,7 +100,6 @@ AVL_DEFINE_INSERT(
 	my_indexer_ptr, 
 	MY_INDEXER_MAX,
 	My_Indexer_Tree,
-	my_indexer_buf,
 	strcmp)
 
 /* This function finds space in our tree to put the keyword in.
@@ -127,7 +126,7 @@ static int my_indexer_push_keyword(
 	my_indexer_buf[my_indexer_avl_off].key = keyword;
 	
 	/* Use the avl insert method to insert the key balanced. */
-	tmp = my_avl_indexer_insert(my_indexer_avl_root, my_indexer_avl_off);
+	tmp = my_avl_indexer_insert(my_indexer_buf, my_indexer_avl_root, my_indexer_avl_off);
 	
 	if (tmp == MY_INDEXER_MAX)
 	{	/* It was already indexed */

@@ -1,4 +1,4 @@
-/*  $Id: rbuffer.c,v 1.4 2002-07-19 14:25:08 terpstra Exp $
+/*  $Id: rbuffer.c,v 1.5 2002-07-19 14:40:34 terpstra Exp $
  *  
  *  rbuffer.c - Implements a buffering system that read combines
  *  
@@ -171,9 +171,8 @@ inline int compare(size_t a, size_t b)
 	return 0;
 }
 
-static Boundary* avl_table = 0;
-AVL_DEFINE_INSERT(rb, bptr, BPTR_MAX, Boundary, avl_table, compare)
-AVL_DEFINE_REMOVE(rb, bptr, BPTR_MAX, Boundary, avl_table, compare)
+AVL_DEFINE_INSERT(rb, bptr, BPTR_MAX, Boundary, compare)
+AVL_DEFINE_REMOVE(rb, bptr, BPTR_MAX, Boundary, compare)
 
 static int fetch_sector(
 	Kap		k,
@@ -188,6 +187,8 @@ static int fetch_sector(
 	int	out;
 	bptr	kill;
 	bptr	scan;
+	
+	Boundary*	avl_table;
 	
 	assert(off < kr->records);
 	off -= (off % (LU_PULL_AT_ONCE/k->rbuffer->recsize));
@@ -257,7 +258,7 @@ static int fetch_sector(
 			scan = avl_table[scan].right;
 		
 		record->boundary_root = 
-			my_avl_rb_remove(record->boundary_root, scan);
+			my_avl_rb_remove(avl_table, record->boundary_root, scan);
 		assert (record->boundary_root != BPTR_MAX);
 		
 		kill = scan;
@@ -274,7 +275,7 @@ static int fetch_sector(
 	
 	/* Push the new record */
 	record->boundary_root = 
-		my_avl_rb_insert(record->boundary_root, kill);
+		my_avl_rb_insert(avl_table, record->boundary_root, kill);
 	assert (record->boundary_root != BPTR_MAX);
 	
 	return 0;

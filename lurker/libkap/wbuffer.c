@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.9 2002-07-17 11:06:58 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.10 2002-07-19 14:40:34 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -223,12 +223,10 @@ static long		pswaps;
 /* Constants for use by the avl tree - set before each op */
 #define	KINVALID	0xFFFFUL
 
-static Keyword*	avl_cache; /*!!! change avl to take this as param */
-
 /*------------------------------------------------- Private methods */
 
-AVL_DEFINE_INSERT(wb, kptr, KINVALID, Keyword, avl_cache, strcmp)
-AVL_DEFINE_REMOVE(wb, kptr, KINVALID, Keyword, avl_cache, strcmp)
+AVL_DEFINE_INSERT(wb, kptr, KINVALID, Keyword, strcmp)
+AVL_DEFINE_REMOVE(wb, kptr, KINVALID, Keyword, strcmp)
 
 /* Dump the contents of a cache record to disk.
  */
@@ -408,7 +406,6 @@ static sptr grab_entry(Kap k, const char* key)
 {
 	sptr	slot;
 	kptr	scan;
-	kptr	tmp;
 	
 	Keyword*	kw;
 	Slot*		sl;
@@ -434,10 +431,8 @@ static sptr grab_entry(Kap k, const char* key)
 	sl->fill    = 0;
 	sl->keyword = scan;
 	
-	avl_cache = k->wbuffer->kcache;
-	tmp = my_avl_wb_insert(k->wbuffer->kroot, scan);
-	assert (tmp != KINVALID);
-	k->wbuffer->kroot = tmp;
+	k->wbuffer->kroot = my_avl_wb_insert(k->wbuffer->kcache, k->wbuffer->kroot, scan);
+	assert (k->wbuffer->kroot != KINVALID);
 	
 	return slot;
 }
@@ -494,7 +489,6 @@ static int count_hit(Kap k, kptr scan, unsigned char* buf)
 
 static int promote_key(Kap k, const char* key, aptr hits)
 {
-	kptr	tmp;
 	sptr	slot = k->wbuffer->kfill-1;
 	kptr	scan = k->wbuffer->scache[slot].keyword;
 	
@@ -509,17 +503,18 @@ static int promote_key(Kap k, const char* key, aptr hits)
 		
 		flush_buffer(k, scan);
 		
-		avl_cache = k->wbuffer->kcache;
-		tmp = my_avl_wb_remove(k->wbuffer->kroot, scan);
-		assert (tmp != KINVALID);
-		k->wbuffer->kroot = tmp;
+		k->wbuffer->kroot = 
+			my_avl_wb_remove(k->wbuffer->kcache, k->wbuffer->kroot, 
+				scan);
+		assert (k->wbuffer->kroot != KINVALID);
 		
 		strcpy(k->wbuffer->kcache[scan].key, key);
 		k->wbuffer->kcache[scan].hits = hits;
 		
-		tmp = my_avl_wb_insert(k->wbuffer->kroot, scan);
-		assert (tmp != KINVALID);
-		k->wbuffer->kroot = tmp;
+		k->wbuffer->kroot = 
+			my_avl_wb_insert(k->wbuffer->kcache, k->wbuffer->kroot, 
+				scan);
+		assert (k->wbuffer->kroot != KINVALID);
 		
 		return relocate(k, scan);
 	}

@@ -1,4 +1,4 @@
-/*  $Id: test-avl.cc,v 1.2 2002-07-19 14:25:08 terpstra Exp $
+/*  $Id: test-avl.cc,v 1.3 2002-07-19 14:40:34 terpstra Exp $
  *  
  *  test-avl.cc - Test insert and delete operations of the avl tree
  *  
@@ -52,8 +52,8 @@ Record	tbl[SIZE];
 
 int compare(long a, long b) { return a - b; }
 
-AVL_DEFINE_INSERT(foo, rptr, SIZE, Record, tbl, compare)
-AVL_DEFINE_REMOVE(foo, rptr, SIZE, Record, tbl, compare)
+AVL_DEFINE_INSERT(foo, rptr, SIZE, Record, compare)
+AVL_DEFINE_REMOVE(foo, rptr, SIZE, Record, compare)
 
 int main()
 {
@@ -72,7 +72,7 @@ int main()
 		if (foo.find(x) != foo.end()) continue;
 		
 		tbl[rfill].key = x;
-		root = my_avl_foo_insert(root, rfill++);
+		root = my_avl_foo_insert(tbl, root, rfill++);
 		assert (root != SIZE);
 		
 		foo.insert(x);
@@ -98,7 +98,7 @@ int main()
 		
 		assert (w != SIZE);
 		
-		root = my_avl_foo_remove(root, w);
+		root = my_avl_foo_remove(tbl, root, w);
 		assert (root != SIZE);
 		
 		while (1)
@@ -107,7 +107,7 @@ int main()
 			if (foo.find(x) != foo.end()) continue;
 			
 			tbl[w].key = x;
-			root = my_avl_foo_insert(root, w);
+			root = my_avl_foo_insert(tbl, root, w);
 			
 			foo.insert(x);
 			break;
