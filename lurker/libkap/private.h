@@ -1,4 +1,4 @@
-/*  $Id: private.h,v 1.2 2002-07-01 12:54:09 terpstra Exp $
+/*  $Id: private.h,v 1.3 2002-07-04 18:33:03 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -38,8 +38,25 @@ struct Kap_T
 	struct Kap_Rbuffer*	rbuffer;
 };
 
-struct Kap_Btree* btree_init(void);
+struct Kap_Btree*  btree_init(void);
+struct Kap_Append* append_init(void);
 
 int kap_btree_open(Kap k, const char* dir, const char* prefix);
 int kap_btree_sync(Kap k);
 int kap_btree_close(Kap k);
+
+int kap_append_open(Kap k, const char* dir, const char* prefix);
+int kap_append_sync(Kap k);
+int kap_append_close(Kap k);
+
+/* Convenient methods */
+int kap_write_full(int fd, const unsigned char* buf, size_t dat);
+int kap_read_full (int fd,       unsigned char* buf, size_t dat);
+
+/* Encode offsets in portable manner */
+void kap_decode_offset(const unsigned char* where, off_t* out, short len);
+void kap_encode_offset(      unsigned char* where, off_t  rec, short len);
+
+/* Kap databases only support a single reader/writer */
+int kap_lock(int fd);
+int kap_unlock(int fd);
