@@ -15,17 +15,17 @@ typedef int		error_int;
 MODULE = ESort	PACKAGE = ESort
 
 ESort_Writer*
-Writer(ESort_String db, int synced=1, int unique=1, unsigned long blockSize=8192, unsigned long keySize=255, int mode=0666)
+Writer(ESort_String database, int synced=1, int unique=1, unsigned long blockSize=8192, unsigned long keySize=255, int mode=0666)
 	CODE:
-		RETVAL = ESort_Writer::opendb(db, ESort::Parameters(synced, unique, blockSize, keySize), mode).release();
+		RETVAL = ESort_Writer::opendb(database, ESort::Parameters(synced, unique, blockSize, keySize), mode).release();
 	OUTPUT:
 		RETVAL
 
 
 ESort_Reader*
-Reader(ESort_String db, int synced=1, int unique=1, unsigned long blockSize=8192, unsigned long keySize=255)
+Reader(ESort_String database, int synced=1, int unique=1, unsigned long blockSize=8192, unsigned long keySize=255)
 	CODE:
-		RETVAL = ESort_Reader::opendb(db, ESort::Parameters(synced, unique, blockSize, keySize)).release();
+		RETVAL = ESort_Reader::opendb(database, ESort::Parameters(synced, unique, blockSize, keySize)).release();
 	OUTPUT:
 		RETVAL
 
@@ -42,16 +42,16 @@ error_int
 ESort_Writer::insert(ESort_String key)
 
 ESort_Walker*
-ESort_Writer::seek(ESort_String key, ESort_Direction dir)
+ESort_Writer::seek(ESort_String key, ESort_Direction direction)
 	CODE:
-		RETVAL = THIS->seek(key, dir).release();
+		RETVAL = THIS->seek(key, direction).release();
 	OUTPUT:
 		RETVAL
 
 ESort_Walker*
-ESort_Writer::seekp(ESort_String prefix, ESort_String key, ESort_Direction dir)
+ESort_Writer::seekp(ESort_String prefix, ESort_String key, ESort_Direction direction)
 	CODE:
-		RETVAL = THIS->seekp(prefix, key, dir).release();
+		RETVAL = THIS->seekp(prefix, key, direction).release();
 	OUTPUT:
 		RETVAL
 
@@ -62,16 +62,16 @@ ESort_Writer::DESTROY()
 MODULE = ESort	PACKAGE = ESort::ReaderPtr
 
 ESort_Walker*
-ESort_Reader::seek(ESort_String key, ESort_Direction dir)
+ESort_Reader::seek(ESort_String key, ESort_Direction direction)
 	CODE:
-		RETVAL = THIS->seek(key, dir).release();
+		RETVAL = THIS->seek(key, direction).release();
 	OUTPUT:
 		RETVAL
 
 ESort_Walker*
-ESort_Reader::seekp(ESort_String prefix, ESort_String key, ESort_Direction dir)
+ESort_Reader::seekp(ESort_String prefix, ESort_String key, ESort_Direction direction)
 	CODE:
-		RETVAL = THIS->seekp(prefix, key, dir).release();
+		RETVAL = THIS->seekp(prefix, key, direction).release();
 	OUTPUT:
 		RETVAL
 
