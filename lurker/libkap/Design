@@ -5,6 +5,12 @@ presently available are just not fast enough for large scale keyword
 imports. kap is designed for the utmost possible efficiency with append 
 and read only keyword databases.
 
+For those who don't know, what a keyword index needs is:
+	map<string, vector<int> > in C++ jargon
+That is, you must be able to append an integer record to a given record that
+is identified by a string quickly and you must be able to do random seeks
+within a given keyword record.
+
 libkap consists of four stackable layers:
 
 Layer btree:
@@ -58,4 +64,4 @@ Design goals:
 	Should allow all disk parameters to be configurable
 	Should not depend on anything other than libc
 	Should be designed with an OOP interface
-	Layer buffer and btree should support operation on a block device
+	Layer append and btree should support operation on a block device
