@@ -1,4 +1,4 @@
-/*  $Id: kapdump.c,v 1.1 2002-07-04 11:43:40 terpstra Exp $
+/*  $Id: kapdump.c,v 1.2 2002-07-04 13:04:47 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool
  *  
@@ -34,6 +34,10 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>	
+
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #ifdef HAVE_GETTEXT
 #include <libintl.h>
@@ -78,8 +82,12 @@ int main(int argc, char * const * argv)
 	Kap k;
 	
 	const char*	file;
+	char*		key;
+	char*		data;
+	KRecord*	kr;
+	ssize_t		len;
 	
-	ssize_t	sector_size	= 8096;
+	ssize_t	sector_size	= 8192;
 	ssize_t	max_key_size	= 100;
 	short	tree_size	= 3;
 	ssize_t	leaf_size	= 252;
@@ -174,6 +182,33 @@ int main(int argc, char * const * argv)
 	if (out != 0) bail(out, "kap_append_set_recordsize");
 */
 	
+	key  = malloc(max_key_size);
+	data = malloc(leaf_size);
+	if (!key || !data) bail(ENOMEM, "malloc");
+	
+	kr = (KRecord*)data;
+	
+	out = kap_open(k, ".", file);
+	if (out != 0) bail(out, "kap_open");
+	
+	
+	/**** Begin dumping the db! */
+	*key = 0;
+	while ((out = kap_btree_read_next(k, key, data, &len)) != KAP_NOT_FOUND)
+	{
+		if (out) bail(out, "kap_btree_read_next");
+		
+		printf("+%d,%d->%s,", strlen(key), len, key);
+		fflush(stdout);
+		write(1, data, len);
+		printf("\n"); 
+		
+		/*!!! do stuff for non-btree only */
+	}
+	
+	
+	out = kap_close(k);
+	if (out != 0) bail(out, "kap_close");
 	
 	return 0;
 }

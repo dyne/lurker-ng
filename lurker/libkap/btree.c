@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.13 2002-07-04 11:24:17 terpstra Exp $
+/*  $Id: btree.c,v 1.14 2002-07-04 13:04:47 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -872,7 +872,15 @@ static int travel_down(Kap k, const char* key, off_t x,
 			if (WRITE_SECTOR(k->btree, child, k->btree->sectb))
 				return errno;
 			
-			if (strcmp(key, ptr) > 0)
+			s = key;
+			while (*ptr)
+			{
+				if (*s != *ptr) break;
+				++ptr;
+				++s;
+			}
+			
+			if (*s > *ptr)
 			{	/* We want to recurse to split instead */
 				child = split;
 				swap = k->btree->sectc;
@@ -1195,8 +1203,8 @@ static int kap_read_next_back(void* arg, const char* key, unsigned char* buf, ss
 	struct ReadNext_Back* nfo = arg;
 	
 	strcpy(nfo->key, key);
-	memcpy(nfo->buf, buf, *len);
 	*nfo->len = *len;
+	if (*len != -1) memcpy(nfo->buf, buf, *len);
 	
 	return 0;
 }
@@ -1204,9 +1212,38 @@ static int kap_read_next_back(void* arg, const char* key, unsigned char* buf, ss
 int kap_btree_read_next(Kap k, char* key,
 	unsigned char* buf, ssize_t* len)
 {
-	int out;
+	int	out;
+	unsigned char*	ks;
 	struct ReadNext_Back nfo;
 	
+	/* Make key point to the next largest possible key */
+	ks = key;
+	while (*ks) ks++;
+	
+	if (ks+1 == (unsigned char*)key + k->btree->max_key_size)
+	{
+		ks--;
+		while (ks != (unsigned char*)key)
+		{
+			if (*ks != 0xFF)
+			{
+				++*ks;
+				break;
+			}
+			else
+			{
+				*ks = 0;
+				--ks;
+			}
+		}
+		if (ks == (unsigned char*)key) return KAP_NOT_FOUND;
+	}
+	else
+	{
+		*ks++ = 1;
+		*ks = 0;
+	}
+		
 	nfo.key = key;
 	nfo.buf = buf;
 	nfo.len = len;
