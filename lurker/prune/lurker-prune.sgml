@@ -73,6 +73,18 @@ lurker-prune.1: lurker-prune.sgml
       contradictory links between pages. A good interval is every 15 minutes
       and should not exceed one hour.</para>
 
+    <para>Be aware that it is possible for an attacker to use up a large
+      amount of disk space through lurker. An attacker could request many
+      distinct lurker web pages each of which is cached, thus using disk
+      space. Please setup a quota for the lurker user, read your logs, and
+      follow whatever site-specific policies you have for denial of 
+      service.</para>
+     
+    <para>A good script to run in parallel with lurker-prune is one similar
+      to: if test `du -s /var/www/lurker | cut -f1` -gt 32768; then rm -f
+      /var/www/lurker/[m-t]*/*; fi. This might help guard against a
+      potential denial-of-service attack.</para>
+
   </refsect1>
   <refsect1>
     <title>OPTIONS</title>
@@ -93,11 +105,31 @@ lurker-prune.1: lurker-prune.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><option>-m days</option></term>
+        <listitem>
+          <para>Keep cached files for at most this many days. Any cached
+          file regardless of last access will be deleted after the specified
+          number of days (defaults to 7). Files which are obsolete due to
+          new mail, config changes, or no accesses will be deleted earlier.
+          Deleted files will be automagically regenerated if needed.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-a days</option></term>
+        <listitem>
+          <para>Kill cache files not accessed for this many days. Any cached
+          file which has not been read from for the specified number of days
+          (defaults to 1) will be deleted. Files which are obsolete due to
+          new mail or config changes will be deleted earlier.  Deleted files
+          will be automagically regenerated if needed.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term><option>-v</option></term>
         <listitem>
           <para>Verbose operation. Indicate which files are being deleted
-          and what the current operation is in order to convince you that
-          work continues.</para>
+          and the reasoning behind lurker's decisions. This can help in
+          tracking down why some files are deleted and not others.</para>
         </listitem>
       </varlistentry>
     </variablelist>
