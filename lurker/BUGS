@@ -2,7 +2,13 @@ Suggestion: errordocument failthrough configable
 Suggestion: include documentation in a mbox format in default lurker install
 Suggestion: base path mboxes are relative to
 
+Ideas:
+	Link to new thread starting messages for each mailing list
+	Search within thread at bottom of thread page
+
 Unfulfilled requirements:
+	Date goto in mindex
+
 	lurkerctrl
 		show status of lurker
 		stop/start request processing
