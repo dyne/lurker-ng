@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.15 2002-07-26 13:33:05 terpstra Exp $
+/*  $Id: search.c,v 1.16 2002-07-26 13:58:53 terpstra Exp $
  *  
  *  search.c - Uses libkap to execute a given search
  *  
@@ -261,7 +261,7 @@ int lu_search_result(
 	done = 0;
 	
 	if (my_search_handles == 0)
-	{	/* No results for empty search */
+	{	/* !!! Empty search should return in descending order */
 		*result = lu_common_minvalid;
 		done = 1;
 	}
@@ -292,6 +292,8 @@ int lu_search_result(
 				smallest = my_search_id[i];
 			}
 		}
+		
+		if (i != my_search_handles) break;
 		
 		if (smallest == largest)
 		{	/* We have a hit */
@@ -398,7 +400,7 @@ int lu_search_end(message_id* predict)
 	}
 	else
 	{
-		*predict = lu_common_minvalid;
+		*predict = 0;
 	}
 	
 	st_mutex_unlock(my_search_mutex);

@@ -13,7 +13,7 @@ Unfulfilled requirements:
 	German pot
 
 BUGS:
-	False search positives
+	False search negatives
 	Config reloading is broken
 	We no longer support block device operation for append
 	We don't check for double append
