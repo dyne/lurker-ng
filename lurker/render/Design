@@ -1,10 +1,5 @@
 The render component's responsibilities include:
-	rendering to an xml file the missing page
+	potentially cache a rendered page to disk
+	demunging the request
+	forwarding the request to the server
 	running a default xslt transform as required for .html hits
-
-It must support these queries:
-	mindex/<list>@<offset>.html/.xml
-	message/<message_id>.html/.xml
-	thread/<message_id>.html/.xml
-	tindex/<list>@<offset>.html/.xml
-	search/<offset>@<keyword>@<keyword>@<...>@.html/.xml

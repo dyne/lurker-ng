@@ -76,33 +76,46 @@ wwwdir = @wwwdir@
 
 INCLUDES = @RENDER_CFLAGS@ -I${top_srcdir}/common
 
-www_PROGRAMS = @PACKAGE@.cgi
+www_PROGRAMS = @PACKAGE@.cgi @PACKAGE@.xslt @PACKAGE@-search.cgi
 dist_www_DATA = .htaccess
 
 @PACKAGE@_cgi_SOURCES = \
-	handler.h \
-	search.c \
-	thread.c \
-	message.c \
-	mindex.c \
 	main.c \
-	splash.c
+	error.h
 
 
-@PACKAGE@_cgi_LDADD = @RENDER_LIBS@ ../common/libcommon.a
+@PACKAGE@_xslt_SOURCES = \
+	xslt.c
+
+
+@PACKAGE@_search_cgi_SOURCES = \
+	search.c \
+	error.h
+
+
+@PACKAGE@_xslt_LDADD = @RENDER_LIBS@
 subdir = render
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/system.h
 CONFIG_CLEAN_FILES =
-www_PROGRAMS = @PACKAGE@.cgi$(EXEEXT)
+www_PROGRAMS = @PACKAGE@.cgi$(EXEEXT) @PACKAGE@.xslt$(EXEEXT) \
+	@PACKAGE@-search.cgi$(EXEEXT)
 PROGRAMS = $(www_PROGRAMS)
 
-am_@PACKAGE@_cgi_OBJECTS = search.$(OBJEXT) thread.$(OBJEXT) \
-	message.$(OBJEXT) mindex.$(OBJEXT) main.$(OBJEXT) \
-	splash.$(OBJEXT)
+am_@PACKAGE@_search_cgi_OBJECTS = search.$(OBJEXT)
+@PACKAGE@_search_cgi_OBJECTS = $(am_@PACKAGE@_search_cgi_OBJECTS)
+@PACKAGE@_search_cgi_LDADD = $(LDADD)
+@PACKAGE@_search_cgi_DEPENDENCIES =
+@PACKAGE@_search_cgi_LDFLAGS =
+am_@PACKAGE@_cgi_OBJECTS = main.$(OBJEXT)
 @PACKAGE@_cgi_OBJECTS = $(am_@PACKAGE@_cgi_OBJECTS)
-@PACKAGE@_cgi_DEPENDENCIES = ../common/libcommon.a
+@PACKAGE@_cgi_LDADD = $(LDADD)
+@PACKAGE@_cgi_DEPENDENCIES =
 @PACKAGE@_cgi_LDFLAGS =
+am_@PACKAGE@_xslt_OBJECTS = xslt.$(OBJEXT)
+@PACKAGE@_xslt_OBJECTS = $(am_@PACKAGE@_xslt_OBJECTS)
+@PACKAGE@_xslt_DEPENDENCIES =
+@PACKAGE@_xslt_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/common
@@ -110,19 +123,19 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/main.Po $(DEPDIR)/message.Po \
-@AMDEP_TRUE@	$(DEPDIR)/mindex.Po $(DEPDIR)/search.Po \
-@AMDEP_TRUE@	$(DEPDIR)/splash.Po $(DEPDIR)/thread.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/main.Po $(DEPDIR)/search.Po \
+@AMDEP_TRUE@	$(DEPDIR)/xslt.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
-DIST_SOURCES = $(@PACKAGE@_cgi_SOURCES)
+DIST_SOURCES = $(@PACKAGE@_search_cgi_SOURCES) $(@PACKAGE@_cgi_SOURCES) \
+	$(@PACKAGE@_xslt_SOURCES)
 DATA = $(dist_www_DATA)
 
 DIST_COMMON = $(dist_www_DATA) Makefile.am Makefile.in
-SOURCES = $(@PACKAGE@_cgi_SOURCES)
+SOURCES = $(@PACKAGE@_search_cgi_SOURCES) $(@PACKAGE@_cgi_SOURCES) $(@PACKAGE@_xslt_SOURCES)
 
 all: all-am
 
@@ -158,9 +171,15 @@ uninstall-wwwPROGRAMS:
 
 clean-wwwPROGRAMS:
 	-test -z "$(www_PROGRAMS)" || rm -f $(www_PROGRAMS)
+@PACKAGE@-search.cgi$(EXEEXT): $(@PACKAGE@_search_cgi_OBJECTS) $(@PACKAGE@_search_cgi_DEPENDENCIES) 
+	@rm -f @PACKAGE@-search.cgi$(EXEEXT)
+	$(LINK) $(@PACKAGE@_search_cgi_LDFLAGS) $(@PACKAGE@_search_cgi_OBJECTS) $(@PACKAGE@_search_cgi_LDADD) $(LIBS)
 @PACKAGE@.cgi$(EXEEXT): $(@PACKAGE@_cgi_OBJECTS) $(@PACKAGE@_cgi_DEPENDENCIES) 
 	@rm -f @PACKAGE@.cgi$(EXEEXT)
 	$(LINK) $(@PACKAGE@_cgi_LDFLAGS) $(@PACKAGE@_cgi_OBJECTS) $(@PACKAGE@_cgi_LDADD) $(LIBS)
+@PACKAGE@.xslt$(EXEEXT): $(@PACKAGE@_xslt_OBJECTS) $(@PACKAGE@_xslt_DEPENDENCIES) 
+	@rm -f @PACKAGE@.xslt$(EXEEXT)
+	$(LINK) $(@PACKAGE@_xslt_LDFLAGS) $(@PACKAGE@_xslt_OBJECTS) $(@PACKAGE@_xslt_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -169,11 +188,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/message.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/mindex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/search.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/splash.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/thread.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/xslt.Po@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)

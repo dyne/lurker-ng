@@ -1,146 +1,187 @@
-/*  $Id: search.c,v 1.9 2002-03-04 04:03:55 terpstra Exp $
- *  
- *  search.c - output results from a search/ lookup
- *  
- *  Copyright (C) 2002 - Wesley W. Terpstra
- *  
- *  License: GPL
- *  
- *  Authors: 'Wesley W. Terpstra' <wesley@terpstra.ca>
- *  
- *    This program is free software; you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; version 2.1.
- *    
- *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *    
- *    You should have received a copy of the GNU General Public License
- *    along with this program; if not, write to the Free Software
- *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
-#include "common.h"
-#include "handler.h"
-#include "protocol.h"
 #include "prefix.h"
+#include "common.h"
+#include "error.h"
 
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
+
+static char is_div[256];
 
 static void extract_keyword(
 	const char* parameter, 
 	char** w,
 	char* e,
+	char* scratch,
 	const char* prefix,
 	const char* field)
 {
 	const char* t;
 	char* s;
+	char* o;
+	int i;
+	char buf[6];
 	
 	if ((s = strstr(parameter, field)) == 0)
 		return;
 	
-	s += strlen(field); /* skip the field */
-	if (!*s++) return;	/* skip the = */
+	/* make sure it is a parameter */
+	if (s != parameter && *(s-1) != '&')
+		return;
 	
-	while (*w != e && *s && *s != '&')
+	/* skip the field */
+	s += strlen(field); 
+	
+	/* pass the = */
+	if (*s != '=') return;
+	if (!*s++) return;
+	
+	/* De-urlify the data */
+	for (o = scratch; *s && *s != '&'; o++)
 	{
-		while (*s)
+		if (*s == '+') { *o = ' '; s++; }
+		else if (*s == '%')
 		{
-			if (*s == '+') { s++; continue; }
-			if (*s == ' ') { s++; continue; }
-			if (*s == '%' && *(s+1) == '2' && *(s+2) == '0')
+			s++;
+			if (*s && *(s+1))
 			{
-				s += 3;
-				continue;
+				sscanf(s, "%2X", &i);
+				*o = i;
+				s += 2;
 			}
-			break;
+			else
+			{
+				*o = '?';
+			}
 		}
+		else
+		{
+			*o = *s++;
+		}
+	}
+	*o = 0;
+	
+	/* Begin formatting it into url goop */
+	for (s = scratch; *w != e && *s && *s != '&';)
+	{
+		/* Skip all the dividers */
+		while (*s && *s != '&' && is_div[(int)*s]) s++;
+		if (!*s || *s == '&') break;
 		
+		/* Seperator */
 		for (t = "%20"; *w != e && *t; t++)
 			*(*w)++ = *t;
-		
+
+		/* Output the prefix */
 		for (t = prefix; *w != e && *t; t++)
 			*(*w)++ = *t;
 		
-		for (; *w != e && *s; s++)
+		/* Output up to next divider */
+		while (*w != e && !is_div[(int)*s])
 		{
-			if (*s == '+' || *s == ' ' || *s == '&' || 
-			    (*s == '%' && *(s+1) == '2' && *(s+2) == '0'))
-			{
-				break;
-			}
+			/* Don't do high-bit stuff */
+			if (*s >= 127 || *s < 0) { s++; continue; }
 			
-			*(*w)++ = *s;
+			if ((*s >= 48 && *s <= 57) ||
+			    (*s >= 64 && *s <= 90) ||
+			    (*s >= 97 && *s <=122))
+			{
+				*(*w)++ = *s++;
+			}
+			else if (*s == '/')
+			{	/* special case: '/' can't live on FS */
+				for (t = "%01"; *w != e && *t; t++)
+					*(*w)++ = *t;
+				/* lurker knows 01 = / */
+				s++;
+			}
+			else
+			{
+				sprintf(&buf[0], "%%%2X", *s++);
+				for (t = &buf[0]; *w != e && *t; t++)
+					*(*w)++ = *t;
+			}
 		}
 	}
 }
 
-int lu_search_handler(
-	char* parameter, 
-	const char* uri, 
-	lu_doctype t)
+int main(int argc, char** argv)
 {
-	char		buf[4096];
-	char*		w;
-	char*		e;
-	const char*	s;
+	char* uri = getenv("REQUEST_URI");
+	char* qs  = getenv("QUERY_STRING");
+	char  buf[4096];
+	char* w;
+	char* e;
+	char* s;
+	char* scratch;
+	int   i;
 	
-	if (!memcmp(parameter, "bounce", 6))
-	{	/* We were called like a real CGI - we need to redirect the
-		 * user to a document that we can create
-		 */
-		 
-		for (s = uri + strlen(uri); s != uri; s--)
-		{
-			if (*s == '/')
-				break;
-		}
-		
-		memcpy(&buf[0], uri, s - uri);
-		buf[s - uri] = '/';
-		buf[s - uri+1] = '0';
-		buf[s - uri+2] = 0;
-		
-		s++;
-		w = &buf[strlen(buf)];
-		e = &buf[sizeof(buf)-1];
-		
-		extract_keyword(s, &w, e, LU_KEYWORD_SUBJECT, "subject");
-		extract_keyword(s, &w, e, LU_KEYWORD_AUTHOR,  "author");
-		extract_keyword(s, &w, e, LU_KEYWORD_WORD,    "query");
-		
-		extract_keyword(s, &w, e, LU_KEYWORD_WEEKDAY,      "weekday");
-		extract_keyword(s, &w, e, LU_KEYWORD_DAY_OF_MONTH, "dom");
-		extract_keyword(s, &w, e, LU_KEYWORD_MONTH,        "month");
-		extract_keyword(s, &w, e, LU_KEYWORD_YEAR,         "year");
-		extract_keyword(s, &w, e, LU_KEYWORD_LIST,         "list");
-		
-		/*!!! No idea how xml searching will work */
-		for (s = ".html"; w != e && *s; s++)
-			*w++ = *s;
-		
-		printf("Status: 303 Moved Permanently\r\n");
-		printf("Location: %s\r\n", &buf[0]);
+	if (!uri)
+	{
+		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
-		printf(&redirect_error[0], &buf[0]);
-		return -1;
+		printf(&basic_error[0],
+			"Not invoked as a GET cgi",
+			"REQUEST_URI invalid",
+			"environment variable missing");
+		return 0;
 	}
 	
-	if (t != LU_XML && t != LU_HTML)
-	{	/* Can only handle wierd stuff in case above */
-		printf("Status: 404 Not Found\r\n");
+	if (!qs)
+	{
+		printf("Status: 200 OK\r\n");
 		printf("Content-type: text/html\r\n\r\n");
-		printf(&not_found[0], uri);
-		return -1;
+		printf(&basic_error[0],
+			"Not invoked as a GET cgi",
+			"QUERY_STRING invalid",
+			"environment variable missing");
+		return 0;
 	}
 	
-	fprintf(lu_server_link, "%s%s%c", 
-		LU_PROTO_SEARCH, parameter, LU_PROTO_ENDREQ);
+	/* Prune off the first ? and then the last / -> get path */
+	w = strchr(uri, '?');
+	if (w) *w = 0;
+	w = strrchr(uri, '/');
+	if (w) *w = 0;
+	
+	/* Ok, uri is now the path relative to which the request goes */
+	
+	/* Bootstrap the conversion table */
+	memset(&is_div[0], 0, sizeof(is_div));
+	for (i = 0; i < 040; i++)	is_div[i] = 1;
+	for (s = WORD_BREAKS; *s; s++)	is_div[(int)*s] = 1;
+	
+	/* Start slapping on parameters */
+	e = &buf[sizeof(buf)];
+	w = &buf[0];
+	scratch = strdup(qs);
+	
+	extract_keyword(qs, &w, e, scratch, LU_KEYWORD_SUBJECT, "subject");
+	extract_keyword(qs, &w, e, scratch, LU_KEYWORD_AUTHOR,  "author");
+	extract_keyword(qs, &w, e, scratch, LU_KEYWORD_WORD,    "query");
 		
-	return lu_forward_xml(parameter);
+	extract_keyword(qs, &w, e, scratch, LU_KEYWORD_WEEKDAY,      "weekday");
+	extract_keyword(qs, &w, e, scratch, LU_KEYWORD_DAY_OF_MONTH, "dom");
+	extract_keyword(qs, &w, e, scratch, LU_KEYWORD_MONTH,        "month");
+	extract_keyword(qs, &w, e, scratch, LU_KEYWORD_YEAR,         "year");
+	extract_keyword(qs, &w, e, scratch, LU_KEYWORD_LIST,         "list");
+	
+	/* Find the format */
+	s = qs;
+	do s = strstr(s, "format=");
+	while (s && s != qs && *(s-1) != '&');
+	if (s)
+	{
+		s += strlen("format=");
+		for (w = s; *w && *w != '&'; w++);
+		*w = 0;
+	}
+	else	s = "xml";
+	
+	printf("Status: 303 Moved Permanently\r\n");
+	printf("Location: %s/search/%s.%s\r\n", uri, &buf[3], s);
+	printf("Content-type: text/%s\r\n\r\n", s);
+	printf(&redirect_error[0], uri, &buf[3], s);
+	
+	return 0;
 }

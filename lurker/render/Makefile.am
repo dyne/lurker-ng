@@ -2,16 +2,18 @@ wwwdir = @wwwdir@
 
 INCLUDES = @RENDER_CFLAGS@ -I${top_srcdir}/common
 
-www_PROGRAMS = @PACKAGE@.cgi
+www_PROGRAMS = @PACKAGE@.cgi @PACKAGE@.xslt @PACKAGE@-search.cgi
 dist_www_DATA = .htaccess
 
 @PACKAGE@_cgi_SOURCES = \
-	handler.h \
-	search.c \
-	thread.c \
-	message.c \
-	mindex.c \
 	main.c \
-	splash.c
+	error.h
 
-@PACKAGE@_cgi_LDADD = @RENDER_LIBS@ ../common/libcommon.a
+@PACKAGE@_xslt_SOURCES = \
+	xslt.c
+
+@PACKAGE@_search_cgi_SOURCES = \
+	search.c \
+	error.h
+
+@PACKAGE@_xslt_LDADD = @RENDER_LIBS@
