@@ -27,5 +27,5 @@ SubInclude TOP common ;
 SubInclude TOP index ;
 SubInclude TOP prune ;
 SubInclude TOP render ;
-SubInclude TOP xslt ;
+SubInclude TOP ui ;
 SubInclude TOP imgs ;

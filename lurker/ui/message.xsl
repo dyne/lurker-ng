@@ -152,10 +152,8 @@
    <div class="header">
     <table class="external">
      <tr>
-      <td width="100%">
-       <h1><xsl:value-of select="summary/subject"/></h1>
-      </td>
-      <td nowrap="NOWRAP">
+      <td align="left"><h1><xsl:value-of select="summary/subject"/></h1></td>
+      <td align="right">
        <h1><xsl:apply-templates mode="splash-link" select="server"/></h1>
       </td>
      </tr>

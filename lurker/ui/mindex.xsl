@@ -27,7 +27,7 @@
     <xsl:apply-templates mode="email-link" select="summary/email"/>
    </div>
   </td>
-  <td nowrap="NOWRAP">
+  <td>
    <xsl:apply-templates mode="date" select="summary"/>
   </td>
  </xsl:element>
@@ -45,10 +45,8 @@
    <div class="header">
     <table class="external">
      <tr>
-      <td width="100%">
-       <h1><xsl:value-of select="list/email/@name"/></h1>
-      </td>
-      <td nowrap="NOWRAP">
+      <td align="left"><h1><xsl:value-of select="list/email/@name"/></h1></td>
+      <td align="right">
        <h1><xsl:apply-templates mode="splash-link" select="server"/></h1>
       </td>
      </tr>
@@ -108,10 +106,13 @@
    
    <div class="body">
     <table class="index">
+     <col width="2*" align="left"/>
+     <col width="1*" align="left"/>
+     <col width="0*" align="right"/>
      <tr>
-      <th><xsl:value-of width="2*" select="$subject"/></th>
-      <th><xsl:value-of width="1*" select="$author"/></th>
-      <th><xsl:value-of width="0*" select="$date"/> (UTC)</th>
+      <th><xsl:value-of select="$subject"/></th>
+      <th><xsl:value-of select="$author"/></th>
+      <th><xsl:value-of select="$date"/> (UTC)</th>
      </tr>
      <xsl:apply-templates mode="message" select="row"/>
     </table>

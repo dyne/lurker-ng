@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.8 2003-06-10 02:31:13 terpstra Exp $
+/*  $Id: message.cpp,v 1.9 2003-06-10 23:32:18 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -465,6 +465,8 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		for (sum = sums.begin(); sum != sums.end(); ++sum)
 		{
 			string hash = sum->id().hash();
+			// only things not in the tree
+			if (thread.hasMessage(hash)) continue;
 			if (repliesTo.find(hash) != repliesTo.end()) continue;
 			repliesTo[hash] = *sum;
 			if ((ok = repliesTo[hash].load(db)) != "")
