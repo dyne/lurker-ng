@@ -54,11 +54,6 @@ int main()
 			
 			kap_append_append(k, &recs.back(), 
 				&buf[0], m);
-			
-			memset(((unsigned char*)&recs.back())
-				+ kap_append_keyspace(&recs.back()),
-				0,
-				sizeof(KRecord) - kap_append_keyspace(&recs.back()));
 		}
 	}
 	
