@@ -1,4 +1,4 @@
-/*  $Id: params.cpp,v 1.1 2003-06-04 14:06:24 terpstra Exp $
+/*  $Id: params.cpp,v 1.2 2003-06-04 14:38:13 terpstra Exp $
  *  
  *  params.cpp - Parse the config file for helper scripts
  *  
@@ -45,7 +45,7 @@ void help(const char* name)
 	cerr << "\t-d               Output only the dbdir parameter\n";
 	cerr << "\t-a               Output only the archive parameter\n";
 	cerr << "\t-n               Output only the administrator name\n";
-	cerr << "\t-e               Output only the administrator email address\nk\n";
+	cerr << "\t-e               Output only the administrator email address\n";
 	cerr << "\t-x               Output only the xslt processing command\n";
 	cerr << "\n";
 	cerr << "Output various lurker settings from the config file for use in shell scripts.\n";

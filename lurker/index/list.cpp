@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.1 2003-06-04 14:06:24 terpstra Exp $
+/*  $Id: list.cpp,v 1.2 2003-06-04 14:38:13 terpstra Exp $
  *  
  *  list.cpp - Parse the config file for helper scripts
  *  
@@ -46,7 +46,7 @@ void help(const char* name)
 	cerr << "\t-t               Output only the title\n";
 	cerr << "\t-a               Output only the email address\n";
 	cerr << "\t-l               Output only the url link\n";
-	cerr << "\t-d               Output only the\n";
+	cerr << "\t-d               Output only the description\n";
 	cerr << "\n";
 	cerr << "Output various lurker settings from the config file for use in shell scripts.\n";
 	cerr << "Do not use sed/grep/etc, instead use this as it respects include.\n";

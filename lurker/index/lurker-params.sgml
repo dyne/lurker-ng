@@ -1,0 +1,146 @@
+<!doctype refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+
+<!-- Process this file with docbook-to-man to generate an nroff manual
+     page: `docbook-to-man lurker-params.sgml > lurker-params.1'.
+     You may view the manual page with:
+     `docbook-to-man lurker-params.sgml | nroff -man | less'.
+     A typical entry in a Makefile or Makefile.am is:
+
+lurker-params.1: lurker-params.sgml
+	docbook-to-man $< > $@
+  -->
+
+  <!-- Fill in your name for FIRSTNAME and SURNAME. -->
+  <!ENTITY dhfirstname "<firstname>Wesley W.</firstname>">
+  <!ENTITY dhsurname   "<surname>Terpstra</surname>">
+  <!-- Please adjust the date whenever revising the manpage. -->
+  <!ENTITY dhdate      "<date>Jun 4, 2003</date>">
+  <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
+       allowed: see man(7), man(1). -->
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>terpstra@users.sourceforge.net</email>">
+  <!ENTITY dhusername  "Wesley W. Terpstra">
+  <!ENTITY dhucpackage "<refentrytitle>LURKER-PARAMS</refentrytitle>">
+  <!ENTITY dhpackage   "lurker-params">
+
+  <!ENTITY lurker      "<productname>lurker</productname>">
+  <!ENTITY gnu         "<acronym>GNU</acronym>">
+]>
+
+<refentry>
+  <refentryinfo>
+    <address>
+      &dhemail;
+    </address>
+    <author>
+      &dhfirstname;
+      &dhsurname;
+    </author>
+    <copyright>
+      <year>2003</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    &dhdate;
+  </refentryinfo>
+  <refmeta>
+    &dhucpackage;
+
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+
+    <refpurpose>parses params from the config</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg>-c &lt;config-file&gt;</arg>
+      <arg>-d -a -n -e -x</arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>DESCRIPTION</title>
+
+    <para><command>&dhpackage;</command> outputs various lurker settings
+    from the config file for use in shell scripts.  Do not use sed/grep/etc,
+    instead use this as it respects include.  </para>
+
+  </refsect1>
+  <refsect1>
+    <title>OPTIONS</title>
+    <variablelist>
+      <varlistentry>
+        <term><option>-c config-file</option></term>
+        <listitem>
+          <para>Use this config file for lurker settings.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-d</option></term>
+        <listitem>
+          <para>Output only the dbdir parameter</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-a</option></term>
+        <listitem>
+          <para>Output only the archive parameter</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-n</option></term>
+        <listitem>
+          <para>Output only the administrator name</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-e</option></term>
+        <listitem>
+          <para>Output only the administrator email address</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-x</option></term>
+        <listitem>
+          <para>Output only the xslt processing command</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+    
+    <para>lurker-index(1), lurker-prune(1), lurker-list(1)</para>
+    <para>lurker documentation on http://lurker.sourceforge.net/</para>
+
+  </refsect1>
+  <refsect1>
+    <title>AUTHOR</title>
+
+    <para>This manual page was written by &dhusername; <&dhemail;> for the
+      &lurker; distribution. Permission is granted to copy, distribute
+      and/or modify this document under the terms of the &gnu; Free
+      Documentation License, Version 1.1 or any later version published by
+      the Free Software Foundation; with no Invariant Sections, no
+      Front-Cover Texts and no Back-Cover Texts.</para>
+
+  </refsect1>
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document:nil
+sgml-default-dtd-file:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+-->
