@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.9 2002-02-10 10:09:40 terpstra Exp $
+/*  $Id: service.c,v 1.10 2002-02-10 21:07:38 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -514,6 +514,7 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 			"Lurkerd received a mindex request past the end of the list",
 			request);
 		
+		lu_breader_close(h);
 		return -1;
 	}
 	
@@ -528,6 +529,7 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 			"Lurkerd failed to retrieve the records from the keyword file",
 			"server failure - see log files");
 		
+		lu_breader_close(h);
 		return -1;
 	}
 	
@@ -552,6 +554,7 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 	}
 	
 	my_service_list(fd, l, lu_breader_records(h));
+	lu_breader_close(h);
 	
 	for (i = 0; i < count; i++)
 	{
