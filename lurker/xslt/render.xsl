@@ -7,6 +7,7 @@
 <xsl:import href="lang.xsl"/>
 <xsl:import href="common.xsl"/>
 <xsl:import href="error.xsl"/>
+<xsl:import href="redirect.xsl"/>
 
 <xsl:import href="splash.xsl"/>
 <xsl:import href="message.xsl"/>
@@ -30,6 +31,9 @@
     <xsl:apply-templates select="*/server" mode="title"/> -
     <xsl:apply-templates mode="title"/>
    </title>
+   <xsl:if test="/redirect/url">
+    <meta content="0;URL=../{/redirect/url}.{$ext}" http-equiv="Refresh"/>
+   </xsl:if>
   </head>
   <body>
    <!-- Server Header -->

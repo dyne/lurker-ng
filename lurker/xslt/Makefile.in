@@ -79,7 +79,7 @@ fmtdir = @wwwdir@/fmt
 
 dist_fmt_DATA = \
 	render.xsl render-html.xsl common.xsl \
-	error.xsl splash.xsl message.xsl mindex.xsl search.xsl thread.xsl \
+	error.xsl splash.xsl message.xsl mindex.xsl search.xsl thread.xsl redirect.xsl \
 	english.xsl \
 	basic.css
 
