@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.7 2002-01-26 07:53:16 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.8 2002-01-26 08:52:40 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -61,6 +61,7 @@ AC_SYS_LARGEFILE
 
 PKG_CHECK_MODULES(STORAGE, st >= 1.3)
 DB3_CHECK(STORAGE)
+C_CLIENT_CHECK(STORAGE)
 XSLT_CHECK(RENDER)
 
 dnl Use -Wall if we have gcc.

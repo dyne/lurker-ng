@@ -46,6 +46,36 @@ AC_DEFUN(XSLT_CHECK, [
   fi
 ])
 
+AC_DEFUN(C_CLIENT_CHECK, [
+  AC_MSG_CHECKING(for c-client)
+  
+  save_LIBS=$LIBS
+  LIBS="$LIBS -lc-client"
+  AC_TRY_LINK(
+[void mm_expunged() {}
+void mm_diskerror() {}
+void mm_lsub() {}
+void mm_flags() {}
+void mm_fatal() {}
+void mm_nocritical() {}
+void mm_notify() {}
+void mm_searched() {}
+void mm_status() {}
+void mm_login() {}
+void mm_list() {}
+void mm_critical() {}
+void mm_exists() {}
+void mm_log() {}
+void mm_dlog() {}
+void rfc822_parse_msg_full();],
+[ rfc822_parse_msg_full(); ], 
+    AC_MSG_RESULT(yes), AC_MSG_ERROR(need c-client))
+  LIBS=$save_LIBS
+
+  $1_LIBS="$$1_LIBS -lc-client"
+  AC_SUBST($1_LIBS)
+])
+
 dnl Since db3 comes with no real way to determine its location,
 dnl we'll make an attempt at finding it ourselves.  (This is
 dnl especially lame since some linkers don't look in the proper
