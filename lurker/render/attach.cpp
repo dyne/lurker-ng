@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.3 2003-04-22 13:15:41 terpstra Exp $
+/*  $Id: attach.cpp,v 1.4 2003-04-22 13:59:39 terpstra Exp $
  *  
  *  attach.cpp - Handle a attach/ command
  *  
@@ -90,10 +90,10 @@ string unfold_header(const char* hdr)
 	
 	while (*hdr != 0)
 	{
-		if (*hdr != '\r' && *hdr != '\n' && *hdr != '\t')
-			s << *hdr;
-		else
+		if (*hdr == '\r' || *hdr == '\n' || *hdr == '\t')
 			s << ' ';
+		else	s << *hdr;
+		++hdr;
 	}
 	
 	return s.str();
