@@ -5,22 +5,12 @@ The storage component's functional I/O requirements include:
 	accepting queries from the render component
 
 Current non-functional goals:
-	4 billion messages total -> still fast (<= 0.001s)
+	4 billion messages total -> still fast (<= 10 ms)
 	>4000 messages a second on import even when at 1 billion messages
 
-It must support these queries:
-	starting at offset <x> give me the <y> summary blocks for search <z>
-		-> this is used for (obviously) search results
-		-> it is also used for mailing list summaries (mindex)
-	
-	starting at offset <x> give me the <y> tids in mbox <z>
-		-> this is used for tindex
-
-	give me all the information for mid <x>
-
-	give me all the summary blocks for messages in thread <x>
-		-> can say 'error, not head, try this: '
-			= we make a symlink
+All data storage MUST be done in utf-8 asap. This means whenever we read
+data in, we convert it to utf-8 at that time. All output will be in utf-8.
+All conversions, operations, escaping, encoding, etc. will be in utf-8.
 
 Component diagram:
 
