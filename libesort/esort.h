@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.1.1.1 2003-08-15 13:59:07 terpstra Exp $
+/*  $Id: esort.h,v 1.2 2003-08-15 15:40:05 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -108,7 +108,9 @@ class Parameters
 enum Direction
 {
 	Forward,
-	Backward
+	Backward,
+	FORWARD = Forward,
+	BACKWARD = Backward
 };
 
 /** The Walker class walks the database in sorted order.

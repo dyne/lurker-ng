@@ -1,1 +1,1 @@
-SUBDIRS = libesort
+SUBDIRS = libesort bindings

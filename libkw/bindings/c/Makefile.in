@@ -20,7 +20,7 @@ VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
-top_builddir = ..
+top_builddir = ../..
 
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 INSTALL = @INSTALL@
@@ -133,36 +133,28 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-lib_LTLIBRARIES = libesort.la
-include_HEADERS = \
-	DbMan.h Failer.h File.h Master.h Memory.h Merger.h Source.h \
-	Transaction.h View.h esort.h io.h
+AM_CPPFLAGS = -I$(top_srcdir)/libesort
 
+include_HEADERS = esortc.h
+lib_LTLIBRARIES = libesortc.la
 
-libesort_la_SOURCES = \
-	Parameters.cpp Memory.cpp File.cpp Source.cpp Transaction.cpp \
-	Merger.cpp Failer.cpp View.cpp Master.cpp DbMan.cpp
-
-libesort_la_LDFLAGS = -version-info @LTVERSION@
-subdir = libesort
+libesortc_la_SOURCES = esortc.cpp esortc.h
+libesortc_la_LIBADD = $(top_builddir)/libesort/libesort.la
+libesortc_la_LDFLAGS = -version-info @LTVERSION@
+subdir = bindings/c
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(lib_LTLIBRARIES)
 
-libesort_la_LIBADD =
-am_libesort_la_OBJECTS = Parameters.lo Memory.lo File.lo Source.lo \
-	Transaction.lo Merger.lo Failer.lo View.lo Master.lo DbMan.lo
-libesort_la_OBJECTS = $(am_libesort_la_OBJECTS)
+libesortc_la_DEPENDENCIES = $(top_builddir)/libesort/libesort.la
+am_libesortc_la_OBJECTS = esortc.lo
+libesortc_la_OBJECTS = $(am_libesortc_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir)
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/DbMan.Plo ./$(DEPDIR)/Failer.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/File.Plo ./$(DEPDIR)/Master.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/Memory.Plo ./$(DEPDIR)/Merger.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/Parameters.Plo ./$(DEPDIR)/Source.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/Transaction.Plo ./$(DEPDIR)/View.Plo
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/esortc.Plo
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
@@ -171,11 +163,18 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = $(libesort_la_SOURCES)
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
+	$(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+DIST_SOURCES = $(libesortc_la_SOURCES)
 HEADERS = $(include_HEADERS)
 
 DIST_COMMON = $(include_HEADERS) Makefile.am Makefile.in
-SOURCES = $(libesort_la_SOURCES)
+SOURCES = $(libesortc_la_SOURCES)
 
 all: all-am
 
@@ -183,7 +182,7 @@ all: all-am
 .SUFFIXES: .cpp .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  libesort/Makefile
+	  $(AUTOMAKE) --gnu  bindings/c/Makefile
 Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)
 libLTLIBRARIES_INSTALL = $(INSTALL)
@@ -214,8 +213,8 @@ clean-libLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-libesort.la: $(libesort_la_OBJECTS) $(libesort_la_DEPENDENCIES) 
-	$(CXXLINK) -rpath $(libdir) $(libesort_la_LDFLAGS) $(libesort_la_OBJECTS) $(libesort_la_LIBADD) $(LIBS)
+libesortc.la: $(libesortc_la_OBJECTS) $(libesortc_la_DEPENDENCIES) 
+	$(CXXLINK) -rpath $(libdir) $(libesortc_la_LDFLAGS) $(libesortc_la_OBJECTS) $(libesortc_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -223,16 +222,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DbMan.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Failer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/File.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Master.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Memory.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Merger.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Parameters.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Source.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Transaction.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/View.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/esortc.Plo@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)
@@ -353,7 +343,7 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
-top_distdir = ..
+top_distdir = ../..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
