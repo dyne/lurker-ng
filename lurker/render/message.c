@@ -1,4 +1,4 @@
-/*  $Id: message.c,v 1.2 2002-02-04 01:37:21 terpstra Exp $
+/*  $Id: message.c,v 1.3 2002-02-04 05:07:28 terpstra Exp $
  *  
  *  message.c - output results from a message/ lookup
  *  
@@ -24,52 +24,235 @@
 
 #include "common.h"
 #include "protocol.h"
+#include "message.h"
+#include "io.h"
 
 #include "handler.h"
 
 #include <string.h>
+#include <ctype.h>
+
+static int my_strcasecmp(
+	const char* a, 
+	const char* b)
+{
+	while (*a && *b)
+	{
+		int dif = tolower(*a++) - tolower(*b++);
+		if (dif != 0) return dif;
+	}
+	
+	if (*b) return 1;
+	if (*a) return -1;
+	
+	return 0;
+}
+
+static void message_traverse(
+	struct msg* in, 
+	struct mail_bodystruct* body,
+	FILE* out)
+{
+	struct mail_body_part *p;
+	size_t length;
+	char *buffer;
+	int nfree;
+	
+	if (!body)
+	{	/* You never know... */
+		return;
+	}
+
+	switch ((int)body->type)
+	{
+		case TYPEMESSAGE:
+			/*
+			 * This part contains an encapsulated message.
+			 */
+			if (my_strcasecmp(body->subtype, "rfc822"))
+				break;
+
+			message_traverse(in, body->nested.msg->body, out);
+			break;
+
+		case TYPETEXT:
+			/*
+			 * This is what we want to index -- stop.
+			 */
+			if (my_strcasecmp(body->subtype, "plain"))
+				break;
+
+			buffer = mail_select(in, body, &length, &nfree);
+			fwrite(buffer, 1, length, out);
+			if (nfree)
+				fs_give((void **)&buffer);
+
+			break;
+
+		case TYPEMULTIPART:
+			/*
+			 * Multipart message.  Look at the nested parts
+			 * and hopefully find some plaintext.
+			 */
+			for (p = body->nested.part; p != NULL; p = p->next)
+				message_traverse(in, &p->body, out);
+			break;
+		
+		default:
+			fprintf(out, "<attachment/>");
+			break;
+	}
+}
+
+
+FILE* lu_message_mbox(const char* parameter)
+{
+	char buf[240];
+	int fd;
+	FILE* out;
+	
+	snprintf(&buf[0], sizeof(buf), "%s.mbox", parameter);
+	fd = open(&buf[0], 
+		O_CREAT | O_RDWR | O_BINARY | O_EXCL,
+		LU_S_READ | LU_S_WRITE);
+	
+	if (fd == -1)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Not able to create mbox file",
+			&buf[0],
+			strerror(errno));
+		return 0;
+	}
+	
+	if ((out = fdopen(fd, "w+")) == 0)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Not able to fdopen an fd",
+			fd,
+			strerror(errno));
+		
+		close(fd);
+	}
+	
+	return out;
+}
+
+static void write_addresses(ADDRESS* addr, const char* name, FILE* out)
+{
+	if (!addr) return;
+	
+	fprintf(out, " <%s>\n", name);
+	for (; addr; addr = addr->next)
+	{
+		if (!addr->personal && (!addr->mailbox || !addr->host))
+		{
+			continue;
+		}
+		
+		fprintf(out, "  <email");
+		
+		if (addr->personal)
+		{
+			fprintf(out, " name=\"%s\"", 
+				addr->personal);
+		}
+		
+		if (addr->mailbox && addr->host)
+		{
+			fprintf(out, " address=\"%s@%s\"",
+				addr->mailbox,
+				addr->host);
+		}
+		
+		fprintf(out, "/>\n");
+	}
+	
+	fprintf(out, " </%s>\n", name);
+}
 
 int lu_message_handler(char* parameter)
 {
-	FILE*			f;
+	FILE*			mbox;
+	FILE*			xml;
 	Lu_Proto_Message	msg;
 	time_t			tm;
 	message_id		id;
-	
-	if ((f = lu_render_open(parameter)) == 0)
-		return -1;
-	
-	fprintf(f, "<message>\n");
+	char			buf[4096];
+	size_t			got;
+	int			mbox_fd;
+	struct msg*		email;
 	
 	fprintf(lu_server_link, "getmsg %s%c", parameter, LU_PROTO_ENDREQ);
 	if (fread(&msg, sizeof(Lu_Proto_Message), 1, lu_server_link) != 1)
 	{
-		fprintf(f, " <error>%s</error>\n", strerror(errno));
-		fprintf(f, "</message>\n");
-		return lu_render_close(f);
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Talking to server",
+			"fread digest",
+			strerror(errno));
+		return -1;
 	}
 	
-	fprintf(f, " <list>\n");
-	fprintf(f, "  <name>%s</name>\n", &msg.list_name[0]);
-	fprintf(f, "  <address>%s</address>\n", &msg.list_address[0]);
-	fprintf(f, "  <desc>%s</desc>\n", &msg.list_desc[0]);
-	fprintf(f, " </list>\n");
+	if ((mbox = lu_message_mbox(parameter)) == 0)
+		return -1;
 	
-	fprintf(f, " <mbox>%s</mbox>\n", &msg.mbox_name[0]);
+	while ((got = fread(&buf[0], 1, sizeof(buf), lu_server_link)) > 0)
+	{
+		fwrite(&buf[0], 1, got, mbox);
+	}
 	
-	fprintf(f, " <timestamp>%d</timestamp>\n", msg.timestamp);
+	mbox_fd = dup(fileno(mbox));
+	fclose(mbox);
+	
+	if ((xml = lu_render_open(parameter)) == 0)
+	{
+		close(mbox_fd);
+		return -1;
+	}
+	
+	email = mail_parse(mbox_fd, 0);
+	if (!email)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Parsing email",
+			"mail_parse",
+			strerror(errno));
+		fclose(xml);
+		close(mbox_fd);
+		return -1;
+	}
+	
+	fprintf(xml, "<message>\n");
+	
+	fprintf(xml, " <list>\n");
+	fprintf(xml, "  <name>%s</name>\n", &msg.list_name[0]);
+	fprintf(xml, "  <address>%s</address>\n", &msg.list_address[0]);
+	fprintf(xml, "  <desc>%s</desc>\n", &msg.list_desc[0]);
+	fprintf(xml, " </list>\n");
+	
+	fprintf(xml, " <mbox>%s</mbox>\n", &msg.mbox_name[0]);
+	
+	fprintf(xml, " <timestamp>%d</timestamp>\n", msg.timestamp);
 	tm = msg.timestamp;
-	fprintf(f, " <time>%s</time>\n", ctime(&tm));
-	fprintf(f, " <thread>%d</thread>\n", msg.thread);
+	fprintf(xml, " <time>%s</time>\n", ctime(&tm));
+	fprintf(xml, " <thread>%d</thread>\n", msg.thread);
 	
 	if (msg.in_reply_to != lu_common_minvalid)
 	{
-		fprintf(f, " <inreplyto>%d</inreplyto>\n", msg.in_reply_to);
+		fprintf(xml, " <inreplyto>%d</inreplyto>\n", msg.in_reply_to);
 	}
 	
 	if (msg.replys)
 	{
-		fprintf(f, " <replys>\n");
+		fprintf(xml, " <replys>\n");
 		while (msg.replys)
 		{
 			if (fread(&id, sizeof(message_id), 1, lu_server_link) 
@@ -78,14 +261,37 @@ int lu_message_handler(char* parameter)
 				break;
 			}
 			
-			fprintf(f, "  <id>%d</id>\n", id);
+			fprintf(xml, "  <id>%d</id>\n", id);
 			msg.replys--;
 		}
-		fprintf(f, " </replys>\n");
+		fprintf(xml, " </replys>\n");
 	}
-	fprintf(f, " <body>");
-	fprintf(f, "</body>\n");
 	
-	fprintf(f, "</message>\n");
-	return lu_render_close(f);
+	if (email->env->subject)
+	{
+		fprintf(xml, " <subject>%s</subject>\n",
+			email->env->subject);
+	}
+	
+	write_addresses(email->env->from,     "from",     xml);
+	write_addresses(email->env->sender,   "sender",   xml);
+	write_addresses(email->env->reply_to, "reply-to", xml);
+	write_addresses(email->env->to,       "to",       xml);
+	write_addresses(email->env->cc,       "cc",       xml);
+	write_addresses(email->env->bcc,      "bcc",      xml);
+	
+	if (email->env->message_id)
+	{
+		fprintf(xml, " <message-id>%s</message-id>\n", 
+			email->env->message_id);
+	}
+	
+	fprintf(xml, " <body>");
+	message_traverse(email, email->body, xml);
+	
+	fprintf(xml, "</body>\n");
+	fprintf(xml, "</message>\n");
+	
+	close(mbox_fd);
+	return lu_render_close(xml);
 }
