@@ -1,4 +1,4 @@
-/*  $Id: DbMan.h,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: DbMan.h,v 1.3 2003-05-07 15:43:12 terpstra Exp $
  *  
  *  DbMan.h - Manage the commit'd segments and parameters
  *  
@@ -41,6 +41,7 @@ class DbMan
  	string	dbname;
  	FILE*	dbfile;
  	int	cmode;
+ 	int	dirfd;
  	int	dblock;
  	std::set<string> ids;
  	
@@ -55,29 +56,27 @@ class DbMan
  	int  lock_snapshot_rw();
  	void unlock_snapshot_rw();
  	
+ 	// must be locked ro during call
+ 	int snapshot(View& view, Parameters& p);
+ 	
  public:
  	DbMan();
  	~DbMan();
  	
  	/** Open the database
  	 */
- 	int open(const string& db, Parameters& p); // ro access
- 	int open(const string& db, Parameters& p, int mode); // rw
+ 	int open(View& view, const string& db); // ro access
+ 	int open(View& view, const string& db, int mode); // rw
  	
  	/** Lock the database for this single writer.
  	 */
  	int  lock_database_rw();
  	void unlock_database_rw();
  	
- 	/** Obtain a View snapshot
- 	 *  Must be lock_snapshot_ro'd
+ 	/** Store the new db state
+ 	 *  Must be lock_database_rw'd
  	 */
- 	int snapshot(View& view);
- 	
- 	/** Store the current View + Parameters as the new db state
- 	 *  Must be lock_snapshot_rw'd & lock_database_rw'd
- 	 */
- 	int commit(const View& view);
+ 	int commit(const Parameters& p, const std::set<string>& ids);
  	
  	/** Open a new sub-database.
  	 *  Must be lock_database_rw'd

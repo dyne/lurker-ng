@@ -1,4 +1,4 @@
-/*  $Id: Master.cpp,v 1.5 2003-04-25 17:05:10 terpstra Exp $
+/*  $Id: Master.cpp,v 1.6 2003-05-07 15:43:13 terpstra Exp $
  *  
  *  Master.cpp - Coordinate commit+read interface
  *  
@@ -40,8 +40,8 @@
 namespace ESort
 {
 
-Master::Master()
- : view(Parameters()), memory(), man()
+Master::Master(const Parameters& p)
+ : view(p), memory(), man()
 {
 }
 
@@ -50,61 +50,79 @@ Master::~Master()
 	man.unlock_database_rw();
 }
 
-int Master::init(const string& db, const Parameters& p, int mode)
+int Master::init(const string& db, int mode)
 {
-	view.params = p;
-	
-	if (man.open(db, view.params, mode) != 0) return -1;
-	if (man.lock_database_rw()          != 0) return -1;
-	if (man.snapshot(view)              != 0) return -1;
+	if (man.open(view, db, mode) != 0) return -1;
+	if (man.lock_database_rw()   != 0) return -1;
 	
 	return 0;
 }
+
+struct CleanupHelper
+{
+ public:
+ 	DbMan*	man;
+ 	int	fd;
+ 	string	id;
+ 	
+ 	CleanupHelper(DbMan* man_) : man(man_), fd(-1) { }
+ 	~CleanupHelper()
+ 	{
+ 		if (fd != -1)
+ 		{
+ 			close(fd);
+ 			man->killSub(id);
+ 		}
+ 	}
+};
 
 int Master::commit()
 {
 	if (memory.empty()) return 0;
 	
-	string id;
-	int fd = man.openNew(id);
-	if (fd == -1) return -1;
+	CleanupHelper scopedData(&man);
+	scopedData.fd = man.openNew(scopedData.id);
+	if (scopedData.fd == -1) return -1;
 	
-	Transaction tran(fd, &view.params);
+	Transaction tran(scopedData.fd, &view.params);
 	Merger merge(view.params.unique(), true); // forward
 	auto_ptr<Source> m(memory.openMemory("", true)); // forward
-	if (m->advance() == -1) return -1; // means eof; always
-	merge.merge(m.release());
-	
-	std::list<File> doomed;
+	int ok = m->advance();
+	assert (ok != -1); // memory was already checked -> not empty!
+	merge.merge(m.get());
+	m.release(); // seperate in case of exception above
 	
 	// What category is our RAM?
 	int category = memory.category(view.params);
 //	std::cout << "Category: " << category << std::endl;
 	
-	View::Files::iterator i, j;
-	for (i = view.files.begin(); i != view.files.end(); i = j)
+	View::Files::iterator kill;
+	for (kill = view.files.begin(); kill != view.files.end(); ++kill)
 	{
-//		std::cout << "Merging: " << i->category << std::endl;
-		if (i->category > category)
+//		std::cout << "Merging: " << kill->category << std::endl;
+		if (kill->category > category)
 			break; // keep this one
 		
 		// If we have at least one of the same size, roll up as in
 		// binary addition
-		if (i->category == category)
+		if (kill->category == category)
 			category++;
 		
-		//!!! this bad because it prevents us from proper unwinding
-		// -- fix it
-		doomed.push_back(*i);
-		auto_ptr<Source> f(doomed.back().openBlock(0, true));
+		auto_ptr<Source> f(
+			const_cast<File*>(&*kill)->openBlock(0, true));
 		if (!f.get()) return -1; // something broke?
 		if (f->advance() == -1) return -1; // always has keys?!
-		merge.merge(f.release());
-		
-		j = i;
-		++j;
-		view.files.erase(i);
+		merge.merge(f.get());
+		f.release(); // above might throw
 	}
+	
+	// The list of ids which we commit
+	std::set<string> keepIds;
+	keepIds.insert(scopedData.id); // the new id
+	
+	// keep all of these ids
+	for (View::Files::iterator keep = kill; keep != view.files.end(); ++keep) 
+		keepIds.insert(keep->id);
 	
 	if (merge.skiptill("", true) != 0)
 		return -1; // must work?! ram has entries
@@ -118,18 +136,24 @@ int Master::commit()
 	if (tran.finish() != 0)
 		return -1;
 	
-	// Move the transaction to a File; thus becoming a part of the view
-	view.files.insert(File(id, fd, &view.params));
-	
-	if (man.commit(view) != 0)
+	// Commit the summary information
+	if (man.commit(view.params, keepIds) != 0)
 		return -1;
 	
 	// done with the buffer
 	memory.flush();
 	
-	// Destroy useless files
-	for (std::list<File>::iterator i = doomed.begin(); i != doomed.end(); ++i)
-		man.killSub(i->id);
+	// Delete useless files
+	for (View::Files::iterator zap = view.files.begin(); zap != kill; ++zap)
+		man.killSub(zap->id);
+	
+	// Purge useless files from the View
+	view.files.erase(view.files.begin(), kill);
+	
+	// Move the transaction to a File; thus becoming a part of the view
+	int fd = scopedData.fd;
+	scopedData.fd = -1;
+	view.files.insert(File(scopedData.id, fd, &view.params));
 	
 	return 0;
 }
@@ -189,9 +213,9 @@ auto_ptr<Walker> Master::seek(const string& pfx, const string& k, Direction dir)
 
 auto_ptr<Writer> Writer::open(const string& db, const Parameters& p, int mode)
 {
-	auto_ptr<Master> m(new Master);
+	auto_ptr<Master> m(new Master(p));
 	
-	if (m->init(db, p, mode) != 0)
+	if (m->init(db, mode) != 0)
 		return auto_ptr<Writer>(0);
 	
 	return auto_ptr<Writer>(m);

@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.6 2003-05-03 18:12:24 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.7 2003-05-07 15:43:12 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -85,7 +85,7 @@ static int unlock_file_lock(int fd)
 }
 
 DbMan::DbMan()
- : dbname(), dbfile(0), cmode(0), dblock(-1)
+ : dbname(), dbfile(0), cmode(0), dirfd(-1), dblock(-1)
 {
 }
 
@@ -94,6 +94,8 @@ DbMan::~DbMan()
 	if (dbfile) fclose(dbfile);
 	if (dblock != -1)
 		unlock_database_rw();
+	if (dirfd != -1)
+		close(dirfd);
 }
 
 int DbMan::qualify(string& db)
@@ -153,7 +155,24 @@ int DbMan::scanFile(Parameters& p)
 	return 0;
 }
 
-int DbMan::open(const string& db, Parameters& p)
+int DbMan::snapshot(View& view, Parameters& p)
+{
+	if (scanFile(p) != 0) return -1;
+	
+	view.files.clear();
+	for (std::set<string>::iterator i = ids.begin(); i != ids.end(); ++i)
+	{
+		string name = dbname + "." + *i;
+		int fd = ::open(name.c_str(), O_RDONLY);
+//		std::cout << "opening: " <<  name << ": " << fd << std::endl;
+		if (fd == -1) return -1;
+		view.files.insert(File(*i, fd, &view.params));
+	}
+	
+	return 0;
+}
+
+int DbMan::open(View& view, const string& db)
 {
 	assert (dbname == "");
 	
@@ -163,12 +182,24 @@ int DbMan::open(const string& db, Parameters& p)
 	dbfile = fopen(dbname.c_str(), "r");
 	if (dbfile == 0) return -1;
 	
-	if (scanFile(p) != 0) return -1;
+	int ok = lock_snapshot_ro();
+	if (ok != 0) return ok;
 	
-	return 0;
+	if (snapshot(view, view.params) != 0)
+	{
+		int o = errno;
+		unlock_snapshot_ro();
+		errno = o;
+		return -1;
+	}
+	else
+	{
+		unlock_snapshot_ro();
+		return 0;
+	}
 }
 
-int DbMan::open(const string& db, Parameters& p, int mode)
+int DbMan::open(View& view, const string& db, int mode)
 {
 	assert (dbname == "");
 	
@@ -181,23 +212,51 @@ int DbMan::open(const string& db, Parameters& p, int mode)
 	dbfile = fdopen(fd, "r+");
 	assert (dbfile != 0);
 	
-	Parameters x(1,8,1);
-	if (scanFile(x) != 0)
+	string dirname(dbname, 0, dbname.rfind('/'));
+	dirfd = ::open(dirname.c_str(), O_RDONLY);
+	// ignore the error; some OSes don't allow opening directories
+	
+	int ok = lock_snapshot_rw();
+	if (!ok) return ok;
+	
+	bool empty = fseek(dbfile, 0, SEEK_END) == 0;
+	fseek(dbfile, 0, SEEK_SET);
+	
+	if (empty)
 	{
-		fseek(dbfile, 0, SEEK_SET);
 		fprintf(dbfile, "%d %ld %ld\n", 
-			p.version(), p.blockSize(), p.keySize());
+			view.params.version(), 
+			view.params.blockSize(), 
+			view.params.keySize());
 		fflush(dbfile);
+		unlock_snapshot_rw();
 		return 0;
 	}
-	if (!x.isWider(p))
-	{
-		errno = EINVAL;
-		return -1;
+	else
+	{	// not empty
+		Parameters x(1,8,1);
+		if (snapshot(view, x) != 0)
+		{
+			int o = errno;
+			unlock_snapshot_rw();
+			errno = o;
+			return -1;
+		}
+		else
+		{
+			unlock_snapshot_rw();
+			if (!x.isWider(view.params))
+			{
+				errno = EINVAL;
+				return -1;
+			}
+			else
+			{
+				view.params = x;
+				return 0;
+			}
+		}
 	}
-	p = x;
-	
-	return 0;
 }
 
 int DbMan::lock_snapshot_ro()
@@ -242,59 +301,46 @@ void DbMan::unlock_database_rw()
 	dblock = -1;
 }
 
-int DbMan::snapshot(View& view)
-{
-	int ok = lock_snapshot_ro();
-	if (ok != 0) return ok;
-	
-	Parameters p(1,8,1);
-	if (scanFile(p) != 0)	// get the ids
-	{
-		unlock_snapshot_ro();
-		return -1;
-	}
-	
-	view.files.clear();
-	for (std::set<string>::iterator i = ids.begin(); i != ids.end(); ++i)
-	{
-		string name = dbname + "." + *i;
-		int fd = ::open(name.c_str(), O_RDONLY);
-//		std::cout << "opening: " <<  name << ": " << fd << std::endl;
-		if (fd == -1)
-		{
-			unlock_snapshot_ro();
-			return -1;
-		}
-		view.files.insert(File(*i, fd, &view.params));
-	}
-	
-	unlock_snapshot_ro();
-	return 0;
-}
-
-int DbMan::commit(const View& view)
+int DbMan::commit(const Parameters& p, const std::set<string>& nids)
 {
 	int ok = lock_snapshot_rw();
 	if (ok != 0) return ok;
 	
 	assert (dblock != -1); // must be lock_database_rw'd
 	
-	ids.clear();
-	for (View::Files::const_iterator i = view.files.begin(); i != view.files.end(); ++i)
-		ids.insert(i->id);
+	// make sure the new file is on stable storage
+	if (p.synced())
+		if (dirfd != -1) fsync(dirfd); // sync the directory
 	
-	fseek(dbfile, 0, SEEK_SET);
-	ftruncate(fileno(dbfile), 0);
+	if (fseek(dbfile, 0, SEEK_SET) != 0 ||
+	    ftruncate(fileno(dbfile), 0) != 0)
+	{
+		unlock_snapshot_rw();
+		return -1;
+	}
 	
+	// The underlying assumption here is that these calls all fit
+	// within one block and thus can't fail. This should be valid for
+	// even grossly enoromous databases on puny systems.
 	fprintf(dbfile, "%d %ld %ld\n", 
-		view.params.version(), 
-		view.params.blockSize(), 
-		view.params.keySize());
-	for (std::set<string>::iterator i = ids.begin(); i != ids.end(); ++i)
+		p.version(), 
+		p.blockSize(), 
+		p.keySize());
+	for (std::set<string>::const_iterator i = nids.begin(); i != nids.end(); ++i)
 		fprintf(dbfile, "%s\n", i->c_str());
 	
-	fflush(dbfile);
-	fsync(fileno(dbfile));
+	if (fflush(dbfile) != 0)
+	{
+		unlock_snapshot_rw();
+		return -1;
+	}
+	
+	ids = nids;
+	
+	// make sure the new summary is on stable storage (since it old
+	// stuff gets unlinked on return)
+	if (p.synced())
+		fsync(fileno(dbfile));
 	
 	unlock_snapshot_rw();
 	return 0;
@@ -314,7 +360,6 @@ int DbMan::openNew(string& id)
 	
 	string name = dbname + "." + ext;
 	int fd = ::open(name.c_str(), O_RDWR | O_CREAT | O_TRUNC, cmode);
-	if (fd == -1) return -1;
 	
 	id = ext;
 	return fd;

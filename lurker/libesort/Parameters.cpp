@@ -1,4 +1,4 @@
-/*  $Id: Parameters.cpp,v 1.3 2003-04-25 14:05:37 terpstra Exp $
+/*  $Id: Parameters.cpp,v 1.4 2003-05-07 15:43:13 terpstra Exp $
  *  
  *  Parameters.cpp - Control how the database is stored
  *  
@@ -36,8 +36,9 @@ Parameters::Parameters(
 	unsigned int  version, 
 	unsigned long blockSize, 
 	unsigned long keySize, 
-	bool          unique)
- : version_(version), blockSize_(blockSize), keySize_(keySize), unique_(unique)
+	bool          unique,
+	bool          synced)
+ : version_(version), blockSize_(blockSize), keySize_(keySize), unique_(unique), synced_(synced)
 {
 	assert (keySize_ > 0);
 	assert (keySize_ * 8 <= blockSize_);

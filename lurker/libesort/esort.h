@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.6 2003-04-25 14:55:43 terpstra Exp $
+/*  $Id: esort.h,v 1.7 2003-05-07 15:43:13 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -68,6 +68,7 @@ class Parameters
 	unsigned long	blockSize_;
 	unsigned long	keySize_;
 	bool		unique_;
+	bool		synced_;
 	unsigned int	keyWidth_;
 
  public:
@@ -76,7 +77,8 @@ class Parameters
 		unsigned int  version   = 1, 
 		unsigned long blockSize = 8192, 
 		unsigned long keySize   = 255, 
-		bool          unique    = true);
+		bool          unique    = true,
+		bool          synced    = true);
 	
 	bool isWider(const Parameters& o);
 	
@@ -84,6 +86,7 @@ class Parameters
 	unsigned long blockSize() const { return blockSize_; }
 	unsigned long keySize  () const { return keySize_;   }
 	bool          unique   () const { return unique_;    }
+	bool          synced   () const { return synced_;    }
 	unsigned int  keyWidth () const { return keyWidth_;  }
 };
 

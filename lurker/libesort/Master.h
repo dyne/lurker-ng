@@ -1,4 +1,4 @@
-/*  $Id: Master.h,v 1.4 2003-04-25 14:55:42 terpstra Exp $
+/*  $Id: Master.h,v 1.5 2003-05-07 15:43:13 terpstra Exp $
  *  
  *  Master.h - Coordinate commit+read interface
  *  
@@ -43,10 +43,10 @@ class Master : public Writer
  	DbMan	man;
  
  public:
- 	Master();
+ 	Master(const Parameters& p);
  	~Master();
  	
- 	int init(const string& db, const Parameters& p, int mode);
+ 	int init(const string& db, int mode);
  	
  	int commit();
  	int insert(const string& k);
