@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.7 2002-07-12 19:02:00 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.8 2002-07-17 10:37:31 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -629,8 +629,8 @@ struct Kap_Wbuffer* wbuffer_init()
 	struct Kap_Wbuffer* wbuffer = malloc(sizeof(struct Kap_Wbuffer));
 	if (!wbuffer) return 0;
 	
-	wbuffer->num_appends = 1024*1024*4;
-	wbuffer->num_slots   = 65532;
+	wbuffer->num_appends = 1024*1024;
+	wbuffer->num_slots   = 16384;
 	
 	wbuffer->acache = 0;
 	wbuffer->kcache = 0;
