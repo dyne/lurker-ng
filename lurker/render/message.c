@@ -1,4 +1,4 @@
-/*  $Id: message.c,v 1.3 2002-02-04 05:07:28 terpstra Exp $
+/*  $Id: message.c,v 1.4 2002-02-04 09:11:17 cbond Exp $
  *  
  *  message.c - output results from a message/ lookup
  *  
@@ -7,6 +7,7 @@
  *  License: GPL
  *  
  *  Authors: 'Wesley W. Terpstra' <wesley@terpstra.ca>
+ *           'Chris L. Bond' <cbond@twistedcircus.org>
  *  
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -48,6 +49,53 @@ static int my_strcasecmp(
 	return 0;
 }
 
+static struct xml_special {
+	const char symbol;
+	const char *replace;
+} special[] = {
+	{ '\'',	"&apos;"	},
+	{ '<',	"&lt;"		},
+	{ '>',	"&gt;"		},
+	{ '&',	"&amp;"		},
+	{ '"',	"&quot;"	},
+	{ '\0', NULL		}
+};
+
+static void write_xml_escaped(
+	char *buf,
+	size_t length,
+	FILE *out)
+{
+	struct xml_special *rep;
+	char *end, *start;
+
+	/*
+	 * Read the buffer, looking for XML symbols that need
+	 * to be escaped with predefined entities.  Write in
+	 * segments.
+	 */
+	start = buf;
+	for (end = buf + length; buf < end; ++buf) {
+		switch (*buf) {
+			case '\'':
+			case '<':
+			case '>':
+			case '"':
+			case '&':
+				fwrite(start, 1, buf - start, out);
+				for (rep = &special[0]; rep->symbol; rep++)
+					if (rep->symbol == *buf)
+						break;
+				fputs(rep->replace, out);
+				start = ++buf;
+				break;
+			default:
+				break;
+		}
+	}
+	fwrite(start, 1, buf - start, out);
+}
+
 static void message_traverse(
 	struct msg* in, 
 	struct mail_bodystruct* body,
@@ -83,7 +131,7 @@ static void message_traverse(
 				break;
 
 			buffer = mail_select(in, body, &length, &nfree);
-			fwrite(buffer, 1, length, out);
+			write_xml_escaped(buffer, length, out);
 			if (nfree)
 				fs_give((void **)&buffer);
 
