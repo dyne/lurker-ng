@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.31 2002-06-14 11:16:59 terpstra Exp $
+/*  $Id: mbox.c,v 1.32 2002-06-14 17:05:24 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -188,18 +188,61 @@ static int my_mbox_mmap(
 	return 0;
 }
 
-static char* my_mbox_strnstr(
+/* This routine will find a needle k in a haystack s.
+ * HOWEVER, the needle must have a special property:
+ * It must never contain the first letter of the string anywhere else in
+ * the string.
+ */
+static const char* my_mbox_find_special(
+	const char* k,
 	const char* s,
-	const char* d,
-	ssize_t slen)
+	const char* e)
 {
-	const char* orig;
-	size_t dlen;
+	const char* needle;
+	
+	needle = k;
+	while (*needle && s != e)
+	{
+		if (*needle != *s)
+		{
+			if (needle == k)	s++;
+			else			needle = k;
+		}
+		else
+		{
+			needle++;
+			s++;
+		}
+	}
+		
+	if (!*needle) return s - strlen(k);
+	
+	return 0;
+}
 
-	dlen = strlen(d);
-	for (orig = s; slen > s - orig; ++s)
-		if (*s == *d && strncmp(s + 1, d + 1, dlen - 1) == 0)
-			return (char *)s;
+/* Find where in the string there are two linefeeds in a row.
+ * Return the first character after this double lf.
+ */
+static const char* my_mbox_find_doublelf(
+	const char* s,
+	const char* e)
+{
+	int lfs;
+	
+	for (lfs = 0; s != e; s++)
+	{
+		if (*s == '\n')
+		{
+			lfs++;
+			if (lfs == 2) break;
+		}
+		else
+		{
+			if (*s != '\r') lfs = 0;
+		}
+	}
+	
+	if (s != e) return s+1;
 	return 0;
 }
 
@@ -522,11 +565,12 @@ static time_t my_mbox_extract_timestamp(
 	time_t	client_timestamp;
 	char	timestamp[60];
 	char*	w;
-	char*	buf;
-	char*	e;
-	char*	s;
-	char*	t1;
-	char*	t2;
+	
+	const char*	buf;
+	const char*	e;
+	const char*	s;
+	const char*	he;
+	
 	off_t	size;
 
 	assert(mbox->locked);
@@ -566,8 +610,9 @@ static time_t my_mbox_extract_timestamp(
 		
 		/* Find the first occurance of 'From '. It should in theory be right
 		 * at the start of buf... However, we should be more robust.
+		 * *** WARNING *** find_special has a precondition. Please read.
 		 */
-		s = my_mbox_strnstr(buf, "From ", e - buf);
+		s = my_mbox_find_special("From ", buf, e);
 		if (s == 0)
 		{
 			syslog(LOG_ERR, _("Discovered >=4k more to a message after we had already processed it.\n"));
@@ -611,14 +656,13 @@ static time_t my_mbox_extract_timestamp(
 	arrival_timestamp = my_mbox_convert_date_mbox(&timestamp[0]);
 	
 	/* Now, see if we can find a date field too */
-	t1 = my_mbox_strnstr(s, "\n\n",     e - s);
-	t2 = my_mbox_strnstr(s, "\r\n\r\n", e - s);
-	s  = my_mbox_strnstr(s, "\nDate: ", e - s);
+	he = my_mbox_find_doublelf(s, e);
+	s  = my_mbox_find_special("\nDate: ", s, he?he:e);
 	
 	/* If we saw 'Date:' before the end of the headers
 	 */
 	client_timestamp = 0;
-	if (s && (!t1 || s < t1) && (!t2 || s < t2))
+	if (s)
 	{
 		s += 7; /* Skip '\nDate: ' */
 		
@@ -885,10 +929,10 @@ int lu_mbox_map_message(
 {
 	off_t	amt;
 	off_t	size;
-	char*	buf;
-	char*	body;
-	char*	end;
-	char*	e;
+	const char*	buf;
+	const char*	body;
+	const char*	end;
+	const char*	e;
 	
 	/* Keep trying till we have enough mapped to access the header of the
 	 * next message.
@@ -924,7 +968,7 @@ int lu_mbox_map_message(
 		/* Look for an end to the message.  (This is either an EOF or
 		 * an unmangled '\nFrom'.)
 		 */
-		end = my_mbox_strnstr(buf, "\nFrom ", e - buf);
+		end = my_mbox_find_special("\nFrom ", buf, e);
 		
 		if (end)
 		{	/* We found the start of the next message. */
@@ -942,9 +986,7 @@ int lu_mbox_map_message(
 		/* Try again with twice as much storage */
 	}
 	
-	body = my_mbox_strnstr(buf, "\n\n", end - buf);
-	if (!body) body = my_mbox_strnstr(buf, "\r\n\r\n", end - buf);
-	if (!body) body = my_mbox_strnstr(buf, "\r\r",     end - buf);
+	body = my_mbox_find_doublelf(buf, end);
 	
 	/* Some evil mail has no headers - just body... */
 	if (!body) body = buf;
