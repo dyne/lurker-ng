@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.3 2003-04-23 22:57:42 terpstra Exp $
+/*  $Id: main.cpp,v 1.4 2003-04-23 23:22:09 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -133,7 +133,11 @@ int main(int argc, char** argv)
 	if ((csplit = config.find('?')) != string::npos)
 	{
 		cdpath = config.substr(csplit+1, string::npos);
-		config.resize(csplit);
+		
+		
+		if (csplit != 0 && config[csplit-1] == '\\')
+			config.resize(csplit-1);
+		else	config.resize(csplit);
 	}
 	
 	if (config == "")
