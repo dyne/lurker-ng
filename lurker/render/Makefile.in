@@ -124,6 +124,7 @@ lurker_jump_cgi_SOURCES = \
 	error.h
 
 
+lurker_cgi_LDADD = @INTLLIBS@
 lurker_xslt_LDADD = @RENDER_LIBS@ @INTLLIBS@
 lurker_search_cgi_LDADD = ../common/libcommon.a @INTLLIBS@
 lurker_jump_cgi_LDADD = @INTLLIBS@
@@ -145,7 +146,6 @@ lurker_search_cgi_DEPENDENCIES = ../common/libcommon.a
 lurker_search_cgi_LDFLAGS =
 am_lurker_cgi_OBJECTS = main.$(OBJEXT)
 lurker_cgi_OBJECTS = $(am_lurker_cgi_OBJECTS)
-lurker_cgi_LDADD = $(LDADD)
 lurker_cgi_DEPENDENCIES =
 lurker_cgi_LDFLAGS =
 am_lurker_xslt_OBJECTS = xslt.$(OBJEXT)
