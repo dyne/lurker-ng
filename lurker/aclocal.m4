@@ -62,7 +62,7 @@ AC_DEFUN(XSLT_CHECK, [
 dnl Since db3 comes with no real way to determine its location,
 dnl we'll make an attempt at finding it ourselves.  (This is
 dnl especially lame since some linkers don't look in the proper
-dnl places, a la FreeBSD.  Not to mention the library seems to
+dnl places, e.g. FreeBSD.  Not to mention the library seems to
 dnl be called variously `db3' and `db-3.')
 AC_DEFUN(DB3_CHECK, [
   AC_MSG_CHECKING(for the db3 library)
@@ -83,7 +83,7 @@ AC_DEFUN(DB3_CHECK, [
     AC_MSG_RESULT(no)
     AC_MSG_ERROR([This requires libdb >= 3.2 to build])
   else
-    setvar $1_LIBS "$$1_LIBS $search -l$id"
+    $1_LIBS="$$1_LIBS $search -l$id"
     LIBS="$save"
   fi
 
@@ -110,7 +110,7 @@ AC_DEFUN(DB3_CHECK, [
     AC_MSG_RESULT(no)
     AC_MSG_ERROR([Unable to locate libdb >= 3.2 header files])
   else
-    setvar $1_CFLAGS "$$1_CFLAGS $search"
+    $1_CFLAGS="$$1_CFLAGS $search"
     CFLAGS="$save"
   fi
 
@@ -663,6 +663,24 @@ AC_DEFUN([_AM_DIRNAME],
 		    m4_patsubst([$1], [^\(//\)\([^/].*\|$\)], [\1])),
 	      m4_patsubst([$1], [^\(.*[^/]\)//*[^/][^/]*/*$], [\1]))[]dnl
 ]) # _AM_DIRNAME
+
+#serial 1
+# This test replaces the one in autoconf.
+# Currently this macro should have the same name as the autoconf macro
+# because gettext's gettext.m4 (distributed in the automake package)
+# still uses it.  Otherwise, the use in gettext.m4 makes autoheader
+# give these diagnostics:
+#   configure.in:556: AC_TRY_COMPILE was called before AC_ISC_POSIX
+#   configure.in:556: AC_TRY_RUN was called before AC_ISC_POSIX
+
+undefine([AC_ISC_POSIX])
+
+AC_DEFUN([AC_ISC_POSIX],
+  [
+    dnl This test replaces the obsolescent AC_ISC_POSIX kludge.
+    AC_CHECK_LIB(cposix, strerror, [LIBS="$LIBS -lcposix"])
+  ]
+)
 
 
 # serial 1

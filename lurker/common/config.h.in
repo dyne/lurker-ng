@@ -145,9 +145,6 @@
 /* Define for large files, on AIX-style hosts. */
 #undef _LARGE_FILES
 
-/* Define if you need to in order for stat and other things to work. */
-#undef _POSIX_SOURCE
-
 /* Define if type `char' is unsigned and you are not using gcc.  */
 #ifndef __CHAR_UNSIGNED__
 # undef __CHAR_UNSIGNED__

@@ -70,7 +70,7 @@ AC_DEFUN(DB3_CHECK, [
     AC_MSG_RESULT(no)
     AC_MSG_ERROR([This requires libdb >= 3.2 to build])
   else
-    setvar $1_LIBS "$$1_LIBS $search -l$id"
+    $1_LIBS="$$1_LIBS $search -l$id"
     LIBS="$save"
   fi
 
@@ -97,7 +97,7 @@ AC_DEFUN(DB3_CHECK, [
     AC_MSG_RESULT(no)
     AC_MSG_ERROR([Unable to locate libdb >= 3.2 header files])
   else
-    setvar $1_CFLAGS "$$1_CFLAGS $search"
+    $1_CFLAGS="$$1_CFLAGS $search"
     CFLAGS="$save"
   fi
 
