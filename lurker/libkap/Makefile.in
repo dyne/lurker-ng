@@ -100,6 +100,9 @@ wwwdir = @wwwdir@
 noinst_LIBRARIES = libkap.a
 
 bin_PROGRAMS = kapmake kapdump
+EXTRA_DIST = Design profile.cc rbuffer.c \
+	test-append.cc test-avl.cc test-btree.cc test-full.cc
+
 
 libkap_a_SOURCES = \
 	kap.h private.h avl.h \
