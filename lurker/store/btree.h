@@ -1,4 +1,4 @@
-/*  $Id: btree.h,v 1.6 2002-06-20 14:31:34 terpstra Exp $
+/*  $Id: btree.h,v 1.7 2002-06-20 14:32:26 terpstra Exp $
  *  
  *  btree.h - Knows how manage a binary search tree
  *  
@@ -53,10 +53,10 @@
  *   COMPARE -> a strcmp style compare method
  *
  * This will create the methods: 
- *   RECTYPE lu_btree_PREFIX_insert(RECTYPE root, RECTYPE recno)
+ *   RECTYPE my_btree_PREFIX_insert(RECTYPE root, RECTYPE recno)
  *     -> you must have already set TABLE[recno].key to an appropriate value.
  *     -> INVALID if already in tree, the new root else (ok)
- *   RECTYPE lu_btree_PREFIX_remove(RECTYPE root, RECTYPE recno)
+ *   RECTYPE my_btree_PREFIX_remove(RECTYPE root, RECTYPE recno)
  *     -> INVALID if not in tree, the new root else (ok)
  */
 
@@ -513,7 +513,7 @@ static int my_btree_##PREFIX##_rmv(RECTYPE* n, RECTYPE victim) \
 	return LU_BTREE_BALANCE; \
 } \
 \
-static RECTYPE lu_btree_##PREFIX##_remove(RECTYPE root, RECTYPE recno) \
+static RECTYPE my_btree_##PREFIX##_remove(RECTYPE root, RECTYPE recno) \
 { \
 	if (my_btree_##PREFIX##_rmv(&root, recno) == LU_BTREE_NOT_FOUND) \
 		return INVALID; \
