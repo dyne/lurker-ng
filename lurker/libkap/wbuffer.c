@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.15 2002-08-27 08:04:57 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.16 2002-08-27 16:48:44 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -276,6 +276,8 @@ static void swap_buf(unsigned char* a, unsigned char* b, size_t len)
 		memcpy(b,       &buf[0], todo);
 		
 		len -= todo;
+		a   += todo;
+		b   += todo;
 	}
 }
 
