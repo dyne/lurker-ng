@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.5 2003-05-14 11:08:03 terpstra Exp $
+/*  $Id: PTable.cpp,v 1.6 2003-05-14 13:01:02 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -211,8 +211,6 @@ string PTable::calc()
 	time_t threshold = 0;
 	if (!newIds.empty())
 	{
-		if (verbose)
-			cout << "Nothing to do; no new messages since last run." << endl;
 		threshold = 
 			(--newIds.end())->timestamp() -
 			newIds.begin()->timestamp();

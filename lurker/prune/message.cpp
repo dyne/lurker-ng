@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.1 2003-05-14 10:36:13 terpstra Exp $
+/*  $Id: message.cpp,v 1.2 2003-05-14 13:01:03 terpstra Exp $
  *  
  *  message.cpp - Cleanup after a message/ command
  *  
@@ -51,7 +51,7 @@ void PTable::calc_message(KSI ks)
 	 *   kill if no recent accesses
 	 */
 	
-	MessageId id(ks->first.c_str());
+	MessageId id(ks->first.c_str() + 8);
 	if (id.timestamp() == 0)
 	{
 		ks->second.kill = true; // shouldn't be in here

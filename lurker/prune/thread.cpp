@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.1 2003-05-14 10:36:13 terpstra Exp $
+/*  $Id: thread.cpp,v 1.2 2003-05-14 13:01:03 terpstra Exp $
  *  
  *  thread.cpp - Cleanup after a thread/ command
  *  
@@ -49,7 +49,7 @@ void PTable::calc_thread(KSI ks)
 	 *   kill if no recent accesses
 	 */
 	
-	MessageId id(ks->first.c_str());
+	MessageId id(ks->first.c_str() + 7);
 	if (id.timestamp() == 0)
 	{
 		ks->second.kill = true; // shouldn't be here
