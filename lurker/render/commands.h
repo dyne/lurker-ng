@@ -1,4 +1,4 @@
-/*  $Id: commands.h,v 1.2 2003-04-21 18:26:20 terpstra Exp $
+/*  $Id: commands.h,v 1.3 2003-06-09 02:31:48 terpstra Exp $
  *  
  *  commands.h - All the commands we support
  *  
@@ -38,6 +38,7 @@ int handle_splash (const Config& c, ESort::Reader* r, const string& param);
 int handle_search (const Config& c, ESort::Reader* r, const string& param);
 int handle_attach (const Config& c, ESort::Reader* r, const string& param);
 int handle_mbox   (const Config& c, ESort::Reader* r, const string& param);
+int handle_list   (const Config& c, ESort::Reader* r, const string& param);
 
 string redirect(const string& url);
 string error(

@@ -17,4 +17,5 @@ InstallFile $(VARDIR)/www/$(PACKAGE)/imgs :
 	next.png
 	prev.png
 	tree.png
+	bar.png
 	;

@@ -21,6 +21,7 @@
  <xsl:variable name="subject">Subject</xsl:variable>
  <xsl:variable name="date">Date</xsl:variable>
  <xsl:variable name="author">Author</xsl:variable>
+ <xsl:variable name="activity">Activity</xsl:variable>
  <xsl:variable name="to">To</xsl:variable>
  <xsl:variable name="cc">CC</xsl:variable>
  <xsl:variable name="irt">In-Reply-To</xsl:variable>

@@ -78,6 +78,8 @@ td { padding:0 2px 0px 2px; text-align:left; vertical-align:middle;
 #h-fields td { vertical-align:top }
 .padded td { padding-bottom:1px }  /* Adds padding to output tables containing Discussion Tree icon */
 
+td.chart { vertical-align:bottom }                        
+td img { vertical-align:bottom }
 
 #footer { background-color:#BBF; text-align:center; padding-bottom:1px }  /* Admin footer which appears on every page */
 #boxlist { margin:-5px; padding:0; text-align:center; width:100% }  /* contains list information in message */

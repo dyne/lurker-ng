@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.16 2003-06-08 16:23:50 terpstra Exp $
+/*  $Id: Index.cpp,v 1.17 2003-06-09 02:31:31 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -428,6 +428,16 @@ int Index::index_threading()
 		+ suffix) != 0)
 	{
 		cerr << "Failed to insert threading keys" << endl;
+		return -1;
+	}
+	
+	if (writer->insert(
+		LU_NEW_TOPICS
+		+ list.mbox + '\0'
+		+ id.raw().substr(0, 4)
+		+ shash) != 0)
+	{
+		cerr << "Failed to insert new topics keys" << endl;
 		return -1;
 	}
 	

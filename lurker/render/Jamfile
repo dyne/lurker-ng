@@ -9,6 +9,7 @@ Main lurker.cgi :
 	mailto.cpp
 	quote.cpp
 	attach.cpp
+	list.cpp
 	mbox.cpp
 	message.cpp
 	mindex.cpp

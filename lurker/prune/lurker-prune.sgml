@@ -80,7 +80,7 @@ lurker-prune.1: lurker-prune.sgml
      
     <para>A good script to run in parallel with lurker-prune is one similar
       to: if test `du -s /var/www/lurker | cut -f1` -gt 32768; then rm -f
-      /var/www/lurker/[m-t]*/*; fi. This might help guard against a
+      /var/www/lurker/[l-t]*/*; fi. This might help guard against a
       potential denial-of-service attack.</para>
 
   </refsect1>

@@ -19,6 +19,7 @@ v0.9:
 	Compress mailboxes in a manner compatible with gzip but seekable
 	Support searching for utf-8; german/russian/etc work
 	Make messages with no in-reply-to reachable in snippet view
+	Added new list page which include new topics
 
 v0.8:
 	@ signs are legitimate inside urls

@@ -13,6 +13,7 @@
 <xsl:import href="mindex.xsl"/>
 <xsl:import href="search.xsl"/>
 <xsl:import href="thread.xsl"/>
+<xsl:import href="list.xsl"/>
 
 <!--- The default is to render to xml and use browser -->
 <xsl:variable name="ext">xml</xsl:variable>

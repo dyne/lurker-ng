@@ -77,7 +77,7 @@ service.
 .PP 
 A good script to run in parallel with lurker-prune is one similar 
 to: if test `du -s /var/www/lurker | cut -f1` -gt 32768; then rm -f 
-/var/www/lurker/[m-t]*/*; fi. This might help guard against a 
+/var/www/lurker/[l-t]*/*; fi. This might help guard against a 
 potential denial-of-service attack. 
 .SH "OPTIONS" 
 .IP "\fB-c config-file\fP" 10 
@@ -116,4 +116,4 @@ and/or modify this document under the terms of the GNU Free
 Documentation License, Version 1.1 or any later version published by 
 the Free Software Foundation; with no Invariant Sections, no 
 Front-Cover Texts and no Back-Cover Texts. 
-...\" created by instant / docbook-to-man, Wed 04 Jun 2003, 16:31 
+...\" created by instant / docbook-to-man, Mon 09 Jun 2003, 03:43 
