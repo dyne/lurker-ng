@@ -1,6 +1,7 @@
 INCLUDES = @STORAGE_CFLAGS@ -I${top_srcdir}/common
 
 sbin_PROGRAMS = @PACKAGE@d
+EXTRA_DIST = Design
 
 @PACKAGE@d_SOURCES = \
 	config.h   config.c   \
