@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <xsl:stylesheet 
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
 
 <xsl:template match="list" mode="select">
@@ -71,7 +70,7 @@
 
 <xsl:template match="splash" mode="body">
  <div id="listBlock">
- <table id="listTable">
+ <table id="listTable" width="100%">
   <caption>
    <xsl:value-of select="$lists"/>
    <xsl:text> (</xsl:text>
@@ -91,19 +90,6 @@
   <xsl:variable name="off3" select="$off2+$size2"/>
   <xsl:variable name="off4" select="$off3+$size3"/>
   <xsl:variable name="off5" select="$off4+$size4"/>
-
-  <xsl:if test="count(list[position() &gt;= $off1 and position() &lt; $off2]) &gt; 0">
-   <colgroup id="col1"/>
-  </xsl:if>
-  <xsl:if test="count(list[position() &gt;= $off2 and position() &lt; $off3]) &gt; 0">
-   <colgroup id="col2"/>
-  </xsl:if>
-  <xsl:if test="count(list[position() &gt;= $off3 and position() &lt; $off4]) &gt; 0">
-   <colgroup id="col3"/>
-  </xsl:if>
-  <xsl:if test="count(list[position() &gt;= $off4 and position() &lt; $off5]) &gt; 0">
-   <colgroup id="col4"/>
-  </xsl:if>
 
   <xsl:call-template name="format">
    <xsl:with-param name="col1" select="list[position() &gt;= $off1 and position() &lt; $off2]"/>

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <xsl:stylesheet 
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
 
 <xsl:import href="lang.xsl"/>
@@ -24,7 +23,7 @@
 
 <!-- Document Root -->
 <xsl:template match="/">
- <html xmlns="http://www.w3.org/1999/xhtml" lang="{$lang}">
+ <html lang="{$lang}">
   <head>
    <xsl:if test="/redirect/url">
     <xsl:element name="meta">
