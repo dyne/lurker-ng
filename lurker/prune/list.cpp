@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.3 2003-06-11 23:22:36 terpstra Exp $
+/*  $Id: list.cpp,v 1.4 2003-06-11 23:37:26 terpstra Exp $
  *  
  *  mindex.cpp - Cleanup after a mindex/ command
  *  
@@ -96,15 +96,21 @@ void PTable::calc_list(KSI ks)
 		return;
 	}
 	
-	MessageId id(ks->second.mtime); // zero subkey
-	if (list.upper_bound(id) == list.end())
-	{	// there exists no message which has key larger than the stamp
-		if (verbose)
-			cout << ks->first << ": nothing newer than page." << endl;
-		return;
+	// Any new message (even in the past) will affect this page
+	MessageIds::iterator id;
+	for (id = list.begin(); id != list.end(); ++id)
+	{
+		Summaries::const_iterator s;
+		if ((s = summaries.find(*id)) != summaries.end() &&
+		    s->second.changed)
+		{
+			ks->second.kill = true;
+			if (verbose)
+				cout << ks->first << ": " << id->serialize() << " is new." << endl;
+			return;
+		}
 	}
 	
 	if (verbose)
-		cout << ks->first << ": list has new messages." << endl;
-	ks->second.kill = true;
+		cout << ks->first << ": nothing newer than page." << endl;
 }

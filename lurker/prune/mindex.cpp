@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.3 2003-05-16 16:22:17 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.4 2003-06-11 23:37:26 terpstra Exp $
  *  
  *  mindex.cpp - Cleanup after a mindex/ command
  *  
@@ -124,7 +124,7 @@ void PTable::calc_mindex(KSI ks)
 		{
 			ks->second.kill = true;
 			if (verbose)
-				cout << ks->first << ": succesor messages changed." << endl;
+				cout << ks->first << ": succesor " << next->serialize() << " changed." << endl;
 			return;
 		}
 	}
@@ -140,7 +140,7 @@ void PTable::calc_mindex(KSI ks)
 		{
 			ks->second.kill = true;
 			if (verbose)
-				cout << ks->first << ": predecessor messages changed." << endl;
+				cout << ks->first << ": predecessor " << prev->serialize() << " changed." << endl;
 			return;
 		}
 	}
