@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.5 2002-02-10 04:19:08 terpstra Exp $
+/*  $Id: indexer.c,v 1.6 2002-02-10 21:00:45 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -292,29 +292,6 @@ static void my_indexer_traverse(
 	}
 }
 
-static const char* my_indexer_cleanup_id(
-	const char* id)
-{
-	static char buf[80];
-	char* w;
-	char* e;
-	
-	while (isspace(*id)) id++;
-	if (*id == '<') id++;
-	
-	w = &buf[0];
-	e = &buf[sizeof(buf) - 1];
-	
-	while (w != e)
-	{
-		if (isspace(*id) || *id == '>') break;
-		*w++ = *id++;
-	}
-	
-	*w = 0;
-	return &buf[0];
-}
-
 static int my_indexer_push_address(
 	ADDRESS* address)
 {
@@ -448,7 +425,7 @@ int lu_indexer_import(
 	time_t		stamp,
 	message_id	id)
 {
-	char buf[100];
+	char buf[LU_KEYWORD_LEN+1];
 	struct tm* when;
 	
 	/* We have imported no keywords in this pass yet. */
@@ -493,7 +470,7 @@ int lu_indexer_import(
 	{
 		snprintf(&buf[0], sizeof(buf), "%s%s", 
 			LU_KEYWORD_MESSAGE_ID, 
-			my_indexer_cleanup_id(body->env->message_id));
+			lu_common_cleanup_id(body->env->message_id));
 		my_indexer_push_keyword(&buf[0]);
 	}
 	
@@ -501,7 +478,7 @@ int lu_indexer_import(
 	{
 		snprintf(&buf[0], sizeof(buf), "%s%s",
 			LU_KEYWORD_REPLY_TO, 
-			my_indexer_cleanup_id(body->env->in_reply_to));
+			lu_common_cleanup_id(body->env->in_reply_to));
 		my_indexer_push_keyword(&buf[0]);
 	}
 	
