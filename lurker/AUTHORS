@@ -8,16 +8,33 @@ lurker authors
 'Wesley W. Terpstra' <terpstra@users.sourceforge.net>
 	Concept and Design
 	Programmer
-	Built dependencies: libesort and reg2c
-	Initial CSS/HTML XSLT
 	Build maintainer
-
-'Maxwell W. Terpstra' <terpstra2@users.sourceforge.net>
-	Fancier CSS/HTML layout
-
-'Atsushi Ikeda' <aikeda@users.sourceforge.net>
-	Japanese translation
 
 'Jonas Meurer' <jonas@freesources.org>
 	Debian package
-	Man page
+	Original man page
+
+---------------------
+former lurker authors
+---------------------
+
+'Maxwell W. Terpstra' <terpstra2@users.sourceforge.net>
+	Refined and designed the UI of versions < 0.9
+
+'Chris Bond' <cbond@users.sourceforge.net>
+	FreeBSD port (now defunct?)
+	C-client integration for email parsing < 0.6
+
+'Atsushi Ikeda' <aikeda@users.sourceforge.net>
+	Japanese translation of < 0.6 UI
+
+--------------
+special thanks
+--------------
+
+'Kevin Teague' <kevin@bud.ca>
+	Developed the style which lurker > 0.9's UI is based on
+
+Kevin Brosius
+Federico Sevilla III
+	Fantastic bug reporting and tracing
