@@ -75,10 +75,15 @@
       <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">
        <input type="hidden" name="doc-url" value="{server/doc-url}"/>
        <input type="hidden" name="format" value="{$ext}"/>
-       <input type="text" name="query" class="longtext"/>
-       <input type="submit" name="submit" value="{$search}!"/><br/>
        
        <table>
+        <tr>
+         <td colspan="2">
+          <input type="text" name="query" class="longtext"/>
+          <input type="submit" name="submit" value="{$search}!"/>
+         </td>
+        </tr>
+        
         <tr>
          <td><b><xsl:value-of select="$subject"/></b></td>
          <td><input type="text" name="subject" class="longtext"/></td>
