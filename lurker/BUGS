@@ -1,4 +1,5 @@
 Ideas:
+	More robust detection of 'From ' lines? Too many people screw it up.
 	Gpg keyring specification for signature checking + faces?
 	Printable css?
 	Maybe warn the user if the group/list search terms conflict?
@@ -16,6 +17,12 @@ Unfulfilled requirements:
 	Phrase searching
 
 BUGS:
+	One can have a charset in a multipart which seems to be inheritted
+	UTF-8 in attachment name... fawk.
+		(http://kevb.net:3000/lurker/mbox/20030609.031031.0abceb9d.txt
+	strip html? (like 0.1f)
+	Some searches miss messages on intersection?
+		(http://sea.kevb.net:3000/lurker/search/20040101.000000.00000000@lurker,ml%3Aplug.html)
 	There is a slight bug in advance() pre-commit post-insert.
 		(you don't always see fresh keys if partially past it)
 		(... but this doesn't affect lurker, so not priority)
