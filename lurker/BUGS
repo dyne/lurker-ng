@@ -1,18 +1,14 @@
-Suggestion: remove 'lurker@' tag from xslt because it's ugly and you're stupid
 Suggestion: user-sensible errors for zero-byte mbox files mindex
 Suggestion: errordocument failthrough configable
 Suggestion: include documentation in a mbox format in default lurker.com
 Suggestion: base path mboxes are relative to
 
 BUGS:
-0	index.html does not update after restart (Adding new list/mbox)
-1	Use md5 hash of database path to get lurker shared mem key
 2	Seperate lists can receive the same message.
 		-> If we implement insertion earlier in the id list, we
 		   screw ourselves for index caching.
 3	Need a link back to the index from messages for each list.
 5	Attachments should be cacheable - fix it somehow.
-6	Make threading work somehow.
 
 	#2 *** Same message in multiple lists:
 		a: finish #2 since this depends on it
@@ -30,13 +26,9 @@ BUGS:
 		h: Else, push an indirect docid.
 	
 	#3 *** Link back to each list:
-		a: Finish #4
+		a: Finish #2
 		b: Simply use the new list offset field in the database.
 	
 	#5 *** Cachable attachments:
 		Hrm. Not sure what to do here; maybe modify .htaccess to
 		tell apache the content-type?
-	
-	#6 *** Threading:
-		??? Not sure what to do; old scheme is not good enough.
-		Maybe we want some sort of breath-first search?
