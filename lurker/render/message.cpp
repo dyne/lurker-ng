@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.2 2003-04-21 18:26:20 terpstra Exp $
+/*  $Id: message.cpp,v 1.3 2003-04-24 12:50:43 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -45,7 +45,11 @@
 #include <XmlEscape.h>
 #include <Keys.h>
 
+#if __GNUC__ == 2
+#include <strstream>
+#else
 #include <sstream>
+#endif
 
 #include "commands.h"
 #include "Threading.h"
@@ -200,11 +204,20 @@ void message_display(ostream& o, DwEntity& e)
 	
 	CharsetEscape decode(charset.c_str());
 	
+#if __GNUC__ == 2
+	strstream utf8;
+#else
 	std::stringstream utf8;
+#endif
+	
 	decode.write(utf8, out.c_str(), out.length());
 	out.clear();
 	
+#if __GNUC__ == 2
+	my_service_quote(o, utf8.str(), utf8.rdbuf()->pcount());
+#else
 	my_service_quote(o, utf8.str().c_str(), utf8.str().length());
+#endif
 }
 
 void message_build(ostream& o, DwEntity& e, long& x)

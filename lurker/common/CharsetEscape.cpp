@@ -1,4 +1,4 @@
-/*  $Id: CharsetEscape.cpp,v 1.2 2003-04-21 18:25:31 terpstra Exp $
+/*  $Id: CharsetEscape.cpp,v 1.3 2003-04-24 12:50:41 terpstra Exp $
  *  
  *  CharsetEscape.h - A stream manipulator-like thing for charset conversion
  *  
@@ -29,8 +29,12 @@
 #include <mimelib/string.h>
 #include <mimelib/utility.h>
 
-#include <sstream>
 #include <cerrno>
+#if __GNUC__ == 2
+#include <strstream>
+#else
+#include <sstream>
+#endif
 
 #include "CharsetEscape.h"
 
@@ -109,7 +113,11 @@ string decode_header(
 	const string&	str,
 	const char*	default_coding)
 {
+#if __GNUC__ == 2
+	strstream out;
+#else
 	std::stringstream out;
+#endif
 	
 	CharsetEscape code(default_coding);
 	

@@ -9,6 +9,7 @@ v0.7:
 	Replace list_host with archive
 	Don't use symlinks; not portable and jam doesn't do it
 	Support building against local mimelib for deployment without kde
+	Compatability with older g++ 2.95 versions
 	Install cgis to cgi-bin rather than docroot
 
 v0.6:

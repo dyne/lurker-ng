@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.4 2003-04-22 13:59:39 terpstra Exp $
+/*  $Id: attach.cpp,v 1.5 2003-04-24 12:50:42 terpstra Exp $
  *  
  *  attach.cpp - Handle a attach/ command
  *  
@@ -38,10 +38,8 @@
 #include "Summary.h"
 
 #include <iostream>
-#include <sstream>
 
 using std::cout;
-using std::stringstream;
 
 int attach_format_error(const string& param)
 {
@@ -86,17 +84,17 @@ DwEntity& attach_find(DwEntity& e, long& x)
 
 string unfold_header(const char* hdr)
 {
-	stringstream s;
+	string out;
 	
 	while (*hdr != 0)
 	{
 		if (*hdr == '\r' || *hdr == '\n' || *hdr == '\t')
-			s << ' ';
-		else	s << *hdr;
+			out += ' ';
+		else	out += *hdr;
 		++hdr;
 	}
 	
-	return s.str();
+	return out;
 }
 
 int handle_attach(const Config& cfg, ESort::Reader* db, const string& param)
