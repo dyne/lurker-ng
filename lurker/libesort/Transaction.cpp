@@ -1,4 +1,4 @@
-/*  $Id: Transaction.cpp,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: Transaction.cpp,v 1.3 2003-04-25 14:09:15 terpstra Exp $
  *  
  *  Transaction.cpp - Write buffer for a commit
  *  
@@ -38,14 +38,14 @@ namespace ESort
 {
 
 Transaction::Transaction(int fd_, const Parameters* p_)
- : fd(fd_), p(p_), buf(new char[p->blockSize()]), 
-   eof(buf + p->blockSize() - 2*p->keyWidth() - 1), off(buf)
+ : fd(fd_), p(p_), buf(new unsigned char[p->blockSize()]), 
+   eof(buf + p->blockSize() - 2*(p->keyWidth() + 1)), off(buf)
 {
 }
 
 Transaction::~Transaction()
 {
-	delete buf;
+	delete [] buf;
 }
 
 int Transaction::dump()
@@ -75,7 +75,9 @@ int Transaction::write(long len, int dup, const char* key)
 	if (off + fragment > eof)
 	{	// would overflow this block
 		for (unsigned int i = 0; i < p->keyWidth(); ++i)
-			((unsigned char*)off)[i] = 0;
+			off[i] = 0;
+		off[p->keyWidth()] = 1; // (0, 1) is eof marker
+		
 		if (dump() != 0) return -1;
 		off = buf;
 		
@@ -91,7 +93,7 @@ int Transaction::write(long len, int dup, const char* key)
 	}
 	
 	off += p->keyWidth();
-	*(unsigned char*)off = dup;
+	*off = dup;
 	++off;
 	
 	memcpy(off, key+dup, fragment);
@@ -107,7 +109,9 @@ int Transaction::finish()
 	if (off != buf)
 	{
 		for (unsigned int i = 0; i < p->keyWidth(); ++i)
-			((unsigned char*)off)[i] = 0;
+			off[i] = 0;
+		off[p->keyWidth()] = 1; // (0, 1) is eof marker
+		
 		if (dump() != 0) return -1;
 	}
 	

@@ -1,4 +1,4 @@
-/*  $Id: Transaction.h,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: Transaction.h,v 1.3 2003-04-25 14:09:16 terpstra Exp $
  *  
  *  Transaction.h - Write buffer for a commit
  *  
@@ -34,9 +34,9 @@ class Transaction
  protected:
  	int		fd;
  	const Parameters* p;
- 	char*		buf;
- 	char*		eof;
- 	char*		off;
+ 	unsigned char*	buf;
+ 	unsigned char*	eof;
+ 	unsigned char*	off;
  	
  	/** Dump the buffer.
  	 */
