@@ -11,7 +11,9 @@
  <xsl:variable name="mredirect">Your browser should load this location:</xsl:variable>
  
  <xsl:variable name="someone">Someone</xsl:variable>
- <xsl:variable name="post">'s post on</xsl:variable>
+ <xsl:variable name="post1"></xsl:variable>
+ <xsl:variable name="post2">'s post on</xsl:variable>
+ <xsl:variable name="unknown">Unknown</xsl:variable>
  
  <xsl:variable name="subject">Subject</xsl:variable>
  <xsl:variable name="date">Date</xsl:variable>
@@ -67,4 +69,18 @@
  <xsl:variable name="all-ye">All years</xsl:variable>
  <xsl:variable name="all-li">Any list</xsl:variable>
  <xsl:variable name="info">Mailing-List Info</xsl:variable>
+
+ <xsl:variable name="jumpto">Jump to...</xsl:variable>
+ <xsl:variable name="useMl1">Use the operator </xsl:variable>
+ <xsl:variable name="useMl2"> to search within this list.</xsl:variable>
+ <xsl:variable name="useTh1">Use the operator </xsl:variable>
+ <xsl:variable name="useTh2"> to search within this thread.</xsl:variable>
+
+ <xsl:variable name="malt">M</xsl:variable>
+
+ <xsl:variable name="headdet">Header Detail</xsl:variable>
+ <xsl:variable name="min">Minimal</xsl:variable>
+ <xsl:variable name="norm">Normal</xsl:variable>
+ <xsl:variable name="full">Complete</xsl:variable>
+ <xsl:variable name="javas">requires Javascript</xsl:variable>
 </xsl:stylesheet>

@@ -28,7 +28,7 @@
  <xsl:choose>
   <xsl:when test="@name"><xsl:value-of select="@name"/></xsl:when>
   <xsl:when test="@address"><xsl:value-of select="@address"/></xsl:when>
-  <xsl:otherwise><xsl:value-of select="$someone"/></xsl:otherwise>
+  <xsl:otherwise><xsl:value-of select="$unknown"/></xsl:otherwise>
  </xsl:choose>
 </xsl:template>
 
@@ -71,8 +71,7 @@
 <xsl:template name="msg-thread">
  <a href="../message/{../../mid}.{$ext}">
   <xsl:element name="img">
-   <xsl:attribute name="alt">M</xsl:attribute>
-   <xsl:attribute name="border">0</xsl:attribute>
+   <xsl:attribute name="alt"><xsl:value-of select="$malt"/></xsl:attribute>
    
    <xsl:attribute name="src">
     <xsl:text>i/</xsl:text>
@@ -116,22 +115,18 @@
    <xsl:if test="draw"><xsl:apply-templates select="draw"/></xsl:if>
    <xsl:if test="not(draw)">
     <a href="../thread/{thread}.{$ext}">
-     <img border="0" src="../imgs/tree.png" alt="{$threading} "/>
-     <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
+     <img src="../imgs/tree.png" alt="{$threading}"/>
     </a>
+    <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
     <a href="../message/{mid}.{$ext}">
      <xsl:call-template name="truncate">
       <xsl:with-param name="length">50</xsl:with-param>
       <xsl:with-param name="string"><xsl:value-of select="subject"/></xsl:with-param>
      </xsl:call-template>
     </a>
-    <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
    </xsl:if>
   </td>
-  <td width="25%" nowrap="1">
-   <xsl:apply-templates select="email"/>
-   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
-  </td>
+  <td width="25%" nowrap="1"><xsl:apply-templates select="email"/></td>
   <td width="15%" nowrap="1"><xsl:value-of select="time"/></td>
  </xsl:element>
 </xsl:template>
@@ -140,8 +135,9 @@
 <!-- Format list of threading summary lists -->
 
 <xsl:template name="summary-post">
+ <xsl:value-of select="$post1"/>
  <xsl:apply-templates select="email" mode="simple"/>
- <xsl:value-of select="$post"/>
+ <xsl:value-of select="$post2"/>
  <xsl:text> </xsl:text>
  <xsl:value-of select="time"/>
 </xsl:template>
@@ -154,6 +150,7 @@
  <xsl:if test="not(position()=1)"><xsl:text>, </xsl:text><br/></xsl:if>
  <a href="{mid}.{$ext}">
   <xsl:call-template name="summary-post"/>
+  <xsl:if test="drift"> (drifted)</xsl:if>
  </a>
 </xsl:template>
 

@@ -40,10 +40,11 @@
  </form> 
 
  <p/>
- <table width="100%" border="0" cellspacing="0" cellpadding="0" class="thread">
-  <tr><th align="left"><xsl:value-of select="$subject"/></th>
-      <th align="left"><xsl:value-of select="$author"/></th>
-      <th align="left"><xsl:value-of select="$date"/></th></tr>
+ <table width="100%" cellspacing="0" cellpadding="0" id="padded">
+  <tr class="thRow">
+   <th align="left"><xsl:value-of select="$subject"/></th>
+   <th align="left"><xsl:value-of select="$author"/></th>
+   <th align="left"><xsl:value-of select="$date"/></th></tr>
   <xsl:apply-templates select="summary"/>
  </table>
 </xsl:template>

@@ -44,7 +44,7 @@
 
    <!--  Server Footer -->
    <hr/>
-   <div class="center">
+   <div id="footer">
     <xsl:apply-templates select="*/server" mode="footer"/>
    </div>
   </body>

@@ -15,8 +15,8 @@
  </h2>
  
  <p/>
- <table width="100%" border="0" cellspacing="0" cellpadding="0" class="thread">
-  <tr class="row1">
+ <table width="100%" cellspacing="0" cellpadding="0">
+  <tr class="thRow">
    <th align="left"><xsl:value-of select="$threading"/></th>
    <th align="left"><xsl:value-of select="$author"/></th>
    <th align="left"><xsl:value-of select="$date"/></th>
@@ -25,12 +25,15 @@
  </table>
 
  <hr/>
- <p/>
  
- <form action="../lurker-search.cgi">
+ <form action="../lurker-search.cgi" id="smsearch">
   <input type="hidden" name="format" value="{$ext}"/>
-  <input type="text"   name="query"  value="th:{id} " size="50"/>
+  <input type="text"   name="query"  value="th:{id} " class="longtext"/>
   <input type="submit" name="submit" value="{$search}!"/>
+  <br/>
+  <xsl:value-of select="$useTh1"/>
+  <b>th:<xsl:value-of select="id"/></b>
+  <xsl:value-of select="$useTh2"/>
  </form> 
 </xsl:template>
 

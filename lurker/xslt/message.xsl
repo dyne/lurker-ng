@@ -10,7 +10,7 @@
 <xsl:template name="msg-snippet">
  <a href="../message/{summary/mid}.{$ext}">
   <xsl:element name="img">
-   <xsl:attribute name="alt">M</xsl:attribute>
+   <xsl:attribute name="alt"><xsl:value-of select="$malt"/></xsl:attribute>
    
    <xsl:attribute name="title">
     <xsl:apply-templates select="summary" mode="post"/>
@@ -61,9 +61,10 @@
  <div align="right">
   <xsl:if test="threading/prev">
    <xsl:apply-templates select="threading/prev" mode="snippet"/>
+   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
   </xsl:if>
   <xsl:if test="not(threading/prev)">
-   <img alt="" src="../imgs/a.png"/>
+   <img src="../imgs/a.png"/>
   </xsl:if>
   <xsl:if test="reply">
    <a href="mailto:{reply}">(<xsl:value-of select="$reply"/>)</a>
@@ -72,10 +73,11 @@
    <span class="na">(<xsl:value-of select="$reply"/>)</span>
   </xsl:if>
   <xsl:if test="threading/next">
+   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
    <xsl:apply-templates select="threading/next" mode="snippet"/>
   </xsl:if>
   <xsl:if test="not(threading/next)">
-   <img alt="" src="../imgs/a.png"/>
+   <img src="../imgs/a.png"/>
   </xsl:if>
  </div>
  <hr/>
@@ -85,41 +87,59 @@
 
 <!-- Format mailing list information -->
 
-<xsl:template name="list-offset">
+<xsl:template name="list-format">
  <a href="../mindex/{id}@{string(floor(number(offset) div 20)*20)}.{$ext}#{../id}">
-  <xsl:value-of select="email/@name"/> - 
-  <xsl:value-of select="$message"/>
-  #<xsl:value-of select="offset"/>
+  <xsl:value-of select="email/@name"/><xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;#8722;&amp;nbsp;</xsl:text><xsl:value-of select="$message"/><xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>#<xsl:value-of select="offset"/>
  </a>
 </xsl:template>
 
-<xsl:template match="list" mode="offset">
- <xsl:call-template name="list-offset"/>
-</xsl:template>
-
-<xsl:template match="list" mode="multiple">
- <li><xsl:call-template name="list-offset"/></li>
+<xsl:template match="list" mode="message">
+ <xsl:if test="position()!=1">, </xsl:if><xsl:call-template name="list-format"/>
 </xsl:template>
 
 
 <!-- Format headers for the message -->
 
 <xsl:template name="header-fields">
+ <div class="js">
+  <form>
+   <u><xsl:value-of select="$headdet"/></u>
+   <div><input type="radio" disabled="1" name="min"/><label for="min"><xsl:value-of select="$min"/></label></div>
+   <div><input type="radio" disabled="1" name="norm"/><label for="norm"><xsl:value-of select="$norm"/></label></div>
+   <div><input type="radio" disabled="1" name="full"/><label for="full"><xsl:value-of select="$full"/></label></div>
+   <span>(<xsl:value-of select="$javas"/>)</span>
+  </form>
+ </div>
  <table class="h-fields">
   <tr>
-   <th><xsl:value-of select="$author"/>:</th>
-   <td><xsl:apply-templates select="from/email" mode="list"/></td>
+   <th nowrap="1"><xsl:value-of select="$author"/>:</th>
+   <td>
+    <xsl:if test="email"><xsl:apply-templates select="email" mode="list"/></xsl:if>
+    <xsl:if test="not(email)"><xsl:value-of select="$unknown"/></xsl:if>
+   </td>
   </tr>
-  <tr><th><xsl:value-of select="$date"/>:</th><td><xsl:value-of select="time"/></td></tr>
-  <tr><th><xsl:value-of select="$to"/>:</th><td><xsl:apply-templates mode="list" select="to"/></td></tr>
+  <tr>
+   <th nowrap="1"><xsl:value-of select="$date"/>:</th>
+   <td>
+    <xsl:if test="time"><xsl:value-of select="time"/></xsl:if>
+    <xsl:if test="not(time)"><xsl:value-of select="$unknown"/></xsl:if>
+   </td>
+  </tr>
+  <tr>
+   <th nowrap="1"><xsl:value-of select="$to"/>:</th>
+   <td>
+    <xsl:if test="to"><xsl:apply-templates mode="list" select="to"/></xsl:if>
+    <xsl:if test="not(to)"><xsl:value-of select="$unknown"/></xsl:if>
+   </td>
+  </tr>
   <xsl:if test="/message/cc">
-   <tr><th><xsl:value-of select="$cc"/>:</th><td><xsl:apply-templates mode="list" select="cc"/></td></tr>
+   <tr><th nowrap="1"><xsl:value-of select="$cc"/>:</th> <td><xsl:apply-templates mode="list" select="cc"/></td></tr>
   </xsl:if>
   <xsl:if test="threading/inreplyto">
-   <tr><th><xsl:value-of select="$irt"/>:</th><td><xsl:apply-templates mode="list" select="threading/inreplyto/summary"/></td></tr>
+   <tr><th nowrap="1"><xsl:value-of select="$irt"/>:</th> <td><xsl:apply-templates mode="list" select="threading/inreplyto/summary"/></td></tr>
   </xsl:if>
   <xsl:if test="threading/replies">
-   <tr><th><xsl:value-of select="$fus"/>:</th><td><xsl:apply-templates mode="list" select="threading/replies/summary"/></td></tr>
+   <tr><th nowrap="1"><xsl:value-of select="$fus"/>:</th> <td><xsl:apply-templates mode="list" select="threading/replies/summary"/></td></tr>
   </xsl:if>
  </table>
 </xsl:template>
@@ -151,19 +171,19 @@
 <!-- Format the mime components of the email -->
 
 <xsl:template match="mime">
- <div align="right">
+ <div class="mime-label">
   <xsl:if test="@name">
-   <a href="../attach/{@id}@{/message/mid}@{@name}">
-    <xsl:value-of select="@name"/> (<xsl:value-of select="@type"/>)
-   </a>
-   </xsl:if>
-   <xsl:if test="not(@name)">
-    <a href="../attach/{@id}@{/message/mid}.attach">
-     (<xsl:value-of select="@type"/>)
-    </a>
-   </xsl:if>
-  </div>
- <xsl:apply-templates/>
+   <xsl:if test="ancestor::mime">--</xsl:if>
+   <a href="../attach/{@id}@{/message/mid}@{@name}"><xsl:value-of select="@name"/> (<xsl:value-of select="@type"/>)</a>
+   <xsl:if test="ancestor::mime">--</xsl:if>
+  </xsl:if>
+  <xsl:if test="not(@name)">
+   <xsl:if test="ancestor::mime">--</xsl:if>
+   <a href="../attach/{@id}@{/message/mid}.attach">(<xsl:value-of select="@type"/>)</a>
+   <xsl:if test="ancestor::mime">--</xsl:if>
+  </xsl:if>
+ </div>
+ <div class="mime"><xsl:apply-templates/></div>
  <xsl:if test="substring(@type,1,5) = string('image')">
   <img src="../attach/{@id}@{/message/mid}.{substring(@type,7,5)}"/>
  </xsl:if>
@@ -180,7 +200,7 @@
 <xsl:template match="message" mode="body">
  <h2>
   <a href="../thread/{thread}.{$ext}#{id}">
-   <img border="0" src="../imgs/tree.png" alt="{$threading}:"/>
+   <img src="../imgs/tree.png" alt="{$threading}:"/>
    <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
    <xsl:value-of select="subject"/>
   </a>
@@ -194,29 +214,26 @@
  <xsl:if test="not(threading/snippet/@cols &gt; 8)">
   <table width="100%">
    <tr>
-    <td width="100%" nowrap="1"><xsl:call-template name="header-fields"/></td>
-    <td nowrap="1"><xsl:call-template name="navigate-fields"/></td>
+    <td width="100%"><xsl:call-template name="header-fields"/></td>
+    <td class="navlet" nowrap="1"><xsl:call-template name="navigate-fields"/></td>
    </tr>
   </table>
  </xsl:if>
 
- <xsl:if test="count(list) != 1"><p/></xsl:if>
- <xsl:value-of select="$appearinmbox"/>
- <xsl:text> </xsl:text>
- <a href="../mbox/{mid}.txt"><xsl:value-of select="$mailbox"/></a>
- <xsl:text> </xsl:text>
- <xsl:value-of select="$mailboxof"/>
- <xsl:text> </xsl:text>
- 
- <xsl:if test="count(list) = 1">
-  <xsl:apply-templates select="list" mode="offset"/>
- </xsl:if>
- <xsl:if test="count(list) != 1">
-  <xsl:value-of select="$theselists"/>:
-  <ul><xsl:apply-templates select="list" mode="multiple"/></ul>
- </xsl:if>
-
  <hr/>
+ <div class="boxlist">
+  <b>
+   <xsl:value-of select="$appearinmbox"/>
+   <xsl:text> </xsl:text>
+   <a href="../mbox/{mid}.txt"><xsl:value-of select="$mailbox"/></a>
+   <xsl:text> </xsl:text>
+   <xsl:value-of select="$mailboxof"/>:
+  </b>
+   <xsl:text> </xsl:text>
+   <xsl:apply-templates select="list" mode="message"/>
+ </div>
+ <hr/>
+
  <blockquote>
   <xsl:apply-templates select="mime"/>
  </blockquote>
