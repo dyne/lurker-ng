@@ -4,7 +4,7 @@ htmldir = ${wwwdir}
 dist_fmt_DATA = \
 	default.css common.js lang.xsl common.xsl list.xsl message.xsl \
 	mindex.xsl search.xsl splash.xsl thread.xsl lang.xml \
-	ca.xml da.xml de.xml en.xml es.xml fi.xml it.xml ja.xml \
+	ca.xml da.xml de.xml el.xml en.xml es.xml fi.xml it.xml ja.xml \
 	pl.xml pt-BR.xml pt.xml
 	
 
