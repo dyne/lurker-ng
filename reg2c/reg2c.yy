@@ -1,3 +1,27 @@
+/*  $Id: reg2c.yy,v 1.4 2002-07-11 21:34:12 terpstra Exp $
+ *  
+ *  reg2c.c - compile regular expressions to DFA switch()ing C
+ *  
+ *  Copyright (C) 2002 - Wesley W. Terpstra
+ *  
+ *  License: GPL
+ *  
+ *  Authors: 'Wesley W. Terpstra' <wesley@terpstra.ca>
+ *  
+ *    This program is free software; you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation; version 2.1.
+ *    
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *    
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
 %{
 
 #include <set>
@@ -647,7 +671,7 @@ void dump_case(CState state, CState* tbl)
 		printf("\t");
 		for (off = 0; off < j->second.length(); off++)
 		{
-			printf("case '\\x%02x': ", j->second[off]);
+			printf("case %d: ", j->second[off]);
 		}
 		printf("\n\t\tgoto %s%u;\n", func, j->first);
 	}
@@ -683,7 +707,7 @@ void compile(const NFA& nfa)
 	fprintf(stderr, "Ok (%d DFA states)\nWriting source.... ", states);
 	fflush(stderr);
 	
-	printf("%s %s(const char* s, const char* e)\n", 
+	printf("%s %s(const unsigned char* s, const unsigned char* e)\n", 
 		(mode==MODE_TEST)?"int":"const char*", func);
 	printf("{\n");
 	if (mode == MODE_LAST_HIT) printf("\tconst char* last = 0;\n");
@@ -726,8 +750,13 @@ int main(int argc, const char** argv)
 		return 1;
 	}
 	
-	printf("/* Meticulously hand-crafted regex scanner for: %s */\n", 
-		argv[2]);
+	printf(
+	"/* Copyright: Public domain\n"
+	" * Produced with reg2c for %s\n"
+	" * cvs id tag: $Id: reg2c.yy,v 1.4 2002-07-11 21:34:12 terpstra Exp $\n"
+	" *\n"
+	" * Regular expression: %s\n"
+	" */\n\n", getenv("EMAIL"), argv[3]);
 	
 	if (!strcmp(argv[1], "match"))
 	{
