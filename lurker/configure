@@ -848,6 +848,8 @@ Optional Packages:
                           Location of mimelib/message.h
   --with-mimelib-libname=LIB
                           Try an alternative library name
+  --with-zlib-include=DIR Location of zlib.h
+  --with-zlib-libname=LIB Try an alternative library name
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -2680,6 +2682,206 @@ fi
 
 fi
 LOCAL_MIMELIB=${LOCAL_MIMELIB}
+
+
+
+# Check whether --with-zlib-include or --without-zlib-include was given.
+if test "${with_zlib_include+set}" = set; then
+  withval="$with_zlib_include"
+
+else
+  with_zlib_include=""
+fi;
+
+echo "$as_me:$LINENO: checking for zlib.h" >&5
+echo $ECHO_N "checking for zlib.h... $ECHO_C" >&6
+if test "${ac_cv_header_zlib_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_header_search_save_CPPFLAGS=$CPPFLAGS
+ac_cv_header_zlib_h=no
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <zlib.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_header_zlib_h=standard
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+if test $ac_cv_header_zlib_h = no; then
+  for ac_inc in $with_zlib_include /usr/include /usr/local/include; do
+    CPPFLAGS="-I$ac_inc $ac_header_search_save_CPPFLAGS"
+    cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <zlib.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_header_zlib_h=-I$ac_inc
+break
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+  done
+fi
+CPPFLAGS=$ac_header_search_save_CPPFLAGS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_zlib_h" >&5
+echo "${ECHO_T}$ac_cv_header_zlib_h" >&6
+if test $ac_cv_header_zlib_h != no; then
+  test $ac_cv_header_zlib_h = standard || CPPFLAGS="$ac_cv_header_zlib_h $CPPFLAGS"
+
+else
+  { { echo "$as_me:$LINENO: error: Need zlib.h to compile" >&5
+echo "$as_me: error: Need zlib.h to compile" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+
+
+# Check whether --with-zlib-libname or --without-zlib-libname was given.
+if test "${with_zlib_libname+set}" = set; then
+  withval="$with_zlib_libname"
+
+else
+  with_zlib_libname=""
+fi;
+
+echo "$as_me:$LINENO: checking how gzFile f = gzdopen(0, \"r\") links" >&5
+echo $ECHO_N "checking how gzFile f = gzdopen(0, \"r\") links... $ECHO_C" >&6
+if test "${ac_cv_expression_gzFile_f___gzdopen_0___r__+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_expression_search_save_LIBS=$LIBS
+ac_cv_expression_gzFile_f___gzdopen_0___r__=no
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <zlib.h>
+int
+main ()
+{
+gzFile f = gzdopen(0, "r")
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_expression_gzFile_f___gzdopen_0___r__="standard"
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+if test "$ac_cv_expression_gzFile_f___gzdopen_0___r__" = "no"; then
+  for ac_lib in $with_zlib_libname zlib z; do
+    LIBS="-l$ac_lib  $ac_expression_search_save_LIBS"
+    cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <zlib.h>
+int
+main ()
+{
+gzFile f = gzdopen(0, "r")
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_expression_gzFile_f___gzdopen_0___r__=-l$ac_lib
+break
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+  done
+fi
+LIBS=$ac_expression_search_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_expression_gzFile_f___gzdopen_0___r__" >&5
+echo "${ECHO_T}$ac_cv_expression_gzFile_f___gzdopen_0___r__" >&6
+if test "$ac_cv_expression_gzFile_f___gzdopen_0___r__" != "no"; then
+  test "$ac_cv_expression_gzFile_f___gzdopen_0___r__" = "standard" || LIBS="$ac_cv_expression_gzFile_f___gzdopen_0___r__ $LIBS"
+
+else
+  { { echo "$as_me:$LINENO: error: Need zlib to link" >&5
+echo "$as_me: error: Need zlib to link" >&2;}
+   { (exit 1); exit 1; }; }
+fi
 
 
 # Extract the first word of "jam", so it can be a program name with args.

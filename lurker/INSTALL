@@ -4,6 +4,7 @@ Quick start
 0 Find and install development files for: 
 
    g++ >= 3.2            - http://gcc.gnu.org/
+   zlib                  - http://www.gzip.org/zlib/
    jam                   - ftp://ftp.perforce.com/pub/jam
    mimelib  (kdenetwork) - ftp://download.uk.kde.org/pub/kde/stable/latest/src
    xsltproc (libxslt1)   - http://xmlsoft.org/XSLT/
@@ -21,7 +22,7 @@ Quick start
  and is only used if your lurker.conf references it. However, it is the
  preferred method for rendering html, so we recommend installing it.
  
- For debian: apt-get install xsltproc libmimelib1-dev jam g++
+ For debian: apt-get install xsltproc libmimelib1-dev jam g++ zlib1g-dev
  
 1 [flags] ./configure [options]
 
@@ -29,7 +30,11 @@ Quick start
   --with-mimelib-local        Use internal lurker/mimelib/*
   --with-mimelib-include=DIR  Location of mimelib/message.h
   --with-mimelib-libname=LIB  Try an alternative library name
-
+  
+  To control the zlib location, setting these options may help:
+  --with-zlib-include=DIR     Location of zlib.h
+  --with-zlib-libname=LIB     Try an alternative library name
+  
   To control the environment, variants of these flags may help:
   LDFLAGS="-L/sw/lib"
   CPPFLAGS="-I/sw/include -DDW_UNIX"
