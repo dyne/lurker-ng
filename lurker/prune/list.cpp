@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.4 2003-06-11 23:37:26 terpstra Exp $
+/*  $Id: list.cpp,v 1.5 2003-06-12 13:22:20 terpstra Exp $
  *  
  *  mindex.cpp - Cleanup after a mindex/ command
  *  
@@ -54,7 +54,8 @@ void PTable::calc_list(KSI ks)
 		return;
 	}
 	
-	if (now - ks->second.mtime >= modifiedLimit)
+	// Don't let the page get too old; it is time dependent
+	if (now - ks->second.mtime >= accessedLimit)
 	{
 		ks->second.kill = true;
 		if (verbose)
