@@ -30,7 +30,7 @@
  missing-lang=" - nimi puuttuu tiedostosta lang.xml"
  offline=" (toisella palvelimella)"
  deleted-message="viesti poistettu"
- search-button="Hae"
+ search-button="Hae!"
  search-heading="Hae: "
 
  jump-to-date="Siirry niihin tämän listan viesteihin, jotka on lähetetty suunnilleen seuraavana ajankohtana:"
