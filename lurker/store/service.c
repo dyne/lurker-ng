@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.56 2002-05-31 15:34:35 terpstra Exp $
+/*  $Id: service.c,v 1.57 2002-06-04 15:32:00 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -421,16 +421,9 @@ static int my_service_write_time(
 	lu_quad			t)
 {
 	char  buf[80];
-	char* e;
 	time_t tm = t;
 	
-	strcpy(&buf[0], ctime(&tm));
-	for (e = &buf[0]; *e; e++)
-		if (*e == '\n')
-			break;
-	
-	*e = 0;
-	
+	strftime(&buf[0], sizeof(buf), "%H:%M %b %d/%C", localtime(&tm));
 	return my_service_write_str(h, &buf[0]);
 }
 
@@ -660,9 +653,9 @@ static int my_service_url(
 		buf += match.rm_so;
 		len -= match.rm_so;
 		
-		if (my_service_buffer_write (h, "<url>")          != 0) return -1;
-		if (my_service_buffer_writel(h, buf, match.rm_eo) != 0) return -1;
-		if (my_service_buffer_write (h, "</url>")         != 0) return -1;
+		if (my_service_buffer_write(h, "<url>")          != 0) return -1;
+		if (my_service_write_strl  (h, buf, match.rm_eo) != 0) return -1;
+		if (my_service_buffer_write(h, "</url>")         != 0) return -1;
 		
 		buf += match.rm_eo;
 		len -= match.rm_eo;
@@ -1206,11 +1199,11 @@ static int my_service_tree_message_link(
 	My_Service_Handle	h,
 	My_Service_Reply_Tree*	tree,
 	int 			i,
-	message_id		id,
-	Lu_Summary_Message*	msg,
-	int			selected)
+	int			hl)
 {
-	char buf[40];
+	int  selected;
+	int  drift;
+	char buf[60];
 	char x;
 	
 	if (tree[i].replyee == -1)
@@ -1232,15 +1225,25 @@ static int my_service_tree_message_link(
 		}
 	}
 	
-	if (!msg)
+	if (hl == -1)
 	{
 		sprintf(&buf[0], "<%c/>", x);
 		return my_service_buffer_write(h, &buf[0]);
 	}
 	
-	sprintf(&buf[0], "<%c%s><summary>\n", x, selected?" selected=\"yes\"":"");
+	selected = (hl == i);
+	drift    = (tree[i].summary.replies != tree[i].replies);
+	
+	sprintf(&buf[0], "<%c%s%s><summary>\n", 
+		x, 
+		selected?" selected=\"yes\"":"",
+		drift   ?" drift=\"yes\"":"");
+		
 	if (my_service_buffer_write(h, &buf[0]) != 0) return -1;
-	if (my_service_summary_body(h, id, msg) != 0) return -1;
+	
+	if (my_service_summary_body(h, tree[i].id, &tree[i].summary) != 0)
+		return -1;
+	
 	sprintf(&buf[0], "</summary></%c>", x);
 	if (my_service_buffer_write(h, &buf[0]) != 0) return -1;
 	
@@ -1628,8 +1631,7 @@ static void my_service_draw_snippet_row(
 			my_service_buffer_write(h, EMPTY_CELL);
 		
 		
-		my_service_tree_message_link(h, tree, p, 
-			tree[p].id, &tree[p].summary, hl == p);
+		my_service_tree_message_link(h, tree, p, hl);
 		col++;
 		
 		/* Now, inject our children in place.
@@ -2118,7 +2120,7 @@ static void my_service_draw_tree_row(
 	for (; col < tree[i].column; col++)
 		my_service_buffer_write(h, EMPTY_CELL);
 	
-	my_service_tree_message_link(h, tree, i, 0, 0, 0);
+	my_service_tree_message_link(h, tree, i, -1);
 	col++;
 	
 	/* Cut ourselves out of the list and graft on our
