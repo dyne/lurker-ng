@@ -1,4 +1,4 @@
-/*  $Id: Summary.cpp,v 1.9 2003-06-23 14:38:43 terpstra Exp $
+/*  $Id: Summary.cpp,v 1.10 2003-07-01 14:05:52 terpstra Exp $
  *  
  *  Summary.cpp - Helper which can load a message given MessageId
  *  
@@ -118,20 +118,20 @@ string Summary::load(Reader* r)
 string Summary::message(const string& dbdir, DwMessage& message) const
 {
 	string name = dbdir + "/" + mbox_;
-	int fd = ::open(name.c_str(), O_RDONLY);
+	int fd = open(name.c_str(), O_RDONLY);
 	if (fd == -1)
 		return name + ":open:" + strerror(errno);
 	
 	if (lseek(fd, offset_, SEEK_SET) != offset_)
 	{
-		::close(fd);
+		close(fd);
 		return name + ":lseek:" + strerror(errno);
 	}
 	
 	gzFile gzf = gzdopen(fd, "rb");
 	if (gzf == 0)
 	{
-		::close(fd);
+		close(fd);
 		return name + ":gzdopen:" + strerror(errno);
 	}
 	

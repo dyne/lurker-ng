@@ -1,4 +1,4 @@
-/*  $Id: prune.cpp,v 1.8 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: prune.cpp,v 1.9 2003-07-01 14:05:52 terpstra Exp $
  *  
  *  prune.cpp - Prune obsolete / stale cache files
  *  
@@ -180,7 +180,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	std::auto_ptr<ESort::Reader> db(ESort::Reader::open(cfg.dbdir + "/db"));
+	std::auto_ptr<ESort::Reader> db(ESort::Reader::opendb(cfg.dbdir + "/db"));
 	if (!db.get())
 	{
 		cerr << "Opening database: " << strerror(errno) << endl;

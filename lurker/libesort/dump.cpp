@@ -1,4 +1,4 @@
-/*  $Id: dump.cpp,v 1.5 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: dump.cpp,v 1.6 2003-07-01 14:05:52 terpstra Exp $
  *  
  *  dump.cpp - Dump the contents of a libesort database to cout
  *  
@@ -43,10 +43,10 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	auto_ptr<Reader> r(Reader::open(argv[1]));
+	auto_ptr<Reader> r(Reader::opendb(argv[1]));
 	if (!r.get())
 	{
-		perror("Reader::open");
+		perror("Reader::opendb");
 		return 1;
 	}
 	

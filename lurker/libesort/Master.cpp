@@ -1,4 +1,4 @@
-/*  $Id: Master.cpp,v 1.12 2003-07-01 13:27:31 terpstra Exp $
+/*  $Id: Master.cpp,v 1.13 2003-07-01 14:05:52 terpstra Exp $
  *  
  *  Master.cpp - Coordinate commit+read interface
  *  
@@ -214,7 +214,7 @@ auto_ptr<Walker> Master::seek(const string& pfx, const string& k, Direction dir)
 	return auto_ptr<Walker>(out);
 }
 
-auto_ptr<Writer> Writer::open(const string& db, const Parameters& p, int mode)
+auto_ptr<Writer> Writer::opendb(const string& db, const Parameters& p, int mode)
 {
 	auto_ptr<Master> m(new Master(p));
 	

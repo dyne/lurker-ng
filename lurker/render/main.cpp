@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.8 2003-06-23 14:38:43 terpstra Exp $
+/*  $Id: main.cpp,v 1.9 2003-07-01 14:05:52 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -170,7 +170,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	auto_ptr<ESort::Reader> db(ESort::Reader::open(cfg.dbdir + "/db"));
+	auto_ptr<ESort::Reader> db(ESort::Reader::opendb(cfg.dbdir + "/db"));
 	if (!db.get())
 	{
 		cout << "Status: 200 OK\r\n";

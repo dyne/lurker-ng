@@ -1,4 +1,4 @@
-/*  $Id: View.cpp,v 1.13 2003-07-01 13:27:31 terpstra Exp $
+/*  $Id: View.cpp,v 1.14 2003-07-01 14:05:52 terpstra Exp $
  *  
  *  View.cpp - Snapshot of commit state
  *  
@@ -161,7 +161,7 @@ auto_ptr<Walker> View::seek(const string& pfx, const string& k, Direction dir)
 	return auto_ptr<Walker>(out);
 }
 
-auto_ptr<Reader> Reader::open(const string& db, const Parameters& p)
+auto_ptr<Reader> Reader::opendb(const string& db, const Parameters& p)
 {
 	DbMan man;
 	

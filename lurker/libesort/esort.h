@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.8 2003-05-07 16:01:13 terpstra Exp $
+/*  $Id: esort.h,v 1.9 2003-07-01 14:05:52 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -160,7 +160,7 @@ class Reader
  	/** Open an existing database for reading.
  	 *  0 is returned and errno set on error.
  	 */
- 	static auto_ptr<Reader> open(
+ 	static auto_ptr<Reader> opendb(
  		const string& db, 
  		const Parameters& p = Parameters::minimize(Parameters()));
 };
@@ -193,7 +193,7 @@ class Writer : public Reader
  	 *  
  	 *  0 is returned and errno set on error.
  	 */
- 	static auto_ptr<Writer> open(
+ 	static auto_ptr<Writer> opendb(
  		const string& db, const Parameters& p = Parameters(), 
  		int mode = 0666);
 };
