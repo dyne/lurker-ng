@@ -10,6 +10,7 @@ Unfulfilled requirements:
 
 BUGS:
 	Need a better way to clean cache.
+	Mailbox reappend suckzors
 	Timezones suck. Need to localize times to the browser.
 	There is a slight bug in advance() pre-commit post-insert.
 		(you don't always see fresh keys if partially past it)
