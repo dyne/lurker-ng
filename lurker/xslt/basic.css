@@ -1,9 +1,22 @@
-h1 { text-align:center }
-h2 { text-indent:5% }
-#listblock { width:100%; text-align:center }
-#listtable1 { float:left; width:49% }
-#listtable2 { float:right; width:49% }
-th { text-align:center; font-weight:bold }
-td { text-align:left; vertical-align:top }
-dd { margin-left:2em; margin-right:3em }
+h1 { text-align:center; font-family:HoratioDMed, Tahoma, Arial, sans-serif; font-size:300% }
+h2 { width:100%; text-indent:8%; background-color:#BBF; font-size:170%;
+     margin-top:0; margin-bottom:1.2em; font-family:Times New Roman, serif }
+hr { color:black }
+table { border-collapse:collapse; border:hidden }
 .center { text-align:center }
+
+tr.header { background-color:#BBF; font-size:120% }  /* headers for splash page list table */
+hr.search { width:500px; color:#66B; height:3px }  /* search component seperator */
+
+
+#listblock { width:100%; text-align:center }  /* contains splash page list tables */
+/* when less than 8 entries, only listtable0 is present.               */
+/* when 8 entries or more, only listtable1 and listtable2 are present. */
+.listtable0 { border:2px solid black }
+#listtable1 { float:left; width:48.5%; border-right:3px solid black; padding-right:1%}
+#listtable2 { float:right; width:49% }
+
+
+th { text-align:center; font-weight:bold; font-family:Times New Roman, serif }
+td { text-align:left; vertical-align:top; padding:2px 8px; font-family:Arial, sans-serif }
+dd { margin-left:2em; margin-right:3em }

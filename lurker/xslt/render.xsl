@@ -31,7 +31,8 @@
   <body>
    <xsl:apply-templates mode="body"/>
 
-   <hr/>
+<!-- Attach Server Footer -->
+   <br/><hr/>
    <p class="center"/><xsl:apply-templates select="*/server" mode="footer"/>
   </body>
  </html>

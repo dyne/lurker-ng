@@ -4,6 +4,21 @@
     xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
 
+<xsl:template match="splash" mode="title">
+ <xsl:apply-templates select="server" mode="title"/> -
+ <xsl:copy-of select="$splash"/>
+</xsl:template>
+
+<xsl:template match="list">
+ <tr>
+  <td class="center">
+   <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
+    <xsl:value-of select="email/@name"/></a></td>
+  <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
+  <xsl:if test="not(description)"><td>--</td></xsl:if>
+ </tr>
+</xsl:template>
+
 <xsl:template match="list" mode="select">
   <option value="{id}"><xsl:value-of select="email/@name"/>
   <xsl:if test="email/@address">
@@ -13,63 +28,72 @@
   </option>
 </xsl:template>
 
-<xsl:template match="splash" mode="title">
- <xsl:apply-templates select="server" mode="title"/> -
- <xsl:copy-of select="$splash"/>
-</xsl:template>
-
 <xsl:template match="splash" mode="body">
  <xsl:apply-templates select="server" mode="header"/>
 
  <br/>
  <div id="listblock">
- <xsl:if test="count(list)&lt;6">
-  <table>
-   <tr><th width="30%"><xsl:value-of select="$lin-h"/></th>
-       <th width="70%"><xsl:value-of select="$des-h"/></th></tr>
-   <xsl:for-each select="list">
-    <tr>
-     <td class="center">
-      <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
-      <xsl:value-of select="email/@name"/></a></td>
-     <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
-     <xsl:if test="not(description)"><td>--</td></xsl:if>
-    </tr>
-   </xsl:for-each>
+ <xsl:if test="count(list)&lt;8">
+  <table class="listtable0">
+   <tr class="header"><th width="35%"><xsl:value-of select="$lin-h"/></th>
+                      <th width="65%"><xsl:value-of select="$des-h"/></th></tr>
+   <xsl:apply-templates select="list"/>
   </table>
  </xsl:if>
 
- <xsl:if test="count(list)>5">
+ <xsl:if test="count(list)>7">
   <div id="listtable1">
    <table>
-    <tr><th width="30%"><xsl:value-of select="$lin-h"/></th>
-        <th width="70%"><xsl:value-of select="$des-h"/></th></tr>
+    <tr class="header"><th width="30%"><xsl:value-of select="$lin-h"/></th>
+                       <th width="70%"><xsl:value-of select="$des-h"/></th></tr>
     <xsl:for-each select="list">
-     <xsl:if test="position() - (floor(position() div 2) * 2)=1">
-      <tr>
-       <td class="center">
+     <xsl:if test="position()&lt;=ceiling(last() div 2)">
+      <xsl:if test="not(position()=ceiling(last() div 2))">
+       <tr class="list">
+        <td class="center">
+          <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
+          <xsl:value-of select="email/@name"/></a></td>
+        <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
+        <xsl:if test="not(description)"><td>--</td></xsl:if>
+       </tr>
+      </xsl:if>
+      <xsl:if test="position()=ceiling(last() div 2)">
+       <tr class="list">
+        <td class="center">
          <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
          <xsl:value-of select="email/@name"/></a></td>
-       <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
-       <xsl:if test="not(description)"><td>--</td></xsl:if>
-      </tr>
+        <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
+        <xsl:if test="not(description)"><td>--</td></xsl:if>
+       </tr>
+      </xsl:if>
      </xsl:if>
     </xsl:for-each>
    </table>
   </div>
   <div id="listtable2">
    <table>
-    <tr><th width="30%"><xsl:value-of select="$lin-h"/></th>
-        <th width="70%"><xsl:value-of select="$des-h"/></th></tr>
+    <tr class="header"><th width="30%"><xsl:value-of select="$lin-h"/></th>
+                       <th width="70%"><xsl:value-of select="$des-h"/></th></tr>
     <xsl:for-each select="list">
-     <xsl:if test="position() - (floor(position() div 2) * 2)=0">
-      <tr>
-       <td class="center">
-        <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
-        <xsl:value-of select="email/@name"/></a></td>
-       <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
-       <xsl:if test="not(description)"><td>--</td></xsl:if>
-      </tr>
+     <xsl:if test="position()>ceiling(last() div 2)">
+      <xsl:if test="not(position()=last())">
+       <tr class="list">
+        <td class="center">
+         <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
+         <xsl:value-of select="email/@name"/></a></td>
+        <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
+        <xsl:if test="not(description)"><td>--</td></xsl:if>
+       </tr>
+      </xsl:if>
+      <xsl:if test="position()=last()">
+       <tr>
+        <td class="center">
+         <a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
+         <xsl:value-of select="email/@name"/></a></td>
+        <xsl:if test="description"><td><xsl:value-of select="description"/></td></xsl:if>
+        <xsl:if test="not(description)"><td>--</td></xsl:if>
+       </tr>
+      </xsl:if>
      </xsl:if>
     </xsl:for-each>
    </table>
@@ -77,7 +101,7 @@
  </xsl:if>
  </div>
 
- <br/><hr/><br/>
+ <br/><br/><hr/>
  <h2>Lurker <xsl:copy-of select="$search"/></h2>
 
  <div class="center">
@@ -85,7 +109,8 @@
   <input type="hidden" name="format" value="{$ext}"/>
   <input type="text"   name="query"  value="" size="50"/>
   <input type="submit" name="submit" value="{$search}!"/>
-  <table>
+ <hr class="search"/>
+  <table class="search">
    <tr><td><xsl:copy-of select="$author"/></td>
        <td class="center"><input type="text" name="author"  size="53" value=""/></td></tr>
    <tr><td><xsl:copy-of select="$subject"/></td>
@@ -93,9 +118,7 @@
    <tr><td><xsl:copy-of select="$date"/></td>
     <td class="center">
      <select name="weekday">
-       <xsl:text disable-output-escaping="yes">&lt;option value=""&gt;</xsl:text>
-        <xsl:value-of select="$all-da"/>
-        <xsl:text disable-output-escaping="yes">&lt;/option&gt;</xsl:text>
+       <option value=""><xsl:value-of select="$all-da"/></option>
        <option value="sun"><xsl:value-of select="$sun"/></option>
        <option value="mon"><xsl:value-of select="$mon"/></option>
        <option value="tue"><xsl:value-of select="$tue"/></option>
@@ -103,11 +126,10 @@
        <option value="thu"><xsl:value-of select="$thu"/></option>
        <option value="fri"><xsl:value-of select="$fri"/></option>
        <option value="sat"><xsl:value-of select="$sat"/></option>
-     </select><xsl:value-of select="$join1"/>
+     </select>
+   <xsl:value-of select="$join1"/>
      <select name="dom">
-       <xsl:text disable-output-escaping="yes">
-       &lt;option value=""&gt;1-31&lt;/option&gt;
-       </xsl:text>
+       <option value="">1-31</option>
        <option value="1">1</option>
        <option value="2">2</option>
        <option value="3">3</option>
@@ -139,11 +161,10 @@
        <option value="29">29</option>
        <option value="30">30</option>
        <option value="31">31</option>
-     </select><xsl:value-of select="$join2"/>
+     </select>
+   <xsl:value-of select="$join2"/>
      <select name="month">
-       <xsl:text disable-output-escaping="yes">&lt;option value=""&gt;</xsl:text>
-        <xsl:value-of select="$all-mo"/>
-        <xsl:text disable-output-escaping="yes">&lt;/option&gt;</xsl:text>
+       <option value=""><xsl:value-of select="$all-mo"/></option>
        <option value="jan"><xsl:value-of select="$jan"/></option>
        <option value="feb"><xsl:value-of select="$feb"/></option>
        <option value="mar"><xsl:value-of select="$mar"/></option>
@@ -156,11 +177,10 @@
        <option value="oct"><xsl:value-of select="$oct"/></option>
        <option value="nov"><xsl:value-of select="$nov"/></option>
        <option value="dec"><xsl:value-of select="$dec"/></option>
-     </select> /
+     </select>
+   /
      <select name="year">
-       <xsl:text disable-output-escaping="yes">&lt;option value=""&gt;</xsl:text>
-        <xsl:value-of select="$all-ye"/>
-        <xsl:text disable-output-escaping="yes">&lt;/option&gt;</xsl:text>
+       <option value=""><xsl:value-of select="$all-ye"/></option>
        <option value="2002">2002</option>
        <option value="2001">2001</option>
        <option value="2000">2000</option>
@@ -200,7 +220,7 @@
  </form>
  </div>
 
- <hr/>
+ <br/><hr/>
 
  <h2><xsl:value-of select="$info"/></h2>
 
