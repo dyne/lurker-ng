@@ -143,7 +143,8 @@
              <xsl:variable name="lname" select="document('lang.xml')/langs/lang[@code=$lcode]"/>
              <xsl:element name="option">
               <xsl:attribute name="value"><xsl:value-of select="language"/></xsl:attribute>
-              <xsl:if test="language = $lang">
+              <!-- We only allow languages without a region code in search -->
+              <xsl:if test="language = substring($lang, 1, 2)">
                <xsl:attribute name="selected">SELECTED</xsl:attribute>
               </xsl:if>
               <xsl:choose>

@@ -301,8 +301,7 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
       <xsl:text>.</xsl:text>
       <xsl:value-of select="$type"/>
      </xsl:attribute>
-     <!-- We only allow languages without a region code in search -->
-     <xsl:if test="@code = substring($lang, 1, 2)"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+     <xsl:if test="@code = $lang"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
      <xsl:value-of select="."/>
     </xsl:element>
    </xsl:for-each>
