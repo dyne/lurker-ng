@@ -1,4 +1,4 @@
-/*  $Id: db.c,v 1.13 2002-01-31 06:42:13 terpstra Exp $
+/*  $Id: db.c,v 1.14 2002-01-31 08:14:22 terpstra Exp $
  *  
  *  db.c - manage the databases
  *  
@@ -39,7 +39,7 @@
 #define syslog(x, y, ...)
 #endif
 
-// #define DEBUG 1
+//#define DEBUG 1
 
 int	lu_summary_fd;
 int	lu_variable_fd;
@@ -342,6 +342,9 @@ static int pop_thread(message_id thread_id, ThreadSummary* thread)
 	ThreadSummary	left;
 	ThreadSummary	right;
 	
+	memset(&key, 0, sizeof(DBT));
+	memset(&val, 0, sizeof(DBT));
+	
 	key.size = sizeof(message_id);
 	val.ulen = sizeof(left);
 	val.flags = DB_DBT_USERMEM;
@@ -353,8 +356,8 @@ static int pop_thread(message_id thread_id, ThreadSummary* thread)
 	
 		if ((error = lu_thread_db->get(lu_thread_db, 0, &key, &val, 0)) != 0)
 		{
-			syslog(LOG_ERR, "Thread-linkage corrupt - left missing for %d\n",
-				thread_id);
+			syslog(LOG_ERR, "Thread-linkage corrupt - left missing for %d: %d: %s\n",
+				thread_id, thread->prev_thread, db_strerror(error));
 			return -1;
 		}
 		
@@ -368,8 +371,8 @@ static int pop_thread(message_id thread_id, ThreadSummary* thread)
 		
 		if ((error = lu_thread_db->get(lu_thread_db, 0, &key, &val, 0)) != 0)
 		{
-			syslog(LOG_ERR, "Thread-linkage corrupt - right missing for %d\n",
-				thread_id);
+			syslog(LOG_ERR, "Thread-linkage corrupt - right missing for %d: %d: %s\n",
+				thread_id, thread->next_thread, db_strerror(error));
 			return -1;
 		}
 		
@@ -422,35 +425,161 @@ static int pop_thread(message_id thread_id, ThreadSummary* thread)
 	return 0;
 }
 
+/* Find the last thread in the mailing list.
+ */
+int lu_last_thread(lu_word list, message_id* out)
+{
+	char		thread_key[sizeof(lu_word) + 1];
+	int		error;
+	DBT		key;
+	DBT		ind;
+	
+	memcpy(&thread_key[0], &list, sizeof(lu_word));
+	thread_key[sizeof(lu_word)] = 0xFF; /* No record is this large */
+	
+	memset(&key, 0, sizeof(DBT));
+	memset(&ind, 0, sizeof(DBT));
+	
+	key.data = &thread_key[0];
+	key.size = sizeof(lu_word) + 1;
+	ind.data = out;
+	ind.ulen = sizeof(message_id);
+	ind.flags = DB_DBT_USERMEM;
+	
+	error = lu_merge_db->get(lu_merge_db, 0, &key, &ind, 0);
+	if (error && error != DB_NOTFOUND)
+	{
+		syslog(LOG_ERR, "Getting the last thread: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+	
+	if (error == DB_NOTFOUND)
+	{
+		*out = lu_kw_invalid;
+	}
+	
+	return 0;
+}
+
 /* Append the thread to the linked list of threads in the hash.
  * The passed thread is assumed to be the correct record and is rewritten with
  * appropriate link information.
  */
-static int push_thread(message_id thread_id, ThreadSummary* thread)
+static int lu_push_thread(lu_word list, message_id last_thread, message_id thread_id, ThreadSummary* thread)
 {
+	char		thread_key[sizeof(lu_word) + 1];
 	int		error;
 	DBT		key;
 	DBT		val;
-	
-	thread->prev_thread = lu_kw_invalid;
-	thread->next_thread = lu_kw_invalid;
+	DBT		ind;
+	ThreadSummary	last;
 	
 	memset(&key, 0, sizeof(DBT));
 	memset(&val, 0, sizeof(DBT));
+	memset(&ind, 0, sizeof(DBT));
+	
+	if (last_thread != lu_kw_invalid)
+	{
+		key.data = &last_thread;
+		key.size = sizeof(message_id);
+		val.data = &last;
+		val.ulen = sizeof(last);
+		val.flags = DB_DBT_USERMEM;
+		
+		error = lu_thread_db->get(lu_thread_db, 0, &key, &val, 0);
+		if (error != 0)
+		{
+			syslog(LOG_ERR, "Pulling last thread summary for %d: %s\n",
+				last_thread, db_strerror(error));
+			goto lu_push_thread_error0;
+		}
+	}
+	
+	memcpy(&thread_key[0], &list, sizeof(lu_word));
+	thread_key[sizeof(lu_word)] = 0xFF; /* No record is this large */
+	
+	key.data = &thread_key[0];
+	key.size = sizeof(lu_word) + 1;
+	ind.data = &thread_id;
+	ind.size = sizeof(message_id);
+	
+	error = lu_merge_db->put(lu_merge_db, 0, &key, &ind, 0);
+	if (error)
+	{
+		syslog(LOG_ERR, "Setting the last thread: %s\n",
+			db_strerror(error));
+		goto lu_push_thread_error0;
+	}
+	
+	last.next_thread = thread_id;
+	thread->prev_thread = last_thread;
+	thread->next_thread = lu_kw_invalid;
+	
+	if (last_thread != lu_kw_invalid)
+	{
+		key.data = &last_thread;
+		key.size = sizeof(message_id);
+		val.data = &last;
+		val.size = sizeof(last);
+		
+		error = lu_thread_db->put(lu_thread_db, 0, &key, &val, 0);
+		if (error != 0)
+		{
+			syslog(LOG_ERR, "Pushing last thread summary for %d: %s\n",
+				last_thread, db_strerror(error));
+			goto lu_push_thread_error1;
+		}
+	}
 	
 	key.data = &thread_id;
 	key.size = sizeof(message_id);
 	val.data = thread;
 	val.size = sizeof(ThreadSummary);
-	
+		
 	if ((error = lu_thread_db->put(lu_thread_db, 0, &key, &val, 0)) != 0)
 	{
 		syslog(LOG_ERR, "Storing thread summary for %d: %s\n",
 			thread_id, db_strerror(error));
-		return -1;
+		goto lu_push_thread_error2;
 	}
 	
 	return 0;
+
+lu_push_thread_error2:
+	if (last_thread != lu_kw_invalid)
+	{
+		key.data = &last_thread;
+		key.size = sizeof(message_id);
+		val.data = &last;
+		val.size = sizeof(last);
+		
+		last.next_thread = lu_kw_invalid;
+		
+		error = lu_thread_db->put(lu_thread_db, 0, &key, &val, 0);
+		if (error != 0)
+		{
+			syslog(LOG_ERR, "Restoring last thread next link for %d: %s\n",
+				last_thread, db_strerror(error));
+			goto lu_push_thread_error1;
+		}
+	}
+
+lu_push_thread_error1:
+	key.data = &thread_key[0];
+	key.size = sizeof(lu_word) + 1;
+	ind.data = &last_thread;
+	ind.size = sizeof(message_id);
+	
+	error = lu_merge_db->put(lu_merge_db, 0, &key, &ind, 0);
+	if (error)
+	{
+		syslog(LOG_ERR, "Restoring the last thread: %s\n",
+			db_strerror(error));
+	}
+	
+lu_push_thread_error0:
+	return -1;
 }
 
 /* By default, if two messages with similar subject arrive within 14 days
@@ -627,6 +756,7 @@ message_id lu_import_message(
 	MessageSummary	prev;
 	message_id	thread_id;
 	ThreadSummary	thread;
+	message_id	last_thread;
 	char		thread_key[sizeof(lu_word) + LU_SQUISHY_MAX + sizeof(lu_quad)];
 	int		thread_key_len;
 	lu_quad		tm;
@@ -634,16 +764,48 @@ message_id lu_import_message(
 	DBT		ind;
 	int		error;
 	
-	/*!!! check for already loaded status */
-	
 	id = lu_msg_free;
 	
+	/* Check to see if we were already loaded */
+	if (id > 0)
+	{
+		sum_off = id - 1;
+		sum_off *= sizeof(MessageSummary);
+		if (lseek(lu_summary_fd, sum_off, SEEK_SET) != sum_off)
+		{
+			syslog(LOG_ERR, "Seeking for check of message summary: %s\n",
+				strerror(errno));
+			goto lu_import_message_error0;
+		}
+		
+		if (read(lu_summary_fd, &sum, sizeof(MessageSummary))
+			!= sizeof(MessageSummary))
+		{
+			syslog(LOG_ERR, "Checking for dup message summary: %s\n",
+				strerror(errno));
+			goto lu_import_message_error0;
+		}
+		
+		high_bits = mbox;
+		high_bits <<= (sizeof(lu_addr)-2)*8;
+		high_bits |= mbox_offset;
+		sum.flat_offset >>= (sizeof(lu_addr)-2)*8;
+		
+		/* So, have we been imported already? */
+		if (sum.mbox_offset == high_bits && sum.flat_offset == list)
+		{
+			return id;
+		}
+	}
+	
+	/* Start the import... What thread to put it in? */
 	if (lu_find_thread(list, subject, timestamp,
 		&thread, &thread_id) != 0)
 	{
 		goto lu_import_message_error0;
 	}
 	
+	/* Start writing variable length data */
 	var_off = lseek(lu_variable_fd, 0, SEEK_END);
 	if (var_off == -1)
 	{
@@ -735,17 +897,23 @@ message_id lu_import_message(
 		ind.data = &id;
 		ind.size = sizeof(message_id);
 		
+		if (lu_last_thread(list, &last_thread) != 0)
+		{
+			goto lu_import_message_error2;
+		}
+		
 		error = lu_merge_db->put(lu_merge_db, 0, &key, &ind, 0);
 		if (error)
 		{
 			syslog(LOG_ERR, "Failed to push indirect thread reference: %s\n",
 				db_strerror(errno));
+			goto lu_import_message_error2;
 		}
 		
 		/* Push the thread to the end of the list, simultaneously
 		 * writing out our changes.
 		 */
-		if (push_thread(thread_id, &thread) != 0)
+		if (lu_push_thread(list, last_thread, thread_id, &thread) != 0)
 			goto lu_import_message_error3;
 	}
 	else
@@ -796,14 +964,24 @@ message_id lu_import_message(
 		 */
 		thread.end = timestamp;
 		
+		if (lu_last_thread(list, &last_thread) != 0)
+		{
+			goto lu_import_message_error3;
+		}
+		
+		if (last_thread == thread_id)
+		{	/* We're being popped, it's the guy before us */
+			last_thread = thread.prev_thread;
+		}
+		
 		/* Pop the thread's current location */
 		if (pop_thread(thread_id, &thread) != 0)
 			goto lu_import_message_error3;
-		
+			
 		/* Push the thread to the end of the list, simultaneously
 		 * writing out our changes.
 		 */
-		if (push_thread(thread_id, &thread) != 0)
+		if (lu_push_thread(list, last_thread, thread_id, &thread) != 0)
 			goto lu_import_message_error4;
 	}
 	

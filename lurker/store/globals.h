@@ -1,4 +1,4 @@
-/*  $Id: globals.h,v 1.6 2002-01-31 03:46:19 terpstra Exp $
+/*  $Id: globals.h,v 1.7 2002-01-31 08:14:22 terpstra Exp $
  *  
  *  globals.h - the global variables and methods for the daemon
  *  
@@ -90,6 +90,11 @@ extern MessageSummary lu_read_msummary(message_id mid);
 /** Grab the summary information record for the specified tid
  */
 extern ThreadSummary  lu_read_tsummary(message_id tid);
+
+/** Find the most recent thread id in a mailing list.
+ *  lu_kw_invalid -> none or error
+ */
+extern int lu_last_thread(lu_word list, message_id* out);
 
 /** This writes 'subject<null>authorname<null>authoremail<null>' to the
  *  specified file. This should be all the is required outside the db.c
