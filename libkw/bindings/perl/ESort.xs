@@ -12,7 +12,7 @@ typedef ESort::string	ESort_String;
 typedef int		error_int;
 
 
-MODULE = KW	PACKAGE = ESort::Writer
+MODULE = ESort	PACKAGE = ESort::Writer
 
 ESort_Writer*
 opendb(ESort_String db)
@@ -22,7 +22,7 @@ opendb(ESort_String db)
 		RETVAL
 
 
-MODULE = KW	PACKAGE = ESort::Reader
+MODULE = ESort	PACKAGE = ESort::Reader
 
 ESort_Reader*
 opendb(ESort_String db)
@@ -32,7 +32,7 @@ opendb(ESort_String db)
 		RETVAL
 
 
-MODULE = KW	PACKAGE = ESort::WriterPtr
+MODULE = ESort	PACKAGE = ESort::WriterPtr
 
 error_int
 ESort_Writer::rollback()
@@ -61,7 +61,7 @@ void
 ESort_Writer::DESTROY()
 
 
-MODULE = KW	PACKAGE = ESort::ReaderPtr
+MODULE = ESort	PACKAGE = ESort::ReaderPtr
 
 ESort_Walker*
 ESort_Reader::seek(ESort_String key, ESort_Direction dir)
@@ -81,7 +81,7 @@ void
 ESort_Reader::DESTROY()
 
 
-MODULE = KW	PACKAGE = ESort::WalkerPtr
+MODULE = ESort	PACKAGE = ESort::WalkerPtr
 
 ESort_String
 ESort_Walker::key()
