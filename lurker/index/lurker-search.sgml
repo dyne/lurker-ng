@@ -57,6 +57,7 @@ lurker-search.1: lurker-search.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg>\-c &lt;config-file&gt;</arg>
+      <arg>\-k &lt;keyword&gt;</arg>
       <arg>\-d \-f \-v \-q</arg>
       <arg>&lt;terms&gt;*</arg>
     </cmdsynopsis>
@@ -76,6 +77,12 @@ lurker-search.1: lurker-search.sgml
         <term><option>\-c config-file</option></term>
         <listitem>
           <para>Use this config file for lurker settings.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>\-k keyword</option></term>
+        <listitem>
+          <para>Tag the matching messages with this keyword.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

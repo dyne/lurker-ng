@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.4 2004-08-25 14:54:53 terpstra Exp $
+/*  $Id: search.cpp,v 1.5 2004-08-27 18:11:59 terpstra Exp $
  *  
  *  search.cpp - Search for messages in lurker database (optionally delete)
  *  
@@ -38,9 +38,10 @@ void help(const char* name)
 {
 	cerr << "Lurker-search (v" << VERSION << ") searches for messages in a lurker database.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> [ -d -f -v -q ] <terms>*\n";
+	cerr << "Usage: " << name << " -c <config-file> -k <keyword> [ -d -f -v -q ] <terms>*\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
+	cerr << "\t-k <keyword>     Add the specified keyword tag to hits\n";
 	cerr << "\t-d               Delete matching messages\n";
 	cerr << "\t-f               Don't prompt before deleting\n";
 	cerr << "\t-v               Output message summaries\n";
@@ -69,13 +70,17 @@ int main(int argc, char** argv)
 	bool force = false;
 	bool verbose = false;
 	bool quiet = false;
+	string keyword;
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:dvfq?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:k:dvfq?")) != -1)
 	{
 		switch ((char)c)
 		{
 		case 'c':
 			config = optarg;
+			break;
+		case 'k':
+			keyword = optarg;
 			break;
 		case 'd':
 			erase = true;
@@ -111,8 +116,9 @@ int main(int argc, char** argv)
 	ESort::Writer* db;
 	auto_ptr<ESort::Reader> dbr;
 	
-	if (erase)
+	if (erase || keyword != "")
 	{
+		if (verbose) cerr << "opening " << cfg.dbdir << "/db read-write" << endl;
 		// Work around g++ 2.95 bug
 		auto_ptr<ESort::Writer> w
 			(ESort::Writer::opendb(cfg.dbdir + "/db"));
@@ -121,6 +127,7 @@ int main(int argc, char** argv)
 	}
 	else
 	{
+		if (verbose) cerr << "opening " << cfg.dbdir << "/db read-only" << endl;
 		auto_ptr<ESort::Reader> r
 			(ESort::Reader::opendb(cfg.dbdir + "/db"));
 		dbr = r;
@@ -173,6 +180,26 @@ int main(int argc, char** argv)
 		}
 	}
 	
+	if (keyword != "")
+	{
+		if (!quiet) cerr << "Tagging messages with keyword" << endl;
+		for (vector<Summary>::iterator i = result.begin(); 
+		     i != result.end();
+		     ++i)
+		{
+			if (db->insert(
+				LU_KEYWORD +
+				keyword +
+				'\0' +
+				i->id().raw()) != 0)
+			{
+				perror("insert");
+				cerr << "Tagging with keyword failed; operation aborted.\n";
+				return 1; 
+			}
+		}
+	}
+	
 	if (erase)
 	{
 		if (!quiet) cerr << "Marking messages as deleted" << endl;
@@ -201,6 +228,10 @@ int main(int argc, char** argv)
 				return 1;
 			}
 		}
+	}
+	
+	if (erase || keyword != "")
+	{
 		if (!quiet) cerr << "Committing changes to disk" << endl;
 		if (db->commit() != 0)
 		{
@@ -212,7 +243,7 @@ int main(int argc, char** argv)
 		if (!quiet)
 		{
 			cerr << "\n";
-			cerr << "Message deleted -- cache is now invalid.\n";
+			cerr << "Database modified -- cache is now invalid.\n";
 			cerr << "Re-run lurker-prune with the '-p' option.\n";
 		}
 	}
