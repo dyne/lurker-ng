@@ -1,4 +1,4 @@
-/*  $Id: DbMan.h,v 1.1.1.1 2003-08-15 13:59:06 terpstra Exp $
+/*  $Id: DbMan.h,v 1.2 2003-08-17 14:39:44 terpstra Exp $
  *  
  *  DbMan.h - Manage the commit'd segments and parameters
  *  
@@ -10,7 +10,7 @@
  *  
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; version 2.1.
+ *    the Free Software Foundation; version 2.
  *    
  *    This program is distributed in the hope that it will be useful,
  *    but WITHOUT ANY WARRANTY; without even the implied warranty of

@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.7 2003-08-17 12:54:39 terpstra Exp $
+/*  $Id: esort.h,v 1.8 2003-08-17 14:39:44 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -10,7 +10,7 @@
  *  
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; version 2.1.
+ *    the Free Software Foundation; version 2.
  *    
  *    This program is distributed in the hope that it will be useful,
  *    but WITHOUT ANY WARRANTY; without even the implied warranty of

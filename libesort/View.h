@@ -1,4 +1,4 @@
-/*  $Id: View.h,v 1.2 2003-08-16 18:36:21 terpstra Exp $
+/*  $Id: View.h,v 1.3 2003-08-17 14:39:44 terpstra Exp $
  *  
  *  View.h - Snapshot of commit state
  *  
@@ -10,7 +10,7 @@
  *  
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; version 2.1.
+ *    the Free Software Foundation; version 2.
  *    
  *    This program is distributed in the hope that it will be useful,
  *    but WITHOUT ANY WARRANTY; without even the implied warranty of
