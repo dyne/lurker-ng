@@ -30,36 +30,49 @@
  <xsl:param name="col2"/>
  <xsl:param name="col3"/>
  <xsl:param name="col4"/>
- <xsl:param name="exist1"/>
- <xsl:param name="exist2"/>
- <xsl:param name="exist3"/>
- <xsl:param name="exist4"/>
+
  <xsl:if test="count($col1) &gt; 0 or count($col2) &gt; 0 or count($col3) &gt; 0 or count($col4) &gt; 0">
   <xsl:text>
   </xsl:text>
   <tr>
-   <xsl:if test="count($exist1) &gt; 0">
-    <td nowrap="NOWRAP"><xsl:apply-templates select="$col1[position() = 1]"/></td>
-   </xsl:if>
-   <xsl:if test="count($exist2) &gt; 0">
-    <td nowrap="NOWRAP"><xsl:apply-templates select="$col2[position() = 1]"/></td>
-   </xsl:if>
-   <xsl:if test="count($exist3) &gt; 0">
-    <td nowrap="NOWRAP"><xsl:apply-templates select="$col3[position() = 1]"/></td>
-   </xsl:if>
-   <xsl:if test="count($exist4) &gt; 0">
-    <td nowrap="NOWRAP"><xsl:apply-templates select="$col4[position() = 1]"/></td>
-   </xsl:if>
+   <td nowrap="NOWRAP">
+    <xsl:choose>
+     <xsl:when test="count($col1) &gt; 0">
+      <xsl:apply-templates select="$col1[position() = 1]"/>
+     </xsl:when>
+     <xsl:otherwise>&#160;</xsl:otherwise>
+    </xsl:choose>
+   </td>
+   <td nowrap="NOWRAP">
+    <xsl:choose>
+     <xsl:when test="count($col2) &gt; 0">
+      <xsl:apply-templates select="$col2[position() = 1]"/>
+     </xsl:when>
+     <xsl:otherwise>&#160;</xsl:otherwise>
+    </xsl:choose>
+   </td>
+   <td nowrap="NOWRAP">
+    <xsl:choose>
+     <xsl:when test="count($col3) &gt; 0">
+      <xsl:apply-templates select="$col3[position() = 1]"/>
+     </xsl:when>
+     <xsl:otherwise>&#160;</xsl:otherwise>
+    </xsl:choose>
+   </td>
+   <td nowrap="NOWRAP">
+    <xsl:choose>
+     <xsl:when test="count($col4) &gt; 0">
+      <xsl:apply-templates select="$col4[position() = 1]"/>
+     </xsl:when>
+     <xsl:otherwise>&#160;</xsl:otherwise>
+    </xsl:choose>
+   </td>
   </tr>
   <xsl:call-template name="format">
    <xsl:with-param name="col1" select="$col1[position() &gt; 1]"/>
    <xsl:with-param name="col2" select="$col2[position() &gt; 1]"/>
    <xsl:with-param name="col3" select="$col3[position() &gt; 1]"/>
    <xsl:with-param name="col4" select="$col4[position() &gt; 1]"/>
-   <xsl:with-param name="exist1" select="$exist1"/>
-   <xsl:with-param name="exist2" select="$exist2"/>
-   <xsl:with-param name="exist3" select="$exist3"/>
-   <xsl:with-param name="exist4" select="$exist4"/>
   </xsl:call-template>
  </xsl:if>
 </xsl:template>
@@ -80,12 +93,12 @@
    <xsl:text>)</xsl:text>
   </caption>
   
-  <xsl:variable name="size1" select="round((count(list)+3) div 4)"/>
-  <xsl:variable name="size2" select="round((count(list)+2) div 4)"/>
-  <xsl:variable name="size3" select="round((count(list)+1) div 4)"/>
-  <xsl:variable name="size4" select="round((count(list)+0) div 4)"/>
+  <xsl:variable name="size1" select="floor((count(list)+3) div 4)"/>
+  <xsl:variable name="size2" select="floor((count(list)+2) div 4)"/>
+  <xsl:variable name="size3" select="floor((count(list)+1) div 4)"/>
+  <xsl:variable name="size4" select="floor((count(list)+0) div 4)"/>
   
-  <xsl:variable name="off1" select="0"/>
+  <xsl:variable name="off1" select="1"/>
   <xsl:variable name="off2" select="$off1+$size1"/>
   <xsl:variable name="off3" select="$off2+$size2"/>
   <xsl:variable name="off4" select="$off3+$size3"/>
@@ -97,10 +110,6 @@
     <xsl:with-param name="col2" select="list[position() &gt;= $off2 and position() &lt; $off3]"/>
     <xsl:with-param name="col3" select="list[position() &gt;= $off3 and position() &lt; $off4]"/>
     <xsl:with-param name="col4" select="list[position() &gt;= $off4 and position() &lt; $off5]"/>
-    <xsl:with-param name="exist1" select="list[position() &gt;= $off1 and position() &lt; $off2]"/>
-    <xsl:with-param name="exist2" select="list[position() &gt;= $off2 and position() &lt; $off3]"/>
-    <xsl:with-param name="exist3" select="list[position() &gt;= $off3 and position() &lt; $off4]"/>
-    <xsl:with-param name="exist4" select="list[position() &gt;= $off4 and position() &lt; $off5]"/>
    </xsl:call-template>
   </tbody>
  </table>
@@ -109,7 +118,7 @@
  <br/><br/><hr/>
  <h2>Lurker <xsl:value-of select="$search"/></h2>
 
- <div id="searchBlock">
+ <table width="100%"><tr><td width="50%">&#160;</td><td>
  <form action ="../lurker-search.cgi">
   <input type="hidden" name="format" value="{$ext}"/>
   <input type="text" name="query" class="longtext"/>
@@ -200,7 +209,7 @@
    </tr>
   </table>
  </form>
- </div>
+ </td><td width="50%">&#160;</td></tr></table>
 
  <br/><hr/>
 
