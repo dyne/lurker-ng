@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.17 2003-05-12 00:55:23 terpstra Exp $
+/*  $Id: main.cpp,v 1.18 2003-05-26 13:48:15 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -316,22 +316,27 @@ int main(int argc, char** argv)
 		{
 			DwString msg(buf.c_str(), eos+1);
 			buf = buf.substr(eos+1, string::npos);
-			if (index(msg, batch, dropdup) != 0) return 1;
-			++messages;
-			was = 0; 
 			
-			if (verbose && messages % 1000 == 0)
-				status(did, messages, start);
+			if (msg[0] == 'F') // strlen > 1 b/c of eos+1
+			{	// ignore potential leading blanks
+				if (index(msg, batch, dropdup) != 0) return 1;
+				++messages;
+				was = 0; 
+			
+				if (verbose && messages % 1000 == 0)
+					status(did, messages, start);
+			}
 		}
 		
 		if (got == 0)
 		{
-			// Don't index the empt string!
+			// Don't index the empty string!
 			if (buf.length() && (batch == -1 || buf[0] == 'F'))
 			{
 				DwString msg(buf.c_str(), buf.length());
 				buf = "";
 				if (index(msg, batch, dropdup) != 0) return 1;
+				++messages;
 			}
 			
 			break;

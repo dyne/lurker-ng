@@ -1,4 +1,4 @@
-/*  $Id: Merger.cpp,v 1.9 2003-05-18 20:15:48 terpstra Exp $
+/*  $Id: Merger.cpp,v 1.10 2003-05-26 13:48:15 terpstra Exp $
  *  
  *  Merger.cpp - Combine segments to obtain a database view
  *  
@@ -235,6 +235,7 @@ int Merger::skiptill(const string& k, bool forward)
 	bov = &*sources.begin();
 	eov = bov + sources.size();
 	point = bov;
+	restart = 0;
 	
 	if (point != eov)
 	{	// establish invariant for the base node

@@ -1,5 +1,8 @@
 v0.9:
-	
+	Don't segfault in rare cases if using '-d' on import (zero restart)
+	Ignore leading non-email cruft in broken mailboxes
+	Include the last message in statistics for '-v' output
+
 v0.8:
 	@ signs are legitimate inside urls
 	Support iconv #define's used on MacOS
