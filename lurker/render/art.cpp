@@ -1,6 +1,6 @@
 /* Copyright: Public domain
  * Produced with reg2c for wesley@terpstra.ca
- * cvs id tag: $Id: art.cpp,v 1.4 2003-06-12 21:30:41 terpstra Exp $
+ * cvs id tag: $Id: art.cpp,v 1.5 2003-06-12 22:11:26 terpstra Exp $
  *
  * Regular expression: (
 ((-- (
