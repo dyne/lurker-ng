@@ -142,7 +142,13 @@
  <i class="quote"><xsl:apply-templates/></i>
 </xsl:template>
 
-<xsl:template match="br"><br/></xsl:template>
+<xsl:template match="art">
+ <pre><xsl:apply-templates/></pre>
+</xsl:template>
+
+<xsl:template match="br">
+ <xsl:if test="not(ancestor::art)"><br/></xsl:if>
+</xsl:template>
 
 
 <!-- Format the mime components of the email -->
