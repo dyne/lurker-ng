@@ -1,4 +1,4 @@
-/*  $Id: mbox.cpp,v 1.6 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: mbox.cpp,v 1.7 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  mbox.cpp - Handle a mbox/ command
  *  
@@ -41,6 +41,16 @@ int handle_mbox(const Config& cfg, ESort::Reader* db, const string& param)
 			_("The given parameter was not of the correct format. "
 			  "A mbox request must be formatted like: "
 			  "mbox/YYYYMMDD.HHMMSS.hashcode.txt"));
+		return 1;
+	}
+	
+	if (!cfg.raw_email)
+	{
+		cout << "Status: 200 OK\r\n";
+		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout << error(_("Permission Denied"), param,
+			_("Access to raw email text has been disabled. "
+			  "Contact the site administrator if this is a problem."));
 		return 1;
 	}
 	

@@ -1,4 +1,4 @@
-/*  $Id: mbox.cpp,v 1.6 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: mbox.cpp,v 1.7 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  mbox.cpp - Cleanup after an mbox/ command
  *  
@@ -32,6 +32,12 @@
 
 using namespace std;
 
+bool PTable::test_mbox(KSI ks)
+{
+	const string::size_type skip = sizeof("mbox"); // null is /
+	return MessageId::is_full(ks->first.c_str() + skip);
+}
+
 void PTable::calc_mbox(KSI ks)
 {
 	/* MBox contents never change
@@ -41,7 +47,7 @@ void PTable::calc_mbox(KSI ks)
 	 *   kill after a period of no accesses
 	 */
 	
-	if (!MessageId::is_full(ks->first.c_str() + 5))
+	if (!test_mbox(ks))
 	{
 		if (verbose)
 			cout << ks->first << ": not a lurker file." << endl;

@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.7 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.8 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  mindex.cpp - Cleanup after a mindex/ command
  *  
@@ -32,6 +32,17 @@
 
 using namespace std;
 
+bool PTable::test_mindex(KSI ks)
+{
+	/* format: list@msgid.* */
+	const string::size_type skip = sizeof("mindex"); // null is /
+	
+	string::size_type o = ks->first.find('@', skip);
+	return 	o != string::npos &&
+		cfg.lists.find(string(ks->first, skip, o-skip)) != cfg.lists.end() &&
+		MessageId::is_full(ks->first.c_str()+o+1);
+}
+
 void PTable::calc_mindex(KSI ks)
 {
 	/* Mindex entries use up to 35 records in either direction of the key
@@ -45,18 +56,14 @@ void PTable::calc_mindex(KSI ks)
 	 *   kill if no recent accesses
 	 */
 	
-	/* format: list@msgid.* */
-	string::size_type o = ks->first.find('@', 7);
-	if (o == string::npos || 
-	    cfg.lists.find(string(ks->first, 7, o)) == cfg.lists.end() ||
-	    !MessageId::is_full(ks->first.c_str()+o+1))
+	if (!test_mindex(ks))
 	{
 		if (verbose)
 			cout << ks->first << ": not a lurker file." << endl;
 		return;
 	}
 	
-	if (ks->second.mtime <= config)
+	if (ks->second.mtime <= cfg.modified)
 	{	// die - it's older than the config file
 		ks->second.kill = true;
 		if (verbose)
@@ -82,25 +89,11 @@ void PTable::calc_mindex(KSI ks)
 	
 	string query(ks->first, 7, string::npos);
 	string::size_type at = query.find('@');
-	if (at == string::npos)
-	{
-		ks->second.kill = true; // shouldn't be in here
-		if (verbose)
-			cout << ks->first << ": not a lurker file." << endl;
-		return;
-	}
 	
 	string listn(query, 0, at);
 	string ids(query, at+1, string::npos);
 	
 	MessageId id(ids.c_str());
-	if (id.timestamp() == 0)
-	{
-		ks->second.kill = true; // shouldn't be in here
-		if (verbose)
-			cout << ks->first << ": not a valid timestamp." << endl;
-		return;
-	}
 	
 	if (lists.find(listn) == lists.end())
 	{	// this list has not changed if not pulled

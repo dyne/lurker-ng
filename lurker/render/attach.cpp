@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.9 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: attach.cpp,v 1.10 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  attach.cpp - Handle a attach/ command
  *  
@@ -52,6 +52,16 @@ int attach_format_error(const string& param)
 	return 1;
 }
 
+int attach_no_permission(const string& param)
+{
+	cout << "Status: 200 OK\r\n";
+	cout <<	"Content-Type: text/html\r\n\r\n";
+	cout << error(_("Permission Denied"), param,
+		_("Access to mail attachments has been disabled. "
+		  "Contact the site administrator if this is a problem."));
+	return 1;
+}
+
 DwEntity& attach_find(DwEntity& e, long& x)
 {
 	// We are the requested entity.
@@ -100,6 +110,9 @@ int handle_attach(const Config& cfg, ESort::Reader* db, const string& param)
 {
 	string::size_type o = param.find('@');
 	long n = atol(param.c_str());
+	
+	if (!cfg.raw_email)
+		return attach_no_permission(param);
 	
 	if (o == string::npos || n <= 0 || 
 	    !MessageId::is_full(param.c_str()+o+1))

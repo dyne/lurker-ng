@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.16 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: PTable.cpp,v 1.17 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -43,9 +43,9 @@
 
 using namespace std;
 
-PTable::PTable(const Config& cfg_, ESort::Reader* reader_, time_t config_, time_t stamp_, 
+PTable::PTable(const Config& cfg_, ESort::Reader* reader_, time_t stamp_, 
                bool verbose_, time_t modifiedLimit_, time_t accessedLimit_)
- : cfg(cfg_), reader(reader_), config(config_), stamp(stamp_), now(time(0)), 
+ : cfg(cfg_), reader(reader_), stamp(stamp_), now(time(0)), 
    verbose(verbose_), modifiedLimit(modifiedLimit_), accessedLimit(accessedLimit_)
 {
 }
@@ -288,7 +288,19 @@ string PTable::calc()
 			cout << "New messages span too large a window; entering massacre mode." << endl;
 		
 		for (KSI i = state.begin(); i != state.end(); ++i)
-			i->second.kill = true;
+		{
+			if ((i->first.substr(0, 6) == "attach" && test_attach (i)) ||
+			    (i->first.substr(0, 4) == "mbox"   && test_mbox   (i)) ||
+			    (i->first.substr(0, 4) == "list"   && test_list   (i)) ||
+			    (i->first.substr(0, 7) == "message"&& test_message(i)) ||
+			    (i->first.substr(0, 6) == "mindex" && test_mindex (i)) ||
+			    (i->first.substr(0, 6) == "search" && test_search (i)) ||
+			    (i->first.substr(0, 6) == "splash" && test_splash (i)) ||
+			    (i->first.substr(0, 6) == "thread" && test_thread (i)))
+			{
+				i->second.kill = true;
+			}
+		}
 		
 		return "";
 	}

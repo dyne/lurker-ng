@@ -1,25 +1,23 @@
-.\" This -*- nroff -*- file has been generated from
-.\" DocBook SGML with docbook-to-man on Debian GNU/Linux.
-...\"
-...\"	transcript compatibility for postscript use.
-...\"
-...\"	synopsis:  .P! <file.ps>
-...\"
+.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-list.1,v 1.4 2004-08-19 14:52:29 terpstra Exp $
+.\"
+.\"	transcript compatibility for postscript use.
+.\"
+.\"	synopsis:  .P! <file.ps>
+.\"
 .de P!
-\\&.
+.fl
+\!!1 setgray
+.fl
+\\&.\"
+.fl
+\!!0 setgray
 .fl			\" force out current output buffer
-\\!%PB
-\\!/showpage{}def
-...\" the following is from Ken Flowers -- it prevents dictionary overflows
-\\!/tempdict 200 dict def tempdict begin
+\!!save /psv exch def currentpoint translate 0 0 moveto
+\!!/showpage{}def
 .fl			\" prolog
-.sy cat \\$1\" bring in postscript file
-...\" the following line matches the tempdict above
-\\!end % tempdict %
-\\!PE
-\\!.
-.sp \\$2u	\" move below the image
-..
+.sy sed -e 's/^/!/' \\$1\" bring in postscript file
+\!!psv restore
+.
 .de pF
 .ie     \\*(f1 .ds f1 \\n(.f
 .el .ie \\*(f2 .ds f2 \\n(.f
@@ -53,38 +51,38 @@
 .ds f4\"
 '\" t 
 .ta 8n 16n 24n 32n 40n 48n 56n 64n 72n  
-.TH "LURKER-LIST" "1" 
+.TH "LURKER\-LIST" "1" 
 .SH "NAME" 
-lurker-list \(em parses lists from the config file 
+lurker\-list \(em parses lists from the config file 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker-list\fP [-c <config-file>]  [-i -g -t -a -l -d]  [listid ...]  
+\fBlurker\-list\fR [\-c <config-file>]  [\-i \-g \-t \-a \-l \-d]  [listid ...]  
 .SH "DESCRIPTION" 
 .PP 
-\fBlurker-list\fP outputs various lurker settings 
+\fBlurker\-list\fR outputs various lurker settings 
 from the config file for use in shell scripts.  Do not use sed/grep/etc, 
 instead use this as it respects include. 
 .PP 
 If no list ids are given, then all lists are dumped. If no field 
 is specified, then all fields are dumped. 
 .SH "OPTIONS" 
-.IP "\fB-c config-file\fP" 10 
+.IP "\fB\-c config-file\fP" 10 
 Use this config file for lurker settings. 
-.IP "\fB-i\fP" 10 
+.IP "\fB\-i\fP" 10 
 Output only the list id 
-.IP "\fB-g\fP" 10 
+.IP "\fB\-g\fP" 10 
 Output only the group 
-.IP "\fB-t\fP" 10 
+.IP "\fB\-t\fP" 10 
 Output only the title 
-.IP "\fB-a\fP" 10 
+.IP "\fB\-a\fP" 10 
 Output only the email address 
-.IP "\fB-l\fP" 10 
+.IP "\fB\-l\fP" 10 
 Output only the url link 
-.IP "\fB-d\fP" 10 
+.IP "\fB\-d\fP" 10 
 Output only the description 
 .SH "SEE ALSO" 
 .PP 
-lurker-index(1), lurker-prune(1), lurker-params(1) 
+lurker\-index(1), lurker\-prune(1), lurker\-params(1) 
 .PP 
 lurker documentation on http://lurker.sourceforge.net/ 
 .SH "COPYRIGHT" 
@@ -113,5 +111,5 @@ Boston, MA 02111-1307, USA.
 Before reporting a bug, please confirm that the bug you found is 
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
-<lurker-users@lists.sourceforge.net>. 
-...\" created by instant / docbook-to-man, Mon 23 Jun 2003, 17:52 
+<lurker\-users@lists.sourceforge.net>. 
+.\" created by instant / docbook-to-man, Mon 16 Aug 2004, 00:58 

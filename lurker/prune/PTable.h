@@ -1,4 +1,4 @@
-/*  $Id: PTable.h,v 1.5 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: PTable.h,v 1.6 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -88,6 +88,15 @@ class PTable
 	void calc_attach (KSI i);
 	void calc_mbox   (KSI i);
 	
+	bool test_list   (KSI i);
+	bool test_message(KSI i);
+	bool test_thread (KSI i);
+	bool test_mindex (KSI i);
+	bool test_splash (KSI i);
+	bool test_search (KSI i);
+	bool test_attach (KSI i);
+	bool test_mbox   (KSI i);
+	
 	string loadNewIds();
 	string loadDir(const string& dir, bool yank);
 	string loadSummaries();
@@ -95,7 +104,7 @@ class PTable
 	string loadLists();
 	
  public:
- 	PTable(const Config& cfg, ESort::Reader* reader, time_t config, time_t stamp, 
+ 	PTable(const Config& cfg, ESort::Reader* reader, time_t stamp, 
  		bool verbose, time_t modifiedLimit, time_t accessedLimit);
 	
 	string load();	// pull all summaries off disk

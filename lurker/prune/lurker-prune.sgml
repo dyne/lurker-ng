@@ -20,9 +20,9 @@ lurker-prune.1: lurker-prune.sgml
   <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
   <!ENTITY dhemail     "<email>terpstra@users.sourceforge.net</email>">
   <!ENTITY dhusername  "Wesley W. Terpstra">
-  <!ENTITY support     "<email>lurker-users@lists.sourceforge.net</email>">
-  <!ENTITY dhucpackage "<refentrytitle>LURKER-PRUNE</refentrytitle>">
-  <!ENTITY dhpackage   "lurker-prune">
+  <!ENTITY support     "<email>lurker\-users@lists.sourceforge.net</email>">
+  <!ENTITY dhucpackage "<refentrytitle>LURKER\-PRUNE</refentrytitle>">
+  <!ENTITY dhpackage   "lurker\-prune">
 
   <!ENTITY debian      "<productname>Debian</productname>">
   <!ENTITY lurker      "<productname>lurker</productname>">
@@ -57,9 +57,9 @@ lurker-prune.1: lurker-prune.sgml
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
-      <arg>-c &lt;config-file&gt;</arg>
-      <arg>-d &lt;docroot&gt;</arg>
-      <arg>-v</arg>
+      <arg>\-c &lt;config-file&gt;</arg>
+      <arg>\-d &lt;docroot&gt;</arg>
+      <arg>\-v</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -79,9 +79,9 @@ lurker-prune.1: lurker-prune.sgml
       follow whatever site-specific policies you have for denial of 
       service.</para>
      
-    <para>A good script to run in parallel with lurker-prune is one similar
-      to: if test `du -s /var/www/lurker | cut -f1` -gt 32768; then rm -f
-      /var/www/lurker/[l-t]*/*; fi. This might help guard against a
+    <para>A good script to run in parallel with lurker\-prune is one similar
+      to: if test `du \-s /var/www/lurker | cut \-f1` \-gt 32768; then rm \-f
+      /var/www/lurker/[l\-t]*/*; fi. This might help guard against a
       potential denial-of-service attack.</para>
 
   </refsect1>
@@ -89,13 +89,13 @@ lurker-prune.1: lurker-prune.sgml
     <title>OPTIONS</title>
     <variablelist>
       <varlistentry>
-        <term><option>-c config-file</option></term>
+        <term><option>\-c config-file</option></term>
         <listitem>
           <para>Use this config file for lurker settings.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-d docroot</option></term>
+        <term><option>\-d docroot</option></term>
         <listitem>
           <para>The base directory of the lurker cache. This must be set to
           the directory which contains message/*, thread/*, etc. If you have
@@ -104,7 +104,7 @@ lurker-prune.1: lurker-prune.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-m days</option></term>
+        <term><option>\-m days</option></term>
         <listitem>
           <para>Keep cached files for at most this many days. Any cached
           file regardless of last access will be deleted after the specified
@@ -114,7 +114,7 @@ lurker-prune.1: lurker-prune.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-a days</option></term>
+        <term><option>\-a days</option></term>
         <listitem>
           <para>Kill cache files not accessed for this many days. Any cached
           file which has not been read from for the specified number of days
@@ -124,7 +124,7 @@ lurker-prune.1: lurker-prune.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-v</option></term>
+        <term><option>\-v</option></term>
         <listitem>
           <para>Verbose operation. Indicate which files are being deleted
           and the reasoning behind lurker's decisions. This can help in
@@ -136,7 +136,7 @@ lurker-prune.1: lurker-prune.sgml
   <refsect1>
     <title>SEE ALSO</title>
     
-    <para>lurker-index(1), lurker-params(1), lurker-list(1)</para>
+    <para>lurker\-index(1), lurker‹-params(1), lurker\-list(1)</para>
     <para>lurker documentation on http://lurker.sourceforge.net/</para>
 
   </refsect1>

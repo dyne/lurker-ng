@@ -235,7 +235,9 @@
    </div>
    
    <div class="body">
-    <xsl:call-template name="attachments"/>
+    <xsl:if test="/message/server/raw-email">
+      <xsl:call-template name="attachments"/>
+    </xsl:if>
     <xsl:call-template name="header-fields"/>
     <div class="messageBody">
      <xsl:apply-templates mode="body" select="mime"/>

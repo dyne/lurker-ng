@@ -20,9 +20,9 @@ lurker-index.1: lurker-index.sgml
   <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
   <!ENTITY dhemail     "<email>terpstra@users.sourceforge.net</email>">
   <!ENTITY dhusername  "Wesley W. Terpstra">
-  <!ENTITY support     "<email>lurker-users@lists.sourceforge.net</email>">
-  <!ENTITY dhucpackage "<refentrytitle>LURKER-INDEX</refentrytitle>">
-  <!ENTITY dhpackage   "lurker-index">
+  <!ENTITY support     "<email>lurker\-users@lists.sourceforge.net</email>">
+  <!ENTITY dhucpackage "<refentrytitle>LURKER\-INDEX</refentrytitle>">
+  <!ENTITY dhpackage   "lurker\-index">
 
   <!ENTITY debian      "<productname>Debian</productname>">
   <!ENTITY lurker      "<productname>lurker</productname>">
@@ -57,10 +57,11 @@ lurker-index.1: lurker-index.sgml
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
-      <arg>-c &lt;config-file&gt;</arg>
-      <arg>-l &lt;list&gt;</arg>
-      <arg>-v -d -n -f</arg>
-      <arg>-m | -b &lt;count&gt;</arg>
+      <arg>\-c &lt;config-file&gt;</arg>
+      <arg>\-l &lt;list&gt;</arg>
+      <arg>\-i &lt;mbox/maildir&gt;</arg>
+      <arg>\-v \-d \-n \-f</arg>
+      <arg>\-m | \-b &lt;count&gt;</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -76,32 +77,41 @@ lurker-index.1: lurker-index.sgml
     <title>OPTIONS</title>
     <variablelist>
       <varlistentry>
-        <term><option>-c config-file</option></term>
+        <term><option>\-c config-file</option></term>
         <listitem>
           <para>Use this config file for lurker settings.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-l listid</option></term>
+        <term><option>\-l listid</option></term>
         <listitem>
           <para>Import messages to the named mailing list. This should match
           the value in the lurker.conf after the 'list = ' entry.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-b count</option></term>
+        <term><option>\-b count</option></term>
         <listitem>
           <para>Import a batch of messages; flush every count messages. A
-          good value for count is 5. In this mode lurker assumes the input
-          is a mailbox delimited by 'From &lt;addr&gt; &lt;date&gt;' lines. 
+          good value for count is 5. The larger this parameter, the more CPU
+          power lurker needs during import, but the less disk seeks.</para>
+
+          <para>It is important to note that lurker reads files from a
+          maildirs and mailboxes in order and may miss new messages
+          delivered during the import. For this reason, setting up lurker to
+          be invoked properly when new mail is delivered is essential. Only
+          use lurker\-index with '\-b' when importing from non-active mail
+          folders.</para>
+
+          <para>By default, lurker\-index reads from standard input in mbox
+          format, delimited by 'From &lt;addr&gt; &lt;date&gt;' lines. 
           Be aware that if the mbox is not delimited correctly between
           messages it will be interpretted as a single message with an
-          invalid date. The larger this parameter, the more CPU power lurker
-          needs during import, but the less disk seeks.</para>
+          invalid date. To read other sources, see the '\-i' option.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-m</option></term>
+        <term><option>\-m</option></term>
         <listitem>
           <para>Import a single message. In this mode lurker will never
           interpret 'From ' lines as message delimiters. When being fed
@@ -109,10 +119,28 @@ lurker-index.1: lurker-index.sgml
           Try to turn off the 'From ' escaping of your MTA when using 
           this mode as lurker does it's own escaping which is generally
           smarter.</para>
+
+          <para>This option should be used when lurker\-index is invoked by
+          the MTA for newly delivered email. For importing batches of
+          archived mail, see the '\-b' option.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-v</option></term>
+        <term><option>\-i mbox/maildir</option></term>
+        <listitem>
+          <para>Import messages from the specified mailbox or maildir.
+          When '\-b' is specified, lurker\-index by default reads a mailbox
+          (mbox format) from standard input. If the '\-i' parameter is a file,
+          the file is assumed to be in the mbox format and is read instead
+          of standard input.  If the parameter is a directory, the directory
+          is assumed to be in maildir format.</para>
+
+          <para>If '\-m' is used, the input MUST be a raw email,
+          preferably with a mbox header, never a maildir.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>\-v</option></term>
         <listitem>
           <para>Verbose operation. Lurker will output statistics about import
            speed to assist you in tweaking options for best throughput on
@@ -121,7 +149,7 @@ lurker-index.1: lurker-index.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-d</option></term>
+        <term><option>\-d</option></term>
         <listitem>
           <para>Drop duplicates per list. This option will check the
           database to see if the message has already been imported to a
@@ -134,7 +162,7 @@ lurker-index.1: lurker-index.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-n</option></term>
+        <term><option>\-n</option></term>
         <listitem>
           <para>Don't compress messages. This will increase the database
           size and import speed. Lurker can handle a database with mixed
@@ -145,7 +173,7 @@ lurker-index.1: lurker-index.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-f</option></term>
+        <term><option>\-f</option></term>
         <listitem>
           <para>Fast import (but vulnerable to power-failure). This may
           improve the lifetime of your hard-disk and increase import speed
@@ -160,7 +188,7 @@ lurker-index.1: lurker-index.sgml
   <refsect1>
     <title>SEE ALSO</title>
 
-    <para>lurker-prune(1), lurker-params(1), lurker-list(1)</para>
+    <para>lurker\-prune(1), lurker\-params(1), lurker\-list(1)</para>
     <para>lurker documentation on http://lurker.sourceforge.net/</para>
 
   </refsect1>

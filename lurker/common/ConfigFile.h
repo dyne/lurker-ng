@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.2 2004-01-06 19:20:19 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.3 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -87,6 +87,8 @@ class Config
  	string	pgpv_inline;
  	bool	web_cache;
  	bool	hide_email;
+ 	bool	raw_email;
+ 	time_t	modified; // the timestamp of modification for the config file
  	
  	// parameters specific for rendering
  	string	docUrl;

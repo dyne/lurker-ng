@@ -1,19 +1,27 @@
-Set timestamp to config file + all used messages
+---- Agenda for 1.2:
+
+Add "or" and "not"
+	Make groups use 'or' searching internally (allows regrouping)
+	delete a message? Easy if - keyword support is added
+
+Maildir support for import
+
+How to know when the archive starts and ends?
+	Get rid of date dependency (2005 in xslt)
+	Include message count estimates
+
+---- Agenda for 2.0:
+
+Language control from web
+
 Access two databases at once
-Track what config files are included --- all of them are depends for prune
-Apply german spelling fix
-delete a message? Easy if - keyword support is added
+
+---- Fit in somewhere:
+
+Set timestamp to config file + all used messages
 off-site mailing list links?
 
-Get rid of date dependency (2005 in xslt)
-Fix manpages utf8 -
-Add 'or' searching
-Make groups use 'or' searching internally (allows regrouping)
-Maildir support for import
-Language control from web
-Disable mbox/ attachment/ as an option
-
-Message count estimates for searches / indexes
+-------------------------------------------------------------
 
 Ideas:
 	Maybe exclude tab indented paragraphs from pre-formatting

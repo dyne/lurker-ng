@@ -1,4 +1,4 @@
-/*  $Id: splash.cpp,v 1.6 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: splash.cpp,v 1.7 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  splash.cpp - Cleanup after a splash/ command
  *  
@@ -32,6 +32,11 @@
 
 using namespace std;
 
+bool PTable::test_splash(KSI ks)
+{
+	return string(ks->first, 0, 13) == "splash/index.";
+}
+
 void PTable::calc_splash(KSI ks)
 {
 	/* Splash pages depend solely on the config file
@@ -42,14 +47,14 @@ void PTable::calc_splash(KSI ks)
 	 *   kill if no recent accesses
 	 */
 	
-	if (string(ks->first, 0, 13) != "splash/index.")
+	if (!test_splash(ks))
 	{
 		if (verbose)
 			cout << ks->first << ": not a lurker file." << endl;
 		return;
 	}
 	
-	if (ks->second.mtime <= config)
+	if (ks->second.mtime <= cfg.modified)
 	{	// die - it's older than the config file
 		ks->second.kill = true;
 		if (verbose)

@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.6 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: attach.cpp,v 1.7 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  attach.cpp - Cleanup after an attach/ command
  *  
@@ -32,6 +32,18 @@
 
 using namespace std;
 
+bool PTable::test_attach(KSI ks)
+{
+	/* id@YYYYMMDD.HHMMSS.hashcode.* */
+	const string::size_type skip = sizeof("attach"); // null is /
+	
+	string::size_type o = ks->first.find('@', skip);
+	
+	return	o != string::npos &&		// there is an @ sign
+		atol(ks->first.c_str()+skip) &&	// a number precedes it
+		MessageId::is_full(ks->first.c_str()+o+1); // valid message id
+}
+
 void PTable::calc_attach(KSI ks)
 {
 	/* Attachment contents never change
@@ -41,11 +53,7 @@ void PTable::calc_attach(KSI ks)
 	 *   kill after a period of no accesses
 	 */
 	
-	/* id@YYYYMMDD.HHMMSS.hashcode.* */
-	
-	string::size_type o = ks->first.find('@', 7);
-	if (o == string::npos || atol(ks->first.c_str()+7) ||
-	    !MessageId::is_full(ks->first.c_str()+o+1))
+	if (!test_attach(ks))
 	{
 		if (verbose)
 			cout << ks->first << ": not a lurker file." << endl;

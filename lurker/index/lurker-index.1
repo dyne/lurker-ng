@@ -1,25 +1,23 @@
-.\" This -*- nroff -*- file has been generated from
-.\" DocBook SGML with docbook-to-man on Debian GNU/Linux.
-...\"
-...\"	transcript compatibility for postscript use.
-...\"
-...\"	synopsis:  .P! <file.ps>
-...\"
+.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-index.1,v 1.8 2004-08-19 14:52:29 terpstra Exp $
+.\"
+.\"	transcript compatibility for postscript use.
+.\"
+.\"	synopsis:  .P! <file.ps>
+.\"
 .de P!
-\\&.
+.fl
+\!!1 setgray
+.fl
+\\&.\"
+.fl
+\!!0 setgray
 .fl			\" force out current output buffer
-\\!%PB
-\\!/showpage{}def
-...\" the following is from Ken Flowers -- it prevents dictionary overflows
-\\!/tempdict 200 dict def tempdict begin
+\!!save /psv exch def currentpoint translate 0 0 moveto
+\!!/showpage{}def
 .fl			\" prolog
-.sy cat \\$1\" bring in postscript file
-...\" the following line matches the tempdict above
-\\!end % tempdict %
-\\!PE
-\\!.
-.sp \\$2u	\" move below the image
-..
+.sy sed -e 's/^/!/' \\$1\" bring in postscript file
+\!!psv restore
+.
 .de pF
 .ie     \\*(f1 .ds f1 \\n(.f
 .el .ie \\*(f2 .ds f2 \\n(.f
@@ -53,45 +51,68 @@
 .ds f4\"
 '\" t 
 .ta 8n 16n 24n 32n 40n 48n 56n 64n 72n  
-.TH "LURKER-INDEX" "1" 
+.TH "LURKER\-INDEX" "1" 
 .SH "NAME" 
-lurker-index \(em imports messages into the archive 
+lurker\-index \(em imports messages into the archive 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker-index\fP [-c <config-file>]  [-l <list>]  [-v -d -n -f]  [-m | -b <count>]  
+\fBlurker\-index\fR [\-c <config-file>]  [\-l <list>]  [\-i <mbox/maildir>]  [\-v \-d \-n \-f]  [\-m | \-b <count>]  
 .SH "DESCRIPTION" 
 .PP 
-\fBlurker-index\fP indexes messages from 
+\fBlurker\-index\fR indexes messages from 
 standard input and stores them in the lurker database. 
 It imports either a single message, or a batch of messages 
 in mbox format.  
 .SH "OPTIONS" 
-.IP "\fB-c config-file\fP" 10 
+.IP "\fB\-c config-file\fP" 10 
 Use this config file for lurker settings. 
-.IP "\fB-l listid\fP" 10 
+.IP "\fB\-l listid\fP" 10 
 Import messages to the named mailing list. This should match 
 the value in the lurker.conf after the 'list = ' entry. 
-.IP "\fB-b count\fP" 10 
+.IP "\fB\-b count\fP" 10 
 Import a batch of messages; flush every count messages. A 
-good value for count is 5. In this mode lurker assumes the input 
-is a mailbox delimited by 'From <addr> <date>' lines.  
+good value for count is 5. The larger this parameter, the more CPU 
+power lurker needs during import, but the less disk seeks. 
+.IP "" 10 
+It is important to note that lurker reads files from a 
+maildirs and mailboxes in order and may miss new messages 
+delivered during the import. For this reason, setting up lurker to 
+be invoked properly when new mail is delivered is essential. Only 
+use lurker\-index with '\-b' when importing from non-active mail 
+folders. 
+.IP "" 10 
+By default, lurker\-index reads from standard input in mbox 
+format, delimited by 'From <addr> <date>' lines.  
 Be aware that if the mbox is not delimited correctly between 
 messages it will be interpretted as a single message with an 
-invalid date. The larger this parameter, the more CPU power lurker 
-needs during import, but the less disk seeks. 
-.IP "\fB-m\fP" 10 
+invalid date. To read other sources, see the '\-i' option. 
+.IP "\fB\-m\fP" 10 
 Import a single message. In this mode lurker will never 
 interpret 'From ' lines as message delimiters. When being fed 
 newly delivered mail, this is the preferred mode of operation.  
 Try to turn off the 'From ' escaping of your MTA when using  
 this mode as lurker does it's own escaping which is generally 
 smarter. 
-.IP "\fB-v\fP" 10 
+.IP "" 10 
+This option should be used when lurker\-index is invoked by 
+the MTA for newly delivered email. For importing batches of 
+archived mail, see the '\-b' option. 
+.IP "\fB\-i mbox/maildir\fP" 10 
+Import messages from the specified mailbox or maildir. 
+When '\-b' is specified, lurker\-index by default reads a mailbox 
+(mbox format) from standard input. If the '\-i' parameter is a file, 
+the file is assumed to be in the mbox format and is read instead 
+of standard input.  If the parameter is a directory, the directory 
+is assumed to be in maildir format. 
+.IP "" 10 
+If '\-m' is used, the input MUST be a raw email, 
+preferably with a mbox header, never a maildir. 
+.IP "\fB\-v\fP" 10 
 Verbose operation. Lurker will output statistics about import 
 speed to assist you in tweaking options for best throughput on 
 your system. It also helps you know how much longer you will have 
 to wait. 
-.IP "\fB-d\fP" 10 
+.IP "\fB\-d\fP" 10 
 Drop duplicates per list. This option will check the 
 database to see if the message has already been imported to a 
 mailing list. Only if it has not been imported will lurker append 
@@ -100,14 +121,14 @@ a message twice. If an import failed part-way through, you
 probably want this option to avoid needless replication. However, 
 to generate mailboxes which accurately reflect delivery, leave the 
 option off. 
-.IP "\fB-n\fP" 10 
+.IP "\fB\-n\fP" 10 
 Don't compress messages. This will increase the database 
 size and import speed. Lurker can handle a database with mixed 
 compressed and uncompressed messages. However, zcat/gzip and 
 database upgrades cannot. If you need these to function, you 
 should never mix compressed and uncompressed messages within a 
 single mailing list. 
-.IP "\fB-f\fP" 10 
+.IP "\fB\-f\fP" 10 
 Fast import (but vulnerable to power-failure). This may 
 improve the lifetime of your hard-disk and increase import speed 
 by up to 30%. However, if the power fails during import or shortly 
@@ -116,7 +137,7 @@ you use a journaling filesystem, lurker guarantees no corruption
 when you OMIT this parameter. 
 .SH "SEE ALSO" 
 .PP 
-lurker-prune(1), lurker-params(1), lurker-list(1) 
+lurker\-prune(1), lurker\-params(1), lurker\-list(1) 
 .PP 
 lurker documentation on http://lurker.sourceforge.net/ 
 .SH "COPYRIGHT" 
@@ -145,5 +166,5 @@ Boston, MA 02111-1307, USA.
 Before reporting a bug, please confirm that the bug you found is 
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
-<lurker-users@lists.sourceforge.net>. 
-...\" created by instant / docbook-to-man, Thu 26 Jun 2003, 22:50 
+<lurker\-users@lists.sourceforge.net>. 
+.\" created by instant / docbook-to-man, Thu 19 Aug 2004, 16:18 

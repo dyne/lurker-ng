@@ -103,11 +103,19 @@ dbdir = @vardir@
 # 
 # This will also try to obscure email addresses found in message bodies.
 # This option will not affect display of mailing list or admin addresses.
-# You probably also want to disable attachments, reply, and full text.
-# Removing the attach/ and mbox/ directories will turn these off.
-# Then remove '<xsl:call-template name="attachments"/>' from message.xsl.
-#
+# 
 # hide_email = off
+
+# Tell lurker to disable access to raw email data.
+# 
+# Normally, lurker allows access to the raw contents of email messages.
+# With proper MIME settings, this enables replies from the archive web pages.
+# Attachments and other MIME components can also be retrieved by default.
+# These are all quite useful features for open policy lists.
+# However, if you intend to hide email addresses, or are concerned about
+# people contracting viruses from archived mails, turn this off.
+# 
+# raw_email = on
 
 
 #############################################################################

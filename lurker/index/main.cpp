@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.39 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: main.cpp,v 1.40 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -64,11 +64,12 @@ void help(const char* name)
 	cerr << "Lurker-index (v" << VERSION << ") imports messages into the archive.\n";
 	cerr << "\n";
 	cerr << "Usage: " << name << " -c <config-file> -l <list> (-m | -b <count>)\n";
-	cerr << "                                              [-v -d -n -f]\n";
+	cerr << "                                     [-i <mbox/maildir> -v -d -n -f]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-l <list>        Import messages to the named list\n";
 	cerr << "\t-b <count>       Import a batch of messages; flush every count messages\n";
+	cout << "\t-i <mbox/mdir>   Read input from mbox or maildir instead of std input\n";
 	cerr << "\t-m               Import a single message\n";
 	cerr << "\t-v               Verbose operation\n";
 	cerr << "\t-d               Drop duplicates per list\n";
@@ -425,6 +426,7 @@ int main(int argc, char** argv)
 	
 	const char* config  = 0;
 	const char* listn   = 0;
+	const char* input   = 0;
 	long        batch   = 0;
 	int         verbose = 0;
 	int         dropdup = 0;
@@ -433,7 +435,7 @@ int main(int argc, char** argv)
 	
 	srandom(time(0));
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:l:b:mvndf?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:l:b:i:mvndf?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -445,6 +447,9 @@ int main(int argc, char** argv)
 			break;
 		case 'b':
 			batch = atol(optarg);
+			break;
+		case 'i':
+			input = optarg;
 			break;
 		case 'm':
 			batch = -1;
@@ -509,7 +514,7 @@ int main(int argc, char** argv)
 	}
 	length = lseek(mbox, 0, SEEK_END);
 	
-	/** Begin processing standard input.
+	/** Begin processing input.
 	 */
 	string buf;
 	char sect[8192];
@@ -517,10 +522,22 @@ int main(int argc, char** argv)
 	off_t did = 0;
 	time_t start = time(0);
 	long messages = 0;
+	FILE* inputf = stdin;
+	
+	if (input)
+	{
+		inputf = fopen(input, "rb");
+		if (!inputf)
+		{
+			perror(input);
+			cerr << "Opening input file failed!" << endl;
+			return 1;
+		}
+	}
 	
 	while (1)
 	{
-		int got = read(0, sect, sizeof(sect));
+		int got = fread(sect, 1, sizeof(sect), inputf);
 		if (got == -1)
 		{
 			perror("read");
@@ -572,6 +589,8 @@ int main(int argc, char** argv)
 	if (commit() != 0) return 1;
 	
 	if (verbose) status(did, messages, start);
+	
+	if (input) fclose(inputf);
 	
 	return 0;
 }

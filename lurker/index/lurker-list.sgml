@@ -20,9 +20,9 @@ lurker-list.1: lurker-list.sgml
   <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
   <!ENTITY dhemail     "<email>terpstra@users.sourceforge.net</email>">
   <!ENTITY dhusername  "Wesley W. Terpstra">
-  <!ENTITY support     "<email>lurker-users@lists.sourceforge.net</email>">
-  <!ENTITY dhucpackage "<refentrytitle>LURKER-LIST</refentrytitle>">
-  <!ENTITY dhpackage   "lurker-list">
+  <!ENTITY support     "<email>lurker\-users@lists.sourceforge.net</email>">
+  <!ENTITY dhucpackage "<refentrytitle>LURKER\-LIST</refentrytitle>">
+  <!ENTITY dhpackage   "lurker\-list">
 
   <!ENTITY lurker      "<productname>lurker</productname>">
   <!ENTITY gnu         "<acronym>GNU</acronym>">
@@ -56,8 +56,8 @@ lurker-list.1: lurker-list.sgml
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
-      <arg>-c &lt;config-file&gt;</arg>
-      <arg>-i -g -t -a -l -d</arg>
+      <arg>\-c &lt;config-file&gt;</arg>
+      <arg>\-i \-g \-t \-a \-l \-d</arg>
       <arg>listid ...</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
@@ -76,43 +76,43 @@ lurker-list.1: lurker-list.sgml
     <title>OPTIONS</title>
     <variablelist>
       <varlistentry>
-        <term><option>-c config-file</option></term>
+        <term><option>\-c config-file</option></term>
         <listitem>
           <para>Use this config file for lurker settings.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-i</option></term>
+        <term><option>\-i</option></term>
         <listitem>
           <para>Output only the list id</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-g</option></term>
+        <term><option>\-g</option></term>
         <listitem>
           <para>Output only the group</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-t</option></term>
+        <term><option>\-t</option></term>
         <listitem>
           <para>Output only the title</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-a</option></term>
+        <term><option>\-a</option></term>
         <listitem>
           <para>Output only the email address</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-l</option></term>
+        <term><option>\-l</option></term>
         <listitem>
           <para>Output only the url link</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-d</option></term>
+        <term><option>\-d</option></term>
         <listitem>
           <para>Output only the description</para>
         </listitem>
@@ -122,7 +122,7 @@ lurker-list.1: lurker-list.sgml
   <refsect1>
     <title>SEE ALSO</title>
     
-    <para>lurker-index(1), lurker-prune(1), lurker-params(1)</para>
+    <para>lurker\-index(1), lurker\-prune(1), lurker\-params(1)</para>
     <para>lurker documentation on http://lurker.sourceforge.net/</para>
 
   </refsect1>

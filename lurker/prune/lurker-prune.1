@@ -1,25 +1,23 @@
-.\" This -*- nroff -*- file has been generated from
-.\" DocBook SGML with docbook-to-man on Debian GNU/Linux.
-...\"
-...\"	transcript compatibility for postscript use.
-...\"
-...\"	synopsis:  .P! <file.ps>
-...\"
+.\" $Header: /home/terpstra/cvt/lurker/lurker/prune/lurker-prune.1,v 1.6 2004-08-19 14:52:29 terpstra Exp $
+.\"
+.\"	transcript compatibility for postscript use.
+.\"
+.\"	synopsis:  .P! <file.ps>
+.\"
 .de P!
-\\&.
+.fl
+\!!1 setgray
+.fl
+\\&.\"
+.fl
+\!!0 setgray
 .fl			\" force out current output buffer
-\\!%PB
-\\!/showpage{}def
-...\" the following is from Ken Flowers -- it prevents dictionary overflows
-\\!/tempdict 200 dict def tempdict begin
+\!!save /psv exch def currentpoint translate 0 0 moveto
+\!!/showpage{}def
 .fl			\" prolog
-.sy cat \\$1\" bring in postscript file
-...\" the following line matches the tempdict above
-\\!end % tempdict %
-\\!PE
-\\!.
-.sp \\$2u	\" move below the image
-..
+.sy sed -e 's/^/!/' \\$1\" bring in postscript file
+\!!psv restore
+.
 .de pF
 .ie     \\*(f1 .ds f1 \\n(.f
 .el .ie \\*(f2 .ds f2 \\n(.f
@@ -53,15 +51,15 @@
 .ds f4\"
 '\" t 
 .ta 8n 16n 24n 32n 40n 48n 56n 64n 72n  
-.TH "LURKER-PRUNE" "1" 
+.TH "LURKER\-PRUNE" "1" 
 .SH "NAME" 
-lurker-prune \(em prunes the web-server cache 
+lurker\-prune \(em prunes the web-server cache 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker-prune\fP [-c <config-file>]  [-d <docroot>]  [-v]  
+\fBlurker\-prune\fR [\-c <config-file>]  [\-d <docroot>]  [\-v]  
 .SH "DESCRIPTION" 
 .PP 
-\fBlurker-prune\fP prunes obsolete or stale html/xml 
+\fBlurker\-prune\fR prunes obsolete or stale html/xml 
 from the web-server accessible cache. This command must be run at 
 regular intervals from eg. a cronjob. If it is not run, then the 
 lurker web interface will appear to not be receiving new mail or have 
@@ -75,37 +73,37 @@ space. Please setup a quota for the lurker user, read your logs, and
 follow whatever site-specific policies you have for denial of  
 service. 
 .PP 
-A good script to run in parallel with lurker-prune is one similar 
-to: if test `du -s /var/www/lurker | cut -f1` -gt 32768; then rm -f 
-/var/www/lurker/[l-t]*/*; fi. This might help guard against a 
+A good script to run in parallel with lurker\-prune is one similar 
+to: if test `du \-s /var/www/lurker | cut \-f1` \-gt 32768; then rm \-f 
+/var/www/lurker/[l\-t]*/*; fi. This might help guard against a 
 potential denial-of-service attack. 
 .SH "OPTIONS" 
-.IP "\fB-c config-file\fP" 10 
+.IP "\fB\-c config-file\fP" 10 
 Use this config file for lurker settings. 
-.IP "\fB-d docroot\fP" 10 
+.IP "\fB\-d docroot\fP" 10 
 The base directory of the lurker cache. This must be set to 
 the directory which contains message/*, thread/*, etc. If you have 
 multiple running lurker interfaces, you must run this pointing 
 at each of the document roots. 
-.IP "\fB-m days\fP" 10 
+.IP "\fB\-m days\fP" 10 
 Keep cached files for at most this many days. Any cached 
 file regardless of last access will be deleted after the specified 
 number of days (defaults to 7). Files which are obsolete due to 
 new mail, config changes, or no accesses will be deleted earlier. 
 Deleted files will be automagically regenerated if needed. 
-.IP "\fB-a days\fP" 10 
+.IP "\fB\-a days\fP" 10 
 Kill cache files not accessed for this many days. Any cached 
 file which has not been read from for the specified number of days 
 (defaults to 1) will be deleted. Files which are obsolete due to 
 new mail or config changes will be deleted earlier.  Deleted files 
 will be automagically regenerated if needed. 
-.IP "\fB-v\fP" 10 
+.IP "\fB\-v\fP" 10 
 Verbose operation. Indicate which files are being deleted 
 and the reasoning behind lurker's decisions. This can help in 
 tracking down why some files are deleted and not others. 
 .SH "SEE ALSO" 
 .PP 
-lurker-index(1), lurker-params(1), lurker-list(1) 
+lurker\-index(1), lurker‹-params(1), lurker\-list(1) 
 .PP 
 lurker documentation on http://lurker.sourceforge.net/ 
 .SH "COPYRIGHT" 
@@ -134,5 +132,5 @@ Boston, MA 02111-1307, USA.
 Before reporting a bug, please confirm that the bug you found is 
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
-<lurker-users@lists.sourceforge.net>. 
-...\" created by instant / docbook-to-man, Mon 23 Jun 2003, 17:55 
+<lurker\-users@lists.sourceforge.net>. 
+.\" created by instant / docbook-to-man, Mon 16 Aug 2004, 00:58 

@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.8 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: list.cpp,v 1.9 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  mindex.cpp - Cleanup after a mindex/ command
  *  
@@ -32,6 +32,16 @@
 
 using namespace std;
 
+bool PTable::test_list(KSI ks)
+{
+	const string::size_type skip = sizeof("list"); // null is /
+	
+	string::size_type o = ks->first.find('.', skip);
+	
+	return	o != string::npos &&
+		cfg.lists.find(string(ks->first, skip, o-skip)) != cfg.lists.end();
+}
+
 void PTable::calc_list(KSI ks)
 {
 	/* List entries are invalidated by any new message to the list
@@ -45,16 +55,14 @@ void PTable::calc_list(KSI ks)
 	 *   kill if no recent accesses
 	 */
 	
-	string::size_type o = ks->first.find('.', 5);
-	if (o == string::npos || 
-	    cfg.lists.find(string(ks->first, 5, o)) == cfg.lists.end())
+	if (!test_list(ks))
 	{
 		if (verbose)
 			cout << ks->first << ": not a lurker file." << endl;
 		return;
 	}
 	
-	if (ks->second.mtime <= config)
+	if (ks->second.mtime <= cfg.modified)
 	{	// die - it's older than the config file
 		ks->second.kill = true;
 		if (verbose)
@@ -81,13 +89,6 @@ void PTable::calc_list(KSI ks)
 	
 	string query(ks->first, 5, string::npos);
 	string::size_type at = query.find('.');
-	if (at == string::npos)
-	{
-		ks->second.kill = true; // shouldn't be in here
-		if (verbose)
-			cout << ks->first << ": not a lurker file." << endl;
-		return;
-	}
 	
 	string listn(query, 0, at);
 	if (lists.find(listn) == lists.end())

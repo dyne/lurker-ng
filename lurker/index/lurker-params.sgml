@@ -20,9 +20,9 @@ lurker-params.1: lurker-params.sgml
   <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
   <!ENTITY dhemail     "<email>terpstra@users.sourceforge.net</email>">
   <!ENTITY dhusername  "Wesley W. Terpstra">
-  <!ENTITY support     "<email>lurker-users@lists.sourceforge.net</email>">
-  <!ENTITY dhucpackage "<refentrytitle>LURKER-PARAMS</refentrytitle>">
-  <!ENTITY dhpackage   "lurker-params">
+  <!ENTITY support     "<email>lurker\-users@lists.sourceforge.net</email>">
+  <!ENTITY dhucpackage "<refentrytitle>LURKER\-PARAMS</refentrytitle>">
+  <!ENTITY dhpackage   "lurker\-params">
 
   <!ENTITY lurker      "<productname>lurker</productname>">
   <!ENTITY gnu         "<acronym>GNU</acronym>">
@@ -56,8 +56,8 @@ lurker-params.1: lurker-params.sgml
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
-      <arg>-c &lt;config-file&gt;</arg>
-      <arg>-d -a -n -e -x -m -i -w -h</arg>
+      <arg>\-c &lt;config-file&gt;</arg>
+      <arg>\-d \-a \-n \-e \-x \-m \-i \-w \-h</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -72,61 +72,61 @@ lurker-params.1: lurker-params.sgml
     <title>OPTIONS</title>
     <variablelist>
       <varlistentry>
-        <term><option>-c config-file</option></term>
+        <term><option>\-c config-file</option></term>
         <listitem>
           <para>Use this config file for lurker settings.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-d</option></term>
+        <term><option>\-d</option></term>
         <listitem>
           <para>Output only the dbdir parameter</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-a</option></term>
+        <term><option>\-a</option></term>
         <listitem>
           <para>Output only the archive parameter</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-n</option></term>
+        <term><option>\-n</option></term>
         <listitem>
           <para>Output only the administrator name</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-e</option></term>
+        <term><option>\-e</option></term>
         <listitem>
           <para>Output only the administrator email address</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-x</option></term>
+        <term><option>\-x</option></term>
         <listitem>
           <para>Output only the xslt processing command</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-m</option></term>
+        <term><option>\-m</option></term>
         <listitem>
           <para>Output only the mime pgp verifying command</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-i</option></term>
+        <term><option>\-i</option></term>
         <listitem>
           <para>Output only the inline pgp verifying command</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-w</option></term>
+        <term><option>\-w</option></term>
         <listitem>
           <para>Output only the web_cache state</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-h</option></term>
+        <term><option>\-h</option></term>
         <listitem>
           <para>Output only the hide_email state</para>
         </listitem>
@@ -136,7 +136,7 @@ lurker-params.1: lurker-params.sgml
   <refsect1>
     <title>SEE ALSO</title>
     
-    <para>lurker-index(1), lurker-prune(1), lurker-list(1)</para>
+    <para>lurker\-index(1), lurker\-prune(1), lurker\-list(1)</para>
     <para>lurker documentation on http://lurker.sourceforge.net/</para>
 
   </refsect1>

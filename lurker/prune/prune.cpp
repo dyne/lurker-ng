@@ -1,4 +1,4 @@
-/*  $Id: prune.cpp,v 1.11 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: prune.cpp,v 1.12 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  prune.cpp - Prune obsolete / stale cache files
  *  
@@ -123,13 +123,6 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	struct stat cbuf, dbuf;
-	if (stat(config, &cbuf) < 0)
-	{
-		cerr << "stat()ing " << config << ": " << strerror(errno) << endl;
-		return 1;
-	}
-	
 	string docfile = string(docroot) + "/lurker.docroot";
 	int fd = open(docfile.c_str(), O_RDWR | O_CREAT, 0666);
 	if (fd == -1)
@@ -138,6 +131,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
+	struct stat dbuf;
 	if (fstat(fd, &dbuf) < 0)
 	{
 		cerr << "stat()ing " << docfile << ": " << strerror(errno) << endl;
@@ -195,7 +189,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	PTable ptable(cfg, db.get(), cbuf.st_mtime, dbuf.st_mtime, verbose, modifyTime, accessTime);
+	PTable ptable(cfg, db.get(), dbuf.st_mtime, verbose, modifyTime, accessTime);
 	string ok;
 	
 	if ((ok = ptable.load()) != "")

@@ -3,6 +3,13 @@ v1.2:
 	  a message break due to quoted email address.
 	Lurker-prune now only deletes files which appear to be generated
 	Lurker rendering and pruning are now equally picky about formatting
+	Newer automake (1.8.5-2) and autoconf (2.59-7) used for build
+	Cache depends not only on the config file, but also included files
+	Slightly modified the deutsch.xsl translation
+	Made all parameters in manual pages use unicode hyphens
+	Added a new config option "raw_email" to disable mbox/ and attach/
+	Added an import option to select a file instead of stdin, '-i'
+	Improved the documentation for lurker-index -m and -b
 
 v1.1:
 	Create mbox and attach directory upon install

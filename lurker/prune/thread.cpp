@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.7 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: thread.cpp,v 1.8 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  thread.cpp - Cleanup after a thread/ command
  *  
@@ -32,6 +32,12 @@
 
 using namespace std;
 
+bool PTable::test_thread(KSI ks)
+{
+	const string::size_type skip = sizeof("thread");
+	return MessageId::is_full(ks->first.c_str() + skip);
+
+}
 void PTable::calc_thread(KSI ks)
 {
 	/* Threads depend on thread data!
@@ -45,7 +51,7 @@ void PTable::calc_thread(KSI ks)
 	 *   kill if no recent accesses
 	 */
 	
-	if (!MessageId::is_full(ks->first.c_str() + 7))
+	if (!test_thread(ks))
 	{
 		if (verbose)
 			cout << ks->first << ": not a lurker file." << endl;
@@ -53,15 +59,8 @@ void PTable::calc_thread(KSI ks)
 	}
 	
 	MessageId id(ks->first.c_str() + 7);
-	if (id.timestamp() == 0)
-	{
-		ks->second.kill = true; // shouldn't be here
-		if (verbose)
-			cout << ks->first << ": not a lurker file." << endl;
-		return;
-	}
 	
-	if (ks->second.mtime <= config)
+	if (ks->second.mtime <= cfg.modified)
 	{	// die - it's older than the config file
 		ks->second.kill = true;
 		if (verbose)

@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.3 2004-01-06 21:22:54 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.4 2004-08-19 14:52:29 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -30,6 +30,9 @@
 
 #include <fstream>
 #include <iostream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -43,7 +46,9 @@ Config::Config()
    pgpv_mime("off"),
    pgpv_inline("off"),
    web_cache(true),
-   hide_email(false)
+   hide_email(false),
+   raw_email(true),
+   modified(0)
 {
 }
 
@@ -82,6 +87,17 @@ int Config::load(const string& file)
 		error << file << ":open: could not open!" << endl;
 		return -1;
 	}
+	
+	struct stat sbuf;
+	if (stat(file.c_str(), &sbuf) < 0)
+	{
+		error << file << ":stat: could not stat!" << endl;
+		return -1;
+	}
+	
+	// deal with included file's timestamps
+	if (sbuf.st_mtime > modified)
+		modified = sbuf.st_mtime;
 	
 	string dir;
 	string::size_type x = file.rfind('/');
@@ -296,6 +312,18 @@ int Config::process_command(const string& key, const string& val, const string& 
 			return -1;
 		}
 	}
+	else if (key == "raw_email")
+	{
+		if (val == "off" || val == "false")
+			raw_email = false;
+		else if (val == "on" || val == "true")
+			raw_email = true;
+		else
+		{
+			error << "raw_email must be set to on/off or true/false!" << endl;
+			return -1;
+		}
+	}
 	else if (key == "include")
 	{
 		string file;
@@ -358,8 +386,11 @@ ostream& operator << (ostream& o, const Config& c)
 	o << "<server>"
 	  << "<version>" << VERSION << "</version>"
 	  << "<doc-url>" << c.docUrl << "</doc-url>"
-	  << "<cgi-url>" << c.cgiUrl << "</cgi-url>"
-	  << "<archive>";
+	  << "<cgi-url>" << c.cgiUrl << "</cgi-url>";
+	
+	if (c.raw_email) o << "<raw-email/>";
+	
+	o << "<archive>";
 	
 	if (c.archive.length() > 0)
 		o << xmlEscape << c.archive;
