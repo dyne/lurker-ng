@@ -11,6 +11,4 @@ Unfulfilled requirements:
 BUGS:
 	Need a better way to clean cache.
 	Timezones suck. Need to localize times to the browser.
-	
-	-> control chars in utf-8 xml seem to break as invalid charset?
-	   odd since they are low bit ascii and thus valid utf-8
+	Need a manpage; steal mejo's
