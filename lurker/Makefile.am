@@ -1,6 +1,6 @@
 SUBDIRS = libesort common index prune render ui imgs
 
-noinst_DIST = FAQ
+EXTRA_DIST = FAQ
 
 if LOCAL_MIMELIB
 
