@@ -4,27 +4,9 @@
     xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
 
-<xsl:output method="html" indent="yes" encoding="UTF-8"
-    doctype-system="http://www.w3.org/TR/html4/strict.dtd"
-    doctype-public="-//W3C//DTD HTML 4.01//EN"/>
-
-<xsl:template match="email[@address]">
-  <a href="mailto:{@address}">
-    <xsl:if test="@name">&quot;<xsl:value-of select="@name"/>&quot;</xsl:if>
-    &lt;<xsl:value-of select="@address"/>&gt;
-  </a>
-</xsl:template>
-
-<xsl:template match="email">
-  <xsl:if test="not(@name)">
-    SomeOne
-  </xsl:if>
-  <xsl:value-of select="@name"/>
-</xsl:template>
-
 <xsl:template match="list">
   <tr>
-  <td><a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.html">
+  <td><a href="../mindex/{id}@{string(floor((number(messages) - 1) div 20)*20)}.{$ext}">
         <xsl:value-of select="email/@name"/></a></td>
 
   <xsl:if test="email/@address">
@@ -46,34 +28,35 @@
   </option>
 </xsl:template>
 
-<!-- Document Root -->
-<xsl:template match="/">
- <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
- <head>
-  <title>
-    Lurker@<xsl:value-of select="/lists/server/hostname"/> - Front Page
-  </title>
- </head>
- <body>
-  <h1>Lurker@<xsl:value-of select="/lists/server/hostname"/></h1>
+<xsl:template match="splash" mode="title">
+ <xsl:apply-templates select="server" mode="title"/> -
+ <xsl:copy-of select="$splash"/>
+</xsl:template>
 
+<xsl:template match="splash" mode="body">
+ <p/><xsl:apply-templates select="server" mode="header"/>
+
+ <p/>
+ <table>
+  <tr><th align="left">List</th>
+      <th align="left">Address</th>
+      <th align="left">Description</th>
+      <th align="center">Messages</th></tr>
+  <xsl:apply-templates select="list"/>
+ </table>
+
+ <hr/>
+ <p/><h1>Lurker <xsl:copy-of select="$search"/></h1>
+ <p/>
+ <form action ="../lurker-search.cgi">
+  <input type="hidden" name="format" value="{$ext}"/>
+  <input type="text"   name="query"  value="" size="50"/>
+  <input type="submit" name="submit" value="{$search}!"/>
   <table>
-
-<tr><th align="left">List</th>
-    <th align="left">Address</th>
-    <th align="left">Description</th>
-    <th align="center">Messages</th></tr>
-    <xsl:apply-templates select="/lists/list"/>
-  </table>
-  <hr/>
-  <h1>Lurker search</h1>
-  <p><form action="../search/bounce">
-    <input type="text" name="query" size="50" value=""/>
-    <input type="submit" name="submit" value="Search!"/>
-  <p><table>
-      <tr><td>Author </td><td><input type="text" name="author" size="50" value=""/></td></tr>
-      <tr><td>Subject</td><td><input type="text" name="subject" size="50" value=""/></td></tr>
-      <tr><td>Date</td><td>
+   <tr><td><xsl:copy-of select="$author"/> </td><td><input type="text" name="author"  size="50" value=""/></td></tr>
+   <tr><td><xsl:copy-of select="$subject"/></td><td><input type="text" name="subject" size="50" value=""/></td></tr>
+   <tr><td><xsl:copy-of select="$date"/>   </td>
+    <td>
      <select name="weekday">
        <xsl:text disable-output-escaping="yes">
        &lt;option value=""&gt;Sun-Sat&lt;/option&gt;
@@ -166,20 +149,25 @@
        <option value="1982">1982</option>
        <option value="1981">1981</option>
        <option value="1980">1980</option>
-     </select></td></tr>
-     <tr><td>Appearing in</td><td>
+     </select>
+    </td>
+   </tr>
+   <tr>
+    <td><xsl:copy-of select="$appearin"/></td>
+    <td>
      <select name="list">
-       <xsl:text disable-output-escaping="yes">
+      <xsl:text disable-output-escaping="yes">
        &lt;option value=""&gt;Any list&lt;/option&gt;
-       </xsl:text>
-        <xsl:apply-templates mode="select" select="/lists/list"/>
-     </select></td></tr></table>
-   </p>
-  </form></p>
+      </xsl:text>
+      <xsl:apply-templates mode="select" select="list"/>
+     </select>
+    </td>
+   </tr>
+  </table>
+ </form>
+
  <hr/>
- <p>Administrated by: <xsl:apply-templates select="/lists/server/email"/></p>
- </body>
- </html>
+ <p/><xsl:apply-templates select="server" mode="footer"/>
 </xsl:template>
 
 </xsl:stylesheet>

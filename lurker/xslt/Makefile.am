@@ -2,7 +2,7 @@ fmtdir = @wwwdir@/fmt
 
 fmt_DATA = \
 	render.xsl render-html.xsl common.xsl \
-	error.xsl \
+	error.xsl splash.xsl \
 	english.xsl \
 	basic.css
 
