@@ -16,5 +16,5 @@ Library libesort :
 # Main dump : dump.cpp ;
 # LinkLibraries dump : libesort ;
 
-Main test : test.cpp ;
-LinkLibraries test : libesort ;
+# Main test : test.cpp ;
+# LinkLibraries test : libesort ;
