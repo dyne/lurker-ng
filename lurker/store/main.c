@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.11 2002-01-28 07:28:25 terpstra Exp $
+/*  $Id: main.c,v 1.12 2002-01-28 07:38:12 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -545,7 +545,7 @@ int main(int argc, const char* argv[])
 	memset(&sun_addr, 0, sizeof(sun_addr));
 	
 	sun_addr.sun_family = PF_UNIX;
-	strcpy(&sun_addr.sun_path[0], PACKAGE ".sock");
+	strcpy(&sun_addr.sun_path[0], PACKAGE ".sok");
 	unlink(&sun_addr.sun_path[0]);
 	sun_len = sizeof(sun_addr.sun_family) + strlen(&sun_addr.sun_path[0]);
 	
