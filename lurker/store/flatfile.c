@@ -1,4 +1,4 @@
-/*  $Id: flatfile.c,v 1.13 2002-06-21 18:19:03 terpstra Exp $
+/*  $Id: flatfile.c,v 1.14 2002-06-23 12:22:16 terpstra Exp $
  *  
  *  flatfile.c - Knows how to manage the keyword flatfile database
  *  
@@ -202,6 +202,8 @@ static ssize_t my_flatfile_swrite(
 	size_t count, 
 	const char* msg)
 {
+	ssize_t got;
+	
 	if (lseek(fd, off, SEEK_SET) != off)
 	{
 		syslog(LOG_ERR, _("%s seeking keyword.flat (%lld): %s\n"),
@@ -209,7 +211,13 @@ static ssize_t my_flatfile_swrite(
 		return -1;
 	}
 	
-	return my_flatfile_write_full(fd, buf, count, msg);
+	if ((got = my_flatfile_write_full(fd, buf, count, msg)) != count)
+	{
+		syslog(LOG_ERR, _("%s wrote only %d out of %d bytes (%lld): %s\n"),
+			gettext(msg), got, count, off, strerror(errno));
+	}
+	
+	return got;
 }
 
 /* Helper method which does a seek and then a write
@@ -221,6 +229,8 @@ static ssize_t my_flatfile_sread(
 	size_t count, 
 	const char* msg)
 {
+	ssize_t got;
+	
 	if (lseek(fd, off, SEEK_SET) != off)
 	{
 		syslog(LOG_ERR, _("%s seeking keyword.flat (%lld): %s\n"),
@@ -228,7 +238,13 @@ static ssize_t my_flatfile_sread(
 		return -1;
 	}
 	
-	return my_flatfile_read_full(fd, buf, count, msg);
+	if ((got = my_flatfile_read_full(fd, buf, count, msg)) != count)
+	{
+		syslog(LOG_ERR, _("%s read only %d out of %d bytes (%lld): %s\n"),
+			gettext(msg), got, count, off, strerror(errno));
+	}
+	
+	return got;
 }
 
 /* What is the free-block index for this size.
