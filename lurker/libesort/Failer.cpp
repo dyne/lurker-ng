@@ -1,6 +1,6 @@
-/*  $Id: View.h,v 1.3 2003-04-24 23:52:36 terpstra Exp $
+/*  $Id: Failer.cpp,v 1.1 2003-04-24 23:52:36 terpstra Exp $
  *  
- *  View.h - Snapshot of commit state
+ *  Failer.cpp - Output an error on advance
  *  
  *  Copyright (C) 2002 - Wesley W. Terpstra
  *  
@@ -22,42 +22,17 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef VIEW_H
-#define VIEW_H
+#include "Failer.h"
 
-#include "esort.h"
-#include "Merger.h"
-#include "File.h"
-
-#include <set>
+#include <cerrno>
 
 namespace ESort
 {
 
-class Merger;
-
-class View : public Reader
+int Failer::advance()
 {
- public:
- 	struct FileOrder
- 	{
- 		bool operator() (const File& x, const File& y) const
- 		{ return x.category < y.category; }
- 	};
- 	
- 	typedef std::multiset<File, FileOrder> Files;
- 	
- 	Parameters params;
- 	View(const Parameters& p) : params(p) { }
- 	
- 	/** Collection of all files open - in decreasing size.
- 	 */
- 	Files	files;
- 	
- 	std::auto_ptr<Merger> rawseek(const string& k, bool forward);
- 	std::auto_ptr<Walker> seek(const string& k, bool forward);
-};
-
+	errno = out_errno;
+	return -1;
 }
 
-#endif
+}

@@ -1,4 +1,4 @@
-/*  $Id: Master.h,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: Master.h,v 1.3 2003-04-24 23:52:36 terpstra Exp $
  *  
  *  Master.h - Coordinate commit+read interface
  *  
@@ -50,7 +50,7 @@ class Master : public Writer
  	
  	int commit();
  	int insert(const string& k);
- 	Merger* seek(const string& k);
+ 	auto_ptr<Walker> seek(const string& k, bool forward);
 };
 
 }

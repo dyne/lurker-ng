@@ -1,4 +1,4 @@
-/*  $Id: File.cpp,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: File.cpp,v 1.3 2003-04-24 23:52:36 terpstra Exp $
  *  
  *  File.cpp - Disk segment for commit'd inserts
  *  
@@ -47,33 +47,48 @@ class FileSource : public Source
  	long block;
  	unsigned char* buf;
  	unsigned char* off;
+ 	bool forward;
+ 	
+ 	unsigned char* inverseBuffer();
  	
  public:
- 	FileSource(File* f_, long block_);
+ 	FileSource(File* f_, long block_, bool forward_);
  	~FileSource();
  	
  	int loadBuf();
  	int advance();
 };
 
-FileSource::FileSource(File* f_, long block_)
- : f(f_), block(block_), buf(new unsigned char[f->p->blockSize()]), off(0)
+FileSource::FileSource(File* f_, long block_, bool forward_)
+ : f(f_), block(block_), forward(forward_),
+   buf(new unsigned char[f->p->blockSize()]), off(0)
 {
 }
 
 FileSource::~FileSource()
 {
-	delete buf;
+	delete [] buf;
 }
 
 int FileSource::loadBuf()
 {
-	assert (block <= f->blocks);
+	assert (block <= f->blocks && block >= -1);
 	
-	if (block == f->blocks)
-	{	// hit eof
-		errno = 0;
-		return -1;
+	if (forward)
+	{
+		if (block == f->blocks)
+		{	// hit eof
+			errno = 0;
+			return -1;
+		}
+	}
+	else
+	{
+		if (block == -1)
+		{	// hit eof
+			errno = 0;
+			return -1;
+		}
 	}
 	
 	if (f->where != block)
@@ -99,9 +114,25 @@ int FileSource::loadBuf()
 		return -1;
 	}
 	
-	f->where = ++block;
+	if (forward)
+	{
+		f->where = ++block;
+		off = buf;
+	}
+	else
+	{
+		f->where = block+1;
+		--block;
+		
+		off = inverseBuffer(); // flip the order of the records
+	}
 	
-	off = buf;
+	return 0;
+}
+
+unsigned char* FileSource::inverseBuffer()
+{
+	// !!!
 	return 0;
 }
 
@@ -154,18 +185,15 @@ File::~File()
 	close(fd);
 }
 
-Source* File::openBlock(long block)
+auto_ptr<Source> File::openBlock(long block, bool forward)
 {
 	assert (block <= blocks);
 	
-	FileSource* out = new FileSource(this, block);
+	auto_ptr<FileSource> out(new FileSource(this, block, forward));
 	
-	if (out->loadBuf() != 0)
-	{
-		delete out;
-		return 0;
-	}
-	else	return out;
+	if (out->loadBuf() == 0)
+		return auto_ptr<Source>(out);
+	// else return 0
 }
 
 }

@@ -1,6 +1,6 @@
-/*  $Id: File.h,v 1.3 2003-04-24 23:52:36 terpstra Exp $
+/*  $Id: Failer.h,v 1.1 2003-04-24 23:52:36 terpstra Exp $
  *  
- *  Master.h - Disk segment for commit'd inserts
+ *  Failer.h - Output an error on advance
  *  
  *  Copyright (C) 2002 - Wesley W. Terpstra
  *  
@@ -22,54 +22,24 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef FILE_H
-#define FILE_H
+#ifndef FAILER_H
+#define FAILER_H
 
-#include <cmath>
 #include "esort.h"
 
 namespace ESort
 {
 
-class Source;
-class FileSource;
-
-inline int categorize(long records)
-{
-	return static_cast<int>(floor(log(static_cast<double>(records+2))/log(2)));
-}
-
-
-class File
+class Failer : public Walker
 {
  protected:
- 	int fd;
- 	const Parameters* p;
- 	long where;
+ 	int out_errno;
  	
  public:
- 	/** Use this file descriptor for operation
- 	 */
- 	File(const string& id = "", int fd_ = -1, const Parameters* p_ = 0);
- 	File(const File& o); 
- 	~File(); // closes fd
+ 	Failer(int out_errno_)
+ 	 : out_errno(out_errno_) { }
  	
- 	/** The id of the database.
- 	 */
- 	string id;
- 	
- 	/** The number of blocks in this file
- 	 */
- 	long blocks;
- 	
- 	/** The classification based on size for this file
- 	 */
- 	int category;
- 	
- 	/** Always succeeds */
- 	auto_ptr<Source> openBlock(long block, bool forward);
- 
- friend class FileSource;
+ 	int advance();
 };
 
 }

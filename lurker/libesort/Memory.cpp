@@ -1,4 +1,4 @@
-/*  $Id: Memory.cpp,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: Memory.cpp,v 1.3 2003-04-24 23:52:36 terpstra Exp $
  *  
  *  Memory.cpp - Memory segment for inserts prior to commit
  *  
@@ -36,20 +36,20 @@
 namespace ESort
 {
 
-class MemorySource : public Source
+class ForwardMemorySource : public Source
 {
  protected:
  	typedef std::multiset<std::string> Data;
  	Data::iterator i, e;
  
  public:
- 	MemorySource(Data::iterator i_, Data::iterator e_)
+ 	ForwardMemorySource(Data::iterator i_, Data::iterator e_)
  	 : i(i_), e(e_) { }
  	
  	int advance();
 };
 
-int MemorySource::advance()
+int ForwardMemorySource::advance()
 {
 	// Test for eof
 	if (i == e)
@@ -67,9 +67,46 @@ int MemorySource::advance()
 	return 0;
 }
 
-Source* Memory::openMemory(const string& k)
+class BackwardMemorySource : public Source
 {
-	return new MemorySource(data.lower_bound(k), data.end());
+ protected:
+ 	typedef std::multiset<std::string> Data;
+ 	Data::iterator i, b;
+ 
+ public:
+ 	BackwardMemorySource(Data::iterator i_, Data::iterator b_)
+ 	 : i(i_), b(b_) { }
+ 	
+ 	int advance();
+};
+
+int BackwardMemorySource::advance()
+{
+	// Test for eof
+	if (i == b)
+	{
+		errno = 0;
+		return -1;
+	}
+	
+	// move to the next position
+	--i;
+	
+	// Return the key
+	tail = reinterpret_cast<const unsigned char*>(i->c_str());
+	length = i->length();
+	dup = 0;
+	
+	return 0;
+}
+
+auto_ptr<Source> Memory::openMemory(const string& k, bool forward)
+{
+	if (forward)
+		return auto_ptr<Source>(
+		new  ForwardMemorySource(data.lower_bound(k), data.end()));
+	else	return auto_ptr<Source>(
+		new BackwardMemorySource(data.lower_bound(k), data.begin()));
 }
 
 int Memory::category(const Parameters& p) const

@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.4 2003-04-24 11:56:18 terpstra Exp $
+/*  $Id: esort.h,v 1.5 2003-04-24 23:52:36 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -26,6 +26,7 @@
 #define ESORT_H
 
 #include <string>
+#include <memory>
 
 /* What is ESort? -- An Online External Sort
  * 
@@ -54,6 +55,7 @@ namespace ESort
 {
 
 using std::string;
+using std::auto_ptr;
 
 /** These parameters specify minimum values required for a database.
  *  If an existing database has too small a value, an error is returned.
@@ -92,6 +94,7 @@ class Walker
 {
  public:
  	/** The current key which the walker points to.
+ 	 *  This is not valid until advance is called once.
  	 */
  	string		key;
  	
@@ -117,14 +120,14 @@ class Reader
  	
  	/** Obtain a walker pointing to the first key >= k.
  	 *  This costs O(log^2(N)) seeks, so try not to call it too often.
- 	 *  Failure returns 0 and sets errno, errno = 0 -> eof.
+ 	 *  This operation never fails
  	 */
- 	virtual Walker* seek(const string& k) = 0;
+ 	virtual auto_ptr<Walker> seek(const string& k, bool forward) = 0;
  	
  	/** Open an existing database for reading.
  	 *  0 is returned and errno set on error.
  	 */
- 	static Reader* open(const string& db);
+ 	static auto_ptr<Reader> open(const string& db);
 };
 
 /** The Writer object allows you to insert keys.
@@ -155,7 +158,7 @@ class Writer : public Reader
  	 *  
  	 *  0 is returned and errno set on error.
  	 */
- 	static Writer* open(
+ 	static auto_ptr<Writer> open(
  		const string& db, const Parameters& p = Parameters(), 
  		int mode = 0666);
 };

@@ -1,4 +1,4 @@
-/*  $Id: View.cpp,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: View.cpp,v 1.3 2003-04-24 23:52:36 terpstra Exp $
  *  
  *  View.cpp - Snapshot of commit state
  *  
@@ -33,14 +33,24 @@
 #include "Source.h"
 #include "File.h"
 #include "DbMan.h"
+#include "Failer.h"
+
+#include <cerrno>
 
 namespace ESort
 {
 
-Merger* View::rawseek(const string& k)
+auto_ptr<Merger> View::rawseek(const string& k, bool forward)
 {
-	Merger* out = new Merger(params.unique());
+	auto_ptr<Merger> out(new Merger(params.unique(), forward));
 	
+	/* The goal is to find the last sector in each file whose first key
+	 * is < k. If we are forward reading, merging from here makes no
+	 * mistakes since the first key >= lies ahead. If we are backward
+	 * reading, merging from here makes no mistakes since the first
+	 * key not in the sector is >= k and thus too big for it.
+	 */
+	 
 	// Push in decreasing size
 	for (Files::iterator i = files.begin(); i != files.end(); ++i)
 	{
@@ -49,26 +59,24 @@ Merger* View::rawseek(const string& k)
 		long left = 0;
 		long right = i->blocks;
 		long mid = -1;
-		Source* s = 0;
+		std::auto_ptr<Source> s(0);
 		
 		// consider starting s at [left, right)
 		while ((right - left) > 1)
 		{
-			if (s) delete s;
-			
 			// mid is rounded down -> mid < right
 			mid = (left + right) / 2;
-			s = const_cast<File*>(&*i)->openBlock(mid);
-			if (!s)
-			{
-				stop = -1;
-				break; // should always work
-			}
+			s = const_cast<File*>(&*i)->openBlock(mid, true);
+			if (!s.get()) return auto_ptr<Merger>(0);
 			
 			// eof is impossible since mid < right
-			if ((stop = s->advance()) == -1) break;
+			if ((stop = s->advance()) == -1) return auto_ptr<Merger>(0);
 			
-			assert (s->dup == 0); // first key; no compression
+			if (s->dup != 0) // first key; no compression
+			{
+				errno = EINVAL;
+				return auto_ptr<Merger>(0);
+			}
 			
 			if (string(
 				// std::string compares like unsigned char
@@ -77,51 +85,66 @@ Merger* View::rawseek(const string& k)
 				right = mid;
 			else	left  = mid;
 		}
-		if (stop == -1) continue;
 		
-		if (mid != left) // s hold mid
+		if (forward && mid != left) // s hold mid
 		{
-			delete s;
+			s = const_cast<File*>(&*i)->openBlock(left, true);
+			if (!s.get()) return auto_ptr<Merger>(0);
 			
-			s = const_cast<File*>(&*i)->openBlock(left);
-			if (!s) continue;
 			// empty File?
-			if ((stop = s->advance()) == -1) continue;
-			assert (s->dup == 0);
+			if ((stop = s->advance()) == -1)
+			{
+				if (errno == 0) continue; // eof
+				return auto_ptr<Merger>(0); // fucked?
+			}
+		}
+		else if (!forward)
+		{
+			s = const_cast<File*>(&*i)->openBlock(left, false);
+			if (!s.get()) return auto_ptr<Merger>(0);
+			
+			// empty File?
+			if ((stop = s->advance()) == -1)
+			{
+				if (errno == 0) continue;
+				return auto_ptr<Merger>(0); // fucked?
+			}
 		}
 		
-		out->merge(s);
+		if (s->dup != 0)
+		{	// must be uncompressed!
+			errno = EINVAL;
+			return auto_ptr<Merger>(0);
+		}
+		
+		out->merge(s.release());
 	}
 	
 	return out;
 }
 
-Merger* View::seek(const string& k)
+auto_ptr<Walker> View::seek(const string& k, bool forward)
 {
-	Merger* out = rawseek(k);
-	if (out->skiptill(k) == -1)
-	{
-		delete out;
-		out = 0;
-	}
-	return out;
+	auto_ptr<Merger> out = rawseek(k, forward);
+	if (!out.get() || out->skiptill(k, forward) == -1)
+		return auto_ptr<Walker>(new Failer(errno));
+	
+	return auto_ptr<Walker>(out);
 }
 
-Reader* Reader::open(const string& db)
+auto_ptr<Reader> Reader::open(const string& db)
 {
 	DbMan man;
 	Parameters p(1,4,1);
 	
-	if (man.open(db, p) != 0) return 0;
-	
-	View* o = new View(p);
-	if (man.snapshot(*o) != 0)
+	if (man.open(db, p) != 0)
 	{
-		delete o;
-		o = 0;
+		auto_ptr<View> o(new View(p));
+		if (man.snapshot(*o.get()) == 0)
+			return auto_ptr<Reader>(o);
+		// else return 0
 	}
-	
-	return o;
+	// else return 0
 }
 
 Reader::~Reader()

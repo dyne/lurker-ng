@@ -11,6 +11,8 @@ v0.7:
 	Support building against local mimelib for deployment without kde
 	Compatability with older g++ 2.95 versions
 	Install cgis to cgi-bin rather than docroot
+	Support backwards reading in esort
+	Make search work like mindex
 
 v0.6:
 	Jam replaces automake + overkill autoconf madness; hooray!

@@ -1,4 +1,4 @@
-/*  $Id: Memory.h,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: Memory.h,v 1.3 2003-04-24 23:52:36 terpstra Exp $
  *  
  *  Memory.h - Memory segment for inserts prior to commit
  *  
@@ -25,13 +25,11 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
+#include "esort.h"
 #include <set>
-#include <string>
 
 namespace ESort
 {
-
-using std::string;
 
 class Source;
 class Parameters;
@@ -68,8 +66,9 @@ class Memory
  	int category(const Parameters& p) const;
  	
  	/** Find the first key >= k.
+ 	 *  Always succeeds
  	 */
- 	Source* openMemory(const string& k);
+ 	auto_ptr<Source> openMemory(const string& k, bool forward);
 };
 
 }

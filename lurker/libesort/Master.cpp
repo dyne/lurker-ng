@@ -1,4 +1,4 @@
-/*  $Id: Master.cpp,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: Master.cpp,v 1.3 2003-04-24 23:52:36 terpstra Exp $
  *  
  *  Master.cpp - Coordinate commit+read interface
  *  
@@ -30,10 +30,12 @@
 
 #include "Master.h"
 #include "Source.h"
+#include "Failer.h"
 #include "Transaction.h"
 
 #include <list>
 #include <iostream>
+#include <cerrno>
 
 namespace ESort
 {
@@ -68,10 +70,10 @@ int Master::commit()
 	if (fd == -1) return -1;
 	
 	Transaction tran(fd, &view.params);
-	Merger merge(view.params.unique());
-	Source* s = memory.openMemory("");
-	if (s->advance() == -1) return -1;
-	merge.merge(s);
+	Merger merge(view.params.unique(), true); // forward
+	auto_ptr<Source> m(memory.openMemory("", true)); // forward
+	if (m->advance() == -1) return -1; // means eof; always
+	merge.merge(m.release());
 	
 	std::list<File> doomed;
 	
@@ -94,17 +96,21 @@ int Master::commit()
 		//!!! this bad because it prevents us from proper unwinding
 		// -- fix it
 		doomed.push_back(*i);
-		s = doomed.back().openBlock(0);
-		if (!s) return -1; // impossible
-		if (s->advance() == -1) return -1; // impossible
-		merge.merge(s);
+		auto_ptr<Source> f(doomed.back().openBlock(0, true));
+		if (!f.get()) return -1; // something broke?
+		if (f->advance() == -1) return -1; // always has keys?!
+		merge.merge(f.release());
 		
 		j = i;
 		++j;
 		view.files.erase(i);
 	}
 	
-	for (int dup = merge.skiptill(""); dup != -1; dup = merge.advance())
+	if (merge.skiptill("", true) != 0)
+		return -1; // must work?! ram has entries
+	
+	int dup;
+	while ((dup = merge.advance()) != -1)
 	{	// there is stuff to merge
 		if (tran.write(merge.key.length(), dup, merge.key.c_str()) != 0)
 			return -1;
@@ -137,36 +143,32 @@ int Master::insert(const string& k)
 	return 0;
 }
 
-Merger* Master::seek(const string& k)
+auto_ptr<Walker> Master::seek(const string& k, bool forward)
 {
 	// might not have any results
-	Merger* out = view.rawseek(k);
-	assert (out);
+	auto_ptr<Merger> out(view.rawseek(k, forward));
+	if (!out.get())
+		return auto_ptr<Walker>(new Failer(errno));
 	
-	Source* s = memory.openMemory(k);
-	if (s->advance() != -1)
-		out->merge(s);
-	else	delete s;
+	auto_ptr<Source> s = memory.openMemory(k, forward);
+	assert (s.get()); // always works
 	
-	if (out->skiptill(k) == -1)
-	{
-		delete out;
-		out = 0;
-	}
+	// only possible error is eof
+	if (s->advance() != -1) out->merge(s.release());
+	// else kill it on scope out
 	
-	return out;
+	if (out->skiptill(k, forward) == -1)
+		return auto_ptr<Walker>(new Failer(errno));
+	
+	return auto_ptr<Walker>(out);
 }
 
-Writer* Writer::open(const string& db, const Parameters& p, int mode)
+auto_ptr<Writer> Writer::open(const string& db, const Parameters& p, int mode)
 {
-	Master* m = new Master;
-	if (m->init(db, p, mode) != 0)
-	{
-		delete m;
-		return 0;
-	}
-	
-	return m;
+	auto_ptr<Master> m(new Master);
+	if (m->init(db, p, mode) == 0)
+		return auto_ptr<Writer>(m);
+	// return 0
 }
 
 }

@@ -1,4 +1,4 @@
-/*  $Id: Merger.cpp,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id: Merger.cpp,v 1.3 2003-04-24 23:52:36 terpstra Exp $
  *  
  *  Merger.cpp - Combine segments to obtain a database view
  *  
@@ -49,8 +49,17 @@ int Merger::advance()
 	// Did we last consume an empty queue?
 	if (point == eov)
 	{
-		errno = 0;
-		return -1;
+		if (restart != 0)
+		{	// tell the user the first element is there
+			point = restart;
+			restart = 0;
+			return 0;
+		}
+		else
+		{	// we are at the eof
+			errno = 0;
+			return -1;
+		}
 	}
 	
 	if (point == bov)
@@ -102,11 +111,11 @@ int Merger::advance()
 		// The key with the most in common must be smaller
 		if (ps->dup < ms->dup)
 		{	// min has more in common!
-			point->min = ms;
+			point->min = forward ? ms : ps;
 		}
 		else if (ps->dup > ms->dup)
 		{	// point has more in common
-			point->min = ps;
+			point->min = forward ? ps : ms;
 		}
 		else
 		{	// string compare
@@ -129,19 +138,19 @@ int Merger::advance()
 			
 			if (*mt < *pt)
 			{	// min is smaller.
-				point->min = ms;
+				point->min = forward ? ms : ps;
 			}
 			else if (*mt > *pt)
 			{	// point is smaller
-				point->min = ps;
+				point->min = forward ? ps : ms;
 			}
 			else if (ml < pl)
 			{	// point is longest, so min is smaller
-				point->min = ms;
+				point->min = forward ? ms : ps;
 			}
 			else
 			{
-				point->min = ps;
+				point->min = forward ? ps : ms;
 			}
 		}
 		
@@ -203,7 +212,7 @@ int Merger::advance()
 	}
 }
 
-int Merger::skiptill(const string& k)
+int Merger::skiptill(const string& k, bool forward)
 {
 	bov = &*sources.begin();
 	eov = bov + sources.size();
@@ -214,8 +223,31 @@ int Merger::skiptill(const string& k)
 		point->min = point->source;
 	}
 	
-	while (advance() != -1)
-		if (key >= k) return 0;
+	if (forward)
+	{
+		// !!! this can be much quicker
+		while (advance() != -1)
+		{
+			if (key >= k)
+			{
+				restart = point;
+				point = eov;
+				return 0;
+			}
+		}
+	}
+	else
+	{
+		while (advance() != -1)
+		{
+			if (key < k)
+			{
+				restart = point;
+				point = eov;
+				return 0;
+			}
+		}
+	}
 	
 	return -1;
 }
