@@ -114,7 +114,7 @@
 
 <xsl:template name="summary-post">
  <xsl:apply-templates select="email" mode="simple"/>
- <xsl:text>'s post on</xsl:text>
+ <xsl:text>'s post on </xsl:text>
  <xsl:value-of select="time"/>
 </xsl:template>
 
