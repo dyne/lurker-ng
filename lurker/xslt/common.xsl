@@ -226,6 +226,8 @@
 <!-- Format summary lists -->
 
 <xsl:template name="msg-thread">
+ <xsl:param name="alt" select="$malt"/>
+ 
  <xsl:element name="a">
   <xsl:attribute name="class">thm</xsl:attribute>
   <xsl:attribute name="href">
@@ -250,7 +252,9 @@
   </xsl:attribute>
   
   <xsl:element name="img">
-   <xsl:attribute name="alt"><xsl:value-of select="$malt"/></xsl:attribute>
+   <xsl:attribute name="alt">
+    <xsl:value-of select="$alt"/>
+   </xsl:attribute>
    
    <xsl:attribute name="title">
     <xsl:choose>

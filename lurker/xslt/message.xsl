@@ -6,8 +6,17 @@
 
 <!-- Format the navigation graphics -->
 
-<xsl:template match="prev"><xsl:call-template name="msg-thread"/></xsl:template>
-<xsl:template match="next"><xsl:call-template name="msg-thread"/></xsl:template>
+<xsl:template match="prev">
+ <xsl:call-template name="msg-thread">
+  <xsl:with-param name="alt" select="'&lt;-'"/>
+ </xsl:call-template>
+</xsl:template>
+
+<xsl:template match="next">
+ <xsl:call-template name="msg-thread">
+  <xsl:with-param name="alt" select="'-&gt;'"/>
+ </xsl:call-template>
+</xsl:template>
 
 <xsl:template name="navigate-fields">
  <div align="right">
@@ -17,7 +26,7 @@
    <xsl:apply-templates select="threading/prev"/>
   </xsl:if>
   <xsl:if test="not(threading/prev)">
-   <img src="../imgs/a.png" alt="."/>
+   <img src="../imgs/a.png" alt=".."/>
   </xsl:if>
 
   <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;</xsl:text>
@@ -100,7 +109,7 @@
    <xsl:apply-templates select="threading/next"/>
   </xsl:if>
   <xsl:if test="not(threading/next)">
-   <img src="../imgs/a.png" alt="."/>
+   <img src="../imgs/a.png" alt=".."/>
   </xsl:if>
  </div>
  <hr id="snippit"/>
@@ -110,16 +119,35 @@
 
 <!-- Format mailing list information -->
 
-<xsl:template name="list-format">
- <a href="../mindex/{string(floor(number(offset) div 20)*20)}@{id}.{$ext}#{../id}">
-  <xsl:value-of select="email/@name"/><xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;#8722;&amp;nbsp;</xsl:text><xsl:value-of select="$message"/><xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>#<xsl:value-of select="offset"/>
- </a>
-</xsl:template>
-
 <xsl:template match="list" mode="message">
- <xsl:if test="position()!=1">, </xsl:if><xsl:call-template name="list-format"/>
-</xsl:template>
+ <xsl:if test="position() != 1">, </xsl:if>
 
+ <a href="../mindex/{string(floor(number(offset) div 20)*20)}@{id}.{$ext}#{../id}">
+  <xsl:value-of select="email/@name"/>
+  <xsl:text>&#160;&#8722;&#160;</xsl:text>
+  <xsl:value-of select="$message"/>
+  <xsl:text>&#160;</xsl:text>
+  <xsl:text>#</xsl:text>
+  <xsl:value-of select="offset"/>
+ </a>
+ <xsl:text>&#160;</xsl:text>
+
+ <!-- Draw the prev link - otherwise, draw an image with the same size -->
+ <xsl:if test="prev">
+  <xsl:apply-templates select="prev"/>
+ </xsl:if>
+ <xsl:if test="not(prev)">
+  <img src="../imgs/a.png" alt=".."/>
+ </xsl:if>
+ 
+ <!-- Draw the next link - otherwise, draw an image with the same size -->
+ <xsl:if test="next">
+  <xsl:apply-templates select="next"/>
+ </xsl:if>
+ <xsl:if test="not(next)">
+  <img src="../imgs/a.png" alt=".."/>
+ </xsl:if>
+</xsl:template>
 
 <!-- Format headers for the message -->
 
@@ -310,8 +338,7 @@
    <xsl:text> </xsl:text>
    <xsl:value-of select="$mailboxof"/>:
   </b>
-   <xsl:text> </xsl:text>
-   <xsl:apply-templates select="list" mode="message"/>
+  <xsl:apply-templates select="list" mode="message"/>
  </div>
  <hr/>
 
