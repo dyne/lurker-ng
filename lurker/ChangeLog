@@ -21,6 +21,7 @@ v0.1d:
 	Mailing lists are refered to by name in the UI instead of ID
 	Include version information in pages
 	Added command-line option to output import speed statistics
+	Made error message about direct CGI invocation more informative
 	Fixed a bug where adjacent list items in the expiry heap led to
 		a SIGBUS error on swap
 
