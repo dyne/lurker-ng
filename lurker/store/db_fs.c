@@ -1,4 +1,4 @@
-/*  $Id: db_fs.c,v 1.1 2002-06-23 18:11:47 terpstra Exp $
+/*  $Id: db_fs.c,v 1.2 2002-06-24 11:06:25 terpstra Exp $
  *  
  *  db_fs.c - A flatfile database wrapper that just uses the filesystem
  *  
@@ -51,8 +51,7 @@ const char* my_fs_filename(const char* keyword)
 	
 	for (w = &buf[3]; *keyword; keyword++)
 	{
-		if ((*keyword >= '0' && *keyword <= '9') ||
-		    (*keyword >= 'a' && *keyword <= 'z'))
+		if (*keyword >= 'a' && *keyword <= 'z')
 		{
 			*w++ = *keyword;
 		}
