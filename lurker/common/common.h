@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.16 2002-07-12 13:17:03 terpstra Exp $
+/*  $Id: common.h,v 1.17 2003-03-30 13:54:49 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -54,33 +54,41 @@ typedef long time_t;
 #if SIZEOF_CHAR == 1
 typedef unsigned char lu_byte;
 #else
-#error Need a byte type
+ #error Need a byte type
 #endif
 
 #if SIZEOF_SHORT == 2
 typedef unsigned short lu_word;
-#elif SIZEOF_INT == 2
+#else
+#if SIZEOF_INT == 2
 typedef unsigned int lu_word;
 #else
-#error Need a word type
+ #error Need a word type
+#endif
 #endif
 
 #if SIZEOF_INT == 4
 typedef unsigned int lu_quad;
-#elif SIZEOF_LONG == 4
+#else
+#if SIZEOF_LONG == 4
 typedef unsigned long lu_quad;
 #else
-#error Need a quad type
+ #error Need a quad type
+#endif
 #endif
 
 #if SIZEOF_LONG == 8
 typedef unsigned long lu_addr;
-#elif SIZEOF_OFF_T == 8
+#else
+#if SIZEOF_OFF_T == 8
 typedef off_t lu_addr;
-#elif SIZEOF_LONG_LONG == 8
+#else
+#if SIZEOF_LONG_LONG == 8
 typedef unsigned long long lu_addr;
 #else
-#error Need an 64bit type
+ #error Need an 64bit type
+#endif
+#endif
 #endif
 
 #ifdef HAVE_ERRNO_H
