@@ -133,19 +133,21 @@
    
    
    <div class="body">
-    <table class="index">
-     <col width="60%" align="left"/>
-     <col width="30%" align="left"/>
-     <col width="8%" align="right"/>
-     <col width="2%" align="right"/>
-     <tr>
-      <th><xsl:value-of select="$new-threads"/></th>
-      <th><xsl:value-of select="$recent-poster"/></th>
-      <th><xsl:value-of select="$activity-chart"/></th>
-      <th align="right"><xsl:value-of select="$post-count"/></th>
-     </tr>
-     <xsl:apply-templates mode="newthreads" select="row"/>
-    </table>
+    <div class="mozbug">
+     <table class="index">
+      <col width="60%" align="left"/>
+      <col width="30%" align="left"/>
+      <col width="8%" align="right"/>
+      <col width="2%" align="right"/>
+      <tr>
+       <th><xsl:value-of select="$new-threads"/></th>
+       <th><xsl:value-of select="$recent-poster"/></th>
+       <th><xsl:value-of select="$activity-chart"/></th>
+       <th align="right"><xsl:value-of select="$post-count"/></th>
+      </tr>
+      <xsl:apply-templates mode="newthreads" select="row"/>
+     </table>
+    </div>
     
 <!-- this annoys me
     <br/>

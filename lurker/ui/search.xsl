@@ -120,17 +120,19 @@
    
    
    <div class="body">
-    <table class="index">
-     <col width="60%" align="left"/>
-     <col width="30%" align="left"/>
-     <col width="10%" align="right"/>
-     <tr>
-      <th><xsl:value-of select="$subject"/></th>
-      <th><xsl:value-of select="$author"/></th>
-      <th><xsl:value-of select="$date"/>&#160;(UTC)</th>
-     </tr>
-     <xsl:apply-templates mode="message" select="row"/>
-    </table>
+    <div class="mozbug">
+     <table class="index">
+      <col width="60%" align="left"/>
+      <col width="30%" align="left"/>
+      <col width="10%" align="right"/>
+      <tr>
+       <th><xsl:value-of select="$subject"/></th>
+       <th><xsl:value-of select="$author"/></th>
+       <th><xsl:value-of select="$date"/>&#160;(UTC)</th>
+      </tr>
+      <xsl:apply-templates mode="message" select="row"/>
+     </table>
+    </div>
    </div>
    
    

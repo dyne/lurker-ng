@@ -171,18 +171,28 @@ h1.group {
   margin: 0px;
 }
 
-table.index {
+/* wrap this around the table to fix progressive rendering in mozilla */
+div.mozbug { 
+  margin: 0px;
+  padding: 0px;
   border: 1px solid #000;
+}
+
+table.index {
+/* broken in mozilla; makes gaps in thread rows */
+/*  border: 1px solid #000; */
   background-color: white;
   width: 100%;
 }
 
 table.index td {
   vertical-align: middle;
+  padding: 0px 5px 0px 5px;
 }
 
 table.index th {
   background-color: #a8a8a8;
+  padding: 0px 5px 0px 5px;
 }
 
 td.chart img {
