@@ -1,4 +1,4 @@
-/*  $Id: Keyword.cpp,v 1.4 2003-04-25 16:38:18 terpstra Exp $
+/*  $Id: Keyword.cpp,v 1.5 2003-04-25 20:16:21 terpstra Exp $
  *  
  *  Keyword.cpp - Helper which can stream keywords
  *  
@@ -46,7 +46,7 @@ string Keyword::pull(int n, vector<Summary>& o)
 		o.push_back(id);
 		--n;
 	}
-	if (ok == -1)
+	if (ok == -1 && errno != 0)
 		return string("Walker::advance:") + strerror(errno);
 	
 	return "";
