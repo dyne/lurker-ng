@@ -11,7 +11,6 @@
  <a href="../message/{summary/mid}.{$ext}">
   <xsl:element name="img">
    <xsl:attribute name="alt">M</xsl:attribute>
-   <xsl:attribute name="border">0</xsl:attribute>
    
    <xsl:attribute name="title">
     <xsl:apply-templates select="summary" mode="post"/>
@@ -70,7 +69,7 @@
    <a href="mailto:{reply}">(<xsl:value-of select="$reply"/>)</a>
   </xsl:if>
   <xsl:if test="not(reply)">
-   (<xsl:value-of select="$reply"/>)
+   <span class="na">(<xsl:value-of select="$reply"/>)</span>
   </xsl:if>
   <xsl:if test="threading/next">
    <xsl:apply-templates select="threading/next" mode="snippet"/>
@@ -99,30 +98,28 @@
 </xsl:template>
 
 <xsl:template match="list" mode="multiple">
- <li> <xsl:call-template name="list-offset"/></li>
+ <li><xsl:call-template name="list-offset"/></li>
 </xsl:template>
 
 
 <!-- Format headers for the message -->
 
 <xsl:template name="header-fields">
- <table>
-  <col width="1*"/>
-  <col width="100%"/>
+ <table class="h-fields">
   <tr>
-   <th valign="top" align="left"><xsl:value-of select="$author"/>:</th>
-   <td><xsl:apply-templates select="email" mode="list"/></td>
+   <th><xsl:value-of select="$author"/>:</th>
+   <td><xsl:apply-templates select="from/email" mode="list"/></td>
   </tr>
-  <tr><th valign="top" align="left"><xsl:value-of select="$date"/>:</th><td><xsl:value-of select="time"/></td></tr>
-  <tr><th valign="top" align="left"><xsl:value-of select="$to"/>:</th><td><xsl:apply-templates mode="list" select="to"/></td></tr>
+  <tr><th><xsl:value-of select="$date"/>:</th><td><xsl:value-of select="time"/></td></tr>
+  <tr><th><xsl:value-of select="$to"/>:</th><td><xsl:apply-templates mode="list" select="to"/></td></tr>
   <xsl:if test="/message/cc">
-   <tr><th valign="top" align="left"><xsl:value-of select="$cc"/>:</th><td><xsl:apply-templates mode="list" select="cc"/></td></tr>
+   <tr><th><xsl:value-of select="$cc"/>:</th><td><xsl:apply-templates mode="list" select="cc"/></td></tr>
   </xsl:if>
   <xsl:if test="threading/inreplyto">
-   <tr><th valign="top" align="left"><xsl:value-of select="$irt"/>:</th><td><xsl:apply-templates mode="list" select="threading/inreplyto/summary"/></td></tr>
+   <tr><th><xsl:value-of select="$irt"/>:</th><td><xsl:apply-templates mode="list" select="threading/inreplyto/summary"/></td></tr>
   </xsl:if>
   <xsl:if test="threading/replies">
-   <tr><th valign="top" align="left"><xsl:value-of select="$fus"/>:</th><td><xsl:apply-templates mode="list" select="threading/replies/summary"/></td></tr>
+   <tr><th><xsl:value-of select="$fus"/>:</th><td><xsl:apply-templates mode="list" select="threading/replies/summary"/></td></tr>
   </xsl:if>
  </table>
 </xsl:template>
@@ -181,7 +178,6 @@
 </xsl:template>
 
 <xsl:template match="message" mode="body">
- <p/>
  <h2>
   <a href="../thread/{thread}.{$ext}#{id}">
    <img border="0" src="../imgs/tree.png" alt="{$threading}:"/>
@@ -190,17 +186,16 @@
   </a>
  </h2>
 
- <p/>
  <xsl:if test="threading/snippet/@cols &gt; 8">
   <xsl:call-template name="navigate-fields"/>
   <hr/>
   <xsl:call-template name="header-fields"/>
  </xsl:if>
  <xsl:if test="not(threading/snippet/@cols &gt; 8)">
-  <table>
+  <table width="100%">
    <tr>
-    <td width="100%" valign="top" nowrap="1"><xsl:call-template name="header-fields"/></td>
-    <td valign="top" nowrap="1"><xsl:call-template name="navigate-fields"/></td>
+    <td width="100%" nowrap="1"><xsl:call-template name="header-fields"/></td>
+    <td nowrap="1"><xsl:call-template name="navigate-fields"/></td>
    </tr>
   </table>
  </xsl:if>
@@ -217,11 +212,11 @@
   <xsl:apply-templates select="list" mode="offset"/>
  </xsl:if>
  <xsl:if test="count(list) != 1">
-  these mailing lists:
+  <xsl:value-of select="$theselists"/>:
   <ul><xsl:apply-templates select="list" mode="multiple"/></ul>
  </xsl:if>
 
- <p/><hr/>
+ <hr/>
  <blockquote>
   <xsl:apply-templates select="mime"/>
  </blockquote>

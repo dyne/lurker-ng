@@ -37,13 +37,13 @@
   </head>
   <body>
    <!-- Server Header -->
-   <p/><xsl:apply-templates select="*/server" mode="header"/>
+   <h1><xsl:apply-templates select="*/server" mode="header"/></h1>
 
    <!-- Request Body -->
    <xsl:apply-templates mode="body"/>
 
    <!--  Server Footer -->
-   <p/><hr/>
+   <hr/>
    <div class="center">
     <xsl:apply-templates select="*/server" mode="footer"/>
    </div>

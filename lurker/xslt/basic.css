@@ -1,7 +1,7 @@
-h1 { text-align:center; font-family:HoratioDMed, Tahoma, Arial, sans-serif; font-size:160% }
+h1 { text-align:center; font-family:HoratioDMed, Tahoma, Arial, sans-serif; font-size:200% }
 h2 { width:100%; text-indent:8%; background-color:#BBF; font-size:140%;
      margin-top:0; margin-bottom:1.2em; font-family:Times New Roman, serif }
-hr { color:black }
+hr { color:black; clear:both }
 table { border-collapse:collapse; border:hidden }
 .center { text-align:center }
 
@@ -9,19 +9,20 @@ tr.header { background-color:#BBF; font-size:120% }  /* headers for splash page 
 hr.search { width:500px; color:#66B; height:3px }  /* search component seperator */
 
 /* Mark the image as selected */
-img.selected { background-color:#77F; }
-img.drift    { background-color:#FAC; }
+.selected { background-color:#77F; }
+/* Mark the image as drifted */
+.drift    { background-color:#DDD; }
 
 #listblock { width:100%; text-align:center }  /* contains splash page list tables */
 
 .listtable { border:2px solid black }
 
-html { font-family:Arial, sans-serif }
-th { text-align:left; font-weight:bold; font-family:Times New Roman, serif }
-table { text-align:left; vertical-align:top; padding:2px 8px;  }
+tr { vertical-align:top; text-align:left; font-family:Arial, sans-serif }
+th { vertical-align:center; text-align:center;
+     font-weight:bold; font-family:Times New Roman, serif }
 
-tr.row1 { background-color:#DDD; text-align:left; vertical-align:top; padding:0px 0px; font-family:Arial, sans-serif }
-tr.row2 { background-color:#EEE; text-align:left; vertical-align:top; padding:0px 0px; font-family:Arial, sans-serif }
+tr.row1 { background-color:#DDD; padding:0px 0px }
+tr.row2 { background-color:#EEE; padding:0px 0px }
 
 dd { margin-left:2em; margin-right:3em }
 
@@ -29,3 +30,10 @@ a:link    { color:#11F }
 a:visited { color:#009 }
 a:hover   { color:#F00 }
 a:active  { color:#A00 }
+
+img { border:0px; margin:0px }
+.na { color:#BBB }
+
+.h-fields TH { text-align:right; padding-right:3px }
+
+ul { margin-top:0 }

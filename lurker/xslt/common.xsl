@@ -165,13 +165,13 @@
 </xsl:template>
 
 <xsl:template match="server" mode="header">
- <h1><a href="../splash/index.{$ext}">
+ <a href="../splash/index.{$ext}">
   Lurker@<xsl:value-of select="hostname"/>
- </a></h1>
+ </a>
 </xsl:template>
 
 <xsl:template match="server" mode="footer">
- <xsl:copy-of select="$adminby"/><xsl:apply-templates select="email"/>
+ <xsl:copy-of select="$adminby"/> <xsl:apply-templates select="email"/>
 </xsl:template>
 
 </xsl:stylesheet>
