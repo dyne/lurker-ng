@@ -1,4 +1,4 @@
-/*  $Id: Cache.cpp,v 1.9 2003-06-25 11:58:40 terpstra Exp $
+/*  $Id: Cache.cpp,v 1.10 2003-06-25 17:32:42 terpstra Exp $
  *  
  *  Cache.h - Helper which transforms xml -> html and caches files
  *  
@@ -125,7 +125,7 @@ Cache::Cache(const Config& cfg, const string& command, const string& parameter)
 			cout << "Status: 200 OK\r\n";
 			cout <<	"Content-Type: text/html\r\n\r\n";
 			cout << error(_("Creating cache file"), parameter + ":" + strerror(errno),
-				_("Perhaps the user which runs lurker.cgi does not have write"
+				_("Perhaps the user which runs lurker.cgi does not have write "
 				  "permissions to this directory."));
 			exit(1);
 		}
