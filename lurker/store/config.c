@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.10 2002-05-11 19:24:59 terpstra Exp $
+/*  $Id: config.c,v 1.11 2002-05-21 13:25:48 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -478,7 +478,7 @@ static int my_config_load_config()
 				continue;
 			}
 			
-			if (i < 0 || i >= 0xFFFFUL)
+			if (i < 0 || i >= 0xFFFEUL)
 			{
 				fprintf(stderr, "%s:%d: error: "
 					"id is not within bounds\n",

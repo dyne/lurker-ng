@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.27 2002-05-11 19:24:59 terpstra Exp $
+/*  $Id: mbox.c,v 1.28 2002-05-21 13:25:48 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -398,6 +398,12 @@ static int my_mbox_process_mbox(
 	
 	/* Notify the cache about an import */
 	if (lu_expiry_notice_import(list->id) != 0)
+	{
+		lu_mbox_destroy_message(&m);
+		return -1;
+	}
+	
+	if (lu_expiry_notice_import(LU_EXPIRY_ANY_LIST) != 0)
 	{
 		lu_mbox_destroy_message(&m);
 		return -1;

@@ -1,4 +1,4 @@
-/*  $Id: expiry.c,v 1.5 2002-05-11 19:24:59 terpstra Exp $
+/*  $Id: expiry.c,v 1.6 2002-05-21 13:25:48 terpstra Exp $
  *  
  *  expiry.c - Record when pages should be destroyed
  *  
@@ -25,7 +25,7 @@
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
 
-/* #define DEBUG 1 */
+#define DEBUG 1
 
 #include "common.h"
 #include "io.h"
@@ -86,6 +86,19 @@ static long my_expiry_lists = 0;
 #define LEFT(i)		(i << 1)
 #define RIGHT(i)	((i << 1) | 1)
 
+static lu_word my_expiry_find_head(lu_word list)
+{
+	Lu_Config_List* ls;
+	
+	assert (list != LU_EXPIRY_NO_LIST);
+	if (list == LU_EXPIRY_ANY_LIST)
+		return 1;
+	
+	ls = lu_config_find_list(list);
+	assert(ls);
+	return ls->cache_head;
+}
+
 inline void my_expiry_update_pos(lu_word x)
 {
 	lu_word nl, pl, nt, pt, ls;
@@ -96,8 +109,7 @@ inline void my_expiry_update_pos(lu_word x)
 		my_expiry_heap[nl].prev_list = x;
 	else if ((ls = my_expiry_heap[x].list) != LU_EXPIRY_NO_LIST)
 	{
-		lu_word ch = lu_config_find_list(ls)->cache_head;
-		my_expiry_list[ch].tail = x;
+		my_expiry_list[my_expiry_find_head(ls)].tail = x;
 	}
 	
 	if ((pt = my_expiry_heap[x].prev_time) != 0)
@@ -180,8 +192,7 @@ static int my_expiry_pop(lu_word x)
 	if (nl)	my_expiry_heap[nl].prev_list = pl;
 	else if ((ls = my_expiry_heap[x].list) != LU_EXPIRY_NO_LIST)
 	{
-		lu_word ch = lu_config_find_list(ls)->cache_head;
-		my_expiry_list[ch].tail = pl;
+		my_expiry_list[my_expiry_find_head(ls)].tail = pl;
 	}
 	
 	/* Pull it out of the list deletion list */
@@ -325,7 +336,7 @@ int lu_expiry_record_file(
 	my_expiry_heap[where].prev_list = 0;
 	if (list_watch != LU_EXPIRY_NO_LIST)
 	{
-		what_list = lu_config_find_list(list_watch)->cache_head;
+		what_list = my_expiry_find_head(list_watch);
 		old_list_tail = my_expiry_list[what_list].tail;
 		my_expiry_list[what_list].tail = where;
 		my_expiry_heap[where].prev_list = old_list_tail;
@@ -339,7 +350,7 @@ int lu_expiry_record_file(
 int lu_expiry_notice_import(
 	lu_word	list)
 {
-	lu_word what_list = lu_config_find_list(list)->cache_head;
+	lu_word what_list = my_expiry_find_head(list);
 	
 	while (my_expiry_list[what_list].tail)
 	{
@@ -383,6 +394,7 @@ int lu_expiry_open()
 {
 	int		error;
 	My_Expiry_List	list;
+	My_Expiry_List	head[2];
 	Lu_Config_List* clist;
 	
 	my_expiry_skip_watch = 0;
@@ -416,21 +428,23 @@ int lu_expiry_open()
 	my_expiry_heap--; /* So we can address it from 1 */
 	my_expiry_heaps = lseek(my_expiry_heap_fd, 0, SEEK_END) / sizeof(My_Expiry_Heap);
 	
-	error = read(my_expiry_list_fd, &list, sizeof(My_Expiry_List));
+	error = read(my_expiry_list_fd, &head[0], sizeof(My_Expiry_List)*2);
 	if (error == -1)
 	{
-		perror("reading the expiry list");
+		perror("reading the expiry head");
 		return -1;
 	}
 	
-	my_expiry_lists = 1;
+	my_expiry_lists = 2;
 	if (error == 0)
 	{	/* new file */
-		memset(&list, 0, sizeof(My_Expiry_List));
-		if (write(my_expiry_list_fd, &list, sizeof(My_Expiry_List))
-			!= sizeof(My_Expiry_List))
+		memset(&head[0], 0, 2*sizeof(My_Expiry_List));
+		head[1].list = LU_EXPIRY_ANY_LIST;
+		
+		if (write(my_expiry_list_fd, &head[0], sizeof(My_Expiry_List)*2)
+			!= sizeof(My_Expiry_List)*2)
 		{
-			perror("writing the expiry list");
+			perror("writing the expiry head");
 			return -1;
 		}
 	}

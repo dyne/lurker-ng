@@ -1,4 +1,4 @@
-/*  $Id: expiry.h,v 1.1 2002-05-03 05:21:27 terpstra Exp $
+/*  $Id: expiry.h,v 1.2 2002-05-21 13:25:48 terpstra Exp $
  *  
  *  expiry.h - Record when pages should be destroyed
  *  
@@ -33,6 +33,7 @@ extern int lu_expiry_quit (void);
 /*------------------------------------------------- Public expiry methods */
 
 #define LU_EXPIRY_NO_LIST       0xFFFFUL
+#define	LU_EXPIRY_ANY_LIST	0xFFFEUL
 
 /** Record the creation of a file for later removal.
  *  Return: 1 - don't cache, 0 - do cache
@@ -41,7 +42,7 @@ extern int lu_expiry_record_file(
 	const char*	path,
 	long		size,
 	time_t		ttl,
-	lu_word		list_watch);
+	lu_word		what_list);
 
 /** Report to the expiry subsystem that a message was imported.
  */

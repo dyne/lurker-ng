@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.47 2002-05-11 19:24:59 terpstra Exp $
+/*  $Id: service.c,v 1.48 2002-05-21 13:25:48 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1898,10 +1898,10 @@ static int my_service_splash(
 	}
 	
 	if (my_service_buffer_init(h, "text/xml\n", 1, 
-			2592000, LU_EXPIRY_NO_LIST) != 0) return -1;
-	if (my_service_xml_head(h)                  != 0) return -1;
-	if (my_service_buffer_write(h, "<splash>\n")!= 0) return -1;
-	if (my_service_server(h)                    != 0) return -1;
+			2592000, LU_EXPIRY_ANY_LIST) != 0) return -1;
+	if (my_service_xml_head(h)                   != 0) return -1;
+	if (my_service_buffer_write(h, "<splash>\n") != 0) return -1;
+	if (my_service_server(h)                     != 0) return -1;
 
 	for (	scan = lu_config_list; 
 		scan != lu_config_list + lu_config_lists; 
@@ -2039,9 +2039,7 @@ extern int lu_service_connection(st_netfd_t fd)
 #endif
 		
 		if (lu_expiry_record_file(cwd, h.sent, h.ttl, h.list))
-			st_write(h.fd, "0\n", 2, 5000000);
-		else
-			st_write(h.fd, "1\n", 2, 5000000);
+			unlink(cwd);
 	}
 	
 	free(h.buffer);
