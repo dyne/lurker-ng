@@ -188,7 +188,7 @@ lurker-index.1: lurker-index.sgml
   <refsect1>
     <title>SEE ALSO</title>
 
-    <para>lurker\-prune(1), lurker\-params(1), lurker\-list(1)</para>
+    <para>lurker\-prune(1), lurker\-params(1), lurker\-list(1), lurker\-search(1)</para>
     <para>lurker documentation on http://lurker.sourceforge.net/</para>
 
   </refsect1>
