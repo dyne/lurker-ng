@@ -1,12 +1,12 @@
 /*
  * Copyright 2002 Chris L. Bond.  All rights reserved.
- * $Id: stub.c,v 1.1 2002-01-28 06:03:46 cbond Exp $
+ * $Id: stub.c,v 1.2 2002-01-28 06:15:47 terpstra Exp $
  */
 
 #include <sys/param.h>
 #include <sys/types.h>
 
-#include <mail.h>
+#include <c-client/mail.h>
 
 /*
  * We'll stub out c-client's ``callback'' functions, since we

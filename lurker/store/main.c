@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.8 2002-01-27 01:47:27 terpstra Exp $
+/*  $Id: main.c,v 1.9 2002-01-28 06:15:47 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -25,12 +25,15 @@
 #include "keyword.h"
 #include "globals.h"
 #include "io.h"
+#include "message.h"
 
+#include <sys/types.h>
 #include <sys/un.h>
 #include <sys/socket.h>
+#include <string.h>
+#include <ctype.h>
 
 #include <st.h>
-#include <c-client/mail.h>
 
 #ifdef HAVE_SYSLOG_H
 #include <syslog.h>
@@ -139,6 +142,86 @@ static int lu_move_mbox_end(Mbox* mbox, List* list, off_t now)
 		return -1;
 	
 	return 0;
+}
+
+/*
+ * Determine where to split words, and index the
+ * results in the database with lu_push_keyword.
+ */
+static void index_keywords(char *buffer, size_t length)
+{
+	const char *word, *adv;
+
+	while (length > 0 && isspace(*buffer))
+	{
+		++buffer;
+		--length;
+	}
+
+	printf("%.*s", length, buffer);
+
+	/*
+	 * Words are split based on punctuation (ispunct()) and
+	 * spacing (isspace()).  A word with punctuation in it
+	 * will be split into segments--before and after the
+	 * punctuation occurs--as well as indexed as a whole.
+	 * E.g., `foo_bar' causes `foo,' `bar,' and `foo_bar' to
+	 * be indexed.
+	 *
+	 * !!! Finish this RIGHT NOW.
+	 */
+	for (word = adv = buffer; length > 0; ++adv, --length);
+}
+
+/*
+ * Traverse a message, looking for plaintext parts.  When
+ * such a part is located, we'll index all of the words
+ * it contains.
+ */
+void index_traverse(struct msg* in, struct mail_bodystruct* body)
+{
+	struct mail_body_part *p;		/* Filthy struct. */
+	size_t length;
+	char *buffer;
+	int nfree;
+
+	switch ((int)body->type)
+	{
+		case TYPEMESSAGE:
+			/*
+			 * This part contains an encapsulated message.
+			 */
+			if (strcasecmp(body->subtype, "rfc822"))
+				break;
+
+			index_traverse(in, body->nested.msg->body);
+			break;
+
+		case TYPETEXT:
+			/*
+			 * This is what we want to index -- stop.
+			 */
+			if (strcasecmp(body->subtype, "plain"))
+				break;
+
+			buffer = mail_select(in, body, &length, &nfree);
+			index_keywords(buffer, length);
+			if (nfree)
+				fs_give((void **)&buffer);
+
+			break;
+
+		case TYPEMULTIPART:
+			/*
+			 * Multipart message.  Look at the nested parts
+			 * and hopefully find some plaintext.
+			 */
+			for (p = body->nested.part; p != NULL; p = p->next)
+				index_traverse(in, &p->body);
+			break;
+		default:
+			break;
+	}
 }
 
 static void process_mbox(Mbox* mbox, List* list)
@@ -484,20 +567,3 @@ int main(int argc, const char* argv[])
 	
 	return 0;
 }
-
-/*!!! This should go away as soon as Chris figures out c-client */
-void mm_expunged(MAILSTREAM *stream,unsigned long number) {}
-long mm_diskerror(MAILSTREAM *stream,long errcode,long serious) {}
-void mm_lsub(MAILSTREAM *stream,int delimiter,char *name,long attributes) {}
-void mm_flags(MAILSTREAM *stream,unsigned long number) {}
-void mm_fatal(char *string) {}
-void mm_nocritical(MAILSTREAM *stream) {}
-void mm_notify(MAILSTREAM *stream,char *string,long errflg) {}
-void mm_searched(MAILSTREAM *stream,unsigned long number) {}
-void mm_status(MAILSTREAM *stream,char *mailbox,MAILSTATUS *status) {}
-void mm_login(NETMBX *mb,char *user,char *pwd,long trial) {}
-void mm_list(MAILSTREAM *stream,int delimiter,char *name,long attributes) {}
-void mm_critical(MAILSTREAM *stream) {}
-void mm_exists(MAILSTREAM *stream,unsigned long number) {}
-void mm_log(char *string,long errflg) {}
-void mm_dlog(char *string) {}

@@ -1,6 +1,6 @@
 /*
  * Copyright 2002 Chris L. Bond.  All rights reserved.
- * $Id: message.c,v 1.3 2002-01-28 06:11:27 cbond Exp $
+ * $Id: message.c,v 1.4 2002-01-28 06:15:47 terpstra Exp $
  */
 
 #include <sys/types.h>
@@ -144,7 +144,7 @@ mail_select(struct msg *in, struct mail_bodystruct *body, size_t *len, int *nfr)
 
 	switch ((int)body->encoding) {
 		case ENCQUOTEDPRINTABLE:
-			output = (char *(*)())rfc822_qprint;
+			output = (char *(*)(unsigned char*, unsigned long, unsigned long*))rfc822_qprint;
 			break;
 		case ENCBASE64:
 			output = (char *(*)())rfc822_base64;

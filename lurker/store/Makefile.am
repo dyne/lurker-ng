@@ -8,3 +8,4 @@ sbin_PROGRAMS = @PACKAGE@d
 	main.c globals.h records.h
 
 @PACKAGE@d_LDFLAGS = @STORAGE_LIBS@
+@PACKAGE@d_LDADD = ../common/libcommon.a

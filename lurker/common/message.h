@@ -1,15 +1,15 @@
 /*
  * Copyright 2002 Chris L. Bond.  All rights reserved.
- * $Id: message.h,v 1.1 2002-01-28 06:03:46 cbond Exp $
+ * $Id: message.h,v 1.2 2002-01-28 06:15:47 terpstra Exp $
  */
 
 #ifndef _MESSAGE_H_
 #define _MESSAGE_H_
 
 #include <sys/types.h>
-#include <mail.h>
-#include <rfc822.h>
-#include <fs.h>
+#include <c-client/mail.h>
+#include <c-client/rfc822.h>
+#include <c-client/fs.h>
 
 /*
  * The bare structure of a message, as well as the envelope,

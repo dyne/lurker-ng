@@ -64,6 +64,7 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PKG_CONFIG = @PKG_CONFIG@
+RANLIB = @RANLIB@
 VERSION = @VERSION@
 XSLT_CONFIG = @XSLT_CONFIG@
 am__include = @am__include@
@@ -83,6 +84,7 @@ sbin_PROGRAMS = @PACKAGE@d
 
 
 @PACKAGE@d_LDFLAGS = @STORAGE_LIBS@
+@PACKAGE@d_LDADD = ../common/libcommon.a
 subdir = store
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/config.h
@@ -93,8 +95,7 @@ PROGRAMS = $(sbin_PROGRAMS)
 am_@PACKAGE@d_OBJECTS = keyword.$(OBJEXT) config.$(OBJEXT) db.$(OBJEXT) \
 	main.$(OBJEXT)
 @PACKAGE@d_OBJECTS = $(am_@PACKAGE@d_OBJECTS)
-@PACKAGE@d_LDADD = $(LDADD)
-@PACKAGE@d_DEPENDENCIES =
+@PACKAGE@d_DEPENDENCIES = ../common/libcommon.a
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/common

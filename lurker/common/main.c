@@ -1,6 +1,6 @@
 /*
  * Copyright 2002 Chris L. Bond.  All rights reserved.
- * $Id: main.c,v 1.2 2002-01-28 06:11:27 cbond Exp $
+ * $Id: main.c,v 1.3 2002-01-28 06:15:47 terpstra Exp $
  */
 
 #include <stdio.h>
@@ -12,6 +12,8 @@
 int
 main(int argc, char **argv)
 {
+	return 0;
+#if 0
 	int fd, count;
 
 	if (argc < 3) {
@@ -41,4 +43,5 @@ main(int argc, char **argv)
 	}
 
 	return (0);
+#endif
 }

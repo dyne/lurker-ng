@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.9 2002-01-27 02:40:23 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.10 2002-01-28 06:15:47 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -31,6 +31,7 @@ AC_SUBST(dbdir)
 AC_ISC_POSIX
 AC_PROG_CC
 AM_PROG_CC_STDC
+AC_PROG_RANLIB
 
 AC_HEADER_STDC
 AC_HEADER_DIRENT
