@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.16 2002-06-21 18:19:03 terpstra Exp $
+/*  $Id: config.c,v 1.17 2002-07-11 20:20:49 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -71,7 +71,9 @@ char*	lu_config_list_host	= 0;
 char*	lu_config_admin_name	= 0;
 char*	lu_config_admin_address	= 0;
 
-DB_ENV*		lu_config_env   = 0;
+DB_ENV*		lu_config_env     = 0;
+Kap		lu_config_keyword = 0;
+
 Lu_Config_List*	lu_config_list  = 0;
 int		lu_config_lists = 0;
 
@@ -314,7 +316,7 @@ static long my_config_number_after(
 	return out;
 }
 
-static int my_config_open_mboxs()
+static int my_config_open_mboxs(void)
 {
 	Lu_Config_List* list;
 	Lu_Config_Mbox* mbox;
@@ -431,7 +433,7 @@ if (!var) \
 	var = val; \
 }
 
-static int my_config_load_config()
+static int my_config_load_config(void)
 {
 	Lu_Config_List** target_list;
 	Lu_Config_Mbox** target_mbox;
@@ -641,7 +643,7 @@ static int my_config_load_config()
 	return 0;
 }
 
-int my_config_sync_mbox()
+int my_config_sync_mbox(void)
 {
 	Lu_Config_List*	list;
 	Lu_Config_Mbox*	mbox;
@@ -740,7 +742,7 @@ int lu_config_init(const char* cfg)
 	return 0;
 }
 
-int lu_config_open()
+int lu_config_open(void)
 {
 	unsigned char		digest[16];
 	struct MD5Context	md5;
@@ -758,7 +760,7 @@ int lu_config_open()
 #endif
 	
 	MD5Init(&md5);
-	MD5Update(&md5, lu_config_dbdir, strlen(lu_config_dbdir));
+	MD5Update(&md5, (unsigned char*)lu_config_dbdir, strlen(lu_config_dbdir));
 	MD5Final(digest, &md5);
 	
 	/* Give ourselves a special and unique shared memory key */
@@ -796,6 +798,20 @@ int lu_config_open()
 		return -1;
 	}
 	
+	if ((error = kap_create(&lu_config_keyword, KAP_FAST)) != 0)
+	{
+		fprintf(stderr, _("Creating kap database: %s\n"),
+			kap_strerror(error));
+		return -1;
+	}
+	
+	if ((error = kap_open(lu_config_keyword, ".", "keyword")) != 0)
+	{
+		fprintf(stderr, _("Opening kap database: keyword: %s\n"),
+			kap_strerror(error));
+		return -1;
+	}
+	
 	if (my_config_sync_mbox() != 0)
 	{
 		return -1;
@@ -804,7 +820,7 @@ int lu_config_open()
 	return 0;
 }
 
-int lu_config_sync()
+int lu_config_sync(void)
 {
 	int error;
 	int fail = 0;
@@ -816,10 +832,17 @@ int lu_config_sync()
 		fail = -1;
 	}
 	
+	if ((error = kap_sync(lu_config_keyword)) != 0)
+	{
+		syslog(LOG_ERR, _("Syncing kap database: keyword: %s\n"),
+			db_strerror(error));
+		fail = -1;
+	}
+	
 	return fail;
 }
 
-int lu_config_close()
+int lu_config_close(void)
 {
 	int error;
 	int fail = 0;
@@ -838,10 +861,17 @@ int lu_config_close()
 		fail = -1;
 	}
 	
+	if ((error = kap_destroy(lu_config_keyword)) != 0)
+	{
+		syslog(LOG_ERR, _("Destroying kap database: keyword: %s\n"),
+			kap_strerror(error));
+		fail = -1;
+	}
+	
 	return fail;
 }
 
-int lu_config_quit()
+int lu_config_quit(void)
 {
 	return 0;
 }

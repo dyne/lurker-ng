@@ -1,4 +1,4 @@
-/*  $Id: config.h,v 1.13 2002-05-22 12:20:42 terpstra Exp $
+/*  $Id: config.h,v 1.14 2002-07-11 20:20:49 terpstra Exp $
  *  
  *  config.h - Knows how to load the config file
  *  
@@ -23,6 +23,8 @@
  */
 
 #include <db.h>
+#include <kap.h>
+
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -99,7 +101,8 @@ extern char* lu_config_list_host;
 extern char* lu_config_admin_name;
 extern char* lu_config_admin_address;
 
-extern DB_ENV* lu_config_env;
+extern DB_ENV*	lu_config_env;
+extern Kap	lu_config_keyword;
 
 extern long	lu_config_cache_cutoff;
 extern long	lu_config_cache_files;
