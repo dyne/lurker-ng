@@ -1,4 +1,4 @@
-/*  $Id: File.cpp,v 1.8 2003-05-06 14:32:32 terpstra Exp $
+/*  $Id: File.cpp,v 1.9 2003-05-14 12:35:43 terpstra Exp $
  *  
  *  File.cpp - Disk segment for commit'd inserts
  *  
@@ -111,6 +111,7 @@ int FileSource::loadBuf()
 #ifdef DEBUG
 		perror(__FILE__ ":" #__LINE__ ": read");
 #endif
+		if (errno == 0) errno = EAGAIN; // something obviously wrong
 		return -1;
 	}
 	
@@ -240,7 +241,13 @@ int FileSource::advance()
 		dup = *off;
 		++off;
 		
-		if (length != 0 || dup != 1) break; // (0, 1) == eof
+		if (length == 0)
+		{
+			if (dup == 0) break;
+			// (0, 1) == eof
+			assert (dup == 1);
+		}
+		else break;
 		
 		if (loadBuf() != 0) return -1;
 	}
