@@ -243,7 +243,21 @@
    <a href="mailto:{email/@address}">(<xsl:value-of select="email/@address"/>)</a>
   </xsl:if>
  </dt>
- <dd>[<xsl:value-of select="messages"/><xsl:value-of select="$mess"/>]
+ <dd><xsl:if test="number(messages) &gt; 0">
+      [ <a href="../mindex/{id}@{offset}.{$ext}">
+         <xsl:value-of select="messages"/>
+         <xsl:text> </xsl:text>
+         <xsl:value-of select="$mess"/>
+        </a>
+      ]
+      [ <a href="../lurker-search.cgi?query=lt%3A{id}&amp;format={$ext}">
+         <xsl:value-of select="$threads"/>
+        </a>
+      ]
+     </xsl:if>
+     <xsl:if test="number(messages) = 0">
+      [ 0 <xsl:value-of select="$mess"/> ]
+     </xsl:if>
      <xsl:text disable-output-escaping="yes">&amp;nbsp;&amp;nbsp;--&amp;nbsp;&amp;nbsp;</xsl:text>
      <I><xsl:value-of select="description"/></I></dd>
 </xsl:template>
