@@ -245,7 +245,13 @@ AC_DEFUN(DB3_CHECK,
     CFLAGS="$CFLAGS $search";
 
     AC_TRY_COMPILE(
-      [#include <db.h>],
+[
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
+#define _ISOC99_SOURCE
+
+#include <sys/types.h>
+#include <db.h>],
       [
 #if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2
 	return 0;
@@ -835,24 +841,6 @@ AC_DEFUN([AM_MAINTAINER_MODE],
 ]
 )
 
-#serial 1
-# This test replaces the one in autoconf.
-# Currently this macro should have the same name as the autoconf macro
-# because gettext's gettext.m4 (distributed in the automake package)
-# still uses it.  Otherwise, the use in gettext.m4 makes autoheader
-# give these diagnostics:
-#   configure.in:556: AC_TRY_COMPILE was called before AC_ISC_POSIX
-#   configure.in:556: AC_TRY_RUN was called before AC_ISC_POSIX
-
-undefine([AC_ISC_POSIX])
-
-AC_DEFUN([AC_ISC_POSIX],
-  [
-    dnl This test replaces the obsolescent AC_ISC_POSIX kludge.
-    AC_CHECK_LIB(cposix, strerror, [LIBS="$LIBS -lcposix"])
-  ]
-)
-
 
 # serial 1
 
@@ -941,6 +929,24 @@ case "x$am_cv_prog_cc_stdc" in
   *) CC="$CC $am_cv_prog_cc_stdc" ;;
 esac
 ])
+
+#serial 1
+# This test replaces the one in autoconf.
+# Currently this macro should have the same name as the autoconf macro
+# because gettext's gettext.m4 (distributed in the automake package)
+# still uses it.  Otherwise, the use in gettext.m4 makes autoheader
+# give these diagnostics:
+#   configure.in:556: AC_TRY_COMPILE was called before AC_ISC_POSIX
+#   configure.in:556: AC_TRY_RUN was called before AC_ISC_POSIX
+
+undefine([AC_ISC_POSIX])
+
+AC_DEFUN([AC_ISC_POSIX],
+  [
+    dnl This test replaces the obsolescent AC_ISC_POSIX kludge.
+    AC_CHECK_LIB(cposix, strerror, [LIBS="$LIBS -lcposix"])
+  ]
+)
 
 # Macro to add for using GNU gettext.
 # Ulrich Drepper <drepper@cygnus.com>, 1995.

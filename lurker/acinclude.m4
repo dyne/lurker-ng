@@ -232,7 +232,13 @@ AC_DEFUN(DB3_CHECK,
     CFLAGS="$CFLAGS $search";
 
     AC_TRY_COMPILE(
-      [#include <db.h>],
+[
+#define _XOPEN_SOURCE 500
+#define _BSD_SOURCE
+#define _ISOC99_SOURCE
+
+#include <sys/types.h>
+#include <db.h>],
       [
 #if DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2
 	return 0;
