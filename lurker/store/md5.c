@@ -20,11 +20,12 @@
  * Still in the public domain.
  */
 
+#include "common.h"
+#include "md5.h"
+
 #include <string.h>		/* for memcpy() */
 #include <sys/types.h>		/* for stupid systems */
 #include <netinet/in.h>		/* for ntohl() */
-
-#include "md5.h"
 
 #ifdef WORDS_BIGENDIAN
 void

@@ -23,8 +23,6 @@
 #ifndef MD5_H
 #define MD5_H
 
-#include "common.h"
-
 typedef lu_quad UWORD32;
 
 #define md5byte unsigned char

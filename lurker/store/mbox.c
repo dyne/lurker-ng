@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.21 2002-05-03 20:57:34 terpstra Exp $
+/*  $Id: mbox.c,v 1.22 2002-05-04 04:26:41 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -36,6 +36,7 @@
 #include "summary.h"
 #include "indexer.h"
 #include "expiry.h"
+#include "md5.h"
 
 #include <sys/types.h>
 #include <sys/param.h>
@@ -200,6 +201,40 @@ static char* my_mbox_strnstr(
 	return 0;
 }
 
+static void my_mbox_swallow(
+	struct MD5Context*	ctx, 
+	char*			buf, 
+	long 			len)
+{
+	char* e = buf + len;
+	char* s;
+	
+	s = buf;
+	while (s != e)
+	{
+		for (buf = s; s != e && *s >= 33 && *s <= 126; s++);
+		MD5Update(ctx, buf, s - buf);
+		for (; s != e && (*s < 33 || *s > 126); s++);
+	}
+}
+
+static void my_mbox_swallow_addr(
+	struct MD5Context*	ctx,
+	ADDRESS*		addr)
+{
+	while (addr)
+	{
+		if (addr->personal)
+			my_mbox_swallow(ctx, addr->personal, strlen(addr->personal));
+		if (addr->mailbox)
+			my_mbox_swallow(ctx, addr->mailbox,  strlen(addr->mailbox));
+		if (addr->host)
+			my_mbox_swallow(ctx, addr->host,     strlen(addr->host));
+		
+		addr = addr->next;
+	}
+}
+
 static int my_mbox_process_mbox(
 	Lu_Config_Mbox* mbox, 
 	Lu_Config_List* list, 
@@ -213,6 +248,8 @@ static int my_mbox_process_mbox(
 	char			message_id[LU_KEYWORD_LEN+1];
 	char			reply_to  [LU_KEYWORD_LEN+1];
 	int			error;
+	struct MD5Context	md5c;
+	unsigned char		digest[16];
 	
 	if (lu_mbox_map_message(mbox, &mbox->msg, mbox->length) != 0)
 		return -1;
@@ -313,6 +350,28 @@ static int my_mbox_process_mbox(
 	if (!strchr(&message_id[0], '@'))
 	{	/* We only like message-ids with an '@' in them. */
 		message_id[0] = 0;
+	}
+	
+	if (!message_id[0])
+	{	/* We need a message-id. Invent one with md5! */
+		MD5Init(&md5c);
+		my_mbox_swallow_addr(&md5c, m.env->from);
+		my_mbox_swallow_addr(&md5c, m.env->sender);
+		my_mbox_swallow_addr(&md5c, m.env->reply_to);
+		my_mbox_swallow_addr(&md5c, m.env->to);
+		my_mbox_swallow_addr(&md5c, m.env->cc);
+		my_mbox_swallow(&md5c, m.buffer + m.body->contents.offset, 
+			m.body->contents.text.size);
+		
+		MD5Final(digest, &md5c);
+		sprintf(&message_id[0], 
+			"%02x%02x%02x%02x%02x%02x%02x%02x"
+			"%02x%02x%02x%02x%02x%02x%02x%02x"
+			"@lurker.mid",
+			digest[0], digest[1], digest[2], digest[3],
+			digest[4], digest[5], digest[6], digest[7],
+			digest[8], digest[9], digest[10], digest[11],
+			digest[12], digest[13], digest[14], digest[15]);
 	}
 	
 	if (!reply_to[0] && m.env->in_reply_to)
