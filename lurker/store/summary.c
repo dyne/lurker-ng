@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.6 2002-02-10 21:57:39 terpstra Exp $
+/*  $Id: summary.c,v 1.7 2002-02-12 07:04:43 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -719,6 +719,7 @@ int lu_summary_write_variable(
 	int	nulls;
 	int	got;
 	int	have;
+	int	my_var_fd;
 	
 	message_id	mask;
 	off_t		offset;
@@ -726,10 +727,21 @@ int lu_summary_write_variable(
 	mask = 0xFFFFU;
 	mask <<= (sizeof(message_id)*8-16);
 	
+	/* We need a duplicate handle b/c the other thread could be 
+	 * importing while we are doing this.
+	 */
+	my_var_fd = open("variable.flat", O_RDONLY | O_BINARY);
+		
+	if (my_var_fd == -1)
+	{
+		return -1;
+	}
+	
 	offset = flat_offset & ~mask;
 	
-	if (lseek(my_summary_variable_fd, offset, SEEK_SET) != offset)
+	if (lseek(my_var_fd, offset, SEEK_SET) != offset)
 	{
+		close(my_var_fd);
 		return -1;
 	}
 	
@@ -737,7 +749,7 @@ int lu_summary_write_variable(
 	have  = 0;
 	while (nulls < 3)
 	{
-		got = read(my_summary_variable_fd, &buf[0], sizeof(buf));
+		got = read(my_var_fd, &buf[0], sizeof(buf));
 		if (got <= 0) break;
 		e = &buf[got];
 		
@@ -811,6 +823,7 @@ int lu_summary_write_variable(
 	
 	write(arg, "/>\n");
 	
+	close(my_var_fd);
 	return 0;
 }
 
