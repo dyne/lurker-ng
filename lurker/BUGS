@@ -3,15 +3,14 @@ Ideas:
 
 Unfulfilled requirements:
 	Date goto in mindex
+	Hit prediction
 
 	lurkerctrl
 		show status of lurker
 		stop/start request processing
 		dump cache files
-	Better packing of tree
 
-	Hit prediction
-	Thread drift indicator
+	Better packing of tree
 
 	If we get an HTML only email, we don't do anything smart - just
 	escape all the tags. This is ok, but it would be nice if we stripped
