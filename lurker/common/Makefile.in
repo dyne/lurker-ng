@@ -72,6 +72,7 @@ am__include = @am__include@
 am__quote = @am__quote@
 dbdir = @dbdir@
 install_sh = @install_sh@
+urldir = @urldir@
 wwwdir = @wwwdir@
 
 noinst_LIBRARIES = libcommon.a

@@ -4,4 +4,4 @@ AddType text/xsl .xsl
 AddType text/xml .xml
 AddDefaultCharset utf-8
 
-ErrorDocument 404 /lurker/lurker.cgi
+ErrorDocument 404 @urldir@/lurker.cgi

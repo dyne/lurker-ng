@@ -838,6 +838,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-wwwdir           www directory (default: PREFIX/var/www/lurker)
+  --with-url              url location (default: http://this.host/lurker)
   --with-dbdir            db directory (default: PREFIX/var/lib/lurker)
   --with-libiconv-prefix=DIR  search for libiconv in DIR/include and DIR/lib
 
@@ -1566,6 +1567,19 @@ if test "x$with_wwwdir" = "x"; then
   wwwdir="\${localstatedir}/www/\${PACKAGE}"
 else
   wwwdir=$with_wwwdir
+fi
+
+
+
+# Check whether --with-urldir or --without-urldir was given.
+if test "${with_urldir+set}" = set; then
+  withval="$with_urldir"
+
+fi;
+if test "x$with_urldir" = "x"; then
+  urldir="/${PACKAGE}"
+else
+  urldir=$with_urldir
 fi
 
 
@@ -8301,6 +8315,42 @@ _ACEOF
 
 prefix_backup="$prefix"
   exec_prefix_backup="$exec_prefix"
+  ac_define_dir_result=""${datadir}""
+  if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
+  if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
+  while echo "$ac_define_dir_result" | grep -q '\$'; do
+    ac_define_dir_result=`eval echo $ac_define_dir_result`
+  done
+  prefix="${prefix_backup}"
+  exec_prefix="${exec_prefix}"
+
+cat >>confdefs.h <<_ACEOF
+#define DATADIR "$ac_define_dir_result"
+_ACEOF
+
+  DATADIR_expand="$ac_define_dir_result"
+
+
+prefix_backup="$prefix"
+  exec_prefix_backup="$exec_prefix"
+  ac_define_dir_result=""${wwwdir}""
+  if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
+  if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
+  while echo "$ac_define_dir_result" | grep -q '\$'; do
+    ac_define_dir_result=`eval echo $ac_define_dir_result`
+  done
+  prefix="${prefix_backup}"
+  exec_prefix="${exec_prefix}"
+
+cat >>confdefs.h <<_ACEOF
+#define WWWDIR "$ac_define_dir_result"
+_ACEOF
+
+  WWWDIR_expand="$ac_define_dir_result"
+
+
+prefix_backup="$prefix"
+  exec_prefix_backup="$exec_prefix"
   ac_define_dir_result=""${localstatedir}""
   if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
   if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
@@ -8336,7 +8386,7 @@ _ACEOF
 
 
 
-ac_config_files="$ac_config_files Makefile common/Makefile store/Makefile render/Makefile xslt/Makefile imgs/Makefile lurker.conf"
+ac_config_files="$ac_config_files Makefile common/Makefile store/Makefile render/Makefile xslt/Makefile imgs/Makefile doc/Makefile lurker.conf doc/lurker.mbox render/.htaccess"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -8825,7 +8875,10 @@ do
   "render/Makefile" ) CONFIG_FILES="$CONFIG_FILES render/Makefile" ;;
   "xslt/Makefile" ) CONFIG_FILES="$CONFIG_FILES xslt/Makefile" ;;
   "imgs/Makefile" ) CONFIG_FILES="$CONFIG_FILES imgs/Makefile" ;;
+  "doc/Makefile" ) CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
   "lurker.conf" ) CONFIG_FILES="$CONFIG_FILES lurker.conf" ;;
+  "doc/lurker.mbox" ) CONFIG_FILES="$CONFIG_FILES doc/lurker.mbox" ;;
+  "render/.htaccess" ) CONFIG_FILES="$CONFIG_FILES render/.htaccess" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
   "common/system.h" ) CONFIG_HEADERS="$CONFIG_HEADERS common/system.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
@@ -8932,6 +8985,7 @@ s,@AMDEP_FALSE@,$AMDEP_FALSE,;t t
 s,@AMDEPBACKSLASH@,$AMDEPBACKSLASH,;t t
 s,@DEPDIR@,$DEPDIR,;t t
 s,@wwwdir@,$wwwdir,;t t
+s,@urldir@,$urldir,;t t
 s,@dbdir@,$dbdir,;t t
 s,@CC@,$CC,;t t
 s,@CFLAGS@,$CFLAGS,;t t
@@ -8953,6 +9007,8 @@ s,@XSLT_CONFIG@,$XSLT_CONFIG,;t t
 s,@RENDER_CFLAGS@,$RENDER_CFLAGS,;t t
 s,@RENDER_LIBS@,$RENDER_LIBS,;t t
 s,@SYSCONFDIR_expand@,$SYSCONFDIR_expand,;t t
+s,@DATADIR_expand@,$DATADIR_expand,;t t
+s,@WWWDIR_expand@,$WWWDIR_expand,;t t
 s,@LOCALSTATEDIR_expand@,$LOCALSTATEDIR_expand,;t t
 s,@DBDIR_expand@,$DBDIR_expand,;t t
 CEOF

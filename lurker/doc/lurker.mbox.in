@@ -1,0 +1,17 @@
+From terpstra@users.sourceforge.net Mon May 20 02:39:21 2002
+Subject: Your new lurker install
+From: "Wesley W. Terpstra" <terpstra@users.sourceforge.net>
+Reply-To: "Lurker Support" <users@sourceforge.net>
+
+Congratulations! If you are reading this, it means that lurker has been
+successfully installed on your computer.
+
+Unless you have changed it, lurker will be located in these directories:
+	database files - @DBDIR_expand@
+	documentation  - @DATADIR_expand@/doc/@PACKAGE@/
+	web directory  - @WWWDIR_expand@
+	web url        - @urldir@
+	pid file       - @LOCALSTATEDIR_expand@/run/@PACKAGE@d.pid
+	config file    - @SYSCONFDIR_expand@/@PACKAGE@.conf
+
+For the newest version of lurker, goto <http://lurker.sourceforge.net/>

@@ -3,7 +3,7 @@ wwwdir = @wwwdir@
 INCLUDES = @RENDER_CFLAGS@ -I${top_srcdir}/common
 
 www_PROGRAMS = @PACKAGE@.cgi @PACKAGE@.xslt @PACKAGE@-search.cgi
-dist_www_DATA = .htaccess
+www_DATA = .htaccess
 
 @PACKAGE@_cgi_SOURCES = \
 	main.c \

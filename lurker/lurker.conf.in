@@ -85,3 +85,9 @@ cache_index_ttl   = 604800
 # 	mbox 0 = /var/mail/history/archive.00020101
 # 	mbox 1 = /var/mail/history/archive.00020102
 # 	mbox 2 = /var/spool/mail/debian-devel
+
+list 987 = Lurker-Support
+	description = Example mailing list configuration
+#	address     = users@sourceforge.net
+
+	mbox 321 = @DATADIR_expand@/doc/@PACKAGE@/lurker.mbox

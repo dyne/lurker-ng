@@ -8,6 +8,9 @@
 /* Define to 1 if using `alloca.c'. */
 #undef C_ALLOCA
 
+/* Where do we find our documentation? */
+#undef DATADIR
+
 /* Where do we put our database files? */
 #undef DBDIR
 
@@ -185,6 +188,9 @@
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
 #undef WORDS_BIGENDIAN
+
+/* Where do we put the web files? */
+#undef WWWDIR
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS

@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.21 2002-05-11 19:24:58 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.22 2002-06-03 10:37:15 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -17,6 +17,16 @@ else
   wwwdir=$with_wwwdir
 fi
 AC_SUBST(wwwdir)
+
+AC_ARG_WITH(urldir, AC_HELP_STRING(
+	[--with-url], 
+	[url location (default: http://this.host/lurker)]))
+if test "x$with_urldir" = "x"; then
+  urldir="/${PACKAGE}"
+else
+  urldir=$with_urldir
+fi
+AC_SUBST(urldir)
 
 AC_ARG_WITH(dbdir, AC_HELP_STRING(
 	[--with-dbdir], 
@@ -102,7 +112,19 @@ AC_CHECK_TYPE(time_t,
 ])
 
 AC_DEFINE_DIR(SYSCONFDIR,    "${sysconfdir}",    [Where do we find our configuration?])
+AC_DEFINE_DIR(DATADIR,       "${datadir}",       [Where do we find our documentation?])
+AC_DEFINE_DIR(WWWDIR,        "${wwwdir}",        [Where do we put the web files?])
 AC_DEFINE_DIR(LOCALSTATEDIR, "${localstatedir}", [Where do we keep our pid?])
 AC_DEFINE_DIR(DBDIR,         "${dbdir}",         [Where do we put our database files?])
 
-AC_OUTPUT(Makefile common/Makefile store/Makefile render/Makefile xslt/Makefile imgs/Makefile lurker.conf)
+AC_OUTPUT([
+ Makefile 
+  common/Makefile 
+  store/Makefile 
+  render/Makefile 
+  xslt/Makefile 
+  imgs/Makefile
+  doc/Makefile
+ lurker.conf 
+  doc/lurker.mbox 
+  render/.htaccess])

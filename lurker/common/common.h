@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.10 2002-05-29 08:09:52 terpstra Exp $
+/*  $Id: common.h,v 1.11 2002-06-03 10:37:15 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -29,8 +29,8 @@
 #define STORAGE			PACKAGE "d"
 #define RENDER			PACKAGE ".cgi"
 
-#define DEFAULT_CONFIG_FILE	SYSCONFDIR    "/" PACKAGE ".conf"
-#define	DEFAULT_PID_FILE	LOCALSTATEDIR "/" PACKAGE ".pid"
+#define DEFAULT_CONFIG_FILE	SYSCONFDIR    "/"     PACKAGE ".conf"
+#define	DEFAULT_PID_FILE	LOCALSTATEDIR "/run/" PACKAGE "d.pid"
 
 #define WORD_BREAKS		" !\"'()*,;<>[]^`{|}"
 

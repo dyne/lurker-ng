@@ -72,13 +72,14 @@ am__include = @am__include@
 am__quote = @am__quote@
 dbdir = @dbdir@
 install_sh = @install_sh@
+urldir = @urldir@
 
 wwwdir = @wwwdir@
 
 INCLUDES = @RENDER_CFLAGS@ -I${top_srcdir}/common
 
 www_PROGRAMS = @PACKAGE@.cgi @PACKAGE@.xslt @PACKAGE@-search.cgi
-dist_www_DATA = .htaccess
+www_DATA = .htaccess
 
 @PACKAGE@_cgi_SOURCES = \
 	main.c \
@@ -98,7 +99,7 @@ dist_www_DATA = .htaccess
 subdir = render
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/system.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = .htaccess
 www_PROGRAMS = @PACKAGE@.cgi$(EXEEXT) @PACKAGE@.xslt$(EXEEXT) \
 	@PACKAGE@-search.cgi$(EXEEXT)
 PROGRAMS = $(www_PROGRAMS)
@@ -133,9 +134,9 @@ LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
 DIST_SOURCES = $(@PACKAGE@_search_cgi_SOURCES) $(@PACKAGE@_cgi_SOURCES) \
 	$(@PACKAGE@_xslt_SOURCES)
-DATA = $(dist_www_DATA)
+DATA = $(www_DATA)
 
-DIST_COMMON = $(dist_www_DATA) Makefile.am Makefile.in
+DIST_COMMON = .htaccess.in Makefile.am Makefile.in
 SOURCES = $(@PACKAGE@_search_cgi_SOURCES) $(@PACKAGE@_cgi_SOURCES) $(@PACKAGE@_xslt_SOURCES)
 
 all: all-am
@@ -149,6 +150,8 @@ Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && \
 	  CONFIG_HEADERS= CONFIG_LINKS= \
 	  CONFIG_FILES=$(subdir)/$@ $(SHELL) ./config.status
+.htaccess: $(top_builddir)/config.status .htaccess.in
+	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= CONFIG_LINKS= $(SHELL) ./config.status
 install-wwwPROGRAMS: $(www_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(wwwdir)
@@ -208,19 +211,19 @@ distclean-depend:
 	$(COMPILE) -c `cygpath -w $<`
 CCDEPMODE = @CCDEPMODE@
 uninstall-info-am:
-install-dist_wwwDATA: $(dist_www_DATA)
+install-wwwDATA: $(www_DATA)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(wwwdir)
-	@list='$(dist_www_DATA)'; for p in $$list; do \
+	@list='$(www_DATA)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f"; \
 	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f; \
 	done
 
-uninstall-dist_wwwDATA:
+uninstall-wwwDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(dist_www_DATA)'; for p in $$list; do \
+	@list='$(www_DATA)'; for p in $$list; do \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " rm -f $(DESTDIR)$(wwwdir)/$$f"; \
 	  rm -f $(DESTDIR)$(wwwdir)/$$f; \
@@ -326,7 +329,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-dist_wwwDATA install-wwwPROGRAMS
+install-data-am: install-wwwDATA install-wwwPROGRAMS
 
 install-exec-am:
 
@@ -344,19 +347,18 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-compile mostlyclean-generic
 
-uninstall-am: uninstall-dist_wwwDATA uninstall-info-am \
-	uninstall-wwwPROGRAMS
+uninstall-am: uninstall-info-am uninstall-wwwDATA uninstall-wwwPROGRAMS
 
 .PHONY: GTAGS all all-am check check-am clean clean-generic \
 	clean-wwwPROGRAMS distclean distclean-compile distclean-depend \
 	distclean-generic distclean-tags distdir dvi dvi-am info \
 	info-am install install-am install-data install-data-am \
-	install-dist_wwwDATA install-exec install-exec-am install-info \
-	install-info-am install-man install-strip install-wwwPROGRAMS \
+	install-exec install-exec-am install-info install-info-am \
+	install-man install-strip install-wwwDATA install-wwwPROGRAMS \
 	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic tags uninstall uninstall-am \
-	uninstall-dist_wwwDATA uninstall-info-am uninstall-wwwPROGRAMS
+	uninstall-info-am uninstall-wwwDATA uninstall-wwwPROGRAMS
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

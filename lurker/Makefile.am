@@ -1,3 +1,3 @@
-SUBDIRS = common store xslt render imgs
+SUBDIRS = common store xslt render imgs doc
 
 sysconf_DATA = lurker.conf

@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.12 2002-05-22 12:20:42 terpstra Exp $
+/*  $Id: config.c,v 1.13 2002-06-03 10:37:15 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -409,7 +409,7 @@ if (!var) \
 { \
 	fprintf(stderr, "%s: warning: %s not declared - " \
 		"using: %s\n", my_config_file, key, val); \
-	var = strdup(DEFAULT_PID_FILE); \
+	var = strdup(val); \
 }
 
 #define DEF_NUM(key, var, val) \

@@ -1,7 +1,36 @@
+Quick start
+===========
+
+0 Find and install development files for: 
+	libdb3		- http://www.sleepycat.com/
+	libxml2		- http://xmlsoft.org/
+	libxslt1	- http://xmlsoft.org/XSLT/
+	libc-client	- ftp://ftp.cac.washington.edu/imap/
+	libst		- http://state-threads,sourceforge.net/
+
+ Or, if you run debian:
+	apt-get install libdb3-dev libxslt1-dev libc-client2001-dev libst-dev
+
+ Generally speaking, if you have gnome, you probably already have libdb3 and
+ libxml2. If you have tools which interface with email, you probably have
+ libc-client. Our only exotic dependencies are libst and libxslt. Often, you
+ distribution will include the development files for everything but libst.
+
+1 ./configure	--with-urldir="/relative-without-http/web/path/to/lurker" \
+		--with-wwwdir=/filesystem/path/to/above
+2 make
+3 make install	(as root)
+
+4 Edit your apache config to allow .htaccess files to override CGI options,
+error documents, and work recursively. ie: Ensure that the install .htaccess
+file is honoured.
+
+5 /usr/local/sbin/lurkerd
+
+6 point your browser at the specified url
+
 Basic Installation
 ==================
-
-   These are generic installation instructions.
 
    The `configure' shell script attempts to guess correct values for
 various system-dependent variables used during compilation.  It uses

@@ -75,68 +75,46 @@ install_sh = @install_sh@
 urldir = @urldir@
 wwwdir = @wwwdir@
 
-fmtdir = @wwwdir@/fmt
+docdir = @datadir@/doc/@PACKAGE@
 
-dist_fmt_DATA = \
-	render.xsl render-html.xsl common.xsl \
-	error.xsl splash.xsl message.xsl mindex.xsl search.xsl thread.xsl \
-	english.xsl \
-	basic.css
-
-
-dist_www_DATA = index.html index.xsl
-subdir = xslt
+doc_DATA = lurker.mbox
+subdir = doc
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/system.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = lurker.mbox
 DIST_SOURCES =
-DATA = $(dist_fmt_DATA) $(dist_www_DATA)
+DATA = $(doc_DATA)
 
-DIST_COMMON = $(dist_fmt_DATA) $(dist_www_DATA) Makefile.am Makefile.in
+DIST_COMMON = Makefile.am Makefile.in lurker.mbox.in
 all: all-am
 
 .SUFFIXES:
 $(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  xslt/Makefile
+	  $(AUTOMAKE) --gnu  doc/Makefile
 Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && \
 	  CONFIG_HEADERS= CONFIG_LINKS= \
 	  CONFIG_FILES=$(subdir)/$@ $(SHELL) ./config.status
+lurker.mbox: $(top_builddir)/config.status lurker.mbox.in
+	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= CONFIG_LINKS= $(SHELL) ./config.status
 uninstall-info-am:
-install-dist_fmtDATA: $(dist_fmt_DATA)
+install-docDATA: $(doc_DATA)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(fmtdir)
-	@list='$(dist_fmt_DATA)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(docdir)
+	@list='$(doc_DATA)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(fmtdir)/$$f"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(fmtdir)/$$f; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(docdir)/$$f"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(docdir)/$$f; \
 	done
 
-uninstall-dist_fmtDATA:
+uninstall-docDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(dist_fmt_DATA)'; for p in $$list; do \
+	@list='$(doc_DATA)'; for p in $$list; do \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(fmtdir)/$$f"; \
-	  rm -f $(DESTDIR)$(fmtdir)/$$f; \
-	done
-install-dist_wwwDATA: $(dist_www_DATA)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(wwwdir)
-	@list='$(dist_www_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f; \
-	done
-
-uninstall-dist_wwwDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(dist_www_DATA)'; for p in $$list; do \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(wwwdir)/$$f"; \
-	  rm -f $(DESTDIR)$(wwwdir)/$$f; \
+	  echo " rm -f $(DESTDIR)$(docdir)/$$f"; \
+	  rm -f $(DESTDIR)$(docdir)/$$f; \
 	done
 tags: TAGS
 TAGS:
@@ -168,7 +146,7 @@ check: check-am
 all-am: Makefile $(DATA)
 
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(fmtdir) $(DESTDIR)$(wwwdir)
+	$(mkinstalldirs) $(DESTDIR)$(docdir)
 
 install: install-am
 install-exec: install-exec-am
@@ -209,8 +187,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-data-local install-dist_fmtDATA \
-	install-dist_wwwDATA
+install-data-am: install-docDATA
 
 install-exec-am:
 
@@ -228,29 +205,17 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-generic
 
-uninstall-am: uninstall-dist_fmtDATA uninstall-dist_wwwDATA \
-	uninstall-info-am uninstall-local
+uninstall-am: uninstall-docDATA uninstall-info-am
 
 .PHONY: all all-am check check-am clean clean-generic distclean \
 	distclean-generic distdir dvi dvi-am info info-am install \
-	install-am install-data install-data-am install-data-local \
-	install-dist_fmtDATA install-dist_wwwDATA install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic uninstall uninstall-am \
-	uninstall-dist_fmtDATA uninstall-dist_wwwDATA uninstall-info-am \
-	uninstall-local
+	install-am install-data install-data-am install-docDATA \
+	install-exec install-exec-am install-info install-info-am \
+	install-man install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-generic uninstall uninstall-am \
+	uninstall-docDATA uninstall-info-am
 
-
-install-data-local:
-	$(mkinstalldirs) $(DESTDIR)${fmtdir}
-	ln -fs basic.css   $(DESTDIR)${fmtdir}/default.css
-	ln -fs english.xsl $(DESTDIR)${fmtdir}/lang.xsl
-
-uninstall-local:
-	rm -f $(DESTDIR)${fmtdir}/default.css
-	rm -f $(DESTDIR)${fmtdir}/lang.xsl
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
