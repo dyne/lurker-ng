@@ -4,6 +4,9 @@
 
 #include "esort.h"
 
+#include <errno.h>
+#include <string.h>
+
 typedef ESort::Walker	ESort_Walker;
 typedef ESort::Writer	ESort_Writer;
 typedef ESort::Reader	ESort_Reader;

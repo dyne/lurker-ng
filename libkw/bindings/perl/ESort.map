@@ -14,7 +14,11 @@ T_ESORT_OBJPTR
 	if ($var)
 		sv_setref_pv($arg, \"${(my $ntt=$ntype)=~s/_/::/g;\$ntt}\", (void*)$var);
 	else
-		croak(\"${Package}::$func_name() -- $!\");
+	{
+		char buf[200];
+		sprintf(buf, \"${Package}::$func_name() -- %s\", strerror(errno));
+		croak(buf);
+	}
 
 T_ESORT_ERROR_INT
 	if ($var != -1)
@@ -22,7 +26,11 @@ T_ESORT_ERROR_INT
 	else if (errno == 0)
 		sv_setiv($arg, (IV)-1);
 	else
-		croak(\"${Package}::$func_name() -- $!\");
+	{
+		char buf[200];
+		sprintf(buf, \"${Package}::$func_name() -- %s\", strerror(errno));
+		croak(buf);
+	}
 
 T_ESORT_DIRECTION_INT
 	NOT_IMPLEMENTED
