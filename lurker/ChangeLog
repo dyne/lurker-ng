@@ -2,6 +2,7 @@ v1.1:
 	Create mbox directory upon install
 	Add spaces between "version1.1" "by:foo"
 	Prefer to sort by list name in the list selection
+	Fixed ml: typo in the thread pages
 
 v1.0:
 	Froze the 1.* series against all changes other than bug fixes

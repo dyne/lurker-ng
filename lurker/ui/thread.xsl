@@ -118,7 +118,7 @@
      <tr>
       <td colspan="2" align="center">
        <xsl:value-of select="$use-special-word-thread"/>
-       <b>ml:<xsl:value-of select="hash"/></b>
+       <b>th:<xsl:value-of select="hash"/></b>
        <xsl:value-of select="$to-search-thread"/>
       </td>
      </tr>
