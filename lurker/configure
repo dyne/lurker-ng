@@ -10056,7 +10056,7 @@ _ACEOF
 
 
 
-ac_config_files="$ac_config_files Makefile common/Makefile store/Makefile render/Makefile xslt/Makefile imgs/Makefile doc/Makefile intl/Makefile po/Makefile.in lurker.conf doc/lurker.mbox render/.htaccess"
+ac_config_files="$ac_config_files Makefile libkap/Makefile common/Makefile store/Makefile render/Makefile xslt/Makefile imgs/Makefile doc/Makefile intl/Makefile po/Makefile.in lurker.conf doc/lurker.mbox render/.htaccess"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -10541,6 +10541,7 @@ do
   case "$ac_config_target" in
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+  "libkap/Makefile" ) CONFIG_FILES="$CONFIG_FILES libkap/Makefile" ;;
   "common/Makefile" ) CONFIG_FILES="$CONFIG_FILES common/Makefile" ;;
   "store/Makefile" ) CONFIG_FILES="$CONFIG_FILES store/Makefile" ;;
   "render/Makefile" ) CONFIG_FILES="$CONFIG_FILES render/Makefile" ;;

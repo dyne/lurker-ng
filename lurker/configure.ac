@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1b)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.26 2002-06-26 10:36:59 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.27 2002-07-01 11:18:09 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -136,6 +136,7 @@ AC_DEFINE_DIR(LOCALEDIR,     "${localedir}",     [Where do we put out .mo files?
 
 AC_OUTPUT([
  Makefile 
+  libkap/Makefile
   common/Makefile 
   store/Makefile 
   render/Makefile 
