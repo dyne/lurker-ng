@@ -26,7 +26,7 @@ lurkerd_SOURCES = \
 	url.c mailto.c quote.c art.c
 
 
-lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV} @INTLLIBS@
+lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV} @INTLLIBS@ -lm
 
 install-data-local:
 	@list='$(REQUESTS)'; for p in $$list; do \

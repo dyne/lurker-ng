@@ -123,7 +123,7 @@ lurkerd_SOURCES = \
 	url.c mailto.c quote.c art.c
 
 
-lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV} @INTLLIBS@
+lurkerd_LDADD = @STORAGE_LIBS@ ../common/libcommon.a ${LIBICONV} @INTLLIBS@ -lm
 subdir = store
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
