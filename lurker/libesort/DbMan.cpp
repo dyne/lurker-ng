@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.10 2003-05-14 11:44:48 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.11 2003-05-14 11:58:36 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -138,7 +138,7 @@ int DbMan::scanFile(Parameters& p)
 	long blockSize, keySize;
 	char id[80];
 	
-	fseek(dbfile, 0, SEEK_SET);
+	rewind(dbfile);
 	if (fscanf(dbfile, "%d %ld %ld", &version, &blockSize, &keySize) != 3)
 		return -1;
 	p = Parameters(version, blockSize, keySize);
@@ -229,8 +229,8 @@ int DbMan::open(View& view, const string& db, int mode)
 	int ok = lock_snapshot_rw();
 	if (ok != 0) return ok;
 	
-	bool empty = fseek(dbfile, 0, SEEK_END) == 0;
-	fseek(dbfile, 0, SEEK_SET);
+	fseek(dbfile, 0, SEEK_END);
+	bool empty = ftell(dbfile) == 0;
 	
 	if (empty)
 	{
@@ -322,15 +322,10 @@ int DbMan::commit(const Parameters& p, const std::set<string>& nids)
 	if (p.synced())
 		if (dirfd != -1) fsync(dirfd); // sync the directory
 	
-	if (fseek(dbfile, 0, SEEK_SET) != 0)
-	{
-		unlock_snapshot_rw();
-		return -1;
-	}
-	
 	// The underlying assumption here is that these calls all fit
 	// within one block and thus can't fail. This should be valid for
 	// even grossly enoromous databases on puny systems.
+	rewind(dbfile);
 	fprintf(dbfile, "%d %ld %ld\n", 
 		p.version(), 
 		p.blockSize(), 
