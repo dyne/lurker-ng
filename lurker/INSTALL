@@ -24,12 +24,21 @@ Quick start
 3 make install	(as root)
 
 4 Edit your apache config to allow .htaccess files to override CGI options,
-error documents, and work recursively. ie: Ensure that the install .htaccess
-file is honoured.
+error documents, and work recursively. ie: Ensure that the installed
+.htaccess file is honoured. Often this is accomplished by:
+
+    AllowOverride Options FileInfo
+
+in either <Directory /var/www> or /home/*/public_html or /usr/local/www or
+something like this.
 
 5 /usr/local/sbin/lurkerd
 
 6 point your browser at the specified url
+
+Enjoy!
+
+Now follow the generic GNU install instructions:
 
 Basic Installation
 ==================
