@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.22 2002-07-21 20:29:27 terpstra Exp $
+/*  $Id: config.c,v 1.23 2002-07-22 10:30:52 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -247,8 +247,8 @@ static int my_config_sync_mbox(Lu_Config_File* file)
 	
 	/* Ok, here follows an ugly routine which will read in the mbox state.
 	 * The database has two types of records:
-	 * 	'list'      -> list id
-	 *	'list:mbox' -> mbox id, mbox offset
+	 * 	'list'         -> list id
+	 *	'list\001mbox' -> mbox id, mbox offset
 	 * 
 	 * The intention is to walk the database, record the information into
 	 * our config block, note new config file entries, and abort if we
@@ -285,7 +285,7 @@ static int my_config_sync_mbox(Lu_Config_File* file)
 			 */
 			if (dir < 0)
 			{	/* skip past a list with no mboxs */
-				if (strchr(key, ':'))
+				if (strchr(key, '\001'))
 				{	/* is an mbox */
 					fprintf(stderr, _("Lurker database references an unconfigured mbox: %s\n"),
 						key);
@@ -320,7 +320,7 @@ static int my_config_sync_mbox(Lu_Config_File* file)
 				return error;
 			}
 			
-			snprintf(&key2[0], sizeof(key2), "%s:%s", 
+			snprintf(&key2[0], sizeof(key2), "%s\001%s", 
 				list->name, mbox->name);
 			
 			if (error != KAP_NOT_FOUND)
@@ -370,7 +370,7 @@ static int my_config_sync_mbox(Lu_Config_File* file)
 		if (error == KAP_NOT_FOUND) break;
 		
 		/* skip past a list with no mboxs */
-		if (strchr(key, ':'))
+		if (strchr(key, '\001'))
 		{	/* is an mbox */
 			fprintf(stderr, _("Lurker database references an unconfigured mbox: %s\n"),
 				key);
@@ -1093,7 +1093,7 @@ int lu_config_move_mbox_end(
 	unsigned char	buf[sizeof(lu_word) + sizeof(off_t)];
 	int		error;
 	
-	snprintf(&key[0], sizeof(key), "%s:%s", list->name, mbox->name);
+	snprintf(&key[0], sizeof(key), "%s\001%s", list->name, mbox->name);
 	kap_encode_offset(&buf[0],               mbox->key, sizeof(lu_word));
 	kap_encode_offset(&buf[sizeof(lu_word)], now,       sizeof(off_t));
 	
