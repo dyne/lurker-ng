@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.2 2003-08-15 15:40:05 terpstra Exp $
+/*  $Id: esort.h,v 1.3 2003-08-16 17:48:05 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -107,9 +107,9 @@ class Parameters
  */
 enum Direction
 {
-	Forward,
-	Backward,
-	FORWARD = Forward,
+	Forward  = 1,
+	Backward = 2,
+	FORWARD  = Forward,
 	BACKWARD = Backward
 };
 

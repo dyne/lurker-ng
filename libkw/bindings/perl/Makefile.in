@@ -147,7 +147,7 @@ autodir = $(perldir)/auto/KW
 
 perl_DATA = KW.pm
 auto_LTLIBRARIES = KW.la
-EXTRA_DIST = KW.xs KW.pm
+EXTRA_DIST = KW.xs KW.pm KW.map
 CLEANFILES = KW.cpp perlxsi.c
 
 nodist_KW_la_SOURCES = KW.cpp
@@ -472,7 +472,7 @@ uninstall-am: uninstall-autoLTLIBRARIES uninstall-info-am \
 
 
 KW.cpp:	KW.xs
-	@XSUBPP@ $< > $@.tmp && mv $@.tmp $@
+	@XSUBPP@ -typemap KW.map $< > $@.tmp && mv $@.tmp $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

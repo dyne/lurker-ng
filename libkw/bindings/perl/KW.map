@@ -1,0 +1,51 @@
+TYPEMAP
+ESort_Walker*		T_ESORT_OBJPTR
+ESort_Reader*		T_ESORT_OBJPTR
+ESort_Writer*		T_ESORT_OBJPTR
+ESort_String		T_ESORT_STRING
+ESort_Direction		T_ESORT_DIRECTION_INT
+error_int		T_ESORT_ERROR_INT
+
+OUTPUT
+T_ESORT_STRING
+	sv_setpvn($arg, $var.data(), $var.length());
+
+T_ESORT_OBJPTR
+	if ($var)
+		sv_setref_pv($arg, \"${(my $ntt=$ntype)=~s/_/::/g;\$ntt}\", (void*)$var);
+	else
+		croak(\"${Package}::$func_name() -- $!\");
+
+T_ESORT_ERROR_INT
+	if ($var != -1)
+		sv_setiv($arg, (IV)$var);
+	else
+		croak(\"${Package}::$func_name() -- $!\");
+
+T_ESORT_DIRECTION_INT
+	NOT_IMPLEMENTED
+
+INPUT
+T_ESORT_STRING
+	if (SvPOK($arg))
+	{
+		STRLEN len;
+		char *ptr = SvPV($arg, len);
+		$var.assign(ptr, len);
+	}
+	else
+		croak(\"${Package}::$func_name() -- $var is not a string\");
+
+T_ESORT_OBJPTR
+	if (sv_derived_from($arg, \"${(my $ntt=$ntype)=~s/_/::/g;\$ntt}\"))
+		$var = ($type)SvIV((SV*)SvRV($arg));
+	else
+		croak(\"${Package}::$func_name() -- $var is not of type ${(my $ntt=$ntype)=~s/_/::/g;\$ntt}\");
+
+T_ESORT_DIRECTION_INT
+	$var = ($type)SvIV($arg);
+	if ($var != ESort::FORWARD && $var != ESort::BACKWARD)
+		croak(\"${Package}::$func_name() -- $var is not a valid direction\");
+
+T_ESORT_INT
+	NOT_IMPLEMENTED
