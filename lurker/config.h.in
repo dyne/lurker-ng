@@ -34,8 +34,7 @@
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
 
-/* Define if the GNU dcgettext() function is already present or preinstalled.
-   */
+/* Define to 1 if you have the `dcgettext' function. */
 #undef HAVE_DCGETTEXT
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
@@ -69,9 +68,6 @@
 /* Define to 1 if you have the `getcwd' function. */
 #undef HAVE_GETCWD
 
-/* Define to 1 if you have the `getc_unlocked' function. */
-#undef HAVE_GETC_UNLOCKED
-
 /* Define to 1 if you have the `getegid' function. */
 #undef HAVE_GETEGID
 
@@ -93,12 +89,8 @@
 /* Define if you have the iconv() function. */
 #undef HAVE_ICONV
 
-/* Define if <inttypes.h> exists and doesn't clash with <sys/types.h>. */
+/* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
-
-/* Define if <inttypes.h> exists, doesn't clash with <sys/types.h>, and
-   declares uintmax_t. */
-#undef HAVE_INTTYPES_H_WITH_UINTMAX
 
 /* Define to 1 if you have the <io.h> header file. */
 #undef HAVE_IO_H
@@ -160,10 +152,6 @@
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
-/* Define if <stdint.h> exists, doesn't clash with <sys/types.h>, and declares
-   uintmax_t. */
-#undef HAVE_STDINT_H_WITH_UINTMAX
-
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
@@ -172,6 +160,9 @@
 
 /* Define to 1 if you have the `strcasecmp' function. */
 #undef HAVE_STRCASECMP
+
+/* Define to 1 if you have the `strchr' function. */
+#undef HAVE_STRCHR
 
 /* Define to 1 if you have the `strdup' function. */
 #undef HAVE_STRDUP
@@ -229,9 +220,6 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define if you have the unsigned long long type. */
-#undef HAVE_UNSIGNED_LONG_LONG
-
 /* Define to 1 if you have the `__argz_count' function. */
 #undef HAVE___ARGZ_COUNT
 
@@ -243,9 +231,6 @@
 
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST
-
-/* Define if integer division by zero raises signal SIGFPE. */
-#undef INTDIV0_RAISES_SIGFPE
 
 /* Where do we put our .mo files? */
 #undef LOCALEDIR
@@ -270,9 +255,6 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
-
-/* Define if <inttypes.h> exists and defines unusable PRI* macros. */
-#undef PRI_MACROS_BROKEN
 
 /* The size of a `char', as computed by sizeof. */
 #undef SIZEOF_CHAR
@@ -345,7 +327,3 @@
 
 /* Define to `unsigned' if <sys/types.h> does not define. */
 #undef size_t
-
-/* Define to unsigned long or unsigned long long if <inttypes.h> and
-   <stdint.h> don't define. */
-#undef uintmax_t
