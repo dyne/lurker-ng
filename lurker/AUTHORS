@@ -4,13 +4,11 @@
 	Backing datastore
 	Rendering cgi
 
+'Chris Bond'
+
+	FreeBSD port
+	IPC
+
 'Pete Lypkie'
 
-	XSLT default layout
-	Various tweaks
-
-'Matthew Ashton'
-
-	Backing datastore
-	Rendering cgi
-
+	XSLT rendering engines
