@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.25 2003-06-25 22:16:13 terpstra Exp $
+/*  $Id: message.cpp,v 1.26 2003-06-25 22:23:40 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -192,8 +192,8 @@ void pgp_writefile(ostream& o, const DwString& data)
 		if (e == DwString::npos) break;
 		
 		o.write(data.c_str() + s, e - s);
-		if (data[s] == '\r') ++s;
-		else if (data[s] == '\n') o << "\r\n";
+		if (data[e] == '\n') o << "\r\n"; 
+		s = e+1;
 	}
 	
 	o.write(data.c_str() + s, data.length() - s);
