@@ -11,7 +11,7 @@
  attachments="添付ファイル"
 
  tree-context="このメッセージは次のスレッドの一部です:"
- full-tree="日付によるスレッドの仕分け完了"
+ full-tree="日付によるスレッドの仕分け"
  mail-appears-in="このメッセージは次のメーリングリストに投稿されました:"
  thread-appears-in="このスレッドはつぎのメーリングリスト内に存在します:"
  list-info="メーリングリスト情報"
@@ -36,7 +36,7 @@
  search-list="このメーリングリスト内の次のキーワードを含むメッセージを検索する:"
  jump="ジャンプ"
  use-special-word-list="このキーワード "
- to-search-list="を検索するメーリングリストを制限する."
+ to-search-list="でメーリングリストを制限する."
  newest-messages="新しいメッセージを閲覧"
  jump-group="グループへジャンプ"
  post-new="新しいスレッド"
@@ -48,7 +48,7 @@
 
  search-thred="このスレッド中にある次のキーワードを含むメッセージを検索:"
  use-special-word-thread="このキーワード "
- to-search-thread="を検索するメーリングリストを制限する."
+ to-search-thread="でメーリングリストを制限する."
 
  refine-search="次のキーワードを含むメッセージの検索結果を絞りこむ:"
  jump-search="次の日付にもっとも近いメッセージにジャンプ:"
@@ -70,7 +70,7 @@
 
  unknown-address="不明"
  deleted-name="削除"
- posted-at=" に "
+ posted-at=" 、 "
  admin-by="サイト管理人: "
  version="バージョン "
 />
