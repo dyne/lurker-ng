@@ -1,4 +1,4 @@
-/*  $Id: breader.h,v 1.2 2002-02-10 03:24:29 terpstra Exp $
+/*  $Id: breader.h,v 1.3 2002-02-10 06:34:24 terpstra Exp $
  *  
  *  breader.h - Knows how to use the abstracted read interface for buffered access
  *  
@@ -24,8 +24,7 @@
 
 /*------------------------------------------------- Public types */
  
-struct My_Breader_Handle_T;
-typedef struct My_Breader_Handle_T* Lu_Breader_Handle;
+typedef int Lu_Breader_Handle;
 
 /*------------------------------------------------- Public component methods */
 

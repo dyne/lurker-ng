@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.2 2002-02-10 03:24:29 terpstra Exp $
+/*  $Id: breader.c,v 1.3 2002-02-10 06:34:24 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -27,10 +27,14 @@
 
 #include "common.h"
 #include "io.h"
+#include "prefix.h"
 
 #include "flatfile.h"
 #include "breader.h"
 #include "btree.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 /* Now, what's the plan... We want to cache reads.
  *
@@ -74,7 +78,7 @@
  */
 #define LU_PULL_AT_ONCE	4096
 
-/* This is how much information about the  !!!
+/* This is how many records about offset information we keep.
  */
 #define LU_BOUNDARY_RECORDS	4096
 
@@ -92,26 +96,44 @@
 /*------------------------------------------------ Private types */
 
 /* Must be able to store up to LU_BOUNDARY_RECORDS */
-typedef lu_word	my_breader_boundary_ptr;
+typedef lu_word	my_breader_ptr;
 
 typedef struct My_Breader_Boundary_T
 {
-	message_id		key;
-	message_id		id;
+	message_id	key;	/* id */
+	message_id	index;
 	
-	lu_byte			skew;
-	my_breader_boundary_ptr	left;
-	my_breader_boundary_ptr	right;
+	lu_byte		skew;
+	my_breader_ptr	left;
+	my_breader_ptr	right;
 } My_Breader_Boundary;
 
-struct My_Breader_Handle_T
+typedef struct My_Breader_Cache_T
 {
-	Lu_Flatfile_Handle	handle;
-};
+	message_id buffer[LU_PULL_AT_ONCE];
+	message_id offset;
+} My_Breader_Cache;
+
+typedef struct My_Breader_Record_T
+{
+	My_Breader_Cache	cache[LU_CACHE_RECORDS];
+	My_Breader_Boundary	boundary[LU_BOUNDARY_RECORDS];
+	
+	my_breader_ptr		boundary_usage;
+	
+	Lu_Flatfile_Handle	flatfile;
+	message_id		count;
+	message_id		last_id;
+	
+	char			keyword[LU_KEYWORD_LEN+1];
+	int			usage;
+	lu_quad			age;
+} My_Breader_Record;
 
 /*------------------------------------------------ Private global vars */
 
-static My_Breader_Boundary* table;
+static My_Breader_Record*   my_breader_records;
+static My_Breader_Boundary* my_breader_table;
 
 /*------------------------------------------------ Private helper methods */
 
@@ -126,16 +148,177 @@ inline int my_breader_compare(message_id a, message_id b)
 
 LU_BTREE_DEFINE(
 	breader, 
-	my_breader_boundary_ptr, 
+	my_breader_ptr, 
 	0xFFFFUL,
 	My_Breader_Boundary,
-	table,
+	my_breader_table,
 	my_breader_compare)
+
+static int my_breader_fetch_sector(
+	My_Breader_Record* record, 
+	message_id index)
+{
+	message_id	amount;
+	message_id	oldest = 0;
+	int		which  = 0;
+	int		i;
+	int		out;
+	
+	assert(index < record->count);
+	index -= (index % LU_PULL_AT_ONCE);
+	
+	/* Find the largest index record to dump
+	 * Note, free = lu_common_minvalid -- the largest possible value
+	 */
+	for (i = 0; i < LU_CACHE_RECORDS; i++)
+	{
+		if (record->cache[i].offset == index)
+		{
+			/* We already have the sector loaded */
+			return 0;
+		}
+		
+		if (record->cache[i].offset > oldest)
+		{
+			which = i;
+			oldest = record->cache[i].offset;
+		}
+	}
+	
+	amount = record->count - index;
+	if (amount > LU_PULL_AT_ONCE)
+		amount = LU_PULL_AT_ONCE;
+	
+	record->cache[which].offset = index;
+	
+	out = lu_flatfile_handle_read(
+		record->flatfile,
+		index,
+		&record->cache[which].buffer[0],
+		amount);
+	
+	if (out != 0) return out;
+	
+	/* Remember the boundary information we learn about this sector.
+	 */
+	
+	if (record->boundary_usage == LU_BOUNDARY_RECORDS)
+	{
+		/*!!! Should free a record for reuse */
+		return 0;
+	}
+	
+	record->boundary[record->boundary_usage].key   = record->cache[which].buffer[0];
+	record->boundary[record->boundary_usage].index = index;
+	
+	/* Push the new record and increase usage if it's not a duplicate */
+	my_breader_table = &record->boundary[0];
+	if (my_btree_breader_insert(record->boundary_usage) == 0)
+	{
+		record->boundary_usage++;
+	}
+	
+	return 0;
+}
+
+static int my_breader_read(
+	My_Breader_Record* record, 
+	message_id offset, 
+	message_id count,
+	message_id* out)
+{
+	message_id	got, ind;
+	int		stat;
+	int		i;
+	
+	while (count)
+	{
+		stat = my_breader_fetch_sector(record, offset);
+		if (stat != 0) return stat;
+		
+		for (i = 0; i < LU_CACHE_RECORDS; i++)
+		{
+			if (offset >= record->cache[i].offset &&
+			    offset < record->cache[i].offset + LU_PULL_AT_ONCE)
+			{
+				ind = offset - record->cache[i].offset;
+				got = LU_PULL_AT_ONCE - ind;
+				
+				if (got > count)
+				{
+					got = count;
+				}
+				
+				memcpy(	out, 
+					&record->cache[i].buffer[ind],
+					got);
+				
+				out    += got;
+				count  -= got;
+				offset += got;
+			}
+		}
+	}
+	
+	return 0;
+}
+
+static int my_breader_find(
+	My_Breader_Record* record,
+	message_id id,
+	message_id* offset)
+{
+	message_id	left_id,  right_id;
+	message_id	left_off, right_off;
+	
+	left_id  = 0;
+	left_off = 0;
+	
+	right_id  = record->last_id;
+	right_off = record->count;
+	
+	/* The first goal is to find a record which contains the id */
+	
+	return -1;
+	
+}
+
+static void my_breader_purify_record(
+	My_Breader_Record* record, 
+	const char* keyword)
+{
+	int i;
+	
+	strncpy(&record->keyword[0], keyword, LU_KEYWORD_LEN);
+	record->keyword[LU_KEYWORD_LEN] = 0;
+	
+	record->boundary_usage = 0;
+	
+	for (i = 0; i < LU_CACHE_RECORDS; i++)
+	{
+		record->cache[i].offset = lu_common_minvalid;
+	}
+}
 
 /*------------------------------------------------ Public component methods */
 
 int lu_breader_init()
 {
+	int i;
+	
+	my_breader_records = malloc(sizeof(My_Breader_Record)*LU_MAX_HANDLES);
+	if (!my_breader_records)
+	{
+		fprintf(stderr, "Failed to allocate storage for breader buffers\n");
+		return -1;
+	}
+	
+	for (i = 0; i < LU_MAX_HANDLES; i++)
+	{
+		my_breader_records[i].usage = 0;
+		my_breader_records[i].age   = 0;
+	}
+	
 	return 0;
 }
 
@@ -156,13 +339,83 @@ int lu_breader_close()
 
 int lu_breader_quit()
 {
+	if (my_breader_records)
+	{
+		free(my_breader_records);
+		my_breader_records = 0;
+	}
+	
 	return 0;
 }
+
+/*------------------------------------------------ Public accessor methods */
 
 Lu_Breader_Handle lu_breader_new(
 	const char* keyword)
 {
-	return 0;
+	static lu_quad age = 1;
+	
+	int	i;
+	int	best;
+	
+	/* Firstly, see if we already have this handle open.
+	 */
+	for (i = 0; i < LU_MAX_HANDLES; i++)
+	{
+		if (!strcmp(&my_breader_records[i].keyword[0], keyword))
+		{
+			break;
+		}
+	}
+	
+	if (i == LU_MAX_HANDLES)
+	{	/* Not loaded. Look for the largest aged free one. */
+		best = -1;
+		
+		for (i = 1; i < LU_MAX_HANDLES; i++)
+		{
+			if (my_breader_records[i].usage == 0 &&
+				(best == -1 || my_breader_records[i].age
+					< my_breader_records[best].age))
+			{
+				best = i;
+			}
+		}
+		
+		if (best == -1)
+		{	/* Unable to find an unused record */
+			return 0;
+		}
+		
+		my_breader_purify_record(&my_breader_records[best], keyword);
+	}
+	else
+	{
+		best = i;
+	}
+	
+	if (my_breader_records[best].usage == 0)
+	{
+		my_breader_records[best].flatfile =
+			lu_flatfile_open_handle(keyword);
+		my_breader_records[best].count =
+			lu_flatfile_handle_records(
+				my_breader_records[best].flatfile);
+	}
+	
+	my_breader_records[best].usage++;
+	my_breader_records[best].age = age++;
+	
+	if (age == 0xFFFFFFFFUL) /* a big number that fits in a quad */
+	{	/* Cycle the age by resetting everyone */
+		age = 1;
+		for (i = 0; i < LU_MAX_HANDLES; i++)
+		{
+			my_breader_records[i].age = 0;
+		}
+	}
+	
+	return best+1;
 }
 
 int lu_breader_offset(
@@ -170,7 +423,14 @@ int lu_breader_offset(
 	message_id  id,
 	message_id* index)
 {
-	return -1;
+	My_Breader_Record* record;
+	
+	assert (h <= LU_MAX_HANDLES && h > 0);
+	assert (my_breader_records[h-1].usage > 0);
+	
+	record = &my_breader_records[h-1];
+	
+	return my_breader_find(record, id, index);
 }
 
 int lu_breader_read(
@@ -179,10 +439,28 @@ int lu_breader_read(
 	message_id count,
 	message_id* out)
 {
-	return -1;
+	My_Breader_Record* record;
+	
+	assert (h <= LU_MAX_HANDLES && h > 0);
+	assert (my_breader_records[h-1].usage > 0);
+	
+	record = &my_breader_records[h-1];
+	
+	return my_breader_read(record, index, count, out);
 }
 
 void lu_breader_free(
 	Lu_Breader_Handle h)
 {
+	assert (h <= LU_MAX_HANDLES && h > 0);
+	assert (my_breader_records[h-1].usage > 0);
+	
+	my_breader_records[h-1].usage--;
+	if (my_breader_records[h-1].usage == 0)
+	{
+		/* On the last reference, close the flatfile handle.
+		 * However, we still retain boundary data and cache.
+		 */
+		lu_flatfile_close_handle(my_breader_records[h-1].flatfile);
+	}
 }

@@ -43,7 +43,6 @@ Every component must provide these methods:
 	lu_component_quit
 
 load order:
-	common
 	config
 	flatfile
 	wbuffer
