@@ -1,4 +1,4 @@
-/*  $Id: Summary.cpp,v 1.4 2003-04-25 16:38:18 terpstra Exp $
+/*  $Id: Summary.cpp,v 1.5 2003-04-25 21:11:42 terpstra Exp $
  *  
  *  Summary.cpp - Helper which can load a message given MessageId
  *  
@@ -49,7 +49,7 @@ string Summary::load(Reader* r)
 	int ok;
 	while ((ok = w->advance()) != -1)
 	{
-		if (w->key.length() < 1 + 8 + 2)
+		if (w->key.length() < 1 + 8 + 1)
 			return "invalid mbox entry -- way too short";
 		
 		// We use this for getting an unsigned value below.
