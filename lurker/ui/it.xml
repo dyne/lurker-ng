@@ -21,7 +21,7 @@
  raw-email="Messaggio come e-mail"
 
  front-page="Inizio della pagina"
- search-menu="Cerca nell'archivio per un messaggi corrispondente"
+ search-menu="Cerca nell'archivio per un messaggio corrispondente"
  list="Lista"
  group="Gruppo"
  all-lists="Qualsiasi mailing list"
@@ -32,7 +32,7 @@
  deleted-message="messaggio cancellato"
  search="Cerca"
 
- jump-to-date="Vai aquei messaggi in questa mailing list che sono più vicini a questa data:"
+ jump-to-date="Vai a quei messaggi in questa mailing list che sono più vicini a questa data:"
  search-list="Cerca messaggi all'interno di questa mailing list che contegono le seguenti parole chiave:"
  jump="Vai"
  use-special-word-list="Usa la parola chiave "
@@ -50,11 +50,10 @@
  use-special-word-thread="Usa la parola chiave "
  to-search-thread=" per restringere la ricerca a questo thread."
 
- refine-search="Raffina i risultati della ricerca ai soli messaggi che
- contengono le seguenti parole chiave:"
+ refine-search="Limita i risultati della ricerca ai soli messaggi che contengono le seguenti parole chiave:"
  jump-search="Vai ai messaggi corrispondenti che si avvicininano maggiormente alla data seguente:"
- no-refine="I risultati rimarrà invariato. Solo l'intervallo di data mostrato dei messaggi sarà affetto."
- useful-prefixs="Cerca i termini che pososno includere i prefissi au: sb: ml: che corrispondono all'autore, all'oggetto ed alla Mailing List rispettivamente."
+ no-refine="Il risultato della ricerca rimarrà invariato. Solo l'intervallo di data mostrato dei messaggi sarà modificato."
+ useful-prefixs="Cerca i termini che possono includere i prefissi au: sb: ml: che corrispondono rispettivamente all'autore, all'oggetto ed alla Mailing List."
 
  day-suffix=""
  
