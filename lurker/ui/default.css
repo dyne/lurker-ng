@@ -63,9 +63,9 @@ h1 a:visited { color:#11F }
 dt a { font-weight: normal }
 .mime-label a { background-color:#DDF; padding:3px; font-weight:bold }
 
-img { border: 0; margin: 0; padding: 0 }
+img { border: 0; margin: 0; padding: 0; }
 h2 img { vertical-align:middle; padding-top:1px }
-td img { vertical-align:middle }
+table.navigation td img { vertical-align:middle }
 .selected { background-color:#AAF }  /* Mark the thread segment as selected */
 .normal   { }                        /* Mark the thread segment as normal */
 
