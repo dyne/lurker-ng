@@ -182,6 +182,8 @@
  <p/>
  <h2>
   <a href="../thread/{thread}.{$ext}#{id}">
+   <img border="0" src="../imgs/tree.png" alt="{$threading}:"/>
+   <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
    <xsl:value-of select="subject"/>
   </a>
  </h2>

@@ -167,7 +167,7 @@
  </h2>
  
  <p/><xsl:apply-templates select="time"/>
- <table width="100%">
+ <table width="100%" border="0" cellspacing="0" cellpadding="0" class="thread">
     <tr><th align="left"><xsl:value-of select="$subject"/></th>
         <th align="left"><xsl:value-of select="$author"/></th>
         <th align="left"><xsl:value-of select="$date"/></th></tr>

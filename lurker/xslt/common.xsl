@@ -115,6 +115,10 @@
    <a name="{id}"/>
    <xsl:if test="draw"><xsl:apply-templates select="draw"/></xsl:if>
    <xsl:if test="not(draw)">
+    <a href="../thread/{thread}.{$ext}">
+     <img border="0" src="../imgs/tree.png" alt="{$threading} "/>
+     <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
+    </a>
     <a href="../message/{mid}.{$ext}">
      <xsl:call-template name="truncate">
       <xsl:with-param name="length">50</xsl:with-param>
