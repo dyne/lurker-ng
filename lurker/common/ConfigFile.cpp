@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.8 2004-08-24 16:04:33 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.9 2004-08-24 21:14:54 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -79,7 +79,7 @@ string::size_type skip_front(const string& line, string::size_type x = 0)
 	return x;
 }
 
-int Config::load(const string& file)
+int Config::load(const string& file, bool toplevel)
 {
 	ifstream f(file.c_str());
 	if (!f.is_open())
@@ -150,7 +150,7 @@ int Config::load(const string& file)
 		}
 	}
 	
-	if (key == "")
+	if (toplevel && key == "")
 	{
 		error << "No values set by config file '" << file << "'!" << endl;
 		ok = false;
@@ -369,7 +369,7 @@ int Config::process_command(const string& key, const string& val, const string& 
 			file = val;
 		else	file = dir + val;
 		
-		if (load(file) != 0)
+		if (load(file, false) != 0)
 			return -1;
 	}
 	else

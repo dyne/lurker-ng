@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.7 2004-08-24 16:04:33 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.8 2004-08-24 21:14:56 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -114,7 +114,7 @@ class Config
  	Config();
  	
  	// Open the config from this file.
- 	int load(const string& file);
+ 	int load(const string& file, bool toplevel = true);
  	int process_command(const string& key, const string& val, const string& dir);
 };
 
