@@ -228,7 +228,7 @@ div.badsig {
   margin: 0px;
   padding: 0px;
   overflow: hidden;
-  border: 1px solid #F00;
+/*  border: 1px solid #F00; */
 }
 div.badsig div.details {
   background-color: #F00;

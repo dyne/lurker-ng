@@ -73,7 +73,7 @@
     </table>
     
     <table class="navigation">
-     <tr><th colspan="3"><xsl:value-of select="$refine-search"/></th></tr>
+     <tr><th align="left" colspan="3"><xsl:value-of select="$refine-search"/></th></tr>
      <tr>
       <td>
        <xsl:choose>
@@ -140,7 +140,7 @@
    
    <div class="footer">
     <table class="navigation">
-     <tr><th colspan="2"><xsl:value-of select="$jump-search"/></th></tr>
+     <tr><th align="left" colspan="2"><xsl:value-of select="$jump-search"/></th></tr>
      <tr>
       <td>
         <!-- make this the same height as mindex -->

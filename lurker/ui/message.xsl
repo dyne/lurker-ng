@@ -187,7 +187,7 @@
     </table>
     
     <table class="navigation">
-     <tr><th colspan="2"><xsl:value-of select="$tree-context"/></th></tr>
+     <tr><th align="left" colspan="2"><xsl:value-of select="$tree-context"/></th></tr>
      <tr>
       <td nowrap="NOWRAP">
        <xsl:apply-templates mode="tree" select="threading/snippet/tree[position()=1]"/>
