@@ -1,5 +1,5 @@
 /*
- * $Id: message.c,v 1.10 2002-01-28 08:47:00 cbond Exp $
+ * $Id: message.c,v 1.11 2002-01-28 08:52:56 cbond Exp $
  *  
  *  message.c - parse mail.
  *  
@@ -80,8 +80,7 @@ mail_parse(int fd, off_t offset)
 		 * Round length up to the nearest page size multiple, and
 		 * include compensation for the offset rounding.
 		 */
-		out->region = (maplog + offset - offc + getpagesize() - 1) &
-				~(getpagesize() - 1);
+		out->region = maplog + offset - offc;
 		buffer = (char *)mmap(NULL, out->region, PROT_READ | PROT_WRITE,
 					MAP_PRIVATE, fd, offc);
 		if (buffer == MAP_FAILED)
@@ -103,6 +102,12 @@ mail_parse(int fd, off_t offset)
 			end = out->buffer + maplog;
 	}
 
+	/*
+	 * Seek to the end of this message.
+	 */
+	if (lseek(fd, offset + end - out->buffer + 1, SEEK_SET) < 0)
+		return (NULL);
+
 	end[0] = 0;
 	if (message_offset(out->buffer, &out->offset)) {
 		mail_free(out);
@@ -118,12 +123,6 @@ mail_parse(int fd, off_t offset)
 	INIT(&out->bss, mail_string, off, (size_t)(end - off));
 	rfc822_parse_msg(&out->env, &out->body, out->buffer,
 		(size_t)(off - out->buffer), &out->bss, "localhost", 0);
-
-	/*
-	 * Seek to the end of this message.
-	 */
-	if (lseek(fd, offset + end - out->buffer + 1, SEEK_SET) < 0)
-		return (NULL);
 
 	return (out);
 }
