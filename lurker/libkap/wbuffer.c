@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.12 2002-08-24 18:42:20 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.13 2002-08-24 18:58:50 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -261,29 +261,22 @@ static int flush_buffer(Kap k, kptr kp)
 	return 0;
 }
 
-#define SWAP_HUNK(a, b, len, type) \
-while (len >= sizeof(type)) \
-{ \
-	tmp_##type = *((type*)a); \
-	*((type*)a) = *((type*)b); \
-	*((type*)b) = tmp_##type; \
-	\
-	a   += sizeof(type); \
-	b   += sizeof(type); \
-	len -= sizeof(type); \
-}
-
 static void swap_buf(unsigned char* a, unsigned char* b, size_t len)
 {
-	long	tmp_long;
-	int	tmp_int;
-	short	tmp_short;
-	char	tmp_char;
+	unsigned char buf[1024];
+	size_t todo;
 	
-	SWAP_HUNK(a, b, len, long)
-	SWAP_HUNK(a, b, len, int)
-	SWAP_HUNK(a, b, len, short)
-	SWAP_HUNK(a, b, len, char)
+	while (len)
+	{
+		if (len < sizeof(buf))	todo = sizeof(buf);
+		else			todo = len;
+		
+		memcpy(&buf[0], a,       todo);
+		memcpy(a,       b,       todo);
+		memcpy(b,       &buf[0], todo);
+		
+		len -= todo;
+	}
 }
 
 /* Swap two records buffer locations.
