@@ -1,3 +1,6 @@
+Search should use same code as indexer for pulling appart keywords from a
+string.
+
 What about the same message in multiple lists?
 Ideally want to reuse id and only have one indexed copy - both lists
 	refer to the message.
