@@ -17,3 +17,7 @@ store/search.c
 store/service.c
 store/summary.c
 store/wbuffer.c
+libkap/btree.c
+libkap/kap.c
+libkap/kapdump.c
+libkap/kapmake.c
