@@ -4,14 +4,9 @@ Quick start
 0 Find and install development files for: 
 
    g++ >= 3.2            - http://gcc.gnu.org/
-   jam                   - http://www.perforce.com/jam/jam.html [**]
+   jam                   - ftp://ftp.perforce.com/pub/jam
    mimelib  (kdenetwork) - ftp://download.uk.kde.org/pub/kde/stable/latest/src
    xsltproc (libxslt1)   - http://xmlsoft.org/XSLT/
-
- ** jam tarballs are tricky to find on the perforce website, try:
-  http://public.perforce.com:8080/@md=d&cd=//public/&ra=s&c=Ih9@//public/jam/?ac=83
-  http://public.perforce.com/public/index.html, click public, click jam
-   (do not click jam on the first page or you will get source code instead)
 
  If you need to, lurker can be built using only g++ 2.95, however 3.2 is
  recommended as the resulting binaries are much smaller and faster.
