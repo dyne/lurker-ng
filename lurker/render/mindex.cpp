@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.11 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.12 2004-08-20 02:42:45 terpstra Exp $
  *  
  *  mindex.cpp - Handle a mindex/ command
  *  
@@ -52,12 +52,17 @@ int mindex_format_error(const string& param)
 
 int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 {
-	string::size_type o = param.find('@');
-	if (o == string::npos || !MessageId::is_full(param.c_str()+o+1))
+	Request req = parse_request(param);
+	cfg.options = req.options;
+	
+	string::size_type o = req.options.find('@');
+	if (o == string::npos || 
+	    !MessageId::is_full(req.options.c_str()+o+1) ||
+	    req.options.length() != o+1+MessageId::full_len)
 		return mindex_format_error(param);
 	
-	MessageId id(param.c_str()+o+1);
-	string listn(param, 0, o);
+	MessageId id(req.options.c_str()+o+1);
+	string listn(req.options, 0, o);
 	
 	if (cfg.lists.find(listn) == cfg.lists.end())
 	{
@@ -135,11 +140,11 @@ int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
-	Cache cache(cfg, "mindex", param);
+	Cache cache(cfg, "mindex", param, req.ext);
 	
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/mindex.xsl\"?>\n"
-		<< "<mindex>\n"
+		<< "<mindex xml:lang=\"" << req.language << "\">\n"
 		<< " " << cfg << "\n"
 		<< " " << list << "\n";
 	

@@ -1,4 +1,4 @@
-/*  $Id: mbox.cpp,v 1.7 2004-08-19 14:52:29 terpstra Exp $
+/*  $Id: mbox.cpp,v 1.8 2004-08-20 02:42:45 terpstra Exp $
  *  
  *  mbox.cpp - Handle a mbox/ command
  *  
@@ -78,7 +78,7 @@ int handle_mbox(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
-	Cache cache(cfg, "mbox", param);
+	Cache cache(cfg, "mbox", param, "rfc822");
 	cache.o << message.AsString().c_str();
 	
 	return 0;

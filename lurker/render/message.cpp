@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.35 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: message.cpp,v 1.36 2004-08-20 02:42:45 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -666,18 +666,22 @@ string MBox::load(ESort::Reader* db, const MessageId& rel, const Config& conf)
 
 int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 {
-	if (!MessageId::is_full(param.c_str()))
+	Request req = parse_request(param);
+	cfg.options = req.options;
+	
+	if (!MessageId::is_full(req.options.c_str()) ||
+	    req.options.length() != MessageId::full_len)
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
 		cout << error(_("Bad request"), param,
 			_("The given parameter was not of the correct format. "
 			  "A message request must be formatted like: "
-			  "message/YYYYMMDD.HHMMSS.hashcode.xml"));
+			  "message/YYYYMMDD.HHMMSS.hashcode.lc.xml"));
 		return 1;
 	}
 	
-	MessageId id(param.c_str());
+	MessageId id(req.options.c_str());
 	
 	pgp_config = &cfg; // hackish
 	pgp_name_prefix = id.serialize();
@@ -836,11 +840,11 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
-	Cache cache(cfg, "message", param);
+	Cache cache(cfg, "message", param, req.ext);
 	
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/message.xsl\"?>\n"
-		<< "<message>\n"
+		<< "<message xml:lang=\"" << req.language << "\">\n"
 		<< " " << cfg << "\n"
 		<< " " << source << "\n";
 	

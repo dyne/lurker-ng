@@ -1,4 +1,4 @@
-/*  $Id: Cache.cpp,v 1.11 2004-02-18 16:52:35 terpstra Exp $
+/*  $Id: Cache.cpp,v 1.12 2004-08-20 02:42:45 terpstra Exp $
  *  
  *  Cache.h - Helper which transforms xml -> html and caches files
  *  
@@ -104,7 +104,7 @@ int streambug::sync()
 	return 0;
 }
 
-Cache::Cache(const Config& cfg, const string& command, const string& parameter)
+Cache::Cache(const Config& cfg, const string& command, const string& parameter, const string& ext)
  : bug(new streambug), o(bug)
 {
 	if (chdir(command.c_str()) != 0)
@@ -134,11 +134,6 @@ Cache::Cache(const Config& cfg, const string& command, const string& parameter)
 	{
 		cache = stdout;
 	}
-	
-	string::size_type p = parameter.rfind('.');
-	string ext;
-	if (p != string::npos)
-		ext = parameter.substr(p+1, string::npos);
 	
 	cout << "Status: 200 OK\r\n";
 	if (ext == "html")
@@ -171,10 +166,18 @@ Cache::Cache(const Config& cfg, const string& command, const string& parameter)
 		cout << "Content-Type: message/rfc822\r\n\r\n";
 		output = cache;
 	}
-	else
+	else if (ext == "xml")
 	{
 		cout <<	"Content-Type: text/xml; charset=UTF-8\r\n\r\n";
 		output = cache;
+	}
+	else
+	{
+		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout << error(_("Unknown file type"), ext,
+			_("The requested extension is not supported by lurker. "
+			  "Please reformulate your request."));
+		exit(1);
 	}
 	
 	cout.flush(); // in case of stdout writing next (ick)

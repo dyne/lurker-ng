@@ -16,6 +16,10 @@ v1.2:
 	Removed a misguided use of pointers in the ConfigFile class
 	Group searching now uses internal 'or' search of included lists
 	Mailing lists may now be regrouped without reimporting
+	Deny formatting of unknown extensions
+	Include language code in the extension of all pages
+	Switch the rendered locale based on the extension
+	Include a language switching drop-down
 
 v1.1:
 	Create mbox and attach directory upon install

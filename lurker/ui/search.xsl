@@ -63,6 +63,7 @@
    <div class="header">
     <table class="external">
      <tr>
+      <td width="1%" class="language"><xsl:call-template name="language-dropdown"/></td>
       <td align="left">
        <h1><xsl:value-of select="$search"/>: <xsl:value-of select="translate(query,',',' ')"/></h1>
       </td>

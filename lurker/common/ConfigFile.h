@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.4 2004-08-19 23:52:51 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.5 2004-08-20 02:42:44 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -95,6 +95,8 @@ class Config
  	// parameters specific for rendering
  	string	docUrl;
  	string	cgiUrl;
+ 	string	command;
+ 	mutable string options;
  	
  	// get the error string
  	string getError()

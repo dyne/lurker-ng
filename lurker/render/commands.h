@@ -1,4 +1,4 @@
-/*  $Id: commands.h,v 1.4 2003-07-01 15:49:04 terpstra Exp $
+/*  $Id: commands.h,v 1.5 2004-08-20 02:42:45 terpstra Exp $
  *  
  *  commands.h - All the commands we support
  *  
@@ -30,6 +30,15 @@
 #include <vector>
 
 #define _(x) x
+
+struct Request
+{
+	string options;
+	string language;
+	string ext;
+};
+
+Request parse_request(const string& param);
 
 int handle_message(const Config& c, ESort::Reader* r, const string& param);
 int handle_thread (const Config& c, ESort::Reader* r, const string& param);

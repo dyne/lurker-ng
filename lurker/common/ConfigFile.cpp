@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.5 2004-08-19 23:52:51 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.6 2004-08-20 02:42:44 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -387,7 +387,9 @@ ostream& operator << (ostream& o, const Config& c)
 	o << "<server>"
 	  << "<version>" << VERSION << "</version>"
 	  << "<doc-url>" << c.docUrl << "</doc-url>"
-	  << "<cgi-url>" << c.cgiUrl << "</cgi-url>";
+	  << "<cgi-url>" << c.cgiUrl << "</cgi-url>"
+	  << "<command>" << c.command << "</command>"
+	  << "<options>" << c.options << "</options>";
 	
 	if (c.raw_email) o << "<raw-email/>";
 	

@@ -56,6 +56,7 @@
    <div class="header">
     <table class="external">
      <tr>
+      <td width="1%" class="language"><xsl:call-template name="language-dropdown"/></td>
       <td align="left"><h1><xsl:value-of select="list/email/@name"/></h1></td>
       <td align="right">
        <h1><xsl:apply-templates mode="splash-link" select="server"/></h1>

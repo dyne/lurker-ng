@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.10 2004-01-06 20:41:01 terpstra Exp $
+/*  $Id: main.cpp,v 1.11 2004-08-20 02:42:45 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -105,6 +105,39 @@ void help(const string& about)
 		  "environment variables. Additionally, lurker may be invoked "
 		  "from the command-line. Here, the first parameter is the "
 		  "config file and the second is the requested uri."));
+}
+
+Request parse_request(const string& param)
+{
+	string::size_type dot1 = param.rfind('.');
+	if (dot1 == string::npos)
+	{
+		cout << "Status: 200 OK\r\n";
+		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout << error(_("Missing extension"), param,
+			_("An extension for the request was required, but missing"));
+		exit(1);
+	}
+	
+	string::size_type dot2 = param.rfind('.', dot1-1);
+	if (dot1 - dot2 != 3) dot2 = string::npos;
+	
+	Request out;
+	
+	if (dot2 == string::npos)
+	{
+		out.options  = param.substr(0, dot1);
+		out.language = "en";
+		out.ext = param.substr(dot1+1, string::npos);
+	}
+	else
+	{
+		out.options  = param.substr(0, dot2);
+		out.language = param.substr(dot2+1, 2);
+		out.ext = param.substr(dot1+1, string::npos);
+	}
+	
+	return out;
 }
 
 int main(int argc, char** argv)
@@ -227,6 +260,8 @@ int main(int argc, char** argv)
 	tokens.clear();
 	request = "";
 	config = "";
+	
+	cfg.command = command;
 	
 	if      (command == "message") return handle_message(cfg, db.get(), param);
 	else if (command == "thread")  return handle_thread (cfg, db.get(), param);

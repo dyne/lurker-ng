@@ -44,6 +44,11 @@ table.external td {
   padding-right: 0.25em;
 }
 
+td.language {
+  vertical-align:middle; 
+  width: 1%;
+}
+
 table.external td.mini {
   padding-top: 0.5em;
   padding-bottom: 0.5em;

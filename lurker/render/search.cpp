@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.13 2004-08-19 23:52:51 terpstra Exp $
+/*  $Id: search.cpp,v 1.14 2004-08-20 02:42:45 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -441,22 +441,21 @@ bool Search::pull(int n, vector<Summary>& o)
 
 int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 {
-	string::size_type o = param.find('@');
+	Request req = parse_request(param);
+	cfg.options = req.options;
+	
+	string::size_type o = req.options.find('@');
 	if (o == string::npos || o != MessageId::full_len)
 		return search_format_error(param);
 	
-	if (!MessageId::is_full(param.c_str()))
-		return search_format_error(param);
-	
-	string::size_type e = param.rfind('.');
-	if (e == string::npos)
+	if (!MessageId::is_full(req.options.c_str()))
 		return search_format_error(param);
 	
 	vector<string> tokens;
 	++o;
 	
-	MessageId id(param.c_str());
-	string raw = decipherHalf(param.substr(o, e-o));
+	MessageId id(req.options.c_str());
+	string raw = decipherHalf(req.options.substr(o, string::npos));
 	string keys(raw);
 	// we need to translate '!' to '/'
 	for (string::size_type es = 0; es < keys.length(); ++es)
@@ -535,12 +534,13 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	Cache cache(cfg, "search", 
 		param.substr(0, o) + 
-		raw + 	// this is transformed so the webserver can eat it
-		param.substr(e, string::npos));
+		raw + "." +	// this is transformed so the webserver can eat it
+		req.language + "." +
+		req.ext, req.ext);
 	
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/search.xsl\"?>\n"
-		<< "<search>\n"
+		<< "<search xml:lang=\"" << req.language << "\">\n"
 		<< " " << cfg << "\n"
 		<< " <query>" << xmlEscape << keys << "</query>\n";
 	

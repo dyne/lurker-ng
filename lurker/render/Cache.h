@@ -1,4 +1,4 @@
-/*  $Id: Cache.h,v 1.3 2003-07-01 15:49:04 terpstra Exp $
+/*  $Id: Cache.h,v 1.4 2004-08-20 02:42:45 terpstra Exp $
  *  
  *  Cache.h - Helper which transforms xml -> html and caches files
  *  
@@ -43,7 +43,7 @@ class Cache
  	streambug*	bug;
  	
  public:
- 	Cache(const Config& cfg, const string& command, const string& parameter);
+ 	Cache(const Config& cfg, const string& command, const string& parameter, const string& ext);
  	~Cache();
  	
  	ostream o;

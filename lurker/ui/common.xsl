@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
-<xsl:import href="english.xsl"/>
+<xsl:import href="lang.xsl"/>
 
 <xsl:variable name="lurker-url" select="'http://lurker.sourceforge.net/'"/>
 <xsl:variable name="last-date" select="'20380101.000000.00000000'"/>
 <xsl:variable name="jump-date" select="'20050101.000000.00000000'"/>
 
 <!-- Output control -->
-<xsl:variable name="ext" select="'html'"/>
+<xsl:variable name="type" select="'html'"/>
 <xsl:output method="html" indent="no" encoding="UTF-8"
             doctype-system="http://www.w3.org/TR/html4/strict.dtd"
             doctype-public="-//W3C//DTD HTML 4.0 Transitional//EN"/>
 
+<!-- URL control -->
+<xsl:variable name="ext" select="concat($lang, concat('.', $type))"/>
 
 <!-- Email formatting -->
 <xsl:template match="email" mode="email-name">
@@ -264,6 +266,32 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
  </table>
 </xsl:template>
 
+<xsl:template name="language-dropdown">
+ <form action="{server/cgi-url}/bounce.cgi">
+  <select name="url" onchange="self.location=value;">
+   <xsl:variable name="doc-url" select="server/doc-url"/>
+   <xsl:variable name="command" select="server/command"/>
+   <xsl:variable name="options" select="server/options"/>
+   <xsl:for-each select="document('lang.xml')/langs/lang">
+    <xsl:element name="option">
+     <xsl:attribute name="value">
+      <xsl:value-of select="$doc-url"/>
+      <xsl:text>/</xsl:text>
+      <xsl:value-of select="$command"/>
+      <xsl:text>/</xsl:text>
+      <xsl:value-of select="$options"/>
+      <xsl:text>.</xsl:text>
+      <xsl:value-of select="@code"/>
+      <xsl:text>.</xsl:text>
+      <xsl:value-of select="$type"/>
+     </xsl:attribute>
+     <xsl:if test="@code = $lang"><xsl:attribute name="selected">SELECTED</xsl:attribute></xsl:if>
+     <xsl:value-of select="."/>
+    </xsl:element>
+   </xsl:for-each>
+  </select>
+ </form>
+</xsl:template>
 
 <!-- Common links -->
 <xsl:template match="server" mode="splash-link">

@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.6 2004-01-06 20:02:05 terpstra Exp $
+/*  $Id: list.cpp,v 1.7 2004-08-20 02:42:45 terpstra Exp $
  *  
  *  list.cpp - Handle a list/ command
  *  
@@ -79,24 +79,21 @@ struct NewTopic
 	
 int handle_list(const Config& cfg, ESort::Reader* db, const string& param)
 {
-	string::size_type o = param.find('.');
-	if (o == string::npos)
-		return list_format_error(param);
+	Request req = parse_request(param);
+	cfg.options = req.options;
 	
-	string listn(param, 0, o);
-	
-	if (cfg.lists.find(listn) == cfg.lists.end())
+	if (cfg.lists.find(req.options) == cfg.lists.end())
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("No such list"), listn,
+		cout << error(_("No such list"), req.options,
 			_("The specified mailing list is not available in this "
 			  "archive. Perhaps you misspelled it or went to the "
 			  "wrong server?"));
 		return 1;
 	}
 	
-	const List& list = cfg.lists.find(listn)->second;
+	const List& list = cfg.lists.find(req.options)->second;
 	
 	// Right! Everything the user did is ok.
 	
@@ -157,11 +154,11 @@ int handle_list(const Config& cfg, ESort::Reader* db, const string& param)
 		}
 	}
 	
-	Cache cache(cfg, "list", param);
+	Cache cache(cfg, "list", param, req.ext);
 	
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/list.xsl\"?>\n"
-		<< "<list>\n"
+		<< "<list xml:lang=\"" << req.language << "\">\n"
 		<< " " << cfg << "\n"
 		<< " " << list << "\n";
 	

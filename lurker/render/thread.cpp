@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.8 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: thread.cpp,v 1.9 2004-08-20 02:42:45 terpstra Exp $
  *  
  *  thread.cpp - Handle a thread/ command
  *  
@@ -33,7 +33,11 @@
 
 int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 {
-	if (!MessageId::is_full(param.c_str()))
+	Request req = parse_request(param);
+	cfg.options = req.options;
+	
+	if (!MessageId::is_full(req.options.c_str()) ||
+	    req.options.length() != MessageId::full_len)
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
@@ -44,7 +48,7 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
-	MessageId id(param.c_str());
+	MessageId id(req.options.c_str());
 	string ok;
 	
 	Summary source(id);
@@ -95,11 +99,11 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
-	Cache cache(cfg, "thread", param);
+	Cache cache(cfg, "thread", param, req.ext);
 	
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/thread.xsl\"?>\n"
-		<< "<thread>\n"
+		<< "<thread xml:lang=\"" << req.language << "\">\n"
 		<< " " << cfg << "\n"
 		<< " <hash>" << subject_hash(source.subject().c_str()) << "</hash>\n";
 	
