@@ -85,6 +85,7 @@ if test "x$USE_MAINTAINER_MODE" != "xno"; then
 fi
 
 AC_CONFIG_FILES([
- Makefile libesort/Makefile bindings/Makefile bindings/c/Makefile])
+ Makefile libesort/Makefile bindings/Makefile 
+ bindings/c/Makefile bindings/perl/Makefile])
 AC_OUTPUT
 
