@@ -98,11 +98,19 @@ wwwdir = @wwwdir@
 
 noinst_LIBRARIES = libkap.a
 
+bin_PROGRAMS = kapmake kapdump
+
 libkap_a_SOURCES = \
 	kap.h private.h \
 	btree.c \
 	kap.c
 
+
+kapmake_SOURCES = kapmake.c
+kapmake_LDADD = libkap.a
+
+kapdump_SOURCES = kapdump.c
+kapdump_LDADD = libkap.a
 subdir = libkap
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
@@ -113,6 +121,17 @@ libkap_a_AR = $(AR) cru
 libkap_a_LIBADD =
 am_libkap_a_OBJECTS = btree.$(OBJEXT) kap.$(OBJEXT)
 libkap_a_OBJECTS = $(am_libkap_a_OBJECTS)
+bin_PROGRAMS = kapmake$(EXEEXT) kapdump$(EXEEXT)
+PROGRAMS = $(bin_PROGRAMS)
+
+am_kapdump_OBJECTS = kapdump.$(OBJEXT)
+kapdump_OBJECTS = $(am_kapdump_OBJECTS)
+kapdump_DEPENDENCIES = libkap.a
+kapdump_LDFLAGS =
+am_kapmake_OBJECTS = kapmake.$(OBJEXT)
+kapmake_OBJECTS = $(am_kapmake_OBJECTS)
+kapmake_DEPENDENCIES = libkap.a
+kapmake_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
@@ -120,15 +139,16 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/btree.Po $(DEPDIR)/kap.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/btree.Po $(DEPDIR)/kap.Po \
+@AMDEP_TRUE@	$(DEPDIR)/kapdump.Po $(DEPDIR)/kapmake.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
-DIST_SOURCES = $(libkap_a_SOURCES)
+DIST_SOURCES = $(libkap_a_SOURCES) $(kapdump_SOURCES) $(kapmake_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(libkap_a_SOURCES)
+SOURCES = $(libkap_a_SOURCES) $(kapdump_SOURCES) $(kapmake_SOURCES)
 
 all: all-am
 
@@ -150,6 +170,35 @@ libkap.a: $(libkap_a_OBJECTS) $(libkap_a_DEPENDENCIES)
 	-rm -f libkap.a
 	$(libkap_a_AR) libkap.a $(libkap_a_OBJECTS) $(libkap_a_LIBADD)
 	$(RANLIB) libkap.a
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
+	  if test -f $$p \
+	  ; then \
+	    f=`echo $$p1|sed '$(transform);s/$$/$(EXEEXT)/'`; \
+	   echo " $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/$$f"; \
+	   $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/$$f; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  f=`echo $$p|sed 's/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
+	  echo " rm -f $(DESTDIR)$(bindir)/$$f"; \
+	  rm -f $(DESTDIR)$(bindir)/$$f; \
+	done
+
+clean-binPROGRAMS:
+	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+kapdump$(EXEEXT): $(kapdump_OBJECTS) $(kapdump_DEPENDENCIES) 
+	@rm -f kapdump$(EXEEXT)
+	$(LINK) $(kapdump_LDFLAGS) $(kapdump_OBJECTS) $(kapdump_LDADD) $(LIBS)
+kapmake$(EXEEXT): $(kapmake_OBJECTS) $(kapmake_DEPENDENCIES) 
+	@rm -f kapmake$(EXEEXT)
+	$(LINK) $(kapmake_LDFLAGS) $(kapmake_OBJECTS) $(kapmake_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -159,6 +208,8 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/btree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/kap.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/kapdump.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/kapmake.Po@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)
@@ -232,9 +283,10 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LIBRARIES)
+all-am: Makefile $(LIBRARIES) $(PROGRAMS)
 
 installdirs:
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
 
 install: install-am
 install-exec: install-exec-am
@@ -261,7 +313,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-noinstLIBRARIES mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-noinstLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am
 
@@ -278,7 +331,7 @@ info-am:
 
 install-data-am:
 
-install-exec-am:
+install-exec-am: install-binPROGRAMS
 
 install-info: install-info-am
 
@@ -294,18 +347,18 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-compile mostlyclean-generic
 
-uninstall-am: uninstall-info-am
+uninstall-am: uninstall-binPROGRAMS uninstall-info-am
 
-.PHONY: GTAGS all all-am check check-am clean clean-generic \
-	clean-noinstLIBRARIES distclean distclean-compile \
+.PHONY: GTAGS all all-am check check-am clean clean-binPROGRAMS \
+	clean-generic clean-noinstLIBRARIES distclean distclean-compile \
 	distclean-depend distclean-generic distclean-tags distdir dvi \
-	dvi-am info info-am install install-am install-data \
-	install-data-am install-exec install-exec-am install-info \
-	install-info-am install-man install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+	dvi-am info info-am install install-am install-binPROGRAMS \
+	install-data install-data-am install-exec install-exec-am \
+	install-info install-info-am install-man install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic tags uninstall uninstall-am \
-	uninstall-info-am
+	uninstall-binPROGRAMS uninstall-info-am
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
