@@ -28,6 +28,7 @@
  all-groups="Alle Mailing-List-Gruppen"
  all-langs="Alle Spachen"
  missing-lang=" - fehlt in lang.xml"
+ offline=" (offline)"
  search="Suchen"
 
  jump-to-date="Springe zu Nachrichten nahe dem folgenden Datum innerhalb dieser Mailing-List:"

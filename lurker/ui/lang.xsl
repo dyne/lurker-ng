@@ -38,6 +38,7 @@
 <xsl:variable name="all-groups" select="document($langfile)/text/@all-groups"/>
 <xsl:variable name="all-langs" select="document($langfile)/text/@all-langs"/>
 <xsl:variable name="missing-lang" select="document($langfile)/text/@missing-lang"/>
+<xsl:variable name="offline" select="document($langfile)/text/@offline"/>
 <xsl:variable name="search" select="document($langfile)/text/@search"/>
 
 <xsl:variable name="jump-to-date" select="document($langfile)/text/@jump-to-date"/>

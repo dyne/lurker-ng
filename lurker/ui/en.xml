@@ -28,6 +28,7 @@
  all-groups="Any mailing list group"
  all-langs="Any language"
  missing-lang=" - missing in lang.xml"
+ offline=" (offline)"
  search="Search"
 
  jump-to-date="Jump to those messages within this mailing list which are nearest to the following date:"

@@ -5,6 +5,7 @@
 
 
 <!-- Format option menus -->
+<xsl:template match="list[offline]" mode="list-select"/>
 <xsl:template match="list" mode="list-select">
  <option value="{id}">
   <xsl:value-of select="email/@name"/>
@@ -28,7 +29,17 @@
 <!-- Format mailing list groups -->
 <xsl:template match="list" mode="list-sections">
  <li>
-  <b><a href="../list/{id}.{$ext}"><xsl:value-of select="email/@name"/></a></b>  &#8212; <i><xsl:value-of select="description"/></i>
+  <xsl:choose>
+   <xsl:when test="offline">
+    <a href="{link}"><xsl:value-of select="email/@name"/></a>
+    <xsl:value-of select="$offline"/>
+   </xsl:when>
+   <xsl:otherwise>
+    <b><a href="../list/{id}.{$ext}"><xsl:value-of select="email/@name"/></a></b>
+   </xsl:otherwise>
+  </xsl:choose>
+  <xsl:text> &#8212; </xsl:text>
+  <i><xsl:value-of select="description"/></i>
  </li>
  <xsl:text>&#10;</xsl:text>
 </xsl:template>
