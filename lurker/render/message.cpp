@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.11 2003-06-11 14:34:58 terpstra Exp $
+/*  $Id: message.cpp,v 1.12 2003-06-11 14:40:16 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -291,6 +291,8 @@ void message_format_address(ostream& o, DwAddress* a, const string& charset)
 				
 				// Deal with the horror
 				name = decode_header(name, charset.c_str());
+				if (name.length() > 2 && name[0] == '"')
+					name = name.substr(1, name.length()-2);
 				
 				DwString addr = m->LocalPart() + "@" + m->Domain();
 				for (size_t i = 0; i < addr.length(); ++i)
