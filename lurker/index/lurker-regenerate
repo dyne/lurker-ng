@@ -12,7 +12,7 @@ dbdir=`echo $dbdir`
 
 cd $dbdir
 
-test -d || mkdir tmp
+test -d tmp || mkdir tmp
 cd tmp
 mv ../* .
 rm -f db.* db
