@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.5 2002-02-10 10:52:17 terpstra Exp $
+/*  $Id: common.h,v 1.6 2002-02-25 03:20:57 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -106,3 +106,10 @@ typedef lu_quad message_id;
 /*------------------------------------------------ Public global vars */
 
 extern message_id lu_common_minvalid;
+
+/*------------------------------------------------ Public helpers */
+
+void lu_common_decode_header(
+	const char*	r,
+	char*		out,
+	size_t		outlen);
