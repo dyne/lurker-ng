@@ -29,10 +29,10 @@
 <xsl:variable name="search" select="'Suchen'"/>
 
 <xsl:variable name="jump-to-date" select="'Springe zu Nachrichten nahe dem folgenden Datum innerhalb dieser MailingList:'"/>
-<xsl:variable name="search-list" select="'Suche nach Nachrichten innerhalb dieser MailingList die folgende Stichwörter enthalten:'"/>
+<xsl:variable name="search-list" select="'Suche nach Nachrichten innerhalb dieser MailingList die folgende StichwÃ¶rter enthalten:'"/>
 <xsl:variable name="jump" select="'Springe'"/>
 <xsl:variable name="use-special-word-list" select="'Benutze das Stichwort '"/>
-<xsl:variable name="to-search-list" select="' um die Suche auf diese MailingList zu beschränken.'"/>
+<xsl:variable name="to-search-list" select="' um die Suche auf diese MailingList zu beschrÃ¤nken.'"/>
 <xsl:variable name="newest-messages" select="'Zeige die neuesten Nachrichten'"/>
 <xsl:variable name="jump-group" select="'Springe zur Gruppe'"/>
 <xsl:variable name="post-new" select="'Beginne einen neuen Thread'"/>
@@ -40,20 +40,20 @@
 <xsl:variable name="recent-poster" select="'Letzter Poster'"/>
 <xsl:variable name="new-threads" select="'Aktive Threads'"/>
 <xsl:variable name="post-count" select="'&#x2211;'"/>
-<xsl:variable name="activity-chart" select="'Aktivität'"/>
+<xsl:variable name="activity-chart" select="'AktivitÃ¤t'"/>
 
-<xsl:variable name="search-thread" select="'Suche nach Nachrichten innerhalb dieses Threads die folgende Schlüsselwörter beinhalten:'"/>
+<xsl:variable name="search-thread" select="'Suche nach Nachrichten innerhalb dieses Threads die folgende SchlÃ¼sselwÃ¶rter beinhalten:'"/>
 <xsl:variable name="use-special-word-thread" select="'Benutze das Stichwort '"/>
-<xsl:variable name="to-search-thread" select="' um die Suche auf diesen Thread zu beschränken.'"/>
+<xsl:variable name="to-search-thread" select="' um die Suche auf diesen Thread zu beschrÃ¤nken.'"/>
 
 <xsl:variable name="refine-search" select="'In den gefundenen Nachrichten nach folgenden Stichwort suchen:'"/>
 <xsl:variable name="jump-search" select="'Springe zu den Nachrichten um das folgenden Datum:'"/>
-<xsl:variable name="no-refine" select="'Das Ergebnis bleibt unverändert. Nur das angezeigte Datum ist betroffen.'"/>
-<xsl:variable name="useful-prefixs" select="'Such-Strings können die Zusätze au: sb: und ml: enthalten, um speziell nach Autor, Betreff und MailingList zu suchen.'"/>
+<xsl:variable name="no-refine" select="'Das Ergebnis bleibt unverÃ¤ndert. Nur das angezeigte Datum ist betroffen.'"/>
+<xsl:variable name="useful-prefixs" select="'Such-Strings kÃ¶nnen die ZusÃ¤tze au: sb: und ml: enthalten, um speziell nach Autor, Betreff und MailingList zu suchen.'"/>
 
 <xsl:variable name="jan">Januar</xsl:variable>
 <xsl:variable name="feb">Februar</xsl:variable>
-<xsl:variable name="mar">März</xsl:variable>
+<xsl:variable name="mar">MÃ¤rz</xsl:variable>
 <xsl:variable name="apr">April</xsl:variable>
 <xsl:variable name="may">Mai</xsl:variable>
 <xsl:variable name="jun">Juni</xsl:variable>
