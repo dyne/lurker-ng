@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.57 2002-06-04 15:32:00 terpstra Exp $
+/*  $Id: service.c,v 1.58 2002-06-04 16:03:23 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1686,7 +1686,7 @@ static int my_service_message(
 	message_id		count, ind, get, i, buf[20];
 	
 	My_Service_Reply_Tree*	tree = 0;
-	int			tree_size, p, n, j, head;
+	int			tree_size, p, n, j, head, cols;
 	
 	if (strcmp(ext, "xml") && strcmp(ext, "html"))
 	{
@@ -1814,7 +1814,7 @@ static int my_service_message(
 	
 	if (tree[p].replyee != -1) p = tree[p].replyee;
 	
-	my_service_draw_snippet(tree, p, 0);
+	cols = my_service_draw_snippet(tree, p, 0);
 	
 	if (my_service_buffer_init(h, "text/xml\n", 1, 
 			lu_config_cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
@@ -1878,7 +1878,10 @@ static int my_service_message(
 		if (my_service_buffer_write(h, "  </replies>\n") != 0) goto my_service_message_error3;
  	}
 	
-	if (my_service_buffer_write(h, "  <snippet>\n")       != 0) goto my_service_message_error3;
+	if (my_service_buffer_write(h, "  <snippet cols=\"") != 0) goto my_service_message_error3;
+	if (my_service_write_int   (h, cols)                 != 0) goto my_service_message_error3;
+	if (my_service_buffer_write(h, " \">\n")             != 0) goto my_service_message_error3;
+	
 	head = p;
 	for (j = 0; j < 3; j++)
 	{
