@@ -1,4 +1,4 @@
-/*  $Id: message.c,v 1.12 2002-02-22 00:51:43 terpstra Exp $
+/*  $Id: message.c,v 1.13 2002-02-22 01:34:22 terpstra Exp $
  *  
  *  message.c - output results from a message/ lookup
  *  
@@ -27,6 +27,8 @@
 #include "protocol.h"
 #include "message.h"
 #include "handler.h"
+
+#include "io.h"
 
 int lu_message_handler(
 	char* parameter, 
@@ -58,4 +60,68 @@ int lu_message_handler(
 		LU_PROTO_GETMSG, i, LU_PROTO_ENDREQ);
 	
 	return lu_forward_xml(parameter);
+}
+
+int lu_mbox_handler(
+	char* parameter, 
+	const char* uri, 
+	lu_doctype t)
+{
+	FILE* out;
+	int   fd;
+	int   i;
+	
+	if (t != LU_OTHER)
+	{	/* Only know how to handle .txt */
+		printf("Status: 404 Not Found\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&not_found[0], uri);
+		return -1;
+	}
+	
+	if (sscanf(parameter, "%d.txt", &i) != 1)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Reading parameters",
+			parameter,
+			"Not formatted as &lt;message-id&gt.txt;");
+		return -1;
+	}
+	
+	fd = open(parameter, O_CREAT | O_RDWR | O_BINARY | O_EXCL,
+		LU_S_READ | LU_S_WRITE);
+	if (fd == -1)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Not able to create mbox file",
+			parameter,
+			strerror(errno));
+		return -1;
+	}
+	
+	if ((out = fdopen(fd, "w")) == 0)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Not able to fdopen an fd",
+			parameter,
+			strerror(errno));
+		return -1;
+	}
+	
+	fprintf(lu_server_link, "%s %i%c", 
+		LU_PROTO_GETMBOX, i, LU_PROTO_ENDREQ);
+	
+	printf("Status: 200 OK\r\n");
+	printf("Content-type: text/plain\r\n\r\n");
+	
+	lu_forward_data(out);
+	
+	/* We handled the request internally */
+	return -1;
 }

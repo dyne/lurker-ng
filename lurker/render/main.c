@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.8 2002-02-22 00:53:11 terpstra Exp $
+/*  $Id: main.c,v 1.9 2002-02-22 01:34:22 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -144,16 +144,12 @@ int lu_render_close(FILE* f)
 	return fd;
 }
 
-int lu_forward_xml(const char* parameter)
+int lu_forward_data(FILE* out)
 {
-	FILE*	xml;
 	char	buf[4096];
 	size_t	got;
 	size_t  get;
 	int	fragment;
-	
-	if ((xml = lu_render_open(parameter)) == 0)
-		return -1;
 	
 	fflush(lu_server_link);
 	fragment = 0;
@@ -173,10 +169,23 @@ int lu_forward_xml(const char* parameter)
 		if (get > fragment) get = fragment;
 		
 		got = fread(&buf[0], 1, get, lu_server_link);
-		fwrite(&buf[0], 1, got, xml);
+		fwrite(&buf[0], 1, got, out);
 		
 		fragment -= got;
 	}
+	
+	return 0;
+}
+
+int lu_forward_xml(const char* parameter)
+{
+	FILE* xml;
+	
+	if ((xml = lu_render_open(parameter)) == 0)
+		return -1;
+	
+	if (lu_forward_data(xml) != 0)
+		return -1;
 	
 	return lu_render_close(xml);
 }
@@ -209,6 +218,8 @@ static int render_html(const char* parameter)
 	
 	if ((out = fdopen(fd, "w")) == 0)
 	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
 		printf(&basic_error[0], 
 			"Not able to fdopen an fd",
 			&buf[0],
@@ -441,6 +452,7 @@ int main(int argc, char* argv[])
 	else					t = LU_OTHER;
 	
 	if      (!strcmp(module, "message")) handler = &lu_message_handler;
+	else if (!strcmp(module, "mbox"   )) handler = &lu_mbox_handler;
 	else if (!strcmp(module, "thread" )) handler = &lu_thread_handler;
 	else if (!strcmp(module, "mindex" )) handler = &lu_mindex_handler;
 	else if (!strcmp(module, "search" )) handler = &lu_search_handler;

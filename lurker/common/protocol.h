@@ -1,4 +1,4 @@
-/*  $Id: protocol.h,v 1.6 2002-02-22 00:51:43 terpstra Exp $
+/*  $Id: protocol.h,v 1.7 2002-02-22 01:34:22 terpstra Exp $
  *  
  *  protocol.h - What do we use to communicate
  *  
@@ -27,6 +27,8 @@
 #define LU_PROTO_MINDEX		"mindex "
 #define LU_PROTO_SEARCH		"search "
 #define	LU_PROTO_LISTS		"lists "
+#define LU_PROTO_GETMBOX	"getmbox "
+#define LU_PROTO_ATTACH		"attach "
 
 /* Messages to a page */
 #define LU_PROTO_INDEX	20
