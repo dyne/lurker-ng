@@ -1,3 +1,6 @@
+v0.10:
+	New-Topics and Old-Topics should show the subject
+
 v0.9:
 	Don't segfault in rare cases if using '-d' on import (zero restart)
 	Ignore leading non-email cruft in broken mailboxes

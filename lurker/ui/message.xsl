@@ -3,6 +3,20 @@
 
 <xsl:import href="common.xsl"/>
 
+<!-- Format message links by subject -->
+<xsl:template match="summary" mode="post-subject">
+ <xsl:value-of select="subject"/>
+</xsl:template>
+<xsl:template match="summary" mode="post-subject-link">
+ <a href="{id}.{$ext}">
+  <xsl:apply-templates mode="post-subject" select=."/>
+ </a>
+</xsl:template>
+<xsl:template match="summary" mode="post-subject-list">
+ <xsl:if test="position()!=1">, </xsl:if>
+ <xsl:apply-templates mode="post-subject-link" select="."/>
+</xsl:template>
+
 
 <!-- Format the message header fields -->
 <xsl:template name="header-fields">
@@ -20,11 +34,11 @@
  </xsl:if>
  <xsl:if test="threading/inreplyto">
   <b><xsl:value-of select="$old-topics"/>:&#160;</b>
-  <xsl:apply-templates mode="post-description-list" select="threading/inreplyto/summary"/><br/>
+  <xsl:apply-templates mode="post-subject-list" select="threading/inreplyto/summary"/><br/>
  </xsl:if>
  <xsl:if test="threading/drift">
   <b><xsl:value-of select="$new-topics"/>:&#160;</b>
-  <xsl:apply-templates mode="post-description-list" select="threading/drift/summary"/><br/>
+  <xsl:apply-templates mode="post-subject-list" select="threading/drift/summary"/><br/>
  </xsl:if>
  <b><xsl:value-of select="$subject"/>:&#160;</b>
  <xsl:value-of select="summary/subject"/><br/>

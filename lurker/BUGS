@@ -1,4 +1,6 @@
 Ideas:
+	Gpg keyring specification for signature checking + faces?
+	Printable css?
 	Maybe warn the user if the group/list search terms conflict?
 	Timezones suck. Need to localize times to the browser?
 	In-message forward/backward for search results?
