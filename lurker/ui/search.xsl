@@ -124,9 +124,9 @@
       <col width="30%" align="left"/>
       <col width="10%" align="right"/>
       <tr>
-       <th><xsl:value-of select="$subject"/></th>
-       <th><xsl:value-of select="$author"/></th>
-       <th><xsl:value-of select="$date"/>
+       <th align="left"><xsl:value-of select="$subject"/></th>
+       <th align="left"><xsl:value-of select="$author"/></th>
+       <th align="left"><xsl:value-of select="$date"/>
            <xsl:text>&#160;(</xsl:text>
            <xsl:apply-templates select="row[position()=1]/summary" mode="timezone"/>
            <xsl:text>)</xsl:text>
