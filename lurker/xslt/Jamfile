@@ -6,12 +6,13 @@ InstallFile $(VARDIR)/www/$(PACKAGE) :
 	;
 
 InstallFile $(VARDIR)/www/$(PACKAGE)/fmt :
-	basic.css
+	default.css
 	common.xsl
 	deutsch.xsl
 	english.xsl
 	error.xsl
 	japanese.xsl
+	lang.xsl
 	message.xsl
 	mindex.xsl
 	redirect.xsl
@@ -29,6 +30,3 @@ InstallFile $(VARDIR)/www/$(PACKAGE)/mindex  : stub ;
 InstallFile $(VARDIR)/www/$(PACKAGE)/search  : stub ;
 InstallFile $(VARDIR)/www/$(PACKAGE)/splash  : stub ;
 InstallFile $(VARDIR)/www/$(PACKAGE)/thread  : stub ;
-
-#SoftLink $(VARDIR)/www/$(PACKAGE)/xslt/lang.xsl : english.xsl ;
-#SoftLink $(VARDIR)/www/$(PACKAGE)/xslt/default.css : basic.css ;

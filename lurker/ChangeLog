@@ -7,6 +7,7 @@ v0.7:
 	Open mode of 0666 instead of 0644; rely on the umask
 	Support override for lurker.cgi location
 	Replace list_host with archive
+	Don't use symlinks; not portable and jam doesn't do it
 
 v0.6:
 	Jam replaces automake + overkill autoconf madness; hooray!
