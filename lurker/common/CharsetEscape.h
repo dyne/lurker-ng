@@ -1,4 +1,4 @@
-/*  $Id: CharsetEscape.h,v 1.3 2003-05-03 19:13:39 terpstra Exp $
+/*  $Id: CharsetEscape.h,v 1.4 2003-06-08 16:23:13 terpstra Exp $
  *  
  *  CharsetEscape.h - A stream manipulator-like thing for charset conversion
  *  
@@ -49,20 +49,33 @@ class CharsetEscape
  	bool valid() const { return ic != (iconv_t)-1; }
  	
  	void write(ostream& o, const char* s, size_t amt);
+ 	string write(const char* s, size_t amt);
  	
  	void write(ostream& o, const string& s)
  	{
  		write(o, s.c_str(), s.length());
+ 	}
+ 	string write(const string& s)
+ 	{
+ 		return write(s.c_str(), s.length());
  	}
  	
  	void write(ostream& o, const char* s)
  	{
  		write(o, s, strlen(s));
  	}
+ 	string write(const char* s)
+ 	{
+ 		return write(s, strlen(s));
+ 	}
  	
  	void write(ostream& o, char c)
  	{
  		write(o, &c, 1);
+ 	}
+ 	string write(char c)
+ 	{
+ 		return write(&c, 1);
  	}
 };
 

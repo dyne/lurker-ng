@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.6 2003-05-03 19:29:17 terpstra Exp $
+/*  $Id: message.cpp,v 1.7 2003-06-08 16:23:50 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -44,12 +44,6 @@
 #include <CharsetEscape.h>
 #include <XmlEscape.h>
 #include <Keys.h>
-
-#if __GNUC__ == 2
-#include <strstream>
-#else
-#include <sstream>
-#endif
 
 #include "commands.h"
 #include "Threading.h"
@@ -202,24 +196,16 @@ void message_display(ostream& o, DwEntity& e)
 		}
 	}
 	
-#if __GNUC__ == 2
-	strstream utf8;
-#else
-	std::stringstream utf8;
-#endif
-	
 	CharsetEscape decode(charset.c_str());
+	string utf8 = decode.write(out.c_str(), out.length());
+	
 	if (!decode.valid())
-		utf8 << "<-- Warning: charset '" << charset << "' is not supported -->\n\n";
+	{
+		utf8 = "<-- Warning: charset '" + charset + "' is not supported -->\n\n"
+		     + utf8;
+	}
 	
-	decode.write(utf8, out.c_str(), out.length());
-	out.clear();
-	
-#if __GNUC__ == 2
-	my_service_quote(o, utf8.str(), utf8.rdbuf()->pcount());
-#else
-	my_service_quote(o, utf8.str().c_str(), utf8.str().length());
-#endif
+	my_service_quote(o, utf8.c_str(), utf8.length());
 }
 
 void message_build(ostream& o, DwEntity& e, long& x)

@@ -1,4 +1,4 @@
-/*  $Id: Keys.cpp,v 1.1 2003-05-02 11:18:39 terpstra Exp $
+/*  $Id: Keys.cpp,v 1.2 2003-06-08 16:23:13 terpstra Exp $
  *  
  *  Keys.cpp - Digest a hunk of string into keywords.
  *  
@@ -61,8 +61,8 @@ static int my_keyword_initd = 1;
 
 /* Combine the prefix with the substring */
 static int my_keyword_index_hunk(
-	const char* buf,
-	const char* eos,
+	const unsigned char* buf,
+	const unsigned char* eos,
 	const char* prefix,
 	int (*writefn)(const char* keyword, void* arg),
 	void* arg)
@@ -92,7 +92,7 @@ static int my_keyword_index_hunk(
 	/* Copy the range into the buffer while converting it */
 	while (w != e && buf != eos)
 	{
-		*w++ = my_keyword_conv[((int)*buf++)];
+		*w++ = my_keyword_conv[*buf++];
 	}
 	
 	*w = 0;
@@ -107,15 +107,15 @@ static int my_keyword_index_hunk(
 
 /* Look at a section of non-whitespace chars and decide what to do with it. */
 static int my_keyword_digest_hunk(
-	const char* buf, 
-	const char* eos, 
+	const unsigned char* buf, 
+	const unsigned char* eos, 
 	const char* prefix,
 	int       (*writefn)(const char* keyword, void* arg),
 	void*       arg,
 	int         do_div)
 {
-	const char* start;
-	const char* scan;
+	const unsigned char* start;
+	const unsigned char* scan;
 	
 	/*!!! Make me work with non-romanian languages (eg. japanese) */
 	/* Japanese has no spaces to delineate words */
@@ -138,7 +138,7 @@ static int my_keyword_digest_hunk(
 	start = 0;
 	for (scan = buf; scan != eos; scan++)
 	{
-		if (my_keyword_is_split[((int)*scan)])
+		if (my_keyword_is_split[*scan])
 		{
 			if (start)
 			{
@@ -208,17 +208,17 @@ int my_keyword_digest_string(
 	void*       arg,
 	int         do_div)
 {
-	const char* start;
-	const char* scan;
-	const char* eos = buf + len;
+	const unsigned char* start;
+	const unsigned char* scan;
+	const unsigned char* eos = (const unsigned char*)buf + len;
 	
 	if (my_keyword_initd)
 		my_keyword_init();
 	
 	start = 0;
-	for (scan = buf; scan != eos; scan++)
+	for (scan = (const unsigned char*)buf; scan != eos; scan++)
 	{
-		if (my_keyword_is_div[((int)*scan)])
+		if (my_keyword_is_div[*scan])
 		{
 			if (start)
 			{

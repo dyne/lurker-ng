@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.15 2003-06-06 12:24:07 terpstra Exp $
+/*  $Id: Index.cpp,v 1.16 2003-06-08 16:23:50 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -530,6 +530,62 @@ int Index::index_control(time_t import)
 	return 0;
 }
 
+int Index::index_entity(DwEntity& e)
+{
+	DwString text;
+	if (e.Headers().HasContentTransferEncoding())
+	{
+		switch (e.Headers().ContentTransferEncoding().AsEnum())
+		{
+		case DwMime::kCteQuotedPrintable:
+			DwDecodeQuotedPrintable(e.Body().AsString(), text);
+			break;
+		
+		case DwMime::kCteBase64:
+			DwDecodeBase64(e.Body().AsString(), text);
+			break;
+		
+		case DwMime::kCteNull:
+		case DwMime::kCteUnknown:
+		case DwMime::kCte7bit:
+		case DwMime::kCte8bit:
+		case DwMime::kCteBinary:
+			text = e.Body().AsString();
+			break;
+		}
+	}
+	else
+	{
+		text = e.Body().AsString();
+	}
+	
+	string charset = "ISO-8859-1"; // a nice default for ascii
+	if (e.Headers().HasContentType())
+	{
+		DwParameter* p;
+		
+		for (p = e.Headers().ContentType().FirstParameter();
+		     p; p = p->Next())
+		{
+			if (p->Attribute() == "charset")
+				charset = p->Value().c_str();
+		}
+	}
+	
+	CharsetEscape decode(charset.c_str());
+	string utf8 = decode.write(text.c_str(), text.length());
+	
+	if (my_keyword_digest_string(
+		utf8.c_str(), utf8.length(),
+		LU_KEYWORD_WORD, &feed_writer, this, 1) != 0)
+	{
+		cerr << "Failed to index un-typed segment" << endl;
+		return -1;
+	}
+	
+	return 0;
+}
+
 int Index::index_keywords(DwEntity& e)
 {
 	// if (e.hasHeaders() && 
@@ -551,26 +607,14 @@ int Index::index_keywords(DwEntity& e)
 		case DwMime::kTypeText:
 			if (t.Subtype() == DwMime::kSubtypePlain)
 			{
-				if (my_keyword_digest_string(
-					e.Body().AsString().c_str(), e.Body().AsString().length(),
-					LU_KEYWORD_WORD, &feed_writer, this, 1) != 0)
-				{
-					cerr << "Failed to index text/plain segment" << endl;
-					return -1;
-				}
+				if (index_entity(e) != 0) return -1;
 			}
 			break;
 		}
 	}
 	else
 	{
-		if (my_keyword_digest_string(
-			e.Body().AsString().c_str(), e.Body().AsString().length(),
-			LU_KEYWORD_WORD, &feed_writer, this, 1) != 0)
-		{
-			cerr << "Failed to index un-typed segment" << endl;
-			return -1;
-		}
+		if (index_entity(e) != 0) return -1;
 	}
 	
 	return 0;

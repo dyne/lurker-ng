@@ -1,4 +1,4 @@
-/*  $Id: CharsetEscape.cpp,v 1.7 2003-05-06 14:32:29 terpstra Exp $
+/*  $Id: CharsetEscape.cpp,v 1.8 2003-06-08 16:23:13 terpstra Exp $
  *  
  *  CharsetEscape.h - A stream manipulator-like thing for charset conversion
  *  
@@ -136,6 +136,25 @@ void CharsetEscape::write(ostream& o, const char* ib, size_t is)
 	o.write(buf, sizeof(buf) - os);
 }
 
+string CharsetEscape::write(const char* ib, size_t is)
+{
+#if __GNUC__ == 2
+	strstream out;
+#else
+	std::stringstream out;
+#endif
+	write(out, ib, is);
+	
+#if __GNUC__ == 2
+	char* tmpstr = out.str();
+	string ret(tmpstr, out.rdbuf()->pcount());
+	free(tmpstr);
+	return ret;
+#else
+	return out.str();
+#endif
+}
+
 // Transform any =?charset?encoding?str?= stuff in the string to utf-8
 string decode_header(
 	const string&	str,
@@ -198,8 +217,10 @@ string decode_header(
 	code.write(out, str.c_str() + b, str.length() - b);
 	
 #if __GNUC__ == 2
-	string done(out.str(), out.rdbuf()->pcount());
-	return done;
+	char* tmpstr = out.str();
+	string ret(tmpstr, out.rdbuf()->pcount());
+	free(tmpstr);
+	return ret;
 #else
 	return out.str();
 #endif
