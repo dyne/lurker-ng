@@ -71,9 +71,9 @@
    
    <div class="body">
     <table class="index">
-     <col width="2*" align="left"/>
-     <col width="1*" align="left"/>
-     <col width="0*" align="right"/>
+     <col width="60%" align="left"/>
+     <col width="30%" align="left"/>
+     <col width="10%" align="right"/>
      <tr>
       <th><xsl:value-of select="$thread"/></th>
       <th><xsl:value-of select="$author"/></th>
