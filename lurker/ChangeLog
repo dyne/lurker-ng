@@ -1,5 +1,6 @@
 v0.10:
 	New-Topics and Old-Topics should show the subject
+	Output "Permission denied" instead of "Bad file descriptor"
 
 v0.9:
 	Don't segfault in rare cases if using '-d' on import (zero restart)

@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.16 2003-06-12 20:37:27 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.17 2003-06-17 19:26:27 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -318,6 +318,7 @@ int DbMan::lock_database_rw()
 	
 	string name = dbname + ".writer";
 	dblock = ::open(name.c_str(), O_RDWR | O_CREAT, cmode);
+	if (dblock == -1) return -1;
 	
 	return exclusive_file_lock(dblock);
 }
