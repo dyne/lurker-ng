@@ -92,10 +92,11 @@ AC_DEFUN(DB3_CHECK, [
   CFLAGS="$CFLAGS $db3_CFLAGS"
   AC_TRY_COMPILE(
     [#include <db.h>],
-    [#if DB_VERSION_MAJOR < 3 || DB_VERSION_MINOR < 2
+    [#if (DB_VERSION_MAJOR == 3 && DB_VERSION_MINOR >= 2) || DB_VERSION_MAJOR > 3
+return 0;
+#else
 #error The db3 header is too old  
-#endif
-return 0;],
+#endif],
     [AC_MSG_RESULT([have it])],
     [AC_MSG_ERROR([Need libdb >= 3.2.x])])
 CFLAGS="$bak_CFLAGS"
