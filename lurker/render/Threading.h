@@ -1,4 +1,4 @@
-/*  $Id: Threading.h,v 1.2 2003-04-21 18:26:19 terpstra Exp $
+/*  $Id: Threading.h,v 1.3 2003-07-01 12:39:40 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -54,6 +54,8 @@ class Threading
  		int		consumed;
  		int		column;
  		int		draw_next;
+ 		
+ 		string		in_reply_tos;
  		
  		Node(const MessageId& id_) : summary(id_) { }
  		Node() : summary(MessageId()) { }

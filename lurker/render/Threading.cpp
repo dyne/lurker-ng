@@ -1,4 +1,4 @@
-/*  $Id: Threading.cpp,v 1.9 2003-06-23 14:38:43 terpstra Exp $
+/*  $Id: Threading.cpp,v 1.10 2003-07-01 12:39:39 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -30,6 +30,7 @@
 #include <memory>
 #include <cerrno>
 #include <iostream>
+#include <list>
 
 #define	DAY_GAP_FOR_NEW_THREAD	40
 
@@ -51,6 +52,10 @@ using namespace ESort;
 
 string Threading::load(Reader* r, const Summary& sum, Key& out)
 {
+	// dump any prior state
+	hashes.clear();
+	nodes.clear();
+	
 	string prefix = 
 		LU_THREADING + 
 		subject_hash(sum.subject().c_str());
@@ -75,13 +80,13 @@ string Threading::load(Reader* r, const Summary& sum, Key& out)
 	}
 	
 	/** Ok, we have found what will be the root of the tree.
-	 *  Now, we shall seek and read the messages off. To resolve reply-to
-	 *  we keep a map of all the hashes we have seen.
+	 *  Now, we shall seek and read the messages off. 
 	 */
-	hashes.clear();
-	nodes.clear();
-	
 	auto_ptr<Walker> forwards(r->seek(prefix, root.raw(), Forward));
+	
+	/* We read the nodes off in timestamp sorted order
+	 */
+	std::list<Node> timestamp_sorted;
 	
 	/** Walk forwards until we find step off the subject, or there is
 	 *  a break of more than 40 days between messages.
@@ -98,45 +103,86 @@ string Threading::load(Reader* r, const Summary& sum, Key& out)
 			< x.timestamp())
 			break;
 		
-		nodes.push_back(Node(x));
-		Node& b = nodes.back();
+		timestamp_sorted.push_back(Node(x));
+		Node& b = timestamp_sorted.back();
 		
-		if (b.summary.id() == sum.id())
-			out = nodes.size()-1;
+		b.in_reply_tos.assign(
+			forwards->key.c_str() + prefix.length() + 8,
+			forwards->key.length() - prefix.length() - 8);
 		
-		b.replies       = 0;
-		b.replyee       = -1;
-		b.replyor_first = -1;
-		b.replyor_next  = -1;
-		b.draw_next     = -1;
-		b.depth         = nodes.size()-1;
-		b.consumed      = 0;
+		// record that this hash does in fact exist
+		hashes[b.summary.id().hash()] = -1;
 		
-		/** Try all possibilities for the in-reply-to
-		 */
-		long candidates = (forwards->key.length() - prefix.length() - 8) / 4;
-		const char* cand = forwards->key.c_str() + prefix.length() + 8;
-		
-		while (candidates)
-		{
-			if (hashes.find(string(cand, 4)) != hashes.end())
-			{
-				b.replyee = hashes[string(cand, 4)];
-				nodes[b.replyee].replies++;
-				break;
-			}
-			
-			cand += 4;
-			--candidates;
-		}
-		
-		hashes[b.summary.id().hash()] = nodes.size()-1;
 		prev = x;
 	}
 	
+	/** We now have all the messages in timestamp sorted order.
+	 *  Let's scan the list for the first message with no predecessor.
+	 */
+	while (!timestamp_sorted.empty())
+	{
+		std::list<Node>::iterator i;
+		
+		for (i = timestamp_sorted.begin(); i != timestamp_sorted.end(); ++i)
+		{
+			// scan all the in_reply_tos. if none of them are left
+			// in timestamp_sorted, then this should come next.
+			// (ie: no predecessors and lowest timestamp)
+			
+			i->replyee = -1; // find best predecessor also
+			
+			string::size_type replyto;
+			for (replyto = 0; replyto+4 <= i->in_reply_tos.size(); replyto += 4)
+			{
+				map<string, int>::iterator r = hashes.find(
+					i->in_reply_tos.substr(replyto, 4));
+				
+				if (r != hashes.end())
+				{
+					if (r->second == -1)
+					{	// still in the timestamp queue
+						break;
+					}
+					else if (r->second > i->replyee)
+					{	// an older predecessor
+						i->replyee = r->second;
+					}
+				}
+			}
+			
+			// Did we find no queued predecessors?
+			if (replyto+4 > i->in_replytos.size())
+				break;
+		}
+		
+		// deal with cycles (theorectically impossible, but ...)
+		if (i == timestamp_sorted.end()) i = timestamp_sorted.begin();
+		
+		hashes[i->summary.id().hash()] = nodes.size();
+		nodes.push_back(*i);
+		timestamp_sorted.erase(i);
+		
+		// prep the node
+		Node& b = nodes.back();
+		b.replies       = 0;
+		b.replyor_first = -1;
+		b.replyor_next  = -1;
+		b.draw_next     = -1;
+		b.depth         = nodes.size() - 1;
+		b.consumed      = 0;
+		
+		if (b.replyee != -1)
+			nodes[b.replyee].replies++;
+		
+		// check for high-lighted node
+		if (b.summary.id() == sum.id())
+			out = b.depth;
+	}
+	
+	Node* tree = &nodes[0];
+	
 	/** Resolve back links
 	 */
-	Node* tree = &nodes[0];
 	for (int i = nodes.size()-1; i > 0; i--)
 	{
 		int p = tree[i].replyee;
