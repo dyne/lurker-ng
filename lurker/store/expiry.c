@@ -1,4 +1,4 @@
-/*  $Id: expiry.c,v 1.6 2002-05-21 13:25:48 terpstra Exp $
+/*  $Id: expiry.c,v 1.7 2002-05-22 12:21:15 terpstra Exp $
  *  
  *  expiry.c - Record when pages should be destroyed
  *  
@@ -506,6 +506,8 @@ int lu_expiry_open()
 			db_strerror(error));
 		return -1;
 	}
+	
+	lu_expiry_notice_import(LU_EXPIRY_ANY_LIST);
 	
 	return 0;
 }
