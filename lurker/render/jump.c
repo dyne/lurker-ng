@@ -1,4 +1,4 @@
-/*  $Id: jump.c,v 1.2 2002-06-14 11:16:58 terpstra Exp $
+/*  $Id: jump.c,v 1.3 2002-06-16 08:50:56 terpstra Exp $
  *  
  *  jump.c - redirect mindex jumps
  *  
@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 	tmp = extract_int(qs, "min");  tms.tm_min  = (tmp==-1)?0:tmp;
 	tmp = extract_int(qs, "hour"); tms.tm_hour = (tmp==-1)?0:tmp;
 	tmp = extract_int(qs, "mday"); tms.tm_mday = (tmp==-1)?1:tmp;
-	tmp = extract_int(qs, "mon");  tms.tm_mon  = (tmp==-1)?0:tmp;
+	tmp = extract_int(qs, "mon");  tms.tm_mon  = (tmp==-1)?0:tmp-1;
 	tmp = extract_int(qs, "year"); if (tmp!=-1) tms.tm_year = tmp-1900;
 	
 	tmt = mktime(&tms);
