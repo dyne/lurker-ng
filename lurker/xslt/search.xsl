@@ -27,7 +27,7 @@
   
   <xsl:value-of select="$search"/> - <xsl:value-of select="$mess"/>
   <xsl:text> </xsl:text>
-  <xsl:value-of select="offset"/>-<xsl:value-of select="string(number(offset)+count(summary)-1)"/>
+  <xsl:value-of select="offset"/>-<xsl:value-of select="string(number(offset)+count(summary))"/>
   / ~<xsl:value-of select="hits"/>
  </h2>
  
