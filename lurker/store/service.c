@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.92 2002-08-18 21:36:21 terpstra Exp $
+/*  $Id: service.c,v 1.93 2002-08-30 10:58:42 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1986,7 +1986,8 @@ static int my_service_mindex(
 	const char* request,
 	const char* ext)
 {
-	time_t			ttl = lu_config_file->cache_index_ttl;
+	time_t			ttl;
+	lu_word			ttl_list;
 	
 	KRecord			kr;
 	int			list;
@@ -2087,10 +2088,20 @@ static int my_service_mindex(
 		
 		goto my_service_mindex_error1;
 	}
-
+	
+	if (offset + count < kr.records)
+	{
+		ttl_list = LU_EXPIRY_NO_LIST;
+		ttl = lu_config_file->cache_index_ttl;
+	}
+	else
+	{
+		ttl_list = l->key; /* Expire the static html on import */
+		ttl = 300; /* Only have the client browser cache for 5 min */
+	}
+		
 	/* We shouldn't change if we already have next link */
-	if (my_service_buffer_init(h, "text/xml\n", 1, ttl,
-		(offset+count<kr.records)?LU_EXPIRY_NO_LIST:l->key) != 0)
+	if (my_service_buffer_init(h, "text/xml\n", 1, ttl, ttl_list) != 0)
 	{
 		goto my_service_mindex_error1;
 	}
