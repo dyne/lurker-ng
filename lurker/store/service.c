@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.50 2002-05-22 12:22:39 terpstra Exp $
+/*  $Id: service.c,v 1.51 2002-05-22 12:35:30 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1734,9 +1734,19 @@ static int my_service_mindex(
 		goto my_service_mindex_error1;
 	}
 	
-	if (my_service_buffer_init(h, "text/xml\n", 1, 
-			lu_config_cache_index_ttl, list) != 0)
-		goto my_service_mindex_error1;
+	if (offset + count != lu_breader_records(b))
+	{
+		/* We shouldn't change if we already have next link */
+		if (my_service_buffer_init(h, "text/xml\n", 1, 
+				lu_config_cache_index_ttl, LU_EXPIRY_NO_LIST) != 0)
+			goto my_service_mindex_error1;
+	}
+	else
+	{
+		if (my_service_buffer_init(h, "text/xml\n", 1, 
+				lu_config_cache_index_ttl, list) != 0)
+			goto my_service_mindex_error1;
+	}
 	
 	if (my_service_xml_head(h)                            != 0) goto my_service_mindex_error1;
 	if (my_service_buffer_write(h, "<mindex>\n <offset>") != 0) goto my_service_mindex_error1;
