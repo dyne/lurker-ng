@@ -1,4 +1,4 @@
-/*  $Id: summary.h,v 1.7 2002-05-22 18:42:56 terpstra Exp $
+/*  $Id: summary.h,v 1.8 2002-06-09 22:06:01 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -90,6 +90,7 @@ extern Lu_Summary_Message lu_summary_read_msummary(
 extern int lu_summary_write_variable(
 	int (*write)(void* arg, const char* str),
 	int (*quote)(void* arg, const char* str, size_t len),
+	int (*qurl )(void* arg, const char* str, size_t len),
 	void* arg,
 	lu_addr flat_offset);
 

@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.61 2002-06-07 10:30:40 terpstra Exp $
+/*  $Id: service.c,v 1.62 2002-06-09 22:06:01 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1026,6 +1026,7 @@ static int my_service_summary_body(
 	if (lu_summary_write_variable(
 		(int(*)(void*, const char*))        &my_service_buffer_write,
 		(int(*)(void*, const char*, size_t))&my_service_write_strl,
+/*!!!*/		(int(*)(void*, const char*, size_t))&my_service_write_url,
 		h,
 		msg->flat_offset) != 0) return -1;
 	
