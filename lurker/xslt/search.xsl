@@ -4,7 +4,7 @@
     version="1.0">
 
 <xsl:template match="search" mode="title">
- <xsl:value-of select="$search"/>: <xsl:value-of select="query"/>
+ <xsl:value-of select="$titlesearch"/>: <xsl:value-of select="query"/>
 </xsl:template>
 
 <xsl:template match="search" mode="body">
@@ -32,7 +32,7 @@
  
   <xsl:text>&#160;&#160;&#160;</xsl:text>
   
-  <xsl:value-of select="$search"/>
+  <xsl:value-of select="$titlesearch"/>
  </h2>
  
  <xsl:variable name="date" select="row/summary/id"/>

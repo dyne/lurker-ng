@@ -103,7 +103,7 @@
  </div>
 
  <br/><br/><hr/>
- <h2>Lurker <xsl:value-of select="$search"/></h2>
+ <h2><xsl:value-of select="$titlesearch"/></h2>
 
  <table width="100%"><tr><td width="50%">&#160;</td><td>
  <form action="{server/cgi-url}/keyword.cgi">
