@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.6 2004-08-20 02:42:44 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.7 2004-08-20 14:09:20 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -218,6 +218,7 @@ int Config::process_command(const string& key, const string& val, const string& 
 		list = &lists[val];
 		list->mbox = val;
 		list->group = group;
+		list->language = "en";
 	}
 	else if (key == "title")
 	{
@@ -250,6 +251,22 @@ int Config::process_command(const string& key, const string& val, const string& 
 		}
 		
 		list->link = val;
+	}
+	else if (key == "language")
+	{
+		if (!list)
+		{
+			error << "No list has been defined for language '" << val << "'!" << endl;
+			return -1;
+		}
+		
+		if (val.length() != 2 || !isSimple(val))
+		{
+			error << "Language is not a two digit language code!" << endl;
+			return -1;
+		}
+		
+		list->language = val;
 	}
 	else if (key == "description")
 	{
@@ -355,7 +372,8 @@ ostream& operator << (ostream& o, const List& l)
 {
 	o << "<list>"
 	  << "<id>" << l.mbox << "</id>"
-	  << "<group>" << l.group << "</group>";
+	  << "<group>" << l.group << "</group>"
+	  << "<language>" << l.language << "</language>";
 	
 	if (l.link.length() > 0)
 		o << "<link>" << xmlEscape << l.link << "</link>";
@@ -384,8 +402,13 @@ ostream& operator << (ostream& o, const Config& c)
 	// strftime(&timebuf[0], sizeof(timebuf),
 	//	"%a, %d %b %Y %H:%M:%S GMT", tm);
 	
+	char year[40];
+	time_t end_of_archive = time(0) + 365*24*60*60;
+	strftime(&year[0], sizeof(year), "%Y", gmtime(&end_of_archive));
+	
 	o << "<server>"
 	  << "<version>" << VERSION << "</version>"
+	  << "<eoa-year>" << year << "</eoa-year>"
 	  << "<doc-url>" << c.docUrl << "</doc-url>"
 	  << "<cgi-url>" << c.cgiUrl << "</cgi-url>"
 	  << "<command>" << c.command << "</command>"

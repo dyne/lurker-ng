@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.14 2004-08-20 02:42:45 terpstra Exp $
+/*  $Id: search.cpp,v 1.15 2004-08-20 14:09:20 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -401,6 +401,18 @@ void Search::keyword(const string& key)
 			Config::Members::iterator m;
 			for (m = g->second.members.begin(); m != g->second.members.end(); ++m)
 				o->push(new WordSearcher(criterea, LU_KEYWORD_LIST + *m));
+		}
+		s = o->simplify();
+	}
+	else if (word.substr(0, sizeof(LU_KEYWORD_LANGUAGE)-1) == LU_KEYWORD_LANGUAGE)
+	{
+		string lang(word, sizeof(LU_KEYWORD_LANGUAGE)-1, string::npos);
+		OrSearcher* o = new OrSearcher(criterea.dir);
+		for (Config::Lists::const_iterator l = cfg.lists.begin();
+		     l != cfg.lists.end(); ++l)
+		{
+			if (l->second.language != lang) continue;
+			o->push(new WordSearcher(criterea, LU_KEYWORD_LIST + l->first));
 		}
 		s = o->simplify();
 	}

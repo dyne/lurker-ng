@@ -1,5 +1,202 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <langs>
- <lang code="en">English</lang>
- <lang code="de">Deutsch</lang>
+ <!-- sources:
+      ISO 639-1
+      http://www.infomarex.ie/infomarex/translate/codes.htm
+      http://fi.wikipedia.org/wiki/Wikipedia:Luettelo_Wikipedian_kielist%C3%A4
+   -->
+ 
+ <lang code="aa" localized="no">Afar</lang>
+ <lang code="ab" localized="no">Abkhazian</lang>
+<!-- <lang code="ae" localized="no">Avestan</lang> -->
+ <lang code="af" localized="no">Afrikaans</lang>
+<!-- <lang code="al" localized="no">Loghah Alaarabiyah</lang> -->
+ <lang code="am" localized="no">አማርኛ</lang>
+ <lang code="ar" localized="no">ﺔﻴﺐﺮﻌﻠﺍ</lang>
+ <lang code="as" localized="no">অসমীয়া</lang>
+ <lang code="ay" localized="no">Aymar</lang>
+ <lang code="az" localized="no">Azərbaycan</lang>
+ 
+ <lang code="ba" localized="no">Башҡорт</lang>
+ <lang code="be" localized="no">Беларуская</lang>
+ <lang code="bg" localized="no">Български</lang>
+ <lang code="bh" localized="no">Bihari</lang>
+ <lang code="bi" localized="no">Bislama</lang>
+ <lang code="bn" localized="no">বাংলা</lang>
+ <lang code="bo" localized="no">Bodskad</lang>
+ <lang code="br" localized="no">Breton</lang>
+<!-- <lang code="bs" localized="no">Bosanski</lang> -->
+ 
+ <lang code="ca" localized="no">Català</lang>
+<!-- <lang code="ce" localized="no">Chechen</lang> -->
+<!-- <lang code="ch" localized="no">Chamorro</lang> -->
+ <lang code="co" localized="no">Corsican</lang>
+ <lang code="cs" localized="no">Čeština</lang>
+<!-- <lang code="cv" localized="no">Chãvash</lang> -->
+ <lang code="cy" localized="no">Cymraeg</lang>
+ 
+ <lang code="da" localized="no">Dansk</lang>
+ <lang code="de" localized="yes">Deutsch</lang>
+ <lang code="dz" localized="no">Dzongkha</lang>
+ 
+ <lang code="el" localized="no">Ελληνικά</lang>
+ <lang code="en" localized="yes">English</lang>
+ <lang code="eo" localized="no">Esperanto</lang>
+ <lang code="es" localized="no">Español</lang>
+ <lang code="et" localized="no">Eesti</lang>
+ <lang code="eu" localized="no">Euskara</lang>
+ 
+ <lang code="fa" localized="no">فارسی</lang>
+ <lang code="fi" localized="no">Suomi</lang>
+ <lang code="fj" localized="no">Fiji</lang>
+ <lang code="fo" localized="no">Føroyskt</lang>
+ <lang code="fr" localized="no">Français</lang>
+ <lang code="fy" localized="no">Frysk</lang>
+ 
+ <lang code="ga" localized="no">Gaeilge</lang>
+ <lang code="gd" localized="no">Gàidhlig</lang>
+ <lang code="gl" localized="no">Galego</lang>
+ <lang code="gn" localized="no">Avañe'ẽ</lang>
+ <lang code="gu" localized="no">ગુજરાતી</lang>
+<!-- <lang code="gv" localized="no">Gaelg</lang> -->
+ 
+ <lang code="ha" localized="no">هَوُسَ</lang>
+<!-- <lang code="he" localized="no">עברית</lang> -->
+ <lang code="hi" localized="no">हिन्दी</lang>
+<!-- <lang code="ho" localized="no">Hiri Motu</lang> -->
+ <lang code="hr" localized="no">Hrvatski</lang>
+ <lang code="hu" localized="no">Magyar</lang>
+ <lang code="hy" localized="no">Հայերեն</lang>
+<!-- <lang code="hz" localized="no">Herero</lang> -->
+ 
+ <lang code="ia" localized="no">Interlingua</lang>
+<!-- <lang code="id" localized="no">Bahasa Indonesia</lang> -->
+ <lang code="ie" localized="no">Interlingue</lang>
+ <lang code="ik" localized="no">Iñupiak</lang>
+ <lang code="in" localized="no">Indonesian</lang>
+ <lang code="is" localized="no">Íslenska</lang>
+ <lang code="it" localized="no">Italiano</lang>
+ <lang code="iw" localized="no">עברית</lang>
+<!-- <lang code="iu" localized="no">ᐃᓄᒃᑎᑐᑦ</lang> -->
+ 
+ <lang code="ja" localized="no">日本語</lang>
+ <lang code="ji" localized="no">Yiddish</lang>
+ <lang code="jw" localized="no">Javanese</lang>
+ 
+ <lang code="ka" localized="no">ქართული</lang>
+<!-- <lang code="ki" localized="no">Kikuyu</lang> -->
+ <lang code="kk" localized="no">қазақша</lang>
+ <lang code="kl" localized="no">Kalaallísut</lang>
+ <lang code="km" localized="no">ភាសាខ្មែរ</lang>
+ <lang code="kn" localized="no">ಕನ್ನಡ</lang>
+ <lang code="ko" localized="no">한국어</lang>
+ <lang code="ks" localized="no">कश्मीरी - (كشميري)</lang>
+ <lang code="ku" localized="no">Kurmancî (Kurdî)</lang>
+<!-- <lang code="kv" localized="no">Komi</lang> -->
+<!-- <lang code="kw" localized="no">Cornish</lang> -->
+ <lang code="ky" localized="no">Kirghiz</lang>
+ 
+ <lang code="la" localized="no">Latina</lang>
+<!-- <lang code="lb" localized="no">Lëtzebuergesch</lang> -->
+ <lang code="ln" localized="no">Lingala</lang>
+ <lang code="lo" localized="no">Laothian</lang>
+ <lang code="lt" localized="no">Lietuvių</lang>
+ <lang code="lv" localized="no">Latviešu</lang>
+ 
+ <lang code="mg" localized="no">Malagasy</lang>
+<!-- <lang code="mh" localized="no">Marshall</lang> -->
+ <lang code="mi" localized="no">Māori</lang>
+ <lang code="mk" localized="no">Македонски</lang>
+ <lang code="ml" localized="no">മലയാളം</lang>
+ <lang code="mn" localized="no">Монгол</lang>
+ <lang code="mo" localized="no">Moldovenească</lang>
+ <lang code="mr" localized="no">मराठी</lang>
+ <lang code="ms" localized="no">Bahasa Melayu</lang>
+ <lang code="mt" localized="no">Maltese</lang>
+ <lang code="my" localized="no">Myanmasa</lang>
+ 
+ <lang code="na" localized="no">Nauru</lang>
+<!-- <lang code="nb" localized="no">Bokmål</lang> -->
+<!-- <lang code="nd" localized="no">North Ndebele</lang> -->
+ <lang code="ne" localized="no">नेपाली</lang>
+<!-- <lang code="ng" localized="no">Ndongo</lang> -->
+ <lang code="nl" localized="no">Nederlands</lang>
+<!-- <lang code="nn" localized="no">Nynorsk</lang> -->
+ <lang code="no" localized="no">Norsk</lang>
+<!-- <lang code="nr" localized="no">South Ndebele</lang> -->
+<!-- <lang code="nv" localized="no">Navajo</lang> -->
+<!-- <lang code="ny" localized="no">Nyanja Chichewa</lang> -->
+ 
+ <lang code="oc" localized="no">Occitan Provençal</lang>
+ <lang code="om" localized="no">Oromoo Galla Afan</lang>
+ <lang code="or" localized="no">Oriya</lang>
+<!-- <lang code="os" localized="no">Ossetian Ossetic</lang> -->
+ 
+ <lang code="pa" localized="no">पंजाबी / ਪਜਾਬੀ / پنجابي</lang>
+<!-- <lang code="pi" localized="no">Pali</lang> -->
+ <lang code="pl" localized="no">Polski</lang>
+ <lang code="ps" localized="no">پښتو</lang>
+ <lang code="pt" localized="no">Português</lang>
+ 
+ <lang code="qu" localized="no">Quechua</lang>
+ 
+ <lang code="rm" localized="no">Rumantsch</lang>
+ <lang code="rn" localized="no">Kirundi</lang>
+ <lang code="ro" localized="no">Româneşte</lang>
+ <lang code="ru" localized="no">Русский</lang>
+ <lang code="rw" localized="no">Kinwarwanda</lang>
+ 
+ <lang code="sa" localized="no">संस्कृत</lang>
+<!-- <lang code="sc" localized="no">Sardinian</lang> -->
+ <lang code="sd" localized="no">सिनधि</lang>
+<!-- <lang code="se" localized="no">Davvisámegiella</lang> -->
+ <lang code="sg" localized="no">Sangro</lang>
+ <lang code="sh" localized="no">Srpsko-hrvatska</lang>
+ <lang code="si" localized="no">Simhala</lang>
+ <lang code="sk" localized="no">Slovenčina</lang>
+ <lang code="sl" localized="no">Slovenščina</lang>
+ <lang code="sm" localized="no">Gagana Samoa</lang>
+ <lang code="sn" localized="no">chiShona</lang>
+ <lang code="so" localized="no">af Soomaali</lang>
+ <lang code="sq" localized="no">Shqip</lang>
+ <lang code="sr" localized="no">Српски</lang>
+ <lang code="ss" localized="no">SiSwati</lang>
+ <lang code="st" localized="no">seSotho</lang>
+ <lang code="su" localized="no">Sudanese</lang>
+ <lang code="sv" localized="no">Svenska</lang>
+ <lang code="sw" localized="no">Swahili</lang>
+ 
+ <lang code="ta" localized="no">தமிழ்</lang>
+ <lang code="te" localized="no">తెలుగు</lang>
+ <lang code="tg" localized="no">Тоҷикӣ</lang>
+ <lang code="th" localized="no">ไทย</lang>
+ <lang code="ti" localized="no">Tigrinya</lang>
+ <lang code="tk" localized="no">تركمن / Туркмен</lang>
+ <lang code="tl" localized="no">Tagalog</lang>
+ <lang code="tn" localized="no">Setswana</lang>
+ <lang code="to" localized="no">Tonga</lang>
+ <lang code="tr" localized="no">Türkçe</lang>
+ <lang code="ts" localized="no">Xitsonga</lang>
+ <lang code="tt" localized="no">Tatar</lang>
+ <lang code="tw" localized="no">Twi</lang>
+<!-- <lang code="ty" localized="no">Tahitian</lang> -->
+ 
+<!-- <lang code="ug" localized="no">Uyghur</lang> -->
+ <lang code="uk" localized="no">Украïнська</lang>
+ <lang code="ur" localized="no">اردو</lang>
+ <lang code="uz" localized="no">Ўзбек</lang>
+ 
+ <lang code="vi" localized="no">Tiếng Việt</lang>
+ <lang code="vo" localized="no">Volapük</lang>
+ 
+ <lang code="wo" localized="no">Wollof</lang>
+ 
+ <lang code="xh" localized="no">Xhosa</lang>
+ 
+<!-- <lang code="yi" localized="no">ייִדיש</lang> -->
+ <lang code="yo" localized="no">Yorùbá</lang>
+ 
+ <lang code="zh" localized="no">中文</lang>
+<!-- <lang code="zj" localized="no">Zhuang Chwang Chuang</lang> -->
+ <lang code="zu" localized="no">Zulu</lang>
 </langs>

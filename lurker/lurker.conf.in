@@ -143,6 +143,7 @@ dbdir = @vardir@
 #   
 #   list = devel
 #	title       = Debian-Devel
+#	language    = en
 #	address     = debian-devel@lists.debian.org
 #	link        = http://www.debian.org/MailingLists/subscribe
 # 	description = Debian Developer Discussion Forum. Here you can find

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <text
+ language="Sprache"
+ 
  thread="Thread"
  subject="Betreff"
  author="Autor"
@@ -24,6 +26,8 @@
  group="Gruppe"
  all-lists="Alle Mailing-Lists"
  all-groups="Alle Mailing-List-Gruppen"
+ all-langs="Alle Spachen"
+ missing-lang=" - fehlt in lang.xml"
  search="Suchen"
 
  jump-to-date="Springe zu Nachrichten nahe dem folgenden Datum innerhalb dieser Mailing-List:"
@@ -63,6 +67,6 @@
  dec="Dezember"
 
  posted-at=" am "
- admin-by="Administriert von "
+ admin-by="administriert von "
  version="Version "
 />

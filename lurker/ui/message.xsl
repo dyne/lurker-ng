@@ -175,16 +175,13 @@
    <div class="header">
     <table class="external">
      <tr>
-      <td width="1%" class="language"><xsl:call-template name="language-dropdown"/></td>
       <td align="left">
        <h1>
         <xsl:value-of select="substring(summary/subject,1,60)"/>
         <xsl:if test="string-length(summary/subject) &gt; 60">&#x2026;</xsl:if>
        </h1>
       </td>
-      <td align="right">
-       <h1><xsl:apply-templates mode="splash-link" select="server"/></h1>
-      </td>
+      <td align="right"><xsl:call-template name="language-dropdown"/></td>
      </tr>
     </table>
     

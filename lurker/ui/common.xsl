@@ -5,7 +5,7 @@
 
 <xsl:variable name="lurker-url" select="'http://lurker.sourceforge.net/'"/>
 <xsl:variable name="last-date" select="'20380101.000000.00000000'"/>
-<xsl:variable name="jump-date" select="'20050101.000000.00000000'"/>
+<xsl:variable name="jump-date" select="concat(/*/server/eoa-year, '101.000000.00000000')"/>
 
 <!-- Output control -->
 <xsl:variable name="type" select="'html'"/>
@@ -240,7 +240,7 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
  <select name="year">
   <xsl:call-template name="option-range">
    <xsl:with-param name="start">1990</xsl:with-param>
-   <xsl:with-param name="last">2005</xsl:with-param>
+   <xsl:with-param name="last"><xsl:value-of select="/*/server/eoa-year"/></xsl:with-param>
    <xsl:with-param name="select" select="substring($date,1,4)"/>
   </xsl:call-template>
  </select>
@@ -252,15 +252,17 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
  <table class="external">
   <tr>
    <td class="mini">
+    <xsl:apply-templates mode="splash-link" select="server"/>
+    <xsl:text> </xsl:text>
+    <xsl:value-of select="$admin-by"/>
+    <xsl:apply-templates mode="email-link" select="server/email"/>
+   </td>
+   <td class="mini" align="right">
     <b><a href="{$lurker-url}">Lurker</a></b>
     <xsl:text> (</xsl:text>
     <xsl:value-of select="$version"/>
     <xsl:value-of select="server/version"/>
     <xsl:text>)</xsl:text>
-   </td>
-   <td class="mini" align="right">
-    <xsl:value-of select="$admin-by"/>
-    <xsl:apply-templates mode="email-link" select="server/email"/>
    </td>
   </tr>
  </table>
@@ -272,7 +274,8 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
    <xsl:variable name="doc-url" select="server/doc-url"/>
    <xsl:variable name="command" select="server/command"/>
    <xsl:variable name="options" select="server/options"/>
-   <xsl:for-each select="document('lang.xml')/langs/lang">
+   <xsl:for-each select="document('lang.xml')/langs/lang[@localized='yes']">
+    <xsl:sort select="@code"/>
     <xsl:element name="option">
      <xsl:attribute name="value">
       <xsl:value-of select="$doc-url"/>
@@ -290,6 +293,7 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
     </xsl:element>
    </xsl:for-each>
   </select>
+  <input type="submit" value="X"/>
  </form>
 </xsl:template>
 

@@ -14,3 +14,4 @@ lurker_cgi_SOURCES = \
 
 jump_cgi_SOURCES = parse.cpp jump.cpp
 keyword_cgi_SOURCES = parse.cpp keyword.cpp
+bounce_cgi_SOURCES = parse.cpp bounce.cpp

@@ -20,6 +20,10 @@ v1.2:
 	Include language code in the extension of all pages
 	Switch the rendered locale based on the extension
 	Include a language switching drop-down
+	New 'language = ' list option in lurker.conf
+	Searching by language is now possible; defaults to selected locale
+	The next year is no longer hard-coded
+	Added all ISO 639 language codes and included translated names
 
 v1.1:
 	Create mbox and attach directory upon install

@@ -50,6 +50,7 @@
  </div>
 </xsl:template>
 
+<xsl:key name="langs" match="group/list" use="language"/>
 
 <!-- Format a splash request -->
 <xsl:template match="splash">
@@ -63,11 +64,8 @@
    <div class="header">
     <table class="external">
      <tr>
-      <td class="language"><xsl:call-template name="language-dropdown"/></td>
-      <td align="left"><h1><xsl:value-of select="$front-page"/></h1></td>
-      <td align="right">
-       <h1><xsl:apply-templates mode="splash-link" select="server"/></h1>
-      </td>
+      <td align="left"><h1><xsl:value-of select="server/archive"/></h1></td>
+      <td align="right"><xsl:call-template name="language-dropdown"/></td>
      </tr>
     </table>
     
@@ -109,13 +107,43 @@
          </td>
         </tr>
         
-        <xsl:if test="count(group) > 1">
+        <xsl:if test="count(group) &gt; 1">
          <tr>
           <td><b><xsl:value-of select="$group"/></b></td>
           <td>
            <select name="group">
             <option value=""><xsl:value-of select="$all-groups"/></option>
             <xsl:apply-templates mode="group-select" select="group"/>
+           </select>
+          </td>
+         </tr>
+        </xsl:if>
+        
+        <xsl:variable name="langs" select="group/list[generate-id(.)=generate-id(key('langs',language)[1])]"/>
+        <xsl:if test="count($langs) &gt; 1">
+         <tr>
+          <td><b><xsl:value-of select="$language"/></b></td>
+          <td>
+           <select name="lang">
+            <option value=""><xsl:value-of select="$all-langs"/></option>
+            <xsl:for-each select="$langs">
+             <xsl:sort select="language"/>
+             <xsl:variable name="lcode" select="language"/>
+             <xsl:variable name="lname" select="document('lang.xml')/langs/lang[@code=$lcode]"/>
+             <xsl:element name="option">
+              <xsl:attribute name="value"><xsl:value-of select="language"/></xsl:attribute>
+              <xsl:if test="language = $lang">
+               <xsl:attribute name="selected">SELECTED</xsl:attribute>
+              </xsl:if>
+              <xsl:choose>
+               <xsl:when test="$lname"><xsl:value-of select="$lname"/></xsl:when>
+               <xsl:otherwise>
+                <xsl:value-of select="$lcode"/>
+                <xsl:value-of select="$missing-lang"/>
+               </xsl:otherwise>
+              </xsl:choose>
+             </xsl:element>
+            </xsl:for-each>
            </select>
           </td>
          </tr>

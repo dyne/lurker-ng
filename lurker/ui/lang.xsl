@@ -2,8 +2,16 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
 <xsl:variable name="lang" select="/*/@xml:lang"/>
-<xsl:variable name="langfile" select="concat($lang, '.xml')"/>
+<xsl:variable name="testfile" select="concat($lang, '.xml')"/>
 
+<xsl:variable name="langfile">
+ <xsl:choose>
+  <xsl:when test="document($testfile)/text"><xsl:value-of select="$testfile"/></xsl:when>
+  <xsl:otherwise>en.xml</xsl:otherwise>
+ </xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="language" select="document($langfile)/text/@language"/>
 <xsl:variable name="thread" select="document($langfile)/text/@thread"/>
 <xsl:variable name="subject" select="document($langfile)/text/@subject"/>
 <xsl:variable name="author" select="document($langfile)/text/@author"/>
@@ -28,6 +36,8 @@
 <xsl:variable name="group" select="document($langfile)/text/@group"/>
 <xsl:variable name="all-lists" select="document($langfile)/text/@all-lists"/>
 <xsl:variable name="all-groups" select="document($langfile)/text/@all-groups"/>
+<xsl:variable name="all-langs" select="document($langfile)/text/@all-langs"/>
+<xsl:variable name="missing-lang" select="document($langfile)/text/@missing-lang"/>
 <xsl:variable name="search" select="document($langfile)/text/@search"/>
 
 <xsl:variable name="jump-to-date" select="document($langfile)/text/@jump-to-date"/>

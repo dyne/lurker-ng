@@ -1,4 +1,4 @@
-/*  $Id: Keys.h,v 1.11 2004-08-19 23:52:51 terpstra Exp $
+/*  $Id: Keys.h,v 1.12 2004-08-20 14:09:20 terpstra Exp $
  *  
  *  Keys.h - What prefixs various database keys
  *  
@@ -43,18 +43,23 @@ using std::vector;
 #define LU_MESSAGE_SUBJECT	's'
 #define LU_MESSAGE_MBOX		'x'
 
+/* special keywords */
+#define LU_KEYWORD_DELETED	"id:deleted"	/* a deleted message */
+
 /* fields indexed early */
 #define LU_KEYWORD_EVERYTHING	"id:any"	/* empty search */
-#define LU_KEYWORD_DELETED	"id:deleted"	/* a deleted message */
 #define LU_KEYWORD_MESSAGE_ID	"id:"		/* Message id */
 #define LU_KEYWORD_REPLY_TO	"rt:"		/* Reply-to */
 #define LU_KEYWORD_THREAD	"th:"		/* THread */
 
 /* lu_import_message */
 #define	LU_KEYWORD_LIST		"ml:"	/* Mailing List */
-#define LU_KEYWORD_GROUP	"gr:"	/* Mailing group */
 #define LU_KEYWORD_AUTHOR	"au:"	/* AUthor */
 #define LU_KEYWORD_SUBJECT	"sb:"	/* SuBject */
+
+/* magic automatic keywords */
+#define LU_KEYWORD_GROUP	"gr:"	/* Mailing group */
+#define LU_KEYWORD_LANGUAGE	"lang:"	/* Language */
 
 /* import processing */
 #define LU_KEYWORD_WORD		""	/* body keywords */

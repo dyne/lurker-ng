@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <text
+ language="Language"
+ 
  thread="Thread"
  subject="Subject"
  author="Author"
@@ -24,6 +26,8 @@
  group="Group"
  all-lists="Any mailing list"
  all-groups="Any mailing list group"
+ all-langs="Any language"
+ missing-lang=" - missing in lang.xml"
  search="Search"
 
  jump-to-date="Jump to those messages within this mailing list which are nearest to the following date:"
@@ -63,6 +67,6 @@
  dec="December"
 
  posted-at=" at "
- admin-by="Administrated by "
+ admin-by="administrated by "
  version="version "
 />

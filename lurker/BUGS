@@ -1,24 +1,16 @@
 ---- Agenda for 1.2:
 
-delete a message from a command-line search!
 Maildir support for import
-
-How to know when the archive starts and ends?
-	Get rid of date dependency (2005 in xslt)
-	Include message count estimates
-
----- Agenda for 2.0:
-
-Access two databases at once
-
----- Fit in somewhere:
-
 Set timestamp to config file + all used messages
 off-site mailing list links?
+delete a message from a command-line search!
+Access two databases at once
+
 
 -------------------------------------------------------------
 
 Ideas:
+	Bring back message count estimates
 	Maybe exclude tab indented paragraphs from pre-formatting
 	Printable css
 	In-message forward/backward for search results

@@ -1,4 +1,4 @@
-/*  $Id: keyword.cpp,v 1.13 2004-01-08 22:14:46 terpstra Exp $
+/*  $Id: keyword.cpp,v 1.14 2004-08-20 14:09:20 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -115,6 +115,9 @@ int main()
 	my_keyword_digest_string(
 		args["group"].c_str(), args["group"].length(), 
 		LU_KEYWORD_GROUP, &push_key, 0, 0);
+	my_keyword_digest_string(
+		args["lang"].c_str(), args["lang"].length(),
+		LU_KEYWORD_LANGUAGE, &push_key, 0, 0);
 	
 	string url = args["doc-url"] + "/search/" + string(buf) + ".00000000@";
 	vector<string>::iterator i;
