@@ -9,6 +9,7 @@ if test -z "$cfg" || test ! -f $cfg; then echo Cannot read config; exit 1; fi
 
 idx=`which $idx`
 if echo "$idx" | grep -q '^\.'; then idx="$PWD/$idx"; fi
+if echo "$cfg" | grep -q '^[^/~]'; then cfg="$PWD/$cfg"; fi
 
 dbdir=`grep "[ 	]*dbdir" $cfg | cut -d= -f2`
 dbdir=`echo $dbdir`
@@ -22,7 +23,7 @@ rm -f db.* db
 
 for l in *; do
   echo Reindexing $l
-  gzip -dc < $1 | $idx -c $cfg -l $l -v -b 5
+  gzip -dc < $l | $idx -c $cfg -l $l -v -b 5
 done
 
 cd ..
