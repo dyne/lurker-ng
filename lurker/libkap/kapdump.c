@@ -1,4 +1,4 @@
-/*  $Id: kapdump.c,v 1.4 2002-07-09 00:52:43 terpstra Exp $
+/*  $Id: kapdump.c,v 1.5 2002-07-09 01:24:38 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool
  *  
@@ -219,11 +219,10 @@ int main(int argc, char * const * argv)
 			if (!content_only)
 			{
 				fputs(",", stdout);
-				fflush(stdout);
 				for (i = 0; i < kr.records; i++)
 				{
 					kap_kread(k, &kr, key, i, data, 1);
-					write(1, data, record_size);
+					fwrite(data, record_size, 1, stdout);
 				}
 			}
 			
@@ -235,8 +234,7 @@ int main(int argc, char * const * argv)
 			if (!content_only)
 			{
 				fputs(",", stdout);
-				fflush(stdout);
-				write(1, data, len);
+				fwrite(data, len, 1, stdout);
 			}
 			
 			fputs("\n", stdout); 
