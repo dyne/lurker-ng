@@ -1,4 +1,4 @@
-/*  $Id: Search.cpp,v 1.2 2004-08-24 21:51:23 terpstra Exp $
+/*  $Id: Search.cpp,v 1.3 2004-08-25 12:51:05 terpstra Exp $
  *  
  *  Search.cpp - Execute a keyword search
  *  
@@ -294,6 +294,7 @@ class WordSearcher : public Searcher
 {
  protected:
  	int prefix;
+ 	Direction d;
  	auto_ptr<Walker> walker;
  	
  public:
@@ -302,14 +303,16 @@ class WordSearcher : public Searcher
 };
 
 WordSearcher::WordSearcher(const Criterea& c, const string& word)
- : prefix(sizeof(LU_KEYWORD)-1 + word.length() + 1),
+ : d(c.dir),
+   prefix(sizeof(LU_KEYWORD)-1 + word.length() + 1),
    walker(c.db->seek(LU_KEYWORD + word + '\0', c.source.raw(), c.dir))
 {
 }
 
 bool WordSearcher::skipto(MessageId later_than)
 {
-	while (later_than > next_id)
+	while ((d == Forward  && later_than > next_id) ||
+	       (d == Backward && later_than < next_id))
 	{
 		// later_than > next_id, so we are free to blindly advance.
 		int out = walker->advance();
