@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.41 2002-09-02 08:20:56 terpstra Exp $
+/*  $Id: main.c,v 1.42 2002-09-30 15:39:37 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -279,8 +279,17 @@ int main(int argc, char** argv)
 	
 	memset(&sun_addr, 0, sizeof(sun_addr));
 	
+#define ADD_SOCK	"/" PACKAGE ".sock"
+	
 	sun_addr.sun_family = PF_UNIX;
-	strcpy(&sun_addr.sun_path[0], PACKAGE ".sock");
+	if (getcwd(
+		&sun_addr.sun_path[0], 
+		sizeof(sun_addr.sun_path) - sizeof(ADD_SOCK))
+		== 0)
+	{
+		strcpy(&sun_addr.sun_path[0], "/.../");
+	}
+	strcat(&sun_addr.sun_path[0], ADD_SOCK);
 	sun_len = sizeof(sun_addr.sun_family) + strlen(&sun_addr.sun_path[0]) + 1;
 	
 	/* First try connecting to see if lurker is already running */
