@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.12 2002-02-21 03:51:38 terpstra Exp $
+/*  $Id: mbox.c,v 1.13 2002-02-21 22:47:37 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -103,65 +103,7 @@ static int my_mbox_lock_mbox(
 		return -1;
 #endif
 
-	memset(&mbox->map, 0, sizeof(mbox->map));
 	mbox->locked = 1;
-	return 0;
-}
-
-static void my_mbox_unmap(
-	Lu_Config_Mbox *mbox)
-{
-	if (!mbox->mapped)
-		return;
-		
-	munmap(mbox->map.base, mbox->map.size);
-	mbox->mapped = 0;
-}
-
-static int my_mbox_mmap(
-	Lu_Config_Mbox* mbox,
-	off_t off,
-	size_t msize)
-{
-	size_t ps_bits = getpagesize() - 1;
-	size_t speculate_size;
-	
-	if (LU_MBOX_MMAP_SPECULATE < msize)
-		speculate_size = msize;
-	else
-		speculate_size = LU_MBOX_MMAP_SPECULATE;
-	
-	if (mbox->mapped)
-	{
-		if (off >= mbox->map.off && 
-			mbox->map.off + mbox->map.size > off + msize)
-		{	/* Reuse the same mapping */
-			return 0;
-		}
-		
-		my_mbox_unmap(mbox);
-	}
-	
-#ifdef DEBUG
-	printf("m"); fflush(stdout);
-#endif
-	
-	/*
-	 * Some systems expect the mmap offset to be aligned to the VM
-	 * page size, some don't.  Do it just to be safe -- it won't waste
-	 * any space.
-	 */
-	mbox->map.off = off & ~ps_bits;
-	mbox->map.size = (speculate_size + (off - mbox->map.off) + ps_bits) & 
-			~ps_bits;
-
-	/* Mapping past the EOF is fine. In fact - we like doing this. =>
-	 */
-	mbox->map.base = mmap(NULL, mbox->map.size, PROT_READ | PROT_WRITE,
-				MAP_PRIVATE, mbox->fd, mbox->map.off);
-	if (!mbox->map.base) return -1;
-	
-	mbox->mapped = 1;
 	return 0;
 }
 
@@ -193,6 +135,54 @@ static int my_mbox_unlock_mbox(
 	return 0;
 }
 
+static int my_mbox_mmap(
+	Lu_Config_Mbox*			mbox,
+	struct Lu_Config_Message*	msg,
+	off_t				off,
+	size_t				msize)
+{
+	size_t ps_bits = getpagesize() - 1;
+	size_t speculate_size;
+	
+	if (LU_MBOX_MMAP_SPECULATE < msize)
+		speculate_size = msize;
+	else
+		speculate_size = LU_MBOX_MMAP_SPECULATE;
+	
+	if (msg->map.base)
+	{
+		if (off >= msg->map.off && 
+			msg->map.off + msg->map.size > off + msize)
+		{	/* Reuse the same mapping */
+			return 0;
+		}
+		
+		/* Else, remap it */
+		lu_mbox_map_destroy(msg);
+	}
+	
+#ifdef DEBUG
+	printf("m"); fflush(stdout);
+#endif
+	
+	/*
+	 * Some systems expect the mmap offset to be aligned to the VM
+	 * page size, some don't.  Do it just to be safe -- it won't waste
+	 * any space.
+	 */
+	msg->map.off = off & ~ps_bits;
+	msg->map.size = (speculate_size + (off - msg->map.off) + ps_bits) & 
+			~ps_bits;
+
+	/* Mapping past the EOF is fine. In fact - we like doing this. =>
+	 */
+	msg->map.base = mmap(NULL, msg->map.size, PROT_READ | PROT_WRITE,
+				MAP_PRIVATE, mbox->fd, msg->map.off);
+	if (!msg->map.base) return -1;
+	
+	return 0;
+}
+
 static char* my_mbox_strnstr(
 	const char* s,
 	const char* d,
@@ -208,90 +198,23 @@ static char* my_mbox_strnstr(
 	return 0;
 }
 
-
 static int my_mbox_process_mbox(
 	Lu_Config_Mbox* mbox, 
 	Lu_Config_List* list, 
 	time_t stamp)
 {
-	off_t			size;
 	message_id		id;
 	struct Lu_Mbox_Message	m;
-	char*			buf;
-	char*			e;
 	char*			author_name;
-	char*			body;
-	char*			end;
 	char			author_email[200];
 	int			error;
-	size_t			amt;
-
-	assert(mbox->locked);
 	
-	/* Keep trying till we have enough mapped to access the header of the
-	 * next message.
-	 */
-	for (amt = LU_MBOX_INIT_MSG_SIZE; ; amt <<= 1)
-	{
-		if (my_mbox_mmap(mbox, mbox->length, amt) != 0)
-			return -1;
-		
-		assert (mbox->map.off <= mbox->length);
-		assert (mbox->map.size + mbox->map.off >= 
-			mbox->length + LU_MBOX_INIT_MSG_SIZE);
-		
-		/* Convert to a char* pointer
-		 */
-		buf = mbox->map.base;
-		buf += (mbox->length - mbox->map.off);
-		
-		/* How big is the file? 
-		 */
-		size = lseek(mbox->fd, 0, SEEK_END);
-		
-		/* We know that there are headers b/c of the scan step */
-		assert (mbox->length < size);
-		
-		/* Null terminate the range for the purposes of c-client.
-		 */
-		if (size - mbox->length < amt)
-			e = &buf[size - mbox->length];
-		else
-			e = &buf[amt-1];
-		
-		/* Look for an end to the message.  (This is either an EOF or
-		 * an unmangled '\nFrom'.)
-		 */
-		end = my_mbox_strnstr(buf, "\nFrom ", e - buf);
-		
-		body = my_mbox_strnstr(buf, "\n\n", e - buf);
-		if (!body) body = my_mbox_strnstr(buf, "\r\n\r\n", e - buf);
-		
-		if (end)
-		{	/* We found the start of the next message. */
-			end++;
-			break;
-		}
-		
-		/* Did we conclude that all the way to EOF is a message? */
-		if (size - mbox->length < amt)
-		{	/* We would have scanned all the way to EOF */
-			end = e;
-			break;
-		}
-		
-		/* Try again with twice as much storage */
-	}
+	if (lu_mbox_map_message(mbox, &mbox->msg, mbox->length) != 0)
+		return -1;
 	
-	/* Some evil mail has no headers - just body... */
-	if (!body || body > end) body = buf;
+	if (lu_mbox_parse_message(&mbox->msg, &m) != 0)
+		return -1;
 	
-	/* Parse the message. */
-	m.buffer = body;
-	INIT(&m.bss, mail_string, m.buffer, (size_t)(end - body));
-	rfc822_parse_msg(&m.env, &m.body, buf, (size_t)(body - buf),
-		&m.bss,	"localhost", 0);
-
 	author_name = "";
 	author_email[0] = 0;
 	
@@ -340,8 +263,7 @@ static int my_mbox_process_mbox(
 
 	if (id == lu_common_minvalid)
 	{
-		mail_free_body(&m.body);
-		mail_free_envelope(&m.env);
+		lu_mbox_destroy_message(&m);
 		return -1;
 	}
 		
@@ -354,8 +276,7 @@ static int my_mbox_process_mbox(
 		
 	if (error != 0)
 	{
-		mail_free_body(&m.body);
-		mail_free_envelope(&m.env);
+		lu_mbox_destroy_message(&m);
 		return -1;
 	}
 
@@ -369,10 +290,9 @@ static int my_mbox_process_mbox(
 	printf("."); fflush(stdout);
 #endif
 	
-	lu_config_move_mbox_end(mbox, list, mbox->length + (end - buf));
+	lu_config_move_mbox_end(mbox, list, mbox->msg.end);
 	
-	mail_free_body(&m.body);
-	mail_free_envelope(&m.env);
+	lu_mbox_destroy_message(&m);
 	return 0;
 }
 
@@ -439,20 +359,6 @@ static time_t my_mbox_extract_timestamp(
 	/* Keep trying to find 'From ' until it works. */
 	while (1)
 	{
-		/* Map in enough of the message to read the headers.
-		 */
-		if (my_mbox_mmap(mbox, mbox->length, LU_MBOX_INIT_MSG_SIZE) != 0)
-			return 0;
-		
-		assert (mbox->map.off <= mbox->length);
-		assert (mbox->map.size + mbox->map.off >= 
-			mbox->length + LU_MBOX_INIT_MSG_SIZE);
-		
-		/* Convert to a char* pointer
-		 */
-		buf = mbox->map.base;
-		buf += (mbox->length - mbox->map.off);
-		
 		/* How big is the file? 
 		 */
 		size = lseek(mbox->fd, 0, SEEK_END);
@@ -461,6 +367,20 @@ static time_t my_mbox_extract_timestamp(
 		{	/* Ran out of mbox while searching. */
 			return 0;
 		}
+		
+		/* Map in enough of the message to read the headers.
+		 */
+		if (my_mbox_mmap(mbox, &mbox->msg, mbox->length, LU_MBOX_INIT_MSG_SIZE) != 0)
+			return 0;
+		
+		assert (mbox->msg.map.off <= mbox->length);
+		assert (mbox->msg.map.size + mbox->msg.map.off >= 
+			mbox->length + LU_MBOX_INIT_MSG_SIZE);
+		
+		/* Convert to a char* pointer
+		 */
+		buf = mbox->msg.map.base;
+		buf += (mbox->length - mbox->msg.map.off);
 		
 		/* Null terminate the range for the purposes of strstr'n it.
 		 */
@@ -759,3 +679,129 @@ char* lu_mbox_select_body(
 	return input;
 }
 
+int lu_mbox_map_message(
+	struct Lu_Config_Mbox_T*	mbox,
+	struct Lu_Config_Message*	msg,
+	off_t				start)
+{
+	off_t	amt;
+	off_t	size;
+	char*	buf;
+	char*	body;
+	char*	end;
+	char*	e;
+	
+	/* Keep trying till we have enough mapped to access the header of the
+	 * next message.
+	 */
+	for (amt = LU_MBOX_INIT_MSG_SIZE; ; amt <<= 1)
+	{
+		/* How big is the file? 
+		 */
+		size = lseek(mbox->fd, 0, SEEK_END);
+		
+		/* We know that there are headers b/c of the scan step */
+		assert (start < size);
+		
+		if (my_mbox_mmap(mbox, msg, start, amt) != 0)
+			return -1;
+		
+		assert (msg->map.off <= start);
+		assert (msg->map.size + msg->map.off >= 
+			start + LU_MBOX_INIT_MSG_SIZE);
+		
+		/* Convert to a char* pointer
+		 */
+		buf = msg->map.base;
+		buf += (start - msg->map.off);
+		
+		/* Get range bounds.
+		 */
+		if (size - start <= amt)
+			e = &buf[size - start];
+		else
+			e = &buf[amt];
+		
+		/* Look for an end to the message.  (This is either an EOF or
+		 * an unmangled '\nFrom'.)
+		 */
+		end = my_mbox_strnstr(buf, "\nFrom ", e - buf);
+		
+		if (end)
+		{	/* We found the start of the next message. */
+			end++;
+			break;
+		}
+		
+		/* Did we conclude that all the way to EOF is a message? */
+		if (size - start <= amt)
+		{	/* We scanned all the way to EOF */
+			end = e;
+			break;
+		}
+		
+		/* Try again with twice as much storage */
+	}
+	
+	body = my_mbox_strnstr(buf, "\n\n", end - buf);
+	if (!body) body = my_mbox_strnstr(buf, "\r\n\r\n", end - buf);
+	if (!body) body = my_mbox_strnstr(buf, "\r\r",     end - buf);
+	
+	/* Some evil mail has no headers - just body... */
+	if (!body) body = buf;
+	
+	msg->headers = start;
+	msg->body    = body - buf + start;
+	msg->end     = end  - buf + start;
+	
+	return 0;
+}
+
+int lu_mbox_map_destroy(
+	struct Lu_Config_Message* msg)
+{
+	if (!msg->map.base)
+		return 0;
+	
+	munmap(msg->map.base, msg->map.size);
+	msg->map.base = 0;
+	return 0;
+}
+
+int lu_mbox_parse_message(
+	struct Lu_Config_Message*	mmap,
+	struct Lu_Mbox_Message*		msg)
+{
+	char*	buf;
+	
+	buf = mmap->map.base;
+	buf += mmap->headers - mmap->map.off;
+	
+	msg->buffer = buf;
+	msg->buffer += mmap->body - mmap->headers;
+	
+	/* Parse the message. */
+	INIT(	&msg->bss, 
+		mail_string, 
+		msg->buffer, 
+		(size_t)(mmap->end - mmap->body));
+		
+	rfc822_parse_msg(
+		&msg->env, 
+		&msg->body, 
+		buf, 
+		(size_t)(mmap->body - mmap->headers),
+		&msg->bss, 
+		"localhost", 
+		0);
+	
+	return 0;
+}
+
+int lu_mbox_destroy_message(
+	struct Lu_Mbox_Message*	m)
+{
+	mail_free_body(&m->body);
+	mail_free_envelope(&m->env);
+	return 0;
+}

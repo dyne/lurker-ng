@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.6 2002-02-21 03:51:38 terpstra Exp $
+/*  $Id: config.c,v 1.7 2002-02-21 22:47:37 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -299,7 +299,9 @@ static int my_config_open_mboxs()
 			
 			mbox->next_message = 0;
 			mbox->locked       = 0;
-			mbox->mapped       = 0;
+			
+			/* We have nothing mapped */
+			memset(&mbox->msg, 0, sizeof(struct Lu_Config_Message));
 		}
 	}
 	

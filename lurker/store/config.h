@@ -1,4 +1,4 @@
-/*  $Id: config.h,v 1.8 2002-02-21 03:51:38 terpstra Exp $
+/*  $Id: config.h,v 1.9 2002-02-21 22:47:37 terpstra Exp $
  *  
  *  config.h - Knows how to load the config file
  *  
@@ -29,6 +29,24 @@
 
 /*------------------------------------------------ Public types */            
 
+struct Lu_Config_Mmap
+{
+	/* mmap details - base = 0 determines if mapped */
+	
+	off_t	off;	/* locate of mmap in file */
+	void*	base;	/* memory of the mmap */
+	size_t	size;	/* size of the mmap */
+};
+
+struct Lu_Config_Message
+{
+	struct Lu_Config_Mmap	map;
+	
+	off_t	headers;
+	off_t	body;
+	off_t	end;
+};
+
 typedef struct Lu_Config_Mbox_T
 {
 	lu_word	id;
@@ -43,16 +61,9 @@ typedef struct Lu_Config_Mbox_T
 	off_t	length;
 	
 	int	locked;
-	int	mapped;
 	
-	struct	map_info 
-	{
-		void*	base;
-		
-		off_t	off;
-		size_t	size;
-	} map;
-
+	struct Lu_Config_Message msg;
+	
 	/* only used during load of config */
 	struct Lu_Config_Mbox_T*	next;
 } Lu_Config_Mbox;

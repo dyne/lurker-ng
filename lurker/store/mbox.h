@@ -1,4 +1,4 @@
-/*  $Id: mbox.h,v 1.4 2002-02-21 03:51:38 terpstra Exp $
+/*  $Id: mbox.h,v 1.5 2002-02-21 22:47:37 terpstra Exp $
  *  
  *  mbox.h - Knows how to follow mboxes for appends and import messages
  *  
@@ -30,16 +30,48 @@
 
 struct Lu_Mbox_Message
 {
+	char*				buffer;
 	struct	mail_envelope*		env;
 	struct	mail_bodystruct*	body;
 	STRING				bss;
-	char*				buffer;
 };
 
 /*------------------------------------------------- Public methods */
 
-extern char* lu_mbox_select_body(struct Lu_Mbox_Message *, 
-	BODY *, size_t *, int *);
+struct Lu_Config_Mbox_T;
+struct Lu_Config_Mmap;
+struct Lu_Config_Message;
+
+extern char* lu_mbox_select_body(
+	struct Lu_Mbox_Message *, 
+	BODY *, 
+	size_t *, 
+	int *);
+
+/* Mmap a message into memory from the specified mbox/start location.
+ * The msg structure will have the mmap reused if possible.
+ * You should have initialized msg with memset.
+ */
+extern int lu_mbox_map_message(
+	struct Lu_Config_Mbox_T*	mbox, 
+	struct Lu_Config_Message*	msg,
+	off_t				start);
+
+/* This will unmap the memory used by the specified message.
+ */
+extern int lu_mbox_map_destroy(
+	struct Lu_Config_Message*	msg);
+	
+/* This will parse a given message from a message mmap.
+ */
+extern int lu_mbox_parse_message(
+	struct Lu_Config_Message*	mmap,
+	struct Lu_Mbox_Message*		msg);
+
+/* This releases resources used by the message.
+ */
+extern int lu_mbox_destroy_message(
+	struct Lu_Mbox_Message* m);
 
 /*------------------------------------------------- Public component methods */
 
