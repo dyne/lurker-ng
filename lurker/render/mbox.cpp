@@ -1,4 +1,4 @@
-/*  $Id: mbox.cpp,v 1.4 2003-06-23 14:38:43 terpstra Exp $
+/*  $Id: mbox.cpp,v 1.5 2004-01-06 20:02:05 terpstra Exp $
  *  
  *  mbox.cpp - Handle a mbox/ command
  *  
@@ -49,7 +49,7 @@ int handle_mbox(const Config& cfg, ESort::Reader* db, const string& param)
 	string ok;
 	
 	Summary source(id);
-	if ((ok = source.load(db)) != "")
+	if ((ok = source.load(db, cfg)) != "")
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";

@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.6 2003-06-26 18:50:05 terpstra Exp $
+/*  $Id: thread.cpp,v 1.7 2004-01-06 20:02:05 terpstra Exp $
  *  
  *  thread.cpp - Handle a thread/ command
  *  
@@ -49,7 +49,7 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 	string ok;
 	
 	Summary source(id);
-	if ((ok = source.load(db)) != "")
+	if ((ok = source.load(db, cfg)) != "")
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
@@ -76,7 +76,7 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 	for (Threading::Key j = 0; j < thread.size(); ++j)
 	{
 		Summary& sum = thread.getSummary(j);
-		if (!sum.loaded() && (ok = sum.load(db)) != "")
+		if (!sum.loaded() && (ok = sum.load(db, cfg)) != "")
 			break;
 		
 		const set<string>& mboxs = sum.mboxs();

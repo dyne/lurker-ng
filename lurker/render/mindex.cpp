@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.9 2003-06-23 14:38:43 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.10 2004-01-06 20:02:05 terpstra Exp $
  *  
  *  mindex.cpp - Handle a mindex/ command
  *  
@@ -125,7 +125,7 @@ int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 	for (i = 0; i < right; ++i) queue.push_back(forward[i]);
 	
 	for (i = 0; i < queue.size(); ++i)
-		if ((ok = queue[i].load(db)) != "")
+		if ((ok = queue[i].load(db, cfg)) != "")
 			break;
 	
 	if (ok != "")

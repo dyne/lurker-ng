@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.32 2004-01-06 19:42:00 terpstra Exp $
+/*  $Id: message.cpp,v 1.33 2004-01-06 20:02:05 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -630,10 +630,10 @@ struct MBox
 	MBox() { }
 	MBox(const List& cfg_) : cfg(cfg_) { }
 	
-	string load(ESort::Reader* db, const MessageId& rel);
+	string load(ESort::Reader* db, const MessageId& rel, const Config& cfg);
 };
 
-string MBox::load(ESort::Reader* db, const MessageId& rel)
+string MBox::load(ESort::Reader* db, const MessageId& rel, const Config& conf)
 {
 	string ok;
 	vector<Summary> sum;
@@ -647,7 +647,7 @@ string MBox::load(ESort::Reader* db, const MessageId& rel)
 	if (sum.size() >= 2)
 	{
 		next = sum[1];
-		if ((ok = next.load(db)) != "") return ok;
+		if ((ok = next.load(db, conf)) != "") return ok;
 	}
 	
 	sum.clear();
@@ -658,7 +658,7 @@ string MBox::load(ESort::Reader* db, const MessageId& rel)
 	if (sum.size() >= 1)
 	{
 		prev = sum[0];
-		if ((ok = prev.load(db)) != "") return ok;
+		if ((ok = prev.load(db, conf)) != "") return ok;
 	}
 	
 	return "";
@@ -692,7 +692,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 	string ok;
 	
 	Summary source(id);
-	if ((ok = source.load(db)) != "")
+	if ((ok = source.load(db, cfg)) != "")
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
@@ -704,7 +704,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 	Threading::Key spot;
 	Threading thread;
 	if ((ok = thread.load(db, source, spot)) != "" ||
-	    (ok = thread.draw_snippet(db, spot)) != "")
+	    (ok = thread.draw_snippet(db, spot, cfg)) != "")
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
@@ -718,8 +718,8 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 	Summary& thread_prev = thread.getSummary(thread.prev(spot));
 	Summary& thread_next = thread.getSummary(thread.next(spot));
 	
-	if ((!thread_prev.loaded() && (ok = thread_prev.load(db)) != "") ||
-	    (!thread_next.loaded() && (ok = thread_next.load(db)) != ""))
+	if ((!thread_prev.loaded() && (ok = thread_prev.load(db, cfg)) != "") ||
+	    (!thread_next.loaded() && (ok = thread_next.load(db, cfg)) != ""))
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
@@ -773,7 +773,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 			if (thread.hasMessage(hash)) continue;
 			if (followups.find(hash) != followups.end()) continue;
 			followups[hash] = *sum;
-			if ((ok = followups[hash].load(db)) != "")
+			if ((ok = followups[hash].load(db, cfg)) != "")
 				break;
 		}
 	}
@@ -819,7 +819,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 			if (thread.hasMessage(hash)) continue;
 			if (repliesTo.find(hash) != repliesTo.end()) continue;
 			repliesTo[hash] = *sum;
-			if ((ok = repliesTo[hash].load(db)) != "")
+			if ((ok = repliesTo[hash].load(db, cfg)) != "")
 				break;
 		}
 	}
@@ -842,7 +842,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		if (j == cfg.lists.end()) continue;
 		
 		boxes.push_back(MBox(j->second));
-		if ((ok = boxes.back().load(db, id)) != "") break;
+		if ((ok = boxes.back().load(db, id, cfg)) != "") break;
 	}
 	if (ok != "")
 	{

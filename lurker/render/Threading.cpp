@@ -1,4 +1,4 @@
-/*  $Id: Threading.cpp,v 1.11 2003-07-01 12:42:02 terpstra Exp $
+/*  $Id: Threading.cpp,v 1.12 2004-01-06 20:02:05 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -363,7 +363,8 @@ int my_service_draw_snippet(
 	int p, 
 	int row,
 	string& out,
-	int num)
+	int num,
+	const Config& cfg)
 {
 	int col;
 	int c;
@@ -373,13 +374,13 @@ int my_service_draw_snippet(
 	
 	if (row < 3)
 	{
-		out = tree[p].summary.load(db);
+		out = tree[p].summary.load(db, cfg);
 		if (out != "") return -1;
 		
 		for (c = tree[p].replyor_first; c != -1; c = tree[c].replyor_next)
 		{
 			tree[c].consumed = col;
-			col = my_service_draw_snippet(db, tree, c, row+1, out, num);
+			col = my_service_draw_snippet(db, tree, c, row+1, out, num, cfg);
 			if (col == -1) return -1;
 		}
 		
@@ -389,7 +390,7 @@ int my_service_draw_snippet(
 			c = p+1;
 			
 			tree[c].consumed = col;
-			col = my_service_draw_snippet(db, tree, c, row+1, out, num);
+			col = my_service_draw_snippet(db, tree, c, row+1, out, num, cfg);
 			if (col == -1) return -1;
 		}
 	}
@@ -422,13 +423,13 @@ int my_service_pick_p(Threading::Node* tree, int root, int num)
 	return p;
 }
 
-string Threading::draw_snippet(ESort::Reader* db, Key root)
+string Threading::draw_snippet(ESort::Reader* db, Key root, const Config& cfg)
 {
 	Threading::Node* tree = &nodes[0];
 	string out;
 	my_service_draw_snippet(db, tree, 
 		my_service_pick_p(tree, root, nodes.size()), 
-		0, out, nodes.size());
+		0, out, nodes.size(), cfg);
 	return out;
 }
 

@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.5 2003-07-03 15:59:15 terpstra Exp $
+/*  $Id: list.cpp,v 1.6 2004-01-06 20:02:05 terpstra Exp $
  *  
  *  list.cpp - Handle a list/ command
  *  
@@ -146,7 +146,7 @@ int handle_list(const Config& cfg, ESort::Reader* db, const string& param)
 			if (t.newest.id().timestamp() == 0)
 			{
 				t.newest = Summary(id);
-				string ok = t.newest.load(db);
+				string ok = t.newest.load(db, cfg);
 				if (ok != "") return list_load_error(ok);
 			}
 			

@@ -1,4 +1,4 @@
-/*  $Id: Summary.cpp,v 1.10 2003-07-01 14:05:52 terpstra Exp $
+/*  $Id: Summary.cpp,v 1.11 2004-01-06 20:02:04 terpstra Exp $
  *  
  *  Summary.cpp - Helper which can load a message given MessageId
  *  
@@ -42,7 +42,7 @@
 
 using namespace std;
 
-string Summary::load(Reader* r)
+string Summary::load(Reader* r, const Config& cfg)
 {
 	// Use the prefix limited search
 	auto_ptr<Walker> w(r->seek(LU_SUMMARY + id_.raw(), "", Forward));
@@ -63,10 +63,18 @@ string Summary::load(Reader* r)
 		{
 		case LU_MESSAGE_AUTHOR_EMAIL:
 			author_email_ = w->key.substr(1+8+1, string::npos);
+			if (cfg.hide_email)
+			{
+				string::size_type x = author_email_.find('@');
+				if (x != string::npos) author_email_.resize(x);
+				if (!author_name_.length()) author_name_ = author_email_;
+				author_email_ = "";
+			}
 			break;
 			
 		case LU_MESSAGE_AUTHOR_NAME:
-			author_name_ = w->key.substr(1+8+1, string::npos);
+			if (w->key.length() > 1+8+1)
+				author_name_ = w->key.substr(1+8+1, string::npos);
 			break;
 			
 		case LU_MESSAGE_SUBJECT:

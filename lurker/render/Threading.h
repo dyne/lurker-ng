@@ -1,4 +1,4 @@
-/*  $Id: Threading.h,v 1.3 2003-07-01 12:39:40 terpstra Exp $
+/*  $Id: Threading.h,v 1.4 2004-01-06 20:02:05 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -82,7 +82,7 @@ class Threading
  	Summary& getSummary(Key m);
  	
  	string draw_tree   (ESort::Reader* db);	// prepare for row drawing
- 	string draw_snippet(ESort::Reader* db, Key root);
+ 	string draw_snippet(ESort::Reader* db, Key root, const Config& cfg);
  	
  	void draw_tree_row   (ostream& o, int* h, Key row); // "" = ok
  	void draw_snippet_row(ostream& o, int* h, Key row, Key root); // "" = ok
