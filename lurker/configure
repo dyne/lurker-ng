@@ -9655,8 +9655,26 @@ _ACEOF
   LOCALEDIR_expand="$ac_define_dir_result"
 
 
+prefix_backup="$prefix"
+  exec_prefix_backup="$exec_prefix"
+  ac_define_dir_result=""${bindir}""
+  if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
+  if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
+  while echo "$ac_define_dir_result" | grep -q '\$'; do
+    ac_define_dir_result=`eval echo $ac_define_dir_result`
+  done
+  prefix="${prefix_backup}"
+  exec_prefix="${exec_prefix}"
 
-ac_config_files="$ac_config_files Makefile libkap/Makefile common/Makefile store/Makefile render/Makefile xslt/Makefile imgs/Makefile doc/Makefile intl/Makefile po/Makefile.in lurker.conf doc/lurker.mbox render/.htaccess"
+cat >>confdefs.h <<_ACEOF
+#define BINDIR "$ac_define_dir_result"
+_ACEOF
+
+  BINDIR_expand="$ac_define_dir_result"
+
+
+
+ac_config_files="$ac_config_files Makefile libkap/Makefile common/Makefile store/Makefile render/Makefile xslt/Makefile imgs/Makefile doc/Makefile intl/Makefile po/Makefile.in lurker.conf doc/lurker.mbox store/backup store/restore render/.htaccess"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -10152,6 +10170,8 @@ do
   "po/Makefile.in" ) CONFIG_FILES="$CONFIG_FILES po/Makefile.in" ;;
   "lurker.conf" ) CONFIG_FILES="$CONFIG_FILES lurker.conf" ;;
   "doc/lurker.mbox" ) CONFIG_FILES="$CONFIG_FILES doc/lurker.mbox" ;;
+  "store/backup" ) CONFIG_FILES="$CONFIG_FILES store/backup" ;;
+  "store/restore" ) CONFIG_FILES="$CONFIG_FILES store/restore" ;;
   "render/.htaccess" ) CONFIG_FILES="$CONFIG_FILES render/.htaccess" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
   "default-2" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-2" ;;
@@ -10318,6 +10338,7 @@ s,@WWWDIR_expand@,$WWWDIR_expand,;t t
 s,@LOCALSTATEDIR_expand@,$LOCALSTATEDIR_expand,;t t
 s,@DBDIR_expand@,$DBDIR_expand,;t t
 s,@LOCALEDIR_expand@,$LOCALEDIR_expand,;t t
+s,@BINDIR_expand@,$BINDIR_expand,;t t
 CEOF
 
 _ACEOF

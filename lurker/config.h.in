@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Where do we put our command-line tools? */
+#undef BINDIR
+
 /* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
    systems. This function is required for `alloca.c' support on those systems.
    */
@@ -229,7 +232,7 @@
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST
 
-/* Where do we put out .mo files? */
+/* Where do we put our .mo files? */
 #undef LOCALEDIR
 
 /* Where do we keep our pid? */

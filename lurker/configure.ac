@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1c)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.33 2002-07-12 15:16:52 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.34 2002-07-12 16:42:31 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -134,7 +134,8 @@ AC_DEFINE_DIR(DATADIR,       "${datadir}",       [Where do we find our documenta
 AC_DEFINE_DIR(WWWDIR,        "${wwwdir}",        [Where do we put the web files?])
 AC_DEFINE_DIR(LOCALSTATEDIR, "${localstatedir}", [Where do we keep our pid?])
 AC_DEFINE_DIR(DBDIR,         "${dbdir}",         [Where do we put our database files?])
-AC_DEFINE_DIR(LOCALEDIR,     "${localedir}",     [Where do we put out .mo files?])
+AC_DEFINE_DIR(LOCALEDIR,     "${localedir}",     [Where do we put our .mo files?])
+AC_DEFINE_DIR(BINDIR,        "${bindir}",        [Where do we put our command-line tools?])
 
 AC_OUTPUT([
  Makefile 
@@ -148,5 +149,7 @@ AC_OUTPUT([
   intl/Makefile 
   po/Makefile.in 
  lurker.conf 
-  doc/lurker.mbox 
+  doc/lurker.mbox
+  store/backup
+  store/restore
   render/.htaccess])
