@@ -1,4 +1,4 @@
-/*  $Id: rbuffer.c,v 1.9 2002-08-12 21:45:51 terpstra Exp $
+/*  $Id: rbuffer.c,v 1.10 2002-08-25 15:59:12 terpstra Exp $
  *  
  *  rbuffer.c - Implements a buffering system that read combines
  *  
@@ -585,7 +585,7 @@ static void purify_record(
 
 /*------------------------------------------------ Public component methods */
 
-struct Kap_Rbuffer* rbuffer_init()
+struct Kap_Rbuffer* rbuffer_init(Kap k)
 {
 	struct Kap_Rbuffer* rbuffer = malloc(sizeof(struct Kap_Rbuffer));
 	if (!rbuffer) return 0;

@@ -1,4 +1,4 @@
-/*  $Id: private.h,v 1.10 2002-07-21 22:54:23 terpstra Exp $
+/*  $Id: private.h,v 1.11 2002-08-25 15:59:12 terpstra Exp $
  *  
  *  private.h - Private internal interfaces for libkap
  *  
@@ -38,10 +38,10 @@ struct Kap_T
 	struct Kap_Rbuffer*	rbuffer;
 };
 
-struct Kap_Btree* 	  btree_init(void);
-struct Kap_Append*	 append_init(void);
-struct Kap_Wbuffer*	wbuffer_init(void);
-struct Kap_Rbuffer*	rbuffer_init(void);
+struct Kap_Btree* 	  btree_init(Kap k);
+struct Kap_Append*	 append_init(Kap k);
+struct Kap_Wbuffer*	wbuffer_init(Kap k);
+struct Kap_Rbuffer*	rbuffer_init(Kap k);
 
 int kap_btree_open(Kap k, const char* dir, const char* prefix);
 int kap_btree_sync(Kap k);

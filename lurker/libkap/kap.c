@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.14 2002-07-22 10:57:10 terpstra Exp $
+/*  $Id: kap.c,v 1.15 2002-08-25 15:59:12 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -101,6 +101,8 @@ const char* kap_strerror(int error)
 	case KAP_NO_SPACE:		return _("KAP Out of disk space");
 	case KAP_NO_BTREE:		return _("KAP Btree subsystem not initialized");
 	case KAP_NO_APPEND:		return _("KAP Append subsystem not initialized");
+	case KAP_NO_WBUFFER:		return _("KAP Wbuffer subsystem not initialized");
+	case KAP_NO_RBUFFER:		return _("KAP Rbuffer subsystem not initialized");
 	case KAP_BTREE_CORRUPT:		return _("KAP Btree file is corrupt");
 	case KAP_APPEND_CORRUPT:	return _("KAP Append file is corrupt");
 	case KAP_WRONG_RECORD_SIZE:	return _("KAP Append DB has wrong record size");
@@ -136,25 +138,25 @@ int kap_create(Kap* k, int flags)
 	
 	if ((flags & KAP_BTREE) == KAP_BTREE)
 	{
-		(*k)->btree = btree_init();
+		(*k)->btree = btree_init(*k);
 		if (!(*k)->btree) goto kap_create_error1;
 	}
 	
 	if ((flags & KAP_APPEND) == KAP_APPEND)
 	{
-		(*k)->append = append_init();
+		(*k)->append = append_init(*k);
 		if (!(*k)->append) goto kap_create_error2;
 	}
 	
 	if ((flags & KAP_WBUFFER) == KAP_WBUFFER)
 	{
-		(*k)->wbuffer = wbuffer_init();
+		(*k)->wbuffer = wbuffer_init(*k);
 		if (!(*k)->wbuffer) goto kap_create_error3;
 	}
 	
 	if ((flags & KAP_RBUFFER) == KAP_RBUFFER)
 	{
-		(*k)->rbuffer = rbuffer_init();
+		(*k)->rbuffer = rbuffer_init(*k);
 		if (!(*k)->rbuffer) goto kap_create_error4;
 	}
 	

@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.27 2002-08-24 20:22:09 terpstra Exp $
+/*  $Id: btree.c,v 1.28 2002-08-25 15:59:12 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -319,7 +319,7 @@ inline size_t needed_for_tree_sector(Kap k)
 
 /***************************************** Control btree parameters */
 
-struct Kap_Btree* btree_init(void)
+struct Kap_Btree* btree_init(Kap k)
 {
 	struct Kap_Btree* btree = malloc(sizeof(struct Kap_Btree));
 	if (!btree) return 0;

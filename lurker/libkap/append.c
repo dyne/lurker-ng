@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.22 2002-08-24 20:22:09 terpstra Exp $
+/*  $Id: append.c,v 1.23 2002-08-25 15:59:12 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -116,6 +116,9 @@ struct Kap_Append
 	size_t	record_size;
 	off_t	eof;
 	off_t	prealloc;
+	
+	size_t		tail_size;
+	unsigned char*	tail_cache;
 
 #ifdef USE_MMAP
 	char*	mmap;
@@ -135,8 +138,32 @@ int other_big;
 
 /***************************************** Strategies for accessing the disk */
 
-static int IO_WRITE_RECORDS(struct Kap_Append* k, off_t sector, const void* buf, size_t amount)
+#ifdef USE_MMAP
+static size_t round_mmap_up(size_t amt)
 {
+	size_t out = 0xC000; /* Can't quite map 2Gb- so use 110000... */
+	while (out < amt) out <<= 1;
+	
+	if (sizeof(void*) == 4 && out > 512*1024*1024)
+	{
+		/* Intentionally fail; greedy is bad */
+		return 0xFFFFFFFFUL;
+	}
+	
+	return out;
+}
+#endif
+
+static int WRITE_RECORDS(struct Kap_Append* k, off_t sector, const void* buf, size_t amount)
+{
+#ifdef USE_MMAP
+	if (k->mmap != MAP_FAILED)
+	{
+		memcpy(&k->mmap[sector], buf, amount);
+		return 0;
+	}
+#endif
+	
 	if (lseek(k->fd, sector, SEEK_SET) != sector)
 	{
 		if (errno == 0) errno = EINTR;
@@ -152,8 +179,16 @@ static int IO_WRITE_RECORDS(struct Kap_Append* k, off_t sector, const void* buf,
 	return 0;
 }
 
-static int IO_READ_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t amount)
+static int READ_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t amount)
 {
+#ifdef USE_MMAP
+	if (k->mmap != MAP_FAILED)
+	{
+		memcpy(buf, &k->mmap[sector], amount);
+		return 0;
+	}
+#endif
+	
 	if (lseek(k->fd, sector, SEEK_SET) != sector)
 	{
 		if (errno == 0) errno = EINTR;
@@ -168,62 +203,6 @@ static int IO_READ_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t
 	
 	return 0;
 }
-
-#ifdef USE_MMAP
-
-inline int WRITE_RECORDS(struct Kap_Append* k, off_t sector, const void* buf, size_t amount)
-{
-	if (k->mmap != MAP_FAILED)
-	{
-		memcpy(&k->mmap[sector], buf, amount);
-		return 0;
-	}
-	else
-	{
-		return IO_WRITE_RECORDS(k, sector, buf, amount);
-	}
-}
-
-inline int READ_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t amount)
-{
-	if (k->mmap != MAP_FAILED)
-	{
-		memcpy(buf, &k->mmap[sector], amount);
-		return 0;
-	}
-	else
-	{
-		return IO_READ_RECORDS(k, sector, buf, amount);
-	}
-}
-
-static size_t round_mmap_up(size_t amt)
-{
-	size_t out = 0xC000; /* Can't quite map 2Gb- so use 110000... */
-	while (out < amt) out <<= 1;
-	
-	if (sizeof(void*) == 4 && out > 512*1024*1024)
-	{
-		/* Intentionally fail; greedy is bad */
-		return 0xFFFFFFFFUL;
-	}
-	
-	return out;
-}
-
-#else
-
-inline int WRITE_RECORDS(struct Kap_Append* k, off_t sector, const void* buf, size_t amount)
-{
-	return IO_WRITE_RECORDS(k, sector, buf, amount);
-}
-
-inline int READ_RECORDS(struct Kap_Append* k, off_t sector, void* buf, size_t amount)
-{
-	return IO_READ_RECORDS(k, sector, buf, amount);
-}
-
-#endif
 
 /***************************************** Decoder methods */
 
@@ -685,13 +664,16 @@ int kap_append_find(
 	return 0;
 }
 
-struct Kap_Append* append_init(void)
+struct Kap_Append* append_init(Kap k)
 {
 	struct Kap_Append* out = malloc(sizeof(struct Kap_Append));
 	if (!out) return 0;
 	
 	out->fd          = -1;
 	out->record_size = 4;
+	
+	out->tail_size	= 0;
+	out->tail_cache	= 0;
 
 #ifdef PROFILE
 	memset(&appends, 0, sizeof(appends));
@@ -723,6 +705,17 @@ int kap_append_sync(Kap k)
 		return errno;
 	}
 	
+	return 0;
+}
+
+int kap_append_set_tail_cache(Kap k, ssize_t size)
+{
+	if (!k->append) return KAP_NO_APPEND;
+	if (k->append->fd != -1) return KAP_ALREADY_OPEN;
+	
+	if (size > 32*1024*1024) return ERANGE;
+	
+	k->append->tail_size = size;
 	return 0;
 }
 
@@ -759,6 +752,9 @@ int kap_append_close(Kap k)
 	if ((ret = kap_append_sync(k))        != 0) out = ret;
 	if ((ret = kap_unlock(k->append->fd)) != 0) out = ret;
 	if ((ret = close(k->append->fd))      != 0) out = ret;
+	
+	if (k->append->tail_cache)
+		free(k->append->tail_cache);
 	
 #ifdef PROFILE
 	f = fopen("/tmp/append.profile", "w");
@@ -845,7 +841,7 @@ int kap_append_open(Kap k, const char* dir, const char* prefix)
 
 	if (block_device)
 	{
-#if 0
+#if 1
 		assert(0);
 #else
 		k->append->grow_dir = GROW_DOWN;
@@ -930,9 +926,26 @@ int kap_append_open(Kap k, const char* dir, const char* prefix)
 		goto kap_append_open_error2;
 	}
 #endif
+	
+	if (k->append->tail_size)
+	{
+		k->append->tail_cache = malloc(k->append->tail_size*k->append->record_size);
+		if (!k->append->tail_cache)
+		{
+			if (errno)	out = errno;
+			else		out = ENOMEM;
+			goto kap_append_open_error3;
+		}
+	}
 		
 	return 0;
 
+kap_append_open_error3:
+#ifdef USE_MMAP
+	if (k->append->mmap != MAP_FAILED)
+		munmap(k->append->mmap, round_mmap_up(k->append->eof));
+#endif
+	
 kap_append_open_error2:
 	kap_unlock(k->append->fd);
 

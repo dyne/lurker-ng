@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.18 2002-07-21 22:54:23 terpstra Exp $
+/*  $Id: kap.h,v 1.19 2002-08-25 15:59:12 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -69,6 +69,8 @@ typedef struct KRecord_T
 
 #define KAP_NO_BTREE		-50
 #define KAP_NO_APPEND		-51
+#define KAP_NO_WBUFFER		-52
+#define KAP_NO_RBUFFER		-53
 
 #define KAP_BTREE_CORRUPT	-100
 #define KAP_APPEND_CORRUPT	-101
@@ -172,6 +174,31 @@ int	kap_btree_set_leafsize(Kap k, ssize_t bytes);
  */
 int	kap_append_set_recordsize(Kap k, ssize_t size);
 int	kap_append_get_recordsize(Kap k, ssize_t* size);
+
+/** Set the desired tail cache kept for append.
+ *  Precondition: called prior to open_kap.
+ *  Default: 0 records with no wbuffer
+ *           32768 records with wbuffer
+ *  Note: this will make your database not atomic which is why it is only
+ *        enabled with wbuffer by default.
+ *  Errors: ERANGE, KAP_ALREADY_OPEN, KAP_NO_APPEND
+ */
+int	kap_append_set_tail_cache(Kap k, ssize_t size);
+
+/** Set the desired number of appends to cache.
+ *  Precondition: called prior to open_kap.
+ *  Default: 1024*1024
+ *  Errors: ERANGE, KAP_ALREADY_OPEN, KAP_NO_WBUFFER
+ */
+int kap_wbuffer_set_appends(Kap k, size_t appends);
+
+/** Set the desired number of different cacheable append keys.
+ *  Precondition: called prior to open_kap.
+ *  Default: 16384
+ *  Errors: ERANGE, KAP_ALREADY_OPEN, KAP_NO_WBUFFER
+ */
+int kap_wbuffer_set_slots(Kap k, size_t slots);
+
 
 
 /****************************************** Btree specific DB calls */

@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.13 2002-08-24 18:58:50 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.14 2002-08-25 15:59:12 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -614,13 +614,39 @@ static int calc_storage(Kap k, int yield)
 
 /*------------------------------------------------- Public component methods */
 
-struct Kap_Wbuffer* wbuffer_init()
+int kap_wbuffer_set_appends(Kap k, size_t appends)
+{
+	if (!k->wbuffer) return KAP_NO_WBUFFER;
+	if (k->wbuffer->acache != 0) return KAP_ALREADY_OPEN;
+	
+	if (appends > 100*1024*1024 || appends < 32)
+		return ERANGE;
+	
+	k->wbuffer->num_appends = appends;
+	return 0;
+}
+
+int kap_wbuffer_set_slots(Kap k, size_t slots)
+{
+	if (!k->wbuffer) return KAP_NO_WBUFFER;
+	if (k->wbuffer->acache != 0) return KAP_ALREADY_OPEN;
+	
+	if (slots > 65535 || slots < 8)
+		return ERANGE;
+	
+	k->wbuffer->num_slots = slots;
+	return 0;
+}
+
+struct Kap_Wbuffer* wbuffer_init(Kap k)
 {
 	struct Kap_Wbuffer* wbuffer = malloc(sizeof(struct Kap_Wbuffer));
 	if (!wbuffer) return 0;
 	
 	wbuffer->num_appends = 1024*1024;
 	wbuffer->num_slots   = 16384;
+	
+	kap_append_set_tail_cache(k, 32768);
 	
 	wbuffer->acache = 0;
 	wbuffer->kcache = 0;
