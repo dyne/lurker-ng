@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.14 2002-05-03 19:47:15 terpstra Exp $
+/*  $Id: main.c,v 1.15 2002-05-03 19:57:33 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -36,7 +36,7 @@
 #include <errno.h>
 #endif
 
-#define LIMIT_URI	512
+/* #define DEBUG 1 */
 
 FILE*	lu_server_link;
 FILE*	lu_output;
@@ -266,6 +266,9 @@ int main(int argc, char* argv[])
 	/* Read back server processing directions */
 	fgets(&type [0], sizeof(type),  lu_server_link);
 	fgets(&cache[0], sizeof(cache), lu_server_link);
+#ifdef DEBUG
+	printf("%s - %s\n", type, cache);
+#endif
 	
 	if (strlen(type) > 1) type[strlen(type)-1] = 0;
 	
@@ -305,7 +308,7 @@ int main(int argc, char* argv[])
 	
 	/* If we need xslt conversion, prep it */
 	if (!strcmp(type, "text/xml") && strcmp(ext, "xml"))
-		lu_output = popen("./" PACKAGE ".xslt render.xslt", "w");
+		lu_output = popen("../" PACKAGE ".xslt render.xslt", "w");
 	else
 		lu_output = stdout;
 	
