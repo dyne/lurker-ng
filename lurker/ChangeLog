@@ -2,7 +2,7 @@ v0.1e:
 	Don't warn if a maildrop adds whitespace before "From ..."
 	Allow port numbers in URLs ("http://localhost:8080/foo")
 	Report total number of messages on the front page
-	Include an Expires http-equiv if provided on in the <server> section
+	Include an Expires http-equiv to match lurker expiry
 	Output a Last-Modified and Date header from the lurker.cgi to match
 		what the webserver outputs
 

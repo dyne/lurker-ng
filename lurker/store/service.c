@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.87 2002-07-26 13:33:05 terpstra Exp $
+/*  $Id: service.c,v 1.88 2002-08-16 19:27:59 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -487,8 +487,18 @@ static int my_service_xml_head(
 }
 
 static int my_service_server(
-	My_Service_Handle h)
+	My_Service_Handle h,
+	time_t ttl)
 {
+	time_t	expire;
+	char 	timebuf[100];
+	struct tm* tm;
+	
+	expire = time(0) + ttl;
+	tm = gmtime(&expire);
+	strftime(&timebuf[0], sizeof(timebuf),
+		"%a, %d %b %Y %H:%M:%S GMT", tm);
+	
 	if (my_service_buffer_write(h, " <server>\n  <hostname>")       != 0) return -1;
 	if (my_service_write_str   (h, lu_config_file->list_host)       != 0) return -1;
 	if (my_service_buffer_write(h, "</hostname>\n  <email name=\"") != 0) return -1;
@@ -497,7 +507,9 @@ static int my_service_server(
 	if (my_service_write_str   (h, lu_config_file->admin_address)   != 0) return -1;
 	if (my_service_buffer_write(h, "\"/>\n  <version>")             != 0) return -1;
 	if (my_service_write_str   (h, PACKAGE_VERSION)                 != 0) return -1;
-	if (my_service_buffer_write(h, "</version>\n </server>\n")      != 0) return -1;
+	if (my_service_buffer_write(h, "</version>\n  <expires>")       != 0) return -1;
+	if (my_service_write_str   (h, &timebuf[0])                     != 0) return -1;
+	if (my_service_buffer_write(h, "</expires>\n </server>\n")      != 0) return -1;
 	
 	return 0;
 }
@@ -517,7 +529,7 @@ static int my_service_error(
 	if (my_service_buffer_write(h, "</message>\n <detail>") != 0) return -1;
 	if (my_service_write_str(h, detail)                     != 0) return -1;
 	if (my_service_buffer_write(h, "</detail>\n")           != 0) return -1;
-	if (my_service_server(h)                                != 0) return -1;
+	if (my_service_server(h, 0)                             != 0) return -1;
 	if (my_service_buffer_write(h, "</error>\n")            != 0) return -1;
 	
 	return 0;
@@ -1703,6 +1715,8 @@ static int my_service_message(
 	const char* request,
 	const char* ext)
 {
+	time_t		ttl = lu_config_file->cache_message_ttl;
+	
 	message_id	id;
 	lu_addr		bits;
 	
@@ -1853,13 +1867,12 @@ static int my_service_message(
 	
 	cols = my_service_draw_snippet(tree, p, 0);
 	
-	if (my_service_buffer_init(h, "text/xml\n", 1, 
-			lu_config_file->cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
+	if (my_service_buffer_init(h, "text/xml\n", 1, ttl, LU_EXPIRY_NO_LIST) != 0)
 		goto my_service_message_error3;
 	
 	if (my_service_xml_head(h)                       != 0) goto my_service_message_error3;
 	if (my_service_buffer_write(h, "<message>\n")    != 0) goto my_service_message_error3;
-	if (my_service_server(h)                         != 0) goto my_service_message_error3;
+	if (my_service_server(h, ttl)                    != 0) goto my_service_message_error3;
 	
 	if (my_service_summary_body(h, id, &msg)               != 0) goto my_service_message_error3;
 	if (lu_summary_write_lists(&my_service_list_cb, h, id) != 0) goto my_service_message_error3;
@@ -1965,6 +1978,8 @@ static int my_service_jump(
 	const char* request,
 	const char* ext)
 {
+	time_t			ttl = lu_config_file->cache_index_ttl;
+	
 	lu_quad			tm;
 	int			ln;
 	Lu_Config_List*		list;
@@ -2048,8 +2063,7 @@ static int my_service_jump(
 	/* Normalize the offset */
 	off -= (off % LU_PROTO_INDEX);
 	
-	if (my_service_buffer_init(h, "text/xml\n", 1, 
-		lu_config_file->cache_index_ttl, 
+	if (my_service_buffer_init(h, "text/xml\n", 1, ttl,
 		(off+LU_PROTO_INDEX >= kr.records)?list->key:LU_EXPIRY_NO_LIST) != 0)
 	{
 		goto my_service_jump_error1;
@@ -2057,7 +2071,7 @@ static int my_service_jump(
 	
 	if (my_service_xml_head    (h)                 != 0) goto my_service_jump_error1;
 	if (my_service_buffer_write(h, "<redirect>\n") != 0) goto my_service_jump_error1;
-	if (my_service_server      (h)                 != 0) goto my_service_jump_error1;
+	if (my_service_server      (h, ttl)            != 0) goto my_service_jump_error1;
 	if (my_service_buffer_write(h, " <url>mindex/")!= 0) goto my_service_jump_error1;
 	if (my_service_write_int   (h, off)            != 0) goto my_service_jump_error1;
 	if (my_service_buffer_write(h, "@")            != 0) goto my_service_jump_error1;
@@ -2080,6 +2094,8 @@ static int my_service_mindex(
 	const char* request,
 	const char* ext)
 {
+	time_t			ttl = lu_config_file->cache_index_ttl;
+	
 	KRecord			kr;
 	int			list;
 	Lu_Config_List*		l;
@@ -2181,8 +2197,7 @@ static int my_service_mindex(
 	}
 
 	/* We shouldn't change if we already have next link */
-	if (my_service_buffer_init(h, "text/xml\n", 1, 
-		lu_config_file->cache_index_ttl,
+	if (my_service_buffer_init(h, "text/xml\n", 1, ttl,
 		(offset+count<kr.records)?LU_EXPIRY_NO_LIST:l->key) != 0)
 	{
 		goto my_service_mindex_error1;
@@ -2207,7 +2222,7 @@ static int my_service_mindex(
 		if (my_service_buffer_write(h, "</prev>\n")          != 0) goto my_service_mindex_error1;
 	}
 	
-	if (my_service_server(h) != 0) goto my_service_mindex_error1;
+	if (my_service_server(h, ttl) != 0) goto my_service_mindex_error1;
 	
 	if (my_service_list(h, l, kr.records, offset) != 0) goto my_service_mindex_error1;
 	kap_kclose(lu_config_keyword, &kr, &keyword[0]);
@@ -2356,6 +2371,8 @@ static int my_service_thread(
 	const char* request,
 	const char* ext)
 {
+	time_t			ttl = lu_config_file->cache_message_ttl;
+	
 	My_Service_Reply_Tree*	tree;
 	int			tree_size;
 	int			draw_head;
@@ -2394,15 +2411,14 @@ static int my_service_thread(
 			my_service_draw_tree(tree, i, i);
 	}
 	
-	if (my_service_buffer_init(h, "text/xml\n", 1, 
-			lu_config_file->cache_message_ttl, LU_EXPIRY_NO_LIST) != 0)
+	if (my_service_buffer_init(h, "text/xml\n", 1, ttl, LU_EXPIRY_NO_LIST) != 0)
 		goto my_service_thread_error1;
 	
 	if (my_service_xml_head(h)                        != 0) goto my_service_thread_error1;
 	if (my_service_buffer_write(h, "<thread>\n <id>") != 0) goto my_service_thread_error1;
 	if (my_service_write_int(h, id)                   != 0) goto my_service_thread_error1;
 	if (my_service_buffer_write(h, "</id>\n")         != 0) goto my_service_thread_error1;
-	if (my_service_server(h)                          != 0) goto my_service_thread_error1;
+	if (my_service_server(h, ttl)                     != 0) goto my_service_thread_error1;
 	
 	draw_head = -1;
 	
@@ -2431,6 +2447,8 @@ static int my_service_search(
 	const char* request,
 	const char* ext)
 {
+	time_t		ttl = lu_config_file->cache_search_ttl;
+	
 	int		i;
 	message_id	out;
 	message_id	offset;
@@ -2508,8 +2526,7 @@ static int my_service_search(
 		}
 	}
 	
-	if (my_service_buffer_init(h, "text/xml\n", 1, 
-			lu_config_file->cache_search_ttl, LU_EXPIRY_NO_LIST) != 0)
+	if (my_service_buffer_init(h, "text/xml\n", 1, ttl, LU_EXPIRY_NO_LIST) != 0)
 		goto my_service_search_error1;
 	
 	/* Ok! Now, lets start putting out the data */
@@ -2529,7 +2546,7 @@ static int my_service_search(
 		
 	if (my_service_write_url(h, delim)              != 0) goto my_service_search_error1;
 	if (my_service_buffer_write(h, "</queryurl>\n") != 0) goto my_service_search_error1;
-	if (my_service_server(h)                        != 0) goto my_service_search_error1;
+	if (my_service_server(h, ttl)                   != 0) goto my_service_search_error1;
 	
 	if (offset != 0)
 	{
@@ -2588,6 +2605,8 @@ static int my_service_splash(
 	const char* request,
 	const char* ext)
 {
+	time_t			ttl = 2592000; /* why hard-coded 30 days? */
+	
 	Lu_Config_List*		scan;
 	char			key[40];
 	size_t			records;
@@ -2611,11 +2630,10 @@ static int my_service_splash(
 		return -1;
 	}
 	
-	if (my_service_buffer_init(h, "text/xml\n", 1, 
-			2592000, LU_EXPIRY_ANY_LIST) != 0) return -1;
+	if (my_service_buffer_init(h, "text/xml\n", 1, ttl, LU_EXPIRY_ANY_LIST) != 0) return -1;
 	if (my_service_xml_head(h)                   != 0) return -1;
 	if (my_service_buffer_write(h, "<splash>\n") != 0) return -1;
-	if (my_service_server(h)                     != 0) return -1;
+	if (my_service_server(h, ttl)                != 0) return -1;
 
 	for (	scan = lu_config_file->list; 
 		scan != lu_config_file->list + lu_config_file->lists; 
