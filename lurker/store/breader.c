@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.7 2002-02-10 22:54:06 terpstra Exp $
+/*  $Id: breader.c,v 1.8 2002-02-11 01:40:50 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -191,6 +191,10 @@ static int my_breader_fetch_sector(
 	
 	record->cache[which].offset = index;
 	
+#ifdef DEBUG
+	printf("****** DISK HIT ****** (%d %d)\n", index, amount);
+#endif
+	
 	out = lu_flatfile_handle_read(
 		record->flatfile,
 		index,
@@ -307,11 +311,19 @@ static int my_breader_find(
 	left_off = 0;
 	right_off = record->count;
 	
+#ifdef DEBUG
+	printf ("%d %d\n", left_off, right_off);
+#endif
+	
 	/* Now, use the boundary data to refine them */
 	ptr = 0;
 	while (ptr != 0xFFFFUL)
 	{
 		dir = my_breader_compare(id, record->boundary[ptr].key);
+#ifdef DEBUG
+		printf("--> %d %d\n", record->boundary[ptr].key,
+					record->boundary[ptr].index);
+#endif
 		if (dir < 0)
 		{	/* The answer is to the left */
 			right_off = record->boundary[ptr].index;
@@ -330,7 +342,16 @@ static int my_breader_find(
 		}
 	}
 	
-	assert (left_off < right_off);
+#ifdef DEBUG
+	printf("== %d %d\n", left_off, right_off);
+#endif
+	assert (left_off <= right_off);
+	
+	if (left_off == right_off)
+	{	/* no hit for you */
+		*offset = lu_common_minvalid;
+		return 0;
+	}
 	
 	/* Ok, using the boundary data we now have a range in which it must
 	 * lie. Lets refine this by reading the disk.

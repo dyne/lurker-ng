@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.12 2002-02-10 23:44:25 terpstra Exp $
+/*  $Id: service.c,v 1.13 2002-02-11 01:40:50 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -43,7 +43,7 @@
 /*------------------------------------------------- Private global vars */
 
 /* A write buffer for output */
-static char my_service_buffer[10240];
+static char my_service_buffer[4096];
 static int  my_service_used;
 
 /*------------------------------------------------- Private helper methods */
@@ -312,6 +312,38 @@ static int my_service_list(
 	return 0;
 }
 
+static int my_service_summary(
+	st_netfd_t fd,
+	message_id id)
+{
+	Lu_Summary_Message	msg;
+	time_t			tm;
+	
+	msg = lu_summary_read_msummary(id);
+	
+	tm = msg.timestamp;
+	
+	if (my_service_buffer_write(fd, " <summary>\n  <id>")     != 0) return -1;
+	if (my_service_write_int(fd, id)                          != 0) return -1;
+	if (my_service_buffer_write(fd, "</id>\n  <timestamp>")   != 0) return -1;
+	if (my_service_write_int(fd, msg.timestamp)               != 0) return -1;
+	if (my_service_buffer_write(fd, "</timestamp>\n  <time>") != 0) return -1;
+	if (my_service_write_str(fd, ctime(&tm))                  != 0) return -1;
+	if (my_service_buffer_write(fd, "</time>\n  <thread>")    != 0) return -1;
+	if (my_service_write_int(fd, msg.thread_parent)           != 0) return -1;
+	if (my_service_buffer_write(fd, "</thread>\n")            != 0) return -1;
+	
+	if (lu_summary_write_variable(
+		&my_service_buffer_write,
+		&my_service_write_strl,
+		fd,
+		msg.flat_offset) != 0) return -1;
+	
+	if (my_service_buffer_write(fd, " </summary>\n") != 0) return -1;
+	
+	return 0;
+}
+
 static int my_service_getmsg(st_netfd_t fd, const char* request)
 {
 	const char*	scan;
@@ -521,7 +553,6 @@ static int my_service_getmsg(st_netfd_t fd, const char* request)
 static int my_service_mindex(st_netfd_t fd, const char* request)
 {
 	Lu_Breader_Handle	h;
-	Lu_Summary_Message	msg;
 	Lu_Config_List*		l;
 	message_id		offset;
 	int			list;
@@ -529,7 +560,6 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 	message_id		ids[LU_PROTO_INDEX];
 	int			i;
 	message_id		count;
-	time_t			tm;
 	
 	if (sscanf(request, "%d %d", &list, &offset) != 2)
 	{	/* They did something funny. */
@@ -622,27 +652,7 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 	
 	for (i = 0; i < count; i++)
 	{
-		msg = lu_summary_read_msummary(ids[i]);
-		
-		tm = msg.timestamp;
-		
-		if (my_service_buffer_write(fd, " <summary>\n  <id>")     != 0) goto my_service_mindex_error0;
-		if (my_service_write_int(fd, ids[i])                      != 0) goto my_service_mindex_error0;
-		if (my_service_buffer_write(fd, "</id>\n  <timestamp>")   != 0) goto my_service_mindex_error0;
-		if (my_service_write_int(fd, msg.timestamp)               != 0) goto my_service_mindex_error0;
-		if (my_service_buffer_write(fd, "</timestamp>\n  <time>") != 0) goto my_service_mindex_error0;
-		if (my_service_write_str(fd, ctime(&tm))                  != 0) goto my_service_mindex_error0;
-		if (my_service_buffer_write(fd, "</time>\n  <thread>")    != 0) goto my_service_mindex_error0;
-		if (my_service_write_int(fd, msg.thread_parent)           != 0) goto my_service_mindex_error0;
-		if (my_service_buffer_write(fd, "</thread>\n")            != 0) goto my_service_mindex_error0;
-		
-		if (lu_summary_write_variable(
-			&my_service_buffer_write,
-			&my_service_write_strl,
-			fd,
-			msg.flat_offset) != 0) goto my_service_mindex_error0;
-		
-		if (my_service_buffer_write(fd, " </summary>\n") != 0) goto my_service_mindex_error0;
+		if (my_service_summary(fd, ids[i]) != 0) goto my_service_mindex_error0;
 	}
 	
 	if (my_service_buffer_write(fd, "</mindex>\n") != 0) goto my_service_mindex_error0;
@@ -658,6 +668,124 @@ my_service_mindex_error0:
 
 static int my_service_search(st_netfd_t fd, const char* request)
 {
+	int		i;
+	message_id	out;
+	message_id	offset;
+	const char*	delim;
+	const char*	detail;
+	
+	delim = strchr(request, ' ');
+	
+	if (delim == 0)
+	{
+		my_service_error(fd,
+			"Invalid request",
+			"Lurkerd received a search request with no offset",
+			request);
+		goto my_service_search_error0;
+	}
+	
+	offset = atol(request);
+	if ((offset % LU_PROTO_INDEX) != 0)
+	{	/* Must be a multiple of the index */
+		my_service_error(fd,
+			"Malformed request",
+			"Lurkerd received an unaligned search request",
+			request);
+		
+		goto my_service_search_error0;
+	}
+	
+	if (offset > 1000)
+	{
+		my_service_error(fd,
+			"Malformed request",
+			"Lurkerd received a search request for too large an offset",
+			request);
+		goto my_service_search_error0;
+	}
+	
+	if (lu_search_start(delim+1, &detail) != 0)
+	{
+		my_service_error(fd,
+			"Search failed",
+			"The lurkerd server rejected this search",
+			detail);
+		goto my_service_search_error0;
+	}
+	
+	while (offset--)
+	{
+		if (lu_search_result(&out) != 0)
+		{
+			my_service_error(fd,
+				"Internal error",
+				"The lurkerd server failed to search",
+				"lu_search_result failure - see logs");
+			goto my_service_search_error1;
+		}
+		
+		if (out == lu_common_minvalid)
+		{
+			my_service_error(fd,
+				"Search failed",
+				"The lurkerd server rejected this search",
+				"There are not that many search results");
+			goto my_service_search_error1;
+		}
+	}
+	
+	/* Ok! Now, lets start putting out the data */
+	if (my_service_xml_head(fd)                            != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(fd, "<search>\n <offset>") != 0) goto my_service_search_error1;
+	if (my_service_write_int(fd, offset)                   != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(fd, "</offset>\n")         != 0) goto my_service_search_error1;
+	
+	if (offset != 0)
+	{
+		if (my_service_buffer_write(fd, " <prev>")            != 0) goto my_service_search_error1;
+		if (my_service_write_int(fd, offset - LU_PROTO_INDEX) != 0) goto my_service_search_error1;
+		if (my_service_buffer_write(fd, "</prev>\n")          != 0) goto my_service_search_error1;
+	}
+	
+	for (i = 0; i < LU_PROTO_INDEX; i++)
+	{
+		if (lu_search_result(&out) != 0)
+		{
+			my_service_error(fd,
+				"Internal error",
+				"The lurkerd server failed to search",
+				"lu_search_result failure - see logs");
+			goto my_service_search_error1;
+		}
+		
+		if (out == lu_common_minvalid)
+		{
+			break;
+		}
+		
+		if (my_service_summary(fd, out) != 0) 
+		{
+			goto my_service_search_error1;
+		}
+	}
+	
+	if (out != lu_common_minvalid && lu_search_result(&out) == 0 &&
+	    out != lu_common_minvalid)
+	{
+		if (my_service_buffer_write(fd, " <next>")            != 0) goto my_service_search_error1;
+		if (my_service_write_int(fd, offset + LU_PROTO_INDEX) != 0) goto my_service_search_error1;
+		if (my_service_buffer_write(fd, "</next>\n")          != 0) goto my_service_search_error1;
+	}
+	
+	lu_search_end();
+	if (my_service_buffer_write(fd, "</search>\n") != 0) goto my_service_search_error0;
+	
+	return 0;
+
+my_service_search_error1:
+	lu_search_end();
+my_service_search_error0:
 	return -1;
 }
 
