@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.12 2002-07-02 22:41:09 terpstra Exp $
+/*  $Id: btree.c,v 1.13 2002-07-04 11:24:17 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -54,6 +54,10 @@
 # include <io.h> 
 #endif
 
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+
 #ifdef HAVE_UNISTD_H
 # include <unistd.h> 
 #endif
@@ -73,6 +77,33 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+/* Okay, what is the format of this file?
+ * 
+ * This is almost a textbook implementation of a btree. However, there are
+ * some important differences. We have internal leaves which hold only
+ * pointers to children and keys. The leaves hold only keys and data, but no
+ * pointers. Because we want to be able to do a single-pass search for the
+ * first key which is >= a search term, we need to use righ-closed intervals.
+ * (This is true for any sort of "first occurance" search).
+ * 
+ * Also, our keys are not fixed length (neither is the record). Therefore,
+ * we cannot simply decide when a record is full based off of usage
+ * counting. Instead, we require that a sector always have space for at least
+ * one more entry of maximal size. This means that it is a good idea to have
+ * a large sector size compared to the size of key+data.
+ *
+ * So, the structure for an internal node is:
+ * <ptr to (-inf, a]> <key a> <ptr to (a, b]> <key b> <ptr to (b, inf)>
+ * with the additional guarantee that there will be a record with key a in
+ * the range (inf, a] and a record with key b in the range (a, b].
+ *
+ * A leaf has the structure:
+ * <key a> <len a> <data a> ... <key b> <len b> <data b>
+ *
+ * With these contraints, we can implement a single pass search.
+ *
+ */
 
 /***************************************** Internal btree data */
 
@@ -209,11 +240,11 @@ static int decode_header(Kap k, unsigned char* scan)
 	decode_offset(scan, &tmp, 4); scan += 4;
 	if (k->btree->max_key_size != tmp) return KAP_WRONG_MAX_KEY_SIZE;
 	
-	decode_offset(scan, &tmp, 1); scan += 1;
-	if (k->btree->tree_size != tmp) return KAP_WRONG_TREE_SIZE;
+	decode_offset(scan, &tmp, 1); scan += 4;
+	if (k->btree->leaf_size != tmp) return KAP_WRONG_LEAF_SIZE;
 	
 	decode_offset(scan, &tmp, 1); scan += 1;
-	if (k->btree->leaf_size != tmp) return KAP_WRONG_LEAF_SIZE;
+	if (k->btree->tree_size != tmp) return KAP_WRONG_TREE_SIZE;
 	
 	decode_offset(scan, &k->btree->size, 8); scan += 8;
 	decode_offset(scan, &k->btree->root, 8); scan += 8;
@@ -269,10 +300,10 @@ struct Kap_Btree* btree_init(void)
 	struct Kap_Btree* btree = malloc(sizeof(struct Kap_Btree));
 	if (!btree) return 0;
 	
-	btree->sector_size  = 32*1024;
+	btree->sector_size  = 8*1024;
 	btree->max_key_size = 100;
 	btree->tree_size    = 3;
-	btree->leaf_size    = 255;
+	btree->leaf_size    = 252;
 	
 	btree->fd = -1;
 #ifdef USE_MMAP
@@ -382,6 +413,12 @@ int kap_btree_open(Kap k, const char* dir, const char* prefix)
 {
 	ssize_t	got;
 	char	buf[200];
+	int	out;
+	int	block_device;
+	
+#ifdef HAVE_SYS_STAT_H
+	struct stat sbuf;
+#endif
 	
 	if (!k->btree) return 0;
 	if (k->btree->fd != -1) return KAP_ALREADY_OPEN;
@@ -404,7 +441,25 @@ int kap_btree_open(Kap k, const char* dir, const char* prefix)
 	if (k->btree->fd == -1)
 		return errno;
 	
+	block_device = 0;
+#ifdef HAVE_SYS_STAT_H
+	if (fstat(k->btree->fd, &sbuf) != 0)
+	{
+		if (errno) return errno;
+		return EFAULT;
+	}
+	
+	block_device = S_ISBLK(sbuf.st_mode);
+#endif
+	
 	got = read(k->btree->fd, k->btree->secta, k->btree->sector_size);
+	if (block_device && got == k->btree->sector_size &&
+		memcmp(k->btree->secta, LIBKAP_BTREE_HEAD, LIBKAP_BTREE_HEAD_LEN))
+	{	/* Newly initialized block device */
+		got = 0;
+		lseek(k->btree->fd, 0, SEEK_SET);
+	}
+	
 	if (got == 0)
 	{	/* New tree */
 		k->btree->size = 2;
@@ -432,8 +487,8 @@ int kap_btree_open(Kap k, const char* dir, const char* prefix)
 	}
 	else if (got == k->btree->sector_size)
 	{
-		if (decode_header(k, k->btree->secta) != 0)
-			return KAP_BTREE_CORRUPT;
+		out = decode_header(k, k->btree->secta);
+		if (out != 0) return out;
 	}
 	else
 	{
@@ -638,9 +693,16 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	scan = k->btree->sectb + SECTOR_HEADER_SIZE;
 	if (!leaf) scan += k->btree->tree_size;
 	
-	for (hits = 0, next = scan; next < mid; scan = next, hits++)
+	assert (scan < mid);
+	
+	/* Find the record scan whose end is past the midpoint
+	 * Find the record next which follow scan
+	 * Count the number of hits up to and including scan
+	 */
+	next = scan;
+	for (hits = 0; next < mid; hits++)
 	{
-		next = scan;
+		scan = next;
 		while (*next) next++;
 		next++;
 		
@@ -649,9 +711,11 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	}
 	
 	assert (hits < count);
+	assert (hits > 1);
 	
-	/* Scan now points at the key which overflows the mid point */
-	remains = k->btree->sectb + k->btree->sector_size - scan;
+	/* Scan now points at the key which overflows the mid point 
+	 * next is the first entry to go in the split_child
+	 */
 	klen = strlen(scan) + 1;
 	
 	
@@ -693,16 +757,17 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	
 	
 	memset(k->btree->sectc, 0, k->btree->sector_size);
+	sh = count - hits;
 	if (leaf)
 	{
-		sh = count - hits;
+		remains = k->btree->sectb + k->btree->sector_size - next;
 		memcpy(	k->btree->sectc + SECTOR_HEADER_SIZE,
-			scan,
+			next,
 			remains);
 	}
 	else
 	{
-		sh = count - hits - 1;
+		remains = k->btree->sectb + k->btree->sector_size - scan;
 		memcpy(	k->btree->sectc + SECTOR_HEADER_SIZE,
 			scan+klen,
 			remains-klen);
@@ -715,8 +780,16 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	
 	
 	/* Truncate the original record */
-	memset(scan, 0, remains);
-	encode_sector_header(k->btree->sectb, leaf, hits);
+	if (leaf)
+	{
+		memset(next, 0, remains);
+		encode_sector_header(k->btree->sectb, leaf, hits);
+	}
+	else
+	{
+		memset(scan, 0, remains);
+		encode_sector_header(k->btree->sectb, leaf, hits-1);
+	}
 	
 	
 	/********** Done */
@@ -727,12 +800,14 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
  *               sectb&c are available for overwrite
  *               x is not full.
  * 
+ * Attempt to find the first record which is >= key.
+ *
  * Guarantee: the writes are done in an order that if interrupted at any point
  * the database will still function. This means that if we are using sync'd
  * IO this never fucks up on a power down. However, some space can be wasted.
  */
 static int travel_down(Kap k, const char* key, off_t x,
-	int (*decide)(void* arg, unsigned char* record, ssize_t* len),
+	int (*decide)(void* arg, const char* key, unsigned char* record, ssize_t* len),
 	void* arg)
 {
 	int i, out, put;
@@ -748,13 +823,17 @@ static int travel_down(Kap k, const char* key, off_t x,
 	int		leaf, hits;
 	const unsigned char*	s;
 	
-	/* Scheme for tree nodes: (-inf, a) <a> [a, b) <b> [b, inf) */
+	/* Scheme for tree nodes: (-inf, a] <a> (a, b] <b> (b, inf) 
+	 * Also, one is guaranteed to find a key <k> in (-inf, k] if one
+	 * saw a <k> on the way down. This is how we can find the first
+	 * key >= the search in a single pass. See top of file.
+	 */
 	
 	while (decode_sector_header(k->btree->secta, &leaf, &hits),
 	       !leaf)
 	{
 		/* Find the first address (ptr) such that the following
-		 * key (scan) obeys: key < scan
+		 * key (scan) obeys: key <= scan
 		 */
 		
 		for (i = 0, ptr = k->btree->secta + SECTOR_HEADER_SIZE;
@@ -770,7 +849,7 @@ static int travel_down(Kap k, const char* key, off_t x,
 				++s;
 				++scan;
 			}
-			if (*s < *scan) break;
+			if (*s <= *scan) break;
 			
 			while (*scan) ++scan;
 		}
@@ -793,7 +872,7 @@ static int travel_down(Kap k, const char* key, off_t x,
 			if (WRITE_SECTOR(k->btree, child, k->btree->sectb))
 				return errno;
 			
-			if (strcmp(key, ptr) >= 0)
+			if (strcmp(key, ptr) > 0)
 			{	/* We want to recurse to split instead */
 				child = split;
 				swap = k->btree->sectc;
@@ -814,7 +893,6 @@ static int travel_down(Kap k, const char* key, off_t x,
 	
 	/* Find the first key which is >= the search key */
 	i = 0;
-	out = 1;
 	scan = k->btree->secta + SECTOR_HEADER_SIZE;
 	while (i < hits)
 	{	/* Sorry for the unreadable code, but this is the bottleneck */
@@ -828,8 +906,6 @@ static int travel_down(Kap k, const char* key, off_t x,
 		
 		if (*s <= *scan)
 		{
-			out = (*s != *scan);
-			
 			/* rewind now that we are out of the loop */
 			scan -= ((long)s) - ((long)key);
 			break;
@@ -842,25 +918,30 @@ static int travel_down(Kap k, const char* key, off_t x,
 		i++;
 	}
 	
-	if (out == 0)
-	{	/* key exists */
+	if (i != hits)
+	{	/* found a key >= search */
 		ptr = scan + strlen(scan)+1;
 		dlen = *ptr++;
 		
 		memcpy(k->btree->scratch, ptr, dlen);
 		memset(k->btree->scratch+dlen, 0, k->btree->leaf_size-dlen);
+		
+		nlen = dlen;
+		put = decide(arg, (const char*)scan, k->btree->scratch, &nlen);
 	}
 	else
-	{	/* key dne */
+	{	/* hit end of tree */
 		memset(k->btree->scratch, 0, k->btree->leaf_size);
 		dlen = -1;
+		
+		nlen = dlen;
+		put = decide(arg, "", k->btree->scratch, &nlen);
 	}
-	
-	nlen = dlen;
-	put = decide(arg, k->btree->scratch, &nlen);
 	
 	/* If we aren't writing; just return */
 	if (!put) return 0;
+	
+	assert (nlen <= k->btree->leaf_size);
 	
 	/* If we are deleting a non-existant record, just return */
 	if (nlen == -1 && dlen == -1) return 0;
@@ -870,7 +951,7 @@ static int travel_down(Kap k, const char* key, off_t x,
 	 */
 	assert (nlen != -1);
 	
-	if (out == 0)
+	if (i < hits && !strcmp(key, scan))
 	{	/* key already exists; just new data. */
 		/* Shift remains */
 		klen = strlen(scan)+1;
@@ -921,7 +1002,7 @@ static int travel_down(Kap k, const char* key, off_t x,
  * IO this never fucks up on a power down. However, some space can be wasted.
  */
 int kap_btree_op(Kap k, const char* key,
-	int (*decide)(void* arg, unsigned char* record, ssize_t* len),
+	int (*decide)(void* arg, const char* key, unsigned char* record, ssize_t* len),
 	void* arg)
 {
 	off_t		root = k->btree->root;
@@ -931,6 +1012,8 @@ int kap_btree_op(Kap k, const char* key,
 	
 	if (!k->btree) return KAP_NO_BTREE;
 	if (k->btree->fd == -1) return KAP_NOT_OPEN;
+	if (strlen(key) >= k->btree->max_key_size) return ERANGE;
+	if (!*key) return ERANGE;
 	
 	if (READ_SECTOR(k->btree, root, k->btree->secta) != 0)
 		return errno;
@@ -1018,17 +1101,24 @@ int kap_btree_op(Kap k, const char* key,
 
 struct Read_Back
 {
+	const char*	key;
 	unsigned char*	buf;
 	size_t*		len;
-	
 };
 
-static int kap_read_back(void* arg, unsigned char* buf, ssize_t* len)
+static int kap_read_back(void* arg, const char* key, unsigned char* buf, ssize_t* len)
 {
 	struct Read_Back* nfo = arg;
 	
-	if (*len != -1) memcpy(nfo->buf, buf, *len);
-	*nfo->len = *len;
+	if (!strcmp(key, nfo->key))
+	{
+		memcpy(nfo->buf, buf, *len);
+		*nfo->len = *len;
+	}
+	else
+	{
+		*nfo->len = -1;
+	}
 	
 	return 0;
 }
@@ -1039,6 +1129,7 @@ int kap_btree_read(Kap k, const char* key,
 	int out;
 	struct Read_Back nfo;
 	
+	nfo.key = key;
 	nfo.buf = buf;
 	nfo.len = len;
 	out = kap_btree_op(k, key, &kap_read_back, &nfo);
@@ -1051,33 +1142,36 @@ int kap_btree_read(Kap k, const char* key,
 
 struct Write_Back
 {
+	const char*		key;
 	const unsigned char*	buf;
-	const size_t*		len;
+	size_t			len;
 	int			fail;
 };
 
-static int kap_write_back(void* arg, unsigned char* buf, ssize_t* len)
+static int kap_write_back(void* arg, const char* key, unsigned char* buf, ssize_t* len)
 {
 	struct Write_Back* nfo = arg;
 	
-	if (*len != -1)
+	if (!strcmp(key, nfo->key))
 	{
 		nfo->fail = 1;
 		return 0;
 	}
-	
-	memcpy(buf, nfo->buf, *nfo->len);
-	*len = *nfo->len;
-	
-	return 1;
+	else
+	{
+		memcpy(buf, nfo->buf, nfo->len);
+		*len = nfo->len;
+		return 1;
+	}
 }
 
 int kap_btree_write(Kap k, const char* key,
-	const unsigned char* buf, const ssize_t* len)
+	const unsigned char* buf, ssize_t len)
 {
 	int out;
-	struct Write_Back nfo;
+	struct Write_Back nfo;	
 	
+	nfo.key = key;
 	nfo.buf = buf;
 	nfo.len = len;
 	nfo.fail = 0;
@@ -1085,6 +1179,41 @@ int kap_btree_write(Kap k, const char* key,
 	
 	if (out) return out;
 	if (nfo.fail) return KAP_KEY_EXIST;
+	
+	return 0;
+}
+
+struct ReadNext_Back
+{
+	char*		key;
+	unsigned char*	buf;
+	ssize_t*	len;
+};
+
+static int kap_read_next_back(void* arg, const char* key, unsigned char* buf, ssize_t* len)
+{
+	struct ReadNext_Back* nfo = arg;
+	
+	strcpy(nfo->key, key);
+	memcpy(nfo->buf, buf, *len);
+	*nfo->len = *len;
+	
+	return 0;
+}
+
+int kap_btree_read_next(Kap k, char* key,
+	unsigned char* buf, ssize_t* len)
+{
+	int out;
+	struct ReadNext_Back nfo;
+	
+	nfo.key = key;
+	nfo.buf = buf;
+	nfo.len = len;
+	out = kap_btree_op(k, key, &kap_read_next_back, &nfo);
+	
+	if (out) return out;
+	if (*nfo.len == -1) return KAP_NOT_FOUND;
 	
 	return 0;
 }

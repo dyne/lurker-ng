@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.3 2002-07-01 16:09:30 terpstra Exp $
+/*  $Id: kap.h,v 1.4 2002-07-04 11:24:17 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -32,6 +32,11 @@
 extern "C"
 {
 #endif
+
+#define	KAP_FORMAT_MAJOR	1
+#define	KAP_FORMAT_MINOR	0
+
+#define	KAP_TOOLS		1
 
 /* The opaque kap handle */
 struct Kap_T;
@@ -128,7 +133,7 @@ int	kap_close(Kap k);
 
 /** Set the desired sector size for layer btree.
  *  Precondition: called prior to open_kap.
- *  Default: 32k
+ *  Default: 8k
  *  Errors: ERANGE, KAP_ALREADY_OPEN, KAP_NO_BTREE
  */
 int	kap_btree_set_sectorsize(Kap k, ssize_t size);
@@ -174,25 +179,30 @@ int	kap_append_set_recordsize(Kap k, ssize_t size);
 
 
 /** Operate on a btree record.
- *  The decide(..) method is called with the passed arg, and a pointer to
- *  the data and length of the found record. len == -1 if the record DNE.
- *  The function should return 1 and modify record&len to the desired new
- *  values (keeping in mind the set _leafsize.
  *  
- *  Also, be advised that although deletion is possible, no rebalancing of
- *  the tree is done. This is bad. So, please don't delete, but if you must
- *  keep the deletes to a minimum.
+ *  This function forms the heart of all our DB operations. It searches for
+ *  the first key >= the search key. Then it passes this key, the associated
+ *  data (len = -1 if end of tree), and the user data to the decide()
+ *  callback. The decide callback may return 0, meaning no change, or 1,
+ *  meaning create (or update) the record for which we originally searched
+ *  with the new contents of record/len (respecting leaf_size).
  *  
- *  Errors: all write(), KAP_NO_BTREE, and KAP_NOT_OPEN
+ *  Note: the key, and record parameters to decide(...) are valid until
+ *  the next call of kap_btree_op (or any wrapper). This means you CANNOT
+ *  pass them to kap_btree_op for the next call.
+ * 
+ *  Be advised, that at this time, deletion is NOT possible.
+ *  
+ *  Errors: all write(), ERANGE, KAP_NO_BTREE, and KAP_NOT_OPEN
  */
 int	kap_btree_op(Kap k, const char* key, 
-	int (*decide)(void* arg, unsigned char* record, ssize_t* len),
+	int (*decide)(void* arg, const char* key, unsigned char* record, ssize_t* len),
 	void* arg);
 
 /** Do a simple database read.
  *  Make sure that buf has _leafsize bytes available.
  *  This is a convenience method implemented on top of kap_btree_op.
- *  Errors: kap_btree_op(), KAP_BTREE_NOT_FOUND
+ *  Errors: kap_btree_op(), KAP_NOT_FOUND
  */
 int	kap_btree_read(Kap k, const char* key,
 	unsigned char* buf, ssize_t* len);
@@ -203,9 +213,16 @@ int	kap_btree_read(Kap k, const char* key,
  *  Errors: kap_btree_op(), KAP_KEY_EXIST
  */
 int	kap_btree_write(Kap k, const char* key,
-	const unsigned char* buf, const ssize_t* len);
+	const unsigned char* buf, ssize_t len);
 
-
+/** Do a database read for the first key which is > the search key.
+ *  This will modifiy key with the new key name. Make sure that key has
+ *  max_key_size storage available!
+ *  This is useful for iterating through a btree.
+ *  Errors: kap_btree_op(), KAP_NOT_FOUND (on end of tree)
+ */
+int	kap_btree_read_next(Kap k, char* key,
+	unsigned char* buf, ssize_t* len);
 
 /****************************************** Append specific DB calls */
 /* Note: Obtaining a KRecord must be done somewhere else */
