@@ -38,12 +38,11 @@
  </xsl:if>
  <div class="body">
   <h1 class="group">
-   <a name="{id}">
+   <a name="{id}"/>
     <xsl:choose>
      <xsl:when test="heading"><xsl:value-of select="heading"/></xsl:when>
      <xsl:otherwise><xsl:value-of select="id"/></xsl:otherwise>
     </xsl:choose>
-   </a>
   </h1>
   <ul>
    <xsl:apply-templates select="list" mode="list-sections"/>

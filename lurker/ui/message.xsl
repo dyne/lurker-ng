@@ -103,7 +103,7 @@
 <xsl:template mode="appear-in" match="mbox">
  <tr>
   <td nowrap="NOWRAP" class="padded">
-   <b><a name="{list/id}"><xsl:value-of select="list/email/@name"/></a></b><br/>
+   <b><a name="{list/id}"/><xsl:value-of select="list/email/@name"/></b><br/>
    <a href="../list/{list/id}.{$ext}"><xsl:value-of select="$list-info"/></a> |
    <a href="../mindex/{list/id}@{../summary/id}.{$ext}"><xsl:value-of select="$near-message"/></a>
   </td>
