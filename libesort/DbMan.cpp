@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.1.1.1 2003-08-15 13:59:06 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.2 2003-08-17 11:21:40 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -144,7 +144,6 @@ int DbMan::qualify(string& db)
 
 int DbMan::scanFile(Parameters& p)
 {
-	int version;
 	long blockSize, keySize;
 	char id[80];
 	
@@ -153,9 +152,9 @@ int DbMan::scanFile(Parameters& p)
 #endif
 		
 	rewind(dbfile);
-	if (fscanf(dbfile, "%d %ld %ld", &version, &blockSize, &keySize) != 3)
+	if (fscanf(dbfile, "%ld %ld", &blockSize, &keySize) != 3)
 		return -1;
-	p = Parameters(p.synced(), p.unique(), version, blockSize, keySize);
+	p = Parameters(p.synced(), p.unique(), blockSize, keySize);
 	
 	ids.clear();
 	fgets(id, sizeof(id), dbfile); // eat eof
@@ -251,8 +250,7 @@ int DbMan::dbopen(View& view, const string& db, int mode)
 	
 	if (empty)
 	{
-		fprintf(dbfile, "%d %ld %ld\n", 
-			view.params.version(), 
+		fprintf(dbfile, "%ld %ld\n", 
 			view.params.blockSize(), 
 			view.params.keySize());
 		fflush(dbfile);
@@ -350,8 +348,7 @@ int DbMan::commit(const Parameters& p, const std::set<string>& nids)
 	// within one block and thus can't fail. This should be valid for
 	// even grossly enoromous databases on puny systems.
 	rewind(dbfile);
-	fprintf(dbfile, "%d %ld %ld\n", 
-		p.version(), 
+	fprintf(dbfile, "%ld %ld\n", 
 		p.blockSize(), 
 		p.keySize());
 	for (std::set<string>::const_iterator i = nids.begin(); i != nids.end(); ++i)

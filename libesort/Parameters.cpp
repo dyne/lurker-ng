@@ -1,4 +1,4 @@
-/*  $Id: Parameters.cpp,v 1.1.1.1 2003-08-15 13:59:07 terpstra Exp $
+/*  $Id: Parameters.cpp,v 1.2 2003-08-17 11:21:40 terpstra Exp $
  *  
  *  Parameters.cpp - Control how the database is stored
  *  
@@ -36,10 +36,9 @@ namespace ESort
 Parameters::Parameters(
 	bool          synced,
 	bool          unique,
-	unsigned int  version, 
 	unsigned long blockSize, 
 	unsigned long keySize)
- : version_(version), blockSize_(blockSize), keySize_(keySize), unique_(unique), synced_(synced)
+ : blockSize_(blockSize), keySize_(keySize), unique_(unique), synced_(synced)
 {
 	assert (keySize_ > 0);
 	assert (keySize_ * 8 <= blockSize_);
@@ -49,13 +48,6 @@ Parameters::Parameters(
 			log(static_cast<double>(keySize_)) /
 			log(256)
 		));
-}
-
-bool Parameters::isWider(const Parameters& p)
-{
-	return version_   > p.version_   ||
-	       blockSize_ > p.blockSize_ ||
-	       keySize_   > p.keySize_;
 }
 
 }

@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.5 2003-08-16 18:36:21 terpstra Exp $
+/*  $Id: esort.h,v 1.6 2003-08-17 11:21:40 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -64,7 +64,6 @@ using std::auto_ptr;
 class Parameters
 {
  protected:
-	unsigned int	version_;
 	unsigned long	blockSize_;
 	unsigned long	keySize_;
 	bool		unique_;
@@ -76,13 +75,15 @@ class Parameters
 	Parameters(
 		bool          synced    = true,
 		bool          unique    = true,
-		unsigned int  version   = 1, 
 		unsigned long blockSize = 8192, 
 		unsigned long keySize   = 255);
 	
-	bool isWider(const Parameters& o);
+	bool isWider(const Parameters& o)
+	{
+		return	blockSize_ > o.blockSize_ ||
+			keySize_   > o.keySize_;
+	}
 	
-	unsigned int  version  () const { return version_;   }
 	unsigned long blockSize() const { return blockSize_; }
 	unsigned long keySize  () const { return keySize_;   }
 	bool          unique   () const { return unique_;    }
@@ -91,7 +92,7 @@ class Parameters
 	
 	static Parameters minimize(const Parameters& x)
 	{
-		return Parameters(x.synced(), x.unique(), 1, 8, 1);
+		return Parameters(x.synced(), x.unique(), 8, 1);
 	}
 };
 
@@ -104,6 +105,7 @@ class Parameters
  *  The Backward Query moves the iterator so the key decreases
  *  
  *  In this manner Forward + Backward patition the database's keys
+ *  Note that reading BACKWARD is slower than FORWARD.
  */
 enum Direction
 {
@@ -161,6 +163,10 @@ class Reader
  	
  	/** Open an existing database for reading.
  	 *  0 is returned and errno set on error.
+ 	 *  
+ 	 *  This is conceptually a constructor and is mapped to a constructor
+ 	 *  in other languages. It is only a static method in C++ to ensure
+ 	 *  the ABI stays consistent regardless of backend changes.
  	 */
  	static auto_ptr<Reader> opendb(
  		const string& db, 
@@ -199,10 +205,12 @@ class Writer : public Reader
  	
  	/** Open a database for writing.
  	 *  It is created if it did not exist.
- 	 *  
  	 *  The mode is identical to open(2).
- 	 *  
  	 *  0 is returned and errno set on error.
+ 	 *  
+ 	 *  This is conceptually a constructor and is mapped to a constructor
+ 	 *  in other languages. It is only a static method in C++ to ensure
+ 	 *  the ABI stays consistent regardless of backend changes.
  	 */
  	static auto_ptr<Writer> opendb(
  		const string& db, const Parameters& p = Parameters(), 
