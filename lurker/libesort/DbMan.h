@@ -1,4 +1,4 @@
-/*  $Id: DbMan.h,v 1.3 2003-05-07 15:43:12 terpstra Exp $
+/*  $Id: DbMan.h,v 1.4 2003-05-14 12:24:26 terpstra Exp $
  *  
  *  DbMan.h - Manage the commit'd segments and parameters
  *  
@@ -57,7 +57,7 @@ class DbMan
  	void unlock_snapshot_rw();
  	
  	// must be locked ro during call
- 	int snapshot(View& view, Parameters& p);
+ 	int snapshot(View& view);
  	
  public:
  	DbMan();

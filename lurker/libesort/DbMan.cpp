@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.11 2003-05-14 11:58:36 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.12 2003-05-14 12:24:26 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -155,9 +155,9 @@ int DbMan::scanFile(Parameters& p)
 	return 0;
 }
 
-int DbMan::snapshot(View& view, Parameters& p)
+int DbMan::snapshot(View& view)
 {
-	if (scanFile(p) != 0) return -1;
+	if (scanFile(view.params) != 0) return -1;
 	
 	view.files.clear();
 	for (std::set<string>::iterator i = ids.begin(); i != ids.end(); ++i)
@@ -185,8 +185,9 @@ int DbMan::open(View& view, const string& db)
 	int ok = lock_snapshot_ro();
 	if (ok != 0) return ok;
 	
-	Parameters x = Parameters::minimize(view.params);
-	if (snapshot(view, x) != 0)
+	Parameters x = view.params;
+	view.params = Parameters::minimize(x);
+	if (snapshot(view) != 0)
 	{
 		int o = errno;
 		unlock_snapshot_ro();
@@ -196,7 +197,7 @@ int DbMan::open(View& view, const string& db)
 	else
 	{
 		unlock_snapshot_ro();
-		if (!x.isWider(view.params))
+		if (x.isWider(view.params))
 		{
 			errno = EINVAL;
 			return -1;
@@ -244,8 +245,9 @@ int DbMan::open(View& view, const string& db, int mode)
 	}
 	else
 	{	// not empty
-		Parameters x = Parameters::minimize(view.params);
-		if (snapshot(view, x) != 0)
+		Parameters x = view.params;
+		view.params = Parameters::minimize(x);
+		if (snapshot(view) != 0)
 		{
 			int o = errno;
 			unlock_snapshot_rw();
@@ -255,7 +257,7 @@ int DbMan::open(View& view, const string& db, int mode)
 		else
 		{
 			unlock_snapshot_rw();
-			if (!x.isWider(view.params))
+			if (x.isWider(view.params))
 			{
 				errno = EINVAL;
 				return -1;
