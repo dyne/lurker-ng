@@ -1,4 +1,4 @@
-/*  $Id: keyword.cpp,v 1.7 2003-05-02 11:18:41 terpstra Exp $
+/*  $Id: keyword.cpp,v 1.8 2003-05-03 13:22:26 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -31,6 +31,8 @@
 
 #include <set>
 #include <vector>
+
+#include <ctime>
 
 using std::set;
 
