@@ -1,4 +1,4 @@
-/*  $Id: test.cpp,v 1.2 2003-04-25 11:09:03 terpstra Exp $
+/*  $Id: test.cpp,v 1.3 2003-04-25 11:09:44 terpstra Exp $
  *  
  *  test.cpp - Write lots of crap and compare with RAM
  *  
@@ -156,7 +156,7 @@ void check(const string& k)
 void check()
 {
 	check("");
-	check("zzzzzzzzz");
+	check("ZZZZZZZZ");
 	check(makeStr()); // ??? change me here for bin
 	check(makeStr()); // ??? change me here for bin
 	check(makeStr()); // ??? change me here for bin
