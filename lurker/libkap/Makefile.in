@@ -315,8 +315,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic clean-noinstLIBRARIES \
-	mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-local \
+	clean-noinstLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 
@@ -352,16 +352,34 @@ mostlyclean-am: mostlyclean-compile mostlyclean-generic
 uninstall-am: uninstall-binPROGRAMS uninstall-info-am
 
 .PHONY: GTAGS all all-am check check-am clean clean-binPROGRAMS \
-	clean-generic clean-noinstLIBRARIES distclean distclean-compile \
-	distclean-depend distclean-generic distclean-tags distdir dvi \
-	dvi-am info info-am install install-am install-binPROGRAMS \
-	install-data install-data-am install-exec install-exec-am \
-	install-info install-info-am install-man install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic tags uninstall uninstall-am \
-	uninstall-binPROGRAMS uninstall-info-am
+	clean-generic clean-local clean-noinstLIBRARIES distclean \
+	distclean-compile distclean-depend distclean-generic \
+	distclean-tags distdir dvi dvi-am info info-am install \
+	install-am install-binPROGRAMS install-data install-data-am \
+	install-exec install-exec-am install-info install-info-am \
+	install-man install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic tags \
+	uninstall uninstall-am uninstall-binPROGRAMS uninstall-info-am
 
+
+tests:	test-append test-btree test-full profile
+
+test-append: test-append.cc libkap.a
+	g++ -Wall -O2 -g $< libkap.a -o $@
+
+test-btree: test-btree.cc libkap.a
+	g++ -Wall -O2 -g $< libkap.a -o $@
+
+test-full: test-full.cc libkap.a
+	g++ -Wall -O2 -g $< libkap.a -o $@
+
+profile: profile.cc libkap.a
+	g++ -Wall -O2 -g $< libkap.a -o $@
+
+clean-local:
+	rm -f test-append test-btree test-full profile
+	rm -f *.btree *.append
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
