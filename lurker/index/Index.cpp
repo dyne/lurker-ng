@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.11 2003-05-16 15:32:24 terpstra Exp $
+/*  $Id: Index.cpp,v 1.12 2003-05-26 15:22:02 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -57,6 +57,23 @@
 using namespace std;
 
 #define MAX_MESSAGE_ID	80
+
+void utf8Truncate(string& str, string::size_type len)
+{
+	if (str.length() < len) return;
+	
+	// look for nasty utf-8 stuff that's dangling and crop it
+	while (len && ((unsigned char)str[len-1]) >= 0x80 && 
+	              ((unsigned char)str[len-1]) <= 0xBF)
+		--len;
+	// now rewind off potential utf-8 start bytes
+	while (len && ((unsigned char)str[len-1]) >= 0xC0)
+		--len;
+	
+	// len is now at the end of a complete multi-byte element or ascii
+	
+	str.resize(len);
+}
 
 string pickFullName(DwAddress* a, const char* charset)
 {
@@ -180,6 +197,9 @@ int Index::index_author()
 		if (!author_email.length()) author_email = pickAddress(
 			&message.Headers().Sender());
 	}
+	
+	utf8Truncate(author_name, 100);
+	utf8Truncate(author_email, 100);
 	
 	return 0;
 }
@@ -329,7 +349,7 @@ int Index::index_summary(bool check, bool& exist)
 	}
 	
 	// Don't let crazy stuff in there.
-	if (subject.length() > 200) subject.resize(200);
+	utf8Truncate(subject, 200);
 	
 	if (writer->insert(prefix + LU_MESSAGE_AUTHOR_EMAIL + author_email) != 0 ||
 	    writer->insert(prefix + LU_MESSAGE_AUTHOR_NAME  + author_name)  != 0 ||
