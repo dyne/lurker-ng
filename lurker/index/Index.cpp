@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.6 2003-04-25 16:38:18 terpstra Exp $
+/*  $Id: Index.cpp,v 1.7 2003-04-26 12:10:13 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -253,7 +253,7 @@ int Index::index_id(time_t server)
 	}
 	
 	id = MessageId(stamp, hash);
-
+	
 	if (messageId.length() && writer->insert(
 		LU_KEYWORD
 		LU_KEYWORD_MESSAGE_ID + 
@@ -278,7 +278,7 @@ int Index::index_id(time_t server)
 	return 0;
 }
 
-int Index::index_summary()
+int Index::index_summary(bool check, bool& exist)
 {
 	string prefix = LU_SUMMARY + id.raw();
 	
@@ -286,6 +286,24 @@ int Index::index_summary()
 	{
 		subject = message.Headers().Subject().AsString().c_str();
 		subject = decode_header(subject, charset.c_str());
+	}
+	
+	string mbox = prefix + LU_MESSAGE_MBOX + list.mbox + '\0';
+	
+	if (check)
+	{
+		// Check for existance
+		auto_ptr<ESort::Walker> w(writer->seek(mbox, "", ESort::Forward));
+		
+		if (w->advance() == -1)
+		{	// was it just eof?
+			if (errno != 0) return -1;
+		}
+		else
+		{	// if it suceeded. then ... it is already in there
+			exist = true;
+			return 0;
+		}
 	}
 	
 	unsigned char buf[12];
@@ -310,7 +328,7 @@ int Index::index_summary()
 	if (writer->insert(prefix + LU_MESSAGE_AUTHOR_EMAIL + author_email) != 0 ||
 	    writer->insert(prefix + LU_MESSAGE_AUTHOR_NAME  + author_name)  != 0 ||
 	    writer->insert(prefix + LU_MESSAGE_SUBJECT      + subject)      != 0 ||
-	    writer->insert(prefix + LU_MESSAGE_MBOX + string((char*)buf, 12) + list.mbox) != 0)
+	    writer->insert(mbox + string((char*)buf, 12)) != 0)
 	{
 		cerr << "Failed to insert summary keys" << endl;
 		return -1;
@@ -348,7 +366,10 @@ int Index::index_threading()
 		for (vector<string>::iterator i = ids.begin(); i != ids.end(); ++i)
 		{
 			build_message_hash(i->c_str(), hash);
-			suffix.append((const char*)hash, 4);
+			
+			// keep it reasonable; too many reply-tos is bad
+			if (suffix.length() < 200)
+				suffix.append((const char*)hash, 4);
 		}
 	}
 	
@@ -362,13 +383,15 @@ int Index::index_threading()
 		     i != ids.rend(); ++i)
 		{
 			build_message_hash(i->c_str(), hash);
-			suffix.append((const char*)hash, 4);
+			// keep it reasonable; too many reply-tos is bad
+			if (suffix.length() < 200)
+				suffix.append((const char*)hash, 4);
 		}
 	}
 	
 	if (writer->insert(
 		LU_THREADING
-		+ shash + '\0'
+		+ shash
 		+ id.raw()
 		+ suffix) != 0)
 	{
@@ -508,14 +531,19 @@ int Index::index_keywords(DwEntity& e)
 	return 0;
 }
 
-int Index::index(time_t envelope)
+int Index::index(time_t envelope, bool check, bool& exist)
 {
+	exist = false;
 	message.Parse();
+	
 //	cout << message.Headers().Subject().AsString().c_str() << endl;
 	
 	if (index_author()    < 0) return -1;
 	if (index_id(envelope) < 0) return -1;
-	if (index_summary  () < 0) return -1;
+	if (index_summary(check, exist) < 0) return -1;
+	
+	if (exist) return 0;
+	
 	if (index_threading() < 0) return -1;
 	if (index_control  () < 0) return -1;
 	if (index_keywords(message) < 0) return -1;

@@ -15,10 +15,14 @@ v0.7:
 	Fixed a bug with the empty string inserted into the database
 	The database supports prefix partitioning
 	Make search work like mindex
-	Removed debugging some that was left in 0.6
+	Removed some debugging that was left in 0.6
 	A search for no keywords now returns everything
 	Added a '-d' option to save space on reimport
 	Added 'lurker-regenerate' to port databases
+	Truncate reply-to list to 50 messages
+	Have a valid 'jump-to' date even with no messages
+	Removed follow-ups; the tree already has them
+	Give nice error messages for non-existant messages
 
 v0.6:
 	Jam replaces automake + overkill autoconf madness; hooray!

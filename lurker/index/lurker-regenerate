@@ -1,12 +1,14 @@
 #! /bin/sh -e
 # Expects: <lurker-index> <config file>
 
-idx=`which $1`
-if echo "$idx" | grep -q '^\.'; then idx="$PWD/$idx"; fi
+idx="$1"
 cfg="$2"
 
-if ! test -x $idx; then echo Cannot execute indexer; exit 1; fi
-if ! test -f $cfg; then echo Cannot read config; exit 1; fi
+if test -z "$idx" || test ! -x $idx; then echo Cannot execute indexer; exit 1; fi
+if test -z "$cfg" || test ! -f $cfg; then echo Cannot read config; exit 1; fi
+
+idx=`which $idx`
+if echo "$idx" | grep -q '^\.'; then idx="$PWD/$idx"; fi
 
 dbdir=`grep "[ 	]*dbdir" $cfg | cut -d= -f2`
 dbdir=`echo $dbdir`
@@ -20,7 +22,7 @@ rm -f db.* db
 
 for l in *; do
   echo Reindexing $l
-  $idx -c $cfg -l $l -v -b 5 < $l
+  $idx -c $cfg -l $l -v -d -b 5 < $l
 done
 
 cd ..

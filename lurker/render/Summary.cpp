@@ -1,4 +1,4 @@
-/*  $Id: Summary.cpp,v 1.5 2003-04-25 21:11:42 terpstra Exp $
+/*  $Id: Summary.cpp,v 1.6 2003-04-26 12:10:14 terpstra Exp $
  *  
  *  Summary.cpp - Helper which can load a message given MessageId
  *  
@@ -47,6 +47,7 @@ string Summary::load(Reader* r)
 	
 	// This will only walk records matching this id
 	int ok;
+	mbox_ = "";
 	while ((ok = w->advance()) != -1)
 	{
 		if (w->key.length() < 1 + 8 + 1)
@@ -71,8 +72,14 @@ string Summary::load(Reader* r)
 			break;
 			
 		case LU_MESSAGE_MBOX:
-			if (w->key.length() < 1+8+1+12+1)
+			if (w->key.length() < 1+8+1+1+12)
 				return "invalid mbox entry -- too short";
+			
+			//!!! could be more careful about corrupt dbs here
+			
+			++k;
+			mbox_ = (const char*)k; // null terminated
+			k += mbox_.length();
 			
 			int i;
 			offset_ = 0;
@@ -89,7 +96,6 @@ string Summary::load(Reader* r)
 				length_ |= *++k;
 			}
 			
-			mbox_ = w->key.substr(1+8+1+12, string::npos);
 			mboxs_.insert(mbox_);
 			break;
 		
@@ -97,6 +103,9 @@ string Summary::load(Reader* r)
 			return "unknown mbox summary control code";
 		}
 	}
+	
+	if (mbox_ == "")
+		return "not in a mailbox";
 	
 	if (ok == -1 && errno != 0)
 		return string("Walker::advance:") + strerror(errno);

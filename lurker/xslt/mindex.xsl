@@ -12,7 +12,12 @@
   <input type="hidden" name="list" value="{list/id}"/>
 
   <xsl:call-template name="date-fields">
-   <xsl:with-param name="date" select="row/summary/id"/>
+   <xsl:with-param name="date">
+    <xsl:choose>
+     <xsl:when test="row/summary/id"><xsl:value-of select="row/summary/id"/></xsl:when>
+     <xsl:otherwise><xsl:value-of select="$jump-date"/></xsl:otherwise>
+    </xsl:choose>
+   </xsl:with-param>
   </xsl:call-template>
   &#160;&#160;
   <input type="submit" value="{$jump}"/> ]

@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.8 2003-04-25 23:39:26 terpstra Exp $
+/*  $Id: main.cpp,v 1.9 2003-04-26 12:10:14 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -131,8 +131,8 @@ int commit()
 	return 0;
 }
 
-int index(const DwString& msg, long batch)
-{	// !!! use the dropdup flag
+int index(const DwString& msg, long batch, bool check)
+{
 //	cout << msg.c_str() << endl;
 	static int count = 0;
 	if (++count == batch)
@@ -142,6 +142,8 @@ int index(const DwString& msg, long batch)
 	}
 	
 	off_t start = length + append.length();
+	
+	string::size_type unwind = append.length();
 	
 	time_t arrival;
 	const char* d = msg.c_str();
@@ -171,10 +173,16 @@ int index(const DwString& msg, long batch)
 	append.append(msg.c_str(), msg.length());
 	Index i(msg, db.get(), *list, start, msg.length());
 	
-	if (i.index(arrival) != 0)
+	bool exist;
+	if (i.index(arrival, check, exist) != 0)
 	{
 		cerr << "Import failed; aborting..." << endl;
 		return -1;
+	}
+	
+	if (exist)
+	{	// already indexed -> don't append it
+		append.resize(unwind);
 	}
 	
 	return 0;
@@ -200,7 +208,7 @@ int main(int argc, char** argv)
 	
 	srandom(time(0));
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:l:b:mv?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:l:b:mvd?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -300,7 +308,7 @@ int main(int argc, char** argv)
 		{
 			DwString msg(buf.c_str(), eos+1);
 			buf = buf.substr(eos+1, string::npos);
-			if (index(msg, batch) != 0) return 1;
+			if (index(msg, batch, dropdup) != 0) return 1;
 			++messages;
 			was = 0; 
 			
@@ -312,7 +320,7 @@ int main(int argc, char** argv)
 		{
 			DwString msg(buf.c_str(), buf.length());
 			buf = "";
-			if (index(msg, batch) != 0) return 1;
+			if (index(msg, batch, dropdup) != 0) return 1;
 			break;
 		}
 	}

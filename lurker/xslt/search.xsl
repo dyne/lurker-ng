@@ -35,7 +35,12 @@
   <xsl:value-of select="$titlesearch"/>
  </h2>
  
- <xsl:variable name="sdate" select="row/summary/id"/>
+ <xsl:variable name="sdate">
+  <xsl:choose>
+   <xsl:when test="row/summary/id"><xsl:value-of select="row/summary/id"/></xsl:when>
+   <xsl:otherwise><xsl:value-of select="$jump-date"/></xsl:otherwise>
+  </xsl:choose>
+ </xsl:variable>
  <div id="smSearch">
   <form action="{server/cgi-url}/keyword.cgi">
    <input type="hidden" name="doc-url" value="{server/doc-url}"/>

@@ -1,4 +1,4 @@
-/*  $Id: Keys.h,v 1.4 2003-04-25 16:38:17 terpstra Exp $
+/*  $Id: Keys.h,v 1.5 2003-04-26 12:10:13 terpstra Exp $
  *  
  *  Keys.h - What prefixs various database keys
  *  
@@ -50,7 +50,6 @@ vector<string> extract_message_ids(const char* str);
  * Threading:
  *   LU_THREADING 
  *   subject_hash 
- *   '\0'
  *   message_id
  *   (reply_to_hash*)
  * 
@@ -61,7 +60,7 @@ vector<string> extract_message_ids(const char* str);
  *  ... if it has any of these then it must have all of them, in that order
  *  For all except the MBOX, one has just a string value.
  *  For Mbox:
- *   <64bit offset> <32bit length> <mailbox-as-string>
+ *   <mailbox-as-string> '\0' <64bit offset> <32bit length>
  *
  * Keyword:
  *  LU_KEYWORD

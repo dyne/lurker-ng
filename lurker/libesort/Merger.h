@@ -1,4 +1,4 @@
-/*  $Id: Merger.h,v 1.5 2003-04-25 21:06:11 terpstra Exp $
+/*  $Id: Merger.h,v 1.6 2003-04-26 12:10:14 terpstra Exp $
  *  
  *  Merger.h - Combine segments to obtain a database view
  *  
@@ -49,6 +49,7 @@ class Merger : public Walker
  	
  	bool			unique;
  	bool			forward;
+ 	bool			didempty;
  	
  	/** Invariant:
  	 *   for sources.begin() <= j < point:
@@ -62,7 +63,7 @@ class Merger : public Walker
  	
  public:
  	Merger(bool unique_, bool forward_)
- 	 : unique(unique_), forward(forward_) { }
+ 	 : unique(unique_), forward(forward_), didempty(false) { }
  	~Merger(); /* deletes all sources */
  	
  	/** Add a Source to those which the merger merges.

@@ -1,4 +1,4 @@
-/*  $Id: Threading.cpp,v 1.4 2003-04-25 16:38:18 terpstra Exp $
+/*  $Id: Threading.cpp,v 1.5 2003-04-26 12:10:14 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -54,8 +54,7 @@ string Threading::load(Reader* r, const Summary& sum, Key& out)
 {
 	string prefix = 
 		LU_THREADING + 
-		subject_hash(sum.subject().c_str()) + 
-		'\0';
+		subject_hash(sum.subject().c_str());
 	
 	auto_ptr<Walker> backwards(r->seek(prefix, sum.id().raw(), Backward));
 	
