@@ -36,7 +36,7 @@ xslt = xsltproc --nonet -
 # 
 # The output of these commands is displayed in the signature block.
 # The output must be encoded with a charset of UTF-8.
-# The return status must be 0 exactly when the signature is correct.
+# The return status must be: 0 = ok, 1 = bad sig, other = unknown
 # The photo id (if any) should be output to provided photo filename.
 # The substitutions %s, %b, and %p are the signature, body, and photo.
 # 

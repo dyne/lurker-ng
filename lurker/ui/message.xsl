@@ -110,6 +110,7 @@
   <xsl:attribute name="class">
    <xsl:choose>
     <xsl:when test="@ok='yes'">goodsig</xsl:when>
+    <xsl:when test="@ok='unknown'">unknownsig</xsl:when>
     <xsl:otherwise>badsig</xsl:otherwise>
    </xsl:choose>
   </xsl:attribute>

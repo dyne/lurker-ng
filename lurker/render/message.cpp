@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.27 2003-07-01 14:10:29 terpstra Exp $
+/*  $Id: message.cpp,v 1.28 2003-07-02 09:14:09 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -226,7 +226,13 @@ void run_pgp(ostream& o, string& command)
 		status = 1;
 	}
 	
-	o << "<signed ok=\"" << (status==0?"yes":"no") << "\">"
+	o << "<signed ok=\"";
+	
+	if      (status == 0) o << "yes";
+	else if (status == 1) o << "no";
+	else                  o << "unknown";
+	
+	o << "\">"
 	  << "<details>" << xmlEscape << details << "</details>";
 	
 	if (access(photo.c_str(), R_OK) == 0)
