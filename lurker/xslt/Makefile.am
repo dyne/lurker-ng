@@ -2,7 +2,7 @@ fmtdir = @wwwdir@/fmt
 
 XSL =	render.xsl render-html.xsl common.xsl error.xsl redirect.xsl \
 	splash.xsl message.xsl mindex.xsl search.xsl thread.xsl \
-	english.xsl \
+	english.xsl deutsch.xsl \
 	basic.css
 
 INDEX =	index.html index.xsl

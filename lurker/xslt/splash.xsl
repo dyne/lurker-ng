@@ -130,7 +130,7 @@
        <option value="sat"><xsl:value-of select="$sat"/></option>
      </select>
      <xsl:text>, </xsl:text>
-     <xsl:value-of select="$the"/>
+     <xsl:value-of select="$thedate"/>
      <xsl:text> </xsl:text>
      <select name="dom">
        <option value="">1-31</option>
@@ -167,7 +167,7 @@
        <option value="31">31</option>
      </select>
      <xsl:text> </xsl:text>
-     <xsl:value-of select="$of"/>
+     <xsl:value-of select="$ofdate"/>
      <xsl:text> </xsl:text>
      <select name="month">
        <option value=""><xsl:value-of select="$all-mo"/></option>
@@ -184,7 +184,9 @@
        <option value="nov"><xsl:value-of select="$nov"/></option>
        <option value="dec"><xsl:value-of select="$dec"/></option>
      </select>
-     /
+     <xsl:text> </xsl:text>
+     <xsl:value-of select="$datedivide"/>
+     <xsl:text> </xsl:text>
      <select name="year">
        <option value=""><xsl:value-of select="$all-ye"/></option>
        <option value="2002">2002</option>

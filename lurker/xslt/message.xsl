@@ -200,7 +200,7 @@
  <xsl:text> </xsl:text>
  <a href="../mbox/{mid}.txt"><xsl:value-of select="$mailbox"/></a>
  <xsl:text> </xsl:text>
- <xsl:value-of select="$of"/>
+ <xsl:value-of select="$mailboxof"/>
  <xsl:text> </xsl:text>
  
  <xsl:if test="count(list) = 1">

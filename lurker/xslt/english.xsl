@@ -22,16 +22,19 @@
  <xsl:variable name="fus">Follow-Ups</xsl:variable>
  <xsl:variable name="appearin">Appearing in</xsl:variable>
  <xsl:variable name="mailbox">the mailbox</xsl:variable>
- <xsl:variable name="the">the</xsl:variable>
- <xsl:variable name="of">of</xsl:variable>
+ <xsl:variable name="mailboxof">of</xsl:variable>
+ 
+ <xsl:variable name="thedate">the</xsl:variable>
+ <xsl:variable name="ofdate">of</xsl:variable>
+ <xsl:variable name="datedivide">/</xsl:variable>
 
  <xsl:variable name="mess">Messages</xsl:variable>
  <xsl:variable name="message">message</xsl:variable>
- <xsl:variable name="threads">New Threads</xsl:variable>
+ <xsl:variable name="threads">New Topics</xsl:variable>
 
  <xsl:variable name="splash">Front Page</xsl:variable>
- <xsl:variable name="threading">Threading</xsl:variable>
- <xsl:variable name="lin-h">List</xsl:variable>
+ <xsl:variable name="threading">Discussion Tree</xsl:variable>
+ <xsl:variable name="lin-h">Mailing-List</xsl:variable>
  <xsl:variable name="des-h">Description</xsl:variable>
  <xsl:variable name="search">Search</xsl:variable>
 
@@ -60,5 +63,5 @@
 
  <xsl:variable name="all-ye">All years</xsl:variable>
  <xsl:variable name="all-li">Any list</xsl:variable>
- <xsl:variable name="info">List Info</xsl:variable>
+ <xsl:variable name="info">Mailing-List Info</xsl:variable>
 </xsl:stylesheet>
