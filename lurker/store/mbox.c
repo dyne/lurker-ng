@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.10 2002-02-12 07:32:22 cbond Exp $
+/*  $Id: mbox.c,v 1.11 2002-02-13 16:32:07 cbond Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -106,7 +106,7 @@ static int my_mbox_mmap(
 	/*
 	 * Some systems expect the mmap offset to be aligned to the VM
 	 * page size, some don't.  Do it just to be safe -- it won't waste
-	 * much space.
+	 * any space.
 	 */
 	round = off & ~(getpagesize() - 1);
 	mbox->map.off = off;
