@@ -11,12 +11,10 @@
 void test_write(Kap k, const char* key, string val, int exist)
 {
 	int out;
-	ssize_t l = val.length();
-	
 //	cout << "TEST WRITE: " << key << endl;
 	
 	out = kap_btree_write(k, key, 
-		(const unsigned char*)val.c_str(), &l);
+		(const unsigned char*)val.c_str(), val.length());
 	
 	assert (exist || out == 0);
 	assert (!exist || out == KAP_KEY_EXIST);
@@ -78,7 +76,7 @@ int main()
 	test_read(k, "joe", "bob", 1);
 	
 	srandom(time(0));
-	for (int i = 0; i < 100000; i++)
+	for (int i = 0; i < 500000; i++)
 	{
 		char buf[7];
 		string val = "       ";
