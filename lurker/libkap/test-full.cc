@@ -29,12 +29,16 @@ int main()
 	c = 0;
 	while (cin >> key)
 	{
+		if (key.length() >= 100)
+			key.resize(99);
+			
 		c++;
 		cout << c << " " << key << endl;
 		
 		int i = random();
 		tbl[key].push_back(i);
-		kap_append(k, key.c_str(), &i, 1);
+		out = kap_append(k, key.c_str(), &i, 1);
+		assert (out == 0);
 	}
 	
 	map<string, vector<int> >::iterator i;
@@ -43,11 +47,12 @@ int main()
 	{
 		KRecord	kr;
 		
-		out = kap_kopen(k, &kr, i->first.c_str());
-		assert (out == 0);
-		
 		c++;
 		cout << c << " " << i->first << endl;
+		
+		out = kap_kopen(k, &kr, i->first.c_str());
+		if (out) cerr << kap_strerror(out) << endl;
+		assert (out == 0);
 		
 		vector<int>::size_type j;
 		for (j = 0; j < i->second.size(); j++)
