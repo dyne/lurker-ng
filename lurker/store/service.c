@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.17 2002-02-12 06:21:49 terpstra Exp $
+/*  $Id: service.c,v 1.18 2002-02-12 07:23:55 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -271,6 +271,20 @@ static int my_service_error(
 	if (my_service_buffer_write(fd, "</message>\n <detail>") != 0) return -1;
 	if (my_service_write_str(fd, detail)                     != 0) return -1;
 	if (my_service_buffer_write(fd, "</detail>\n</error>\n") != 0) return -1;
+	
+	return 0;
+}
+
+static int my_service_server(
+	st_netfd_t fd)
+{
+	if (my_service_buffer_write(fd, " <server>\n  <hostname>")       != 0) return -1;
+	if (my_service_write_str(fd, lu_config_list_host)                != 0) return -1;
+	if (my_service_buffer_write(fd, "</hostname>\n  <email name=\"") != 0) return -1;
+	if (my_service_write_str(fd, lu_config_admin_name)               != 0) return -1;
+	if (my_service_buffer_write(fd, "\" address=\"")                 != 0) return -1;
+	if (my_service_write_str(fd, lu_config_admin_address)            != 0) return -1;
+	if (my_service_buffer_write(fd, "\"/>\n </server>\n")            != 0) return -1;
 	
 	return 0;
 }
@@ -651,6 +665,8 @@ static int my_service_mindex(
 		if (my_service_buffer_write(fd, "</prev>\n")          != 0) goto my_service_mindex_error1;
 	}
 	
+	if (my_service_server(fd) != 0) goto my_service_mindex_error1;
+	
 	if (my_service_list(fd, l, lu_breader_records(h)) != 0) goto my_service_mindex_error1;
 	lu_breader_free(h);
 	
@@ -750,6 +766,7 @@ static int my_service_search(
 	if (my_service_buffer_write(fd, "</query>\n <hits>")   != 0) goto my_service_search_error1;
 	if (my_service_write_int(fd, 0)                        != 0) goto my_service_search_error1;
 	if (my_service_buffer_write(fd, "</hits>\n")           != 0) goto my_service_search_error1;
+	if (my_service_server(fd)                              != 0) goto my_service_search_error1;
 	
 	if (offset != 0)
 	{
@@ -809,6 +826,8 @@ static int my_service_lists(
 	
 	if (my_service_xml_head(fd)                  != 0) return -1;
 	if (my_service_buffer_write(fd, "<lists>\n") != 0) return -1;
+	if (my_service_server(fd)                    != 0) return -1;
+	
 	for (	scan = lu_config_list; 
 		scan != lu_config_list + lu_config_lists; 
 		scan++)
@@ -816,7 +835,11 @@ static int my_service_lists(
 		snprintf(&key[0], sizeof(key), "%s%d", LU_KEYWORD_LIST, scan->id);
 		h = lu_breader_new(&key[0]);
 		if (h == 0) continue;
-		if (my_service_list(fd, scan, lu_breader_records(h)) != 0) return -1;
+		if (my_service_list(fd, scan, lu_breader_records(h)) != 0)
+		{
+			lu_breader_free(h);
+			return -1;
+		}
 		lu_breader_free(h);
 		
 	}
