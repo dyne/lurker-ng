@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.12 2002-05-04 04:39:10 terpstra Exp $
+/*  $Id: summary.c,v 1.13 2002-05-04 04:53:38 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -60,6 +60,7 @@ static int my_summary_message_fd  = -1;
 static int my_summary_variable_fd = -1;
 static DB* my_summary_thread_db   = 0;
 static DB* my_summary_merge_db    = 0;
+static DB* my_summary_mid_db      = 0;
 
 static message_id	my_summary_msg_free;
 static time_t		my_summary_last_time;
@@ -945,40 +946,40 @@ message_id lu_summary_import_message(
 	lu_quad		tm;
 	DBT		key;
 	DBT		ind;
+	DBT		val;
 	int		error;
 	
 	id = my_summary_msg_free;
 	
 	/* Check to see if we were already loaded */
-	if (id > 0)
-	{
-		sum_off = id - 1;
-		sum_off *= sizeof(Lu_Summary_Message);
-		if (lseek(my_summary_message_fd, sum_off, SEEK_SET) != sum_off)
-		{
-			syslog(LOG_ERR, "Seeking for check of message summary: %s\n",
-				strerror(errno));
-			goto lu_summary_import_message_error0;
-		}
+	memset(&key, 0, sizeof(DBT));
+	memset(&val, 0, sizeof(DBT));
+	
+	key.data = (void*)mmessage_id;
+	key.size = strlen(mmessage_id);
+	val.data = &id;
+	val.size = sizeof(id);
+	
+	error = my_summary_mid_db->put(
+		my_summary_mid_db, 0, &key, &val, DB_NOOVERWRITE);
+	if (error == DB_KEYEXIST)
+	{	/* Already imported this message */
+		val.ulen = sizeof(id);
+		val.flags = DB_DBT_USERMEM;
 		
-		if (read(my_summary_message_fd, &sum, sizeof(Lu_Summary_Message))
-			!= sizeof(Lu_Summary_Message))
-		{
-			syslog(LOG_ERR, "Checking for dup message summary: %s\n",
-				strerror(errno));
-			goto lu_summary_import_message_error0;
-		}
+		error = my_summary_mid_db->get(
+			my_summary_mid_db, 0, &key, &val, 0);
 		
-		high_bits = mbox;
-		high_bits <<= (sizeof(lu_addr)-2)*8;
-		high_bits |= mbox_offset;
-		sum.flat_offset >>= (sizeof(lu_addr)-2)*8;
-		
-		/* So, have we been imported already? */
-		if (sum.mbox_offset == high_bits && sum.flat_offset == list)
-		{
+		if (error == 0)
+		{	/* Return the existing id */
 			return id;
 		}
+	}
+	if (error)
+	{
+		syslog(LOG_ERR, "Checking message-id db for duplicate: %s\n",
+			db_strerror(errno));
+		goto lu_summary_import_message_error0;
 	}
 	
 	if (subject)
@@ -1400,6 +1401,13 @@ int lu_summary_open()
 		return -1;
 	}
 	
+	if ((error = db_create(&my_summary_mid_db, lu_config_env, 0)) != 0)
+	{
+		fprintf(stderr, "Creating a db3 database: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+	
 	if ((error = my_summary_thread_db->open(
 		my_summary_thread_db, "thread.hash", 0,
 		DB_HASH, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
@@ -1414,6 +1422,15 @@ int lu_summary_open()
 		DB_BTREE, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
 	{
 		fprintf(stderr, "Opening db3 database: merge.btree: %s\n",
+			db_strerror(error));
+		return -1;
+	}
+	
+	if ((error = my_summary_mid_db->open(
+		my_summary_mid_db, "mid.hash", 0,
+		DB_HASH, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
+	{
+		fprintf(stderr, "Opening db3 database: mid.hash: %s\n",
 			db_strerror(error));
 		return -1;
 	}
@@ -1467,6 +1484,13 @@ int lu_summary_sync()
 			db_strerror(error));
 	}
 	
+	if ((error = my_summary_mid_db->sync(
+		my_summary_mid_db, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Syncing db3 database: mid.hash: %s\n",
+			db_strerror(error));
+	}
+	
 	return 0;
 }
 
@@ -1487,6 +1511,14 @@ int lu_summary_close()
 		my_summary_merge_db, 0)) != 0)
 	{
 		syslog(LOG_ERR, "Closing db3 database: merge.btree: %s\n",
+			db_strerror(error));
+		fail = -1;
+	}
+	
+	if ((error = my_summary_mid_db->close(
+		my_summary_mid_db, 0)) != 0)
+	{
+		syslog(LOG_ERR, "Closing db3 database: mid.hash: %s\n",
 			db_strerror(error));
 		fail = -1;
 	}
