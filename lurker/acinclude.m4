@@ -76,7 +76,7 @@ AC_DEFUN(ST_CHECK,
 
   AC_MSG_CHECKING(for st header files)
 
-  for search in $ST_ITEST '' '-I/usr/local/'; do
+  for search in $ST_ITEST '' '-I/usr/local/include'; do
     save="$CFLAGS";
     CFLAGS="$CFLAGS $search";
 
@@ -99,12 +99,21 @@ AC_DEFUN(ST_CHECK,
   AC_SUBST($1_LIBS)
   AC_SUBST($1_CFLAGS)])
 
-AC_DEFUN(C_CLIENT_CHECK, [
-  AC_MSG_CHECKING(for c-client)
+AC_DEFUN(C_CLIENT_CHECK, 
+[ AC_MSG_CHECKING(for the c-client library)
   
-  save_LIBS=$LIBS
-  LIBS="$LIBS -L/usr/local/lib -lc-client"
-  AC_TRY_LINK(
+  AC_ARG_WITH(cclientdir, AC_HELP_STRING(
+	[--with-cclientdir], 
+	[c-client installation directory (default: none)]))
+  if test "x$with_cclientdir" != "x"; then
+    CL_LTEST="-L$with_cclientdir/lib -L$with_cclientdir"
+    CL_ITEST="-I$with_cclientdir/include -I$with_cclientdir"
+  fi
+
+  for search in $CL_LTEST '' '-L/usr/local/lib'; do
+    save="$LIBS"
+    LIBS="$LIBS $search -lc-client"
+    AC_TRY_LINK(
 [void mm_expunged() {}
 void mm_diskerror() {}
 void mm_lsub() {}
@@ -120,14 +129,61 @@ void mm_critical() {}
 void mm_exists() {}
 void mm_log() {}
 void mm_dlog() {}
-void rfc822_parse_msg_full();],
-[ rfc822_parse_msg_full(); ], 
-    AC_MSG_RESULT(yes), AC_MSG_ERROR(need c-client))
-  LIBS=$save_LIBS
+extern void rfc822_parse_msg_full();], [rfc822_parse_msg_full(); ],
+	[AC_MSG_RESULT(yes)
+	 break],
+	[LIBS="$save"])
+  done
+  
+  if test "$save" = "$LIBS"; then
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR([This requires libc-client to build])
+  else
+    $1_LIBS="$$1_LIBS $search -lc-client"
+    LIBS="$save"
+  fi
 
-  $1_LIBS="$$1_LIBS -lc-client"
+  AC_MSG_CHECKING(for c-client header files)
+
+  for search in $CL_ITEST '' '-I/usr/local/include'; do
+    save="$CFLAGS";
+    CFLAGS="$CFLAGS $search";
+
+    AC_TRY_COMPILE(
+[
+#include <sys/types.h>
+#include <c-client/mail.h>
+#include <c-client/rfc822.h>
+#include <c-client/fs.h>
+],
+      [ const char* buf;
+       struct mail_envelope* env;
+	struct mail_bodystruct* body;
+	STRING bss;
+        rfc822_parse_msg(
+		&env, 
+		&body, 
+		buf, 
+		(size_t)(23424),
+		&bss, 
+		"localhost", 
+		0);
+	return 0;],
+      [AC_MSG_RESULT(yes)
+       break],
+      [CFLAGS="$save"])
+  done
+
+  if test "$save" = "$CFLAGS"; then
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR([Unable to locate c-client header files])
+  else
+    $1_CFLAGS="$$1_CFLAGS $search"
+    CFLAGS="$save"
+  fi
+
   AC_SUBST($1_LIBS)
-])
+  AC_SUBST($1_CFLAGS)])
 
 dnl Since db3 comes with no real way to determine its location,
 dnl we'll make an attempt at finding it ourselves.  (This is

@@ -849,6 +849,7 @@ Optional Packages:
   --with-stdir            st installation directory (default: none)
   --with-db3dir           db3 installation directory (default: none)
   --with-db3name          db3 library name (default: db-3 or db3)
+  --with-cclientdir       c-client installation directory (default: none)
   --with-libiconv-prefix=DIR  search for libiconv in DIR/include and DIR/lib
   --with-included-gettext use the GNU gettext library included here
 
@@ -5372,7 +5373,7 @@ echo "$as_me: error: This requires libst to build" >&2;}
   echo "$as_me:$LINENO: checking for st header files" >&5
 echo $ECHO_N "checking for st header files... $ECHO_C" >&6
 
-  for search in $ST_ITEST '' '-I/usr/local/'; do
+  for search in $ST_ITEST '' '-I/usr/local/include'; do
     save="$CFLAGS";
     CFLAGS="$CFLAGS $search";
 
@@ -5575,13 +5576,24 @@ echo "$as_me: error: Unable to locate libdb >= 3.2 header files" >&2;}
 
 
 
+ echo "$as_me:$LINENO: checking for the c-client library" >&5
+echo $ECHO_N "checking for the c-client library... $ECHO_C" >&6
 
-  echo "$as_me:$LINENO: checking for c-client" >&5
-echo $ECHO_N "checking for c-client... $ECHO_C" >&6
 
-  save_LIBS=$LIBS
-  LIBS="$LIBS -L/usr/local/lib -lc-client"
-  cat >conftest.$ac_ext <<_ACEOF
+# Check whether --with-cclientdir or --without-cclientdir was given.
+if test "${with_cclientdir+set}" = set; then
+  withval="$with_cclientdir"
+
+fi;
+  if test "x$with_cclientdir" != "x"; then
+    CL_LTEST="-L$with_cclientdir/lib -L$with_cclientdir"
+    CL_ITEST="-I$with_cclientdir/include -I$with_cclientdir"
+  fi
+
+  for search in $CL_LTEST '' '-L/usr/local/lib'; do
+    save="$LIBS"
+    LIBS="$LIBS $search -lc-client"
+    cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 #include "confdefs.h"
 void mm_expunged() {}
@@ -5599,7 +5611,7 @@ void mm_critical() {}
 void mm_exists() {}
 void mm_log() {}
 void mm_dlog() {}
-void rfc822_parse_msg_full();
+extern void rfc822_parse_msg_full();
 #ifdef F77_DUMMY_MAIN
 #  ifdef __cplusplus
      extern "C"
@@ -5609,7 +5621,7 @@ void rfc822_parse_msg_full();
 int
 main ()
 {
- rfc822_parse_msg_full();
+rfc822_parse_msg_full();
   ;
   return 0;
 }
@@ -5628,17 +5640,102 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   (exit $ac_status); }; }; then
   echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
+	 break
 else
   echo "$as_me: failed program was:" >&5
 cat conftest.$ac_ext >&5
-{ { echo "$as_me:$LINENO: error: need c-client" >&5
-echo "$as_me: error: need c-client" >&2;}
-   { (exit 1); exit 1; }; }
+LIBS="$save"
 fi
 rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-  LIBS=$save_LIBS
+  done
 
-  STORAGE_LIBS="$STORAGE_LIBS -lc-client"
+  if test "$save" = "$LIBS"; then
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    { { echo "$as_me:$LINENO: error: This requires libc-client to build" >&5
+echo "$as_me: error: This requires libc-client to build" >&2;}
+   { (exit 1); exit 1; }; }
+  else
+    STORAGE_LIBS="$STORAGE_LIBS $search -lc-client"
+    LIBS="$save"
+  fi
+
+  echo "$as_me:$LINENO: checking for c-client header files" >&5
+echo $ECHO_N "checking for c-client header files... $ECHO_C" >&6
+
+  for search in $CL_ITEST '' '-I/usr/local/include'; do
+    save="$CFLAGS";
+    CFLAGS="$CFLAGS $search";
+
+    cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+#include <sys/types.h>
+#include <c-client/mail.h>
+#include <c-client/rfc822.h>
+#include <c-client/fs.h>
+
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+ const char* buf;
+       struct mail_envelope* env;
+	struct mail_bodystruct* body;
+	STRING bss;
+        rfc822_parse_msg(
+		&env,
+		&body,
+		buf,
+		(size_t)(23424),
+		&bss,
+		"localhost",
+		0);
+	return 0;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+       break
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+CFLAGS="$save"
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+  done
+
+  if test "$save" = "$CFLAGS"; then
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    { { echo "$as_me:$LINENO: error: Unable to locate c-client header files" >&5
+echo "$as_me: error: Unable to locate c-client header files" >&2;}
+   { (exit 1); exit 1; }; }
+  else
+    STORAGE_CFLAGS="$STORAGE_CFLAGS $search"
+    CFLAGS="$save"
+  fi
+
 
 
 
