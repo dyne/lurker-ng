@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.70 2002-06-14 12:22:41 terpstra Exp $
+/*  $Id: service.c,v 1.71 2002-06-15 18:18:33 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -782,7 +782,7 @@ static int my_service_dump(
 		if (my_service_quote(h, &buf[0], sizeof(buf) - fill) != 0)
 			break;
 		
-		if (tmp == (size_t)-1 && errno != E2BIG)
+		if (tmp == (size_t)-1 && errno != E2BIG && errno != EAGAIN)
 			break;
 	}
 	
