@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.89 2002-08-16 20:33:49 terpstra Exp $
+/*  $Id: service.c,v 1.90 2002-08-18 18:24:10 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -111,12 +111,6 @@ typedef struct My_Service_Reply_Tree_T
 	int			column;
 	int			draw_next;
 } My_Service_Reply_Tree;
-
-typedef struct My_Service_Email_Dat_T
-{
-	My_Service_Handle	h;
-	const char*		first;
-} My_Service_Email_Dat;
 
 /*------------------------------------------------- Private globals */
 
@@ -416,74 +410,6 @@ static int my_service_write_time(
 	
 	strftime(&buf[0], sizeof(buf), "%H:%M %b %d/%y", localtime(&tm));
 	return my_service_write_str(h, &buf[0]);
-}
-
-static int my_service_write_url(
-	My_Service_Handle	h,
-	const char*		buf,
-	size_t			len)
-{
-	char hex[8];
-	const char* start;
-	const char* end = buf + len;
-
-	for (start = buf; buf != end; buf++)
-	{
-		if (	(*buf < 'a' || *buf > 'z') &&
-			(*buf < 'A' || *buf > 'Z') &&
-			(*buf < '0' || *buf > '9') &&
-			(*buf != '/' && *buf != ':' && 
-			 *buf != '-' && *buf != '_'))
-		{
-			snprintf(&hex[0], sizeof(hex), "%%%02X", *buf);
-			
-			if (my_service_buffer_writel(h, start, buf - start) != 0)
-				return -1;
-			if (my_service_write_str(h, &hex[0]) != 0)
-				return -1;
-			
-			start = buf+1;
-		}
-	}
-	
-	if (my_service_buffer_writel(h, start, buf - start) != 0)
-		return -1;
-	
-	return 0;
-	
-}
-
-static int my_service_write_url_str(
-	My_Service_Handle	h,
-	const char*		buf)
-{
-	return my_service_write_url(h, buf, strlen(buf));
-}
-
-static int my_service_write_url_email(
-	My_Service_Handle	h,
-	ADDRESS*		addr)
-{
-	for (; addr; addr = addr->next)
-		if (addr->mailbox && addr->host)
-			break;
-	
-	if (!addr) return 1;
-	
-	if (addr->personal)
-	{
-		if (my_service_write_url_str(h, "\"")           != 0) return -1;
-		if (my_service_write_url_str(h, addr->personal) != 0) return -1;
-		if (my_service_write_url_str(h, "\" ")          != 0) return -1;
-	}
-	
-	if (my_service_write_url_str(h, "<")           != 0) return -1;
-	if (my_service_write_url_str(h, addr->mailbox) != 0) return -1;
-	if (my_service_write_url_str(h, "@")           != 0) return -1;
-	if (my_service_write_url_str(h, addr->host)    != 0) return -1;
-	if (my_service_write_url_str(h, ">")           != 0) return -1;
-	
-	return 0;
 }
 
 static int my_service_xml_head(
@@ -1047,36 +973,6 @@ static int my_service_list_cb(
 	return 0;
 }
 
-static int my_service_list_email_cb(
-	void*		arg,
-	lu_word		list,
-	message_id	offset)
-{
-	My_Service_Email_Dat*	d = arg;
-	Lu_Config_List*		l = lu_config_find_listi(lu_config_file, list);
-	
-	if (l && l->address)
-	{
-		if (d->first)
-		{
-			if (my_service_buffer_write(d->h, d->first) != 0) return -1;
-			d->first = 0;
-		}
-		else
-		{
-			if (my_service_write_url_str(d->h, ", ") != 0) return -1;
-		}
-		
-		if (my_service_write_url_str(d->h, "\"")       != 0) return -1;
-		if (my_service_write_url_str(d->h, l->name)    != 0) return -1;
-		if (my_service_write_url_str(d->h, "\" <")     != 0) return -1;
-		if (my_service_write_url_str(d->h, l->address) != 0) return -1;
-		if (my_service_write_url_str(d->h, ">")        != 0) return -1;
-	}
-	
-	return 0;
-}
-
 static int my_service_summary_body(
 	My_Service_Handle	h,
 	message_id		id,
@@ -1095,7 +991,7 @@ static int my_service_summary_body(
 	if (lu_summary_write_variable(
 		(int(*)(void*, const char*))        &my_service_buffer_write,
 		(int(*)(void*, const char*, size_t))&my_service_write_strl,
-		(int(*)(void*, const char*, size_t))&my_service_write_url,
+		(int(*)(void*, const char*, size_t))&my_service_write_strl,
 		h,
 		msg->flat_offset) != 0) return -1;
 	
@@ -1322,71 +1218,6 @@ static int my_service_tree_message_link(
 	return 0;
 }
 
-static int my_service_reply_link(
-	My_Service_Handle	h,
-	message_id		id,
-	struct mail_envelope*	env)
-{
-	int			out;
-	My_Service_Email_Dat	dat;
-	
-	if (my_service_buffer_write(h, " <reply>") != 0) return -1;
-	
-	out = 1;
-	if      (env->reply_to && (out = my_service_write_url_email(h, env->reply_to)) != 1);
-	else if (env->from     && (out = my_service_write_url_email(h, env->from    )) != 1);
-	else if (env->sender   && (out = my_service_write_url_email(h, env->sender  )) != 1);
-	
-	if (out != 0 && out != 1) return -1;
-	
-	dat.h = h;
-	dat.first = (out?"":"?CC=");
-	
-	if (lu_summary_write_lists(&my_service_list_email_cb, &dat, id) != 0)
-		return -1;
-	
-	if ((out == 0 || dat.first == 0) &&
-	    (env->subject || env->message_id))
-	{	/* At least one address was printed, and we have more to do */
-	
-		if (out == 0 && dat.first == 0)
-		{	/* We printed ?CC= already */
-			if (my_service_buffer_write(h, "&amp;") != 0) return -1;
-		}
-		else
-		{	/* Either To:user or To:list,list,list -- not both */
-			if (my_service_buffer_write(h, "?") != 0) return -1;
-		}
-		
-		if (env->subject)
-		{
-			if (my_service_buffer_write(h, "Subject=") != 0) return -1;
-			if (strchr(env->subject, ':') == 0)
-			{	/* Add a re: */
-				if (my_service_write_url_str(h, "Re: ") != 0) return -1;
-			}
-			
-			if (my_service_write_url_str(h, env->subject) != 0) return -1;
-			
-			if (env->message_id)
-			{	/* Connect the data */
-				if (my_service_buffer_write(h, "&amp;") != 0) return -1;
-			}
-		}
-		
-		if (env->message_id)
-		{
-			if (my_service_buffer_write (h, "References=")        != 0) return -1;
-			if (my_service_write_url_str(h, env->message_id)      != 0) return -1;
-			if (my_service_buffer_write (h, "&amp;In-Reply-To=")  != 0) return -1;
-			if (my_service_write_url_str(h, env->message_id)      != 0) return -1;
-		}
-	}
-	
-	if (my_service_buffer_write(h, "</reply>\n") != 0) return -1;
-	return 0;
-}
-	
 static int my_service_mbox(
 	My_Service_Handle h, 
 	const char* request,
@@ -1952,8 +1783,6 @@ static int my_service_message(
 	if (my_service_buffer_write(h, "  </snippet>\n")       != 0) goto my_service_message_error3;
 	
 	if (my_service_buffer_write(h, " </threading>\n")      != 0) goto my_service_message_error3;
-	
-	if (my_service_reply_link(h, id, mmsg.env) != 0) goto my_service_message_error3;
 	
 	if (my_service_addresses(h, mmsg.env->from,     "from",     coding) != 0) goto my_service_message_error3;
 	if (my_service_addresses(h, mmsg.env->sender,   "sender",   coding) != 0) goto my_service_message_error3;
@@ -2553,7 +2382,7 @@ static int my_service_search(
  	for (demux = (char*)delim; *demux; demux++)
 		if (*demux == '/') *demux = 1;
 		
-	if (my_service_write_url_str(h, delim)          != 0) goto my_service_search_error1;
+	if (my_service_write_str(h, delim)              != 0) goto my_service_search_error1;
 	if (my_service_buffer_write(h, "</queryurl>\n") != 0) goto my_service_search_error1;
 	if (my_service_server(h, ttl)                   != 0) goto my_service_search_error1;
 	
