@@ -1,12 +1,12 @@
 <!doctype refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
 
 <!-- Process this file with docbook-to-man to generate an nroff manual
-     page: `docbook-to-man lurker-index-up.sgml > lurker-index-up.1'.
+     page: `docbook-to-man lurker-index.sgml > lurker-index.1'.
      You may view the manual page with:
      `docbook-to-man lurker-index.sgml | nroff -man | less'.
      A typical entry in a Makefile or Makefile.am is:
 
-lurker-index-up.1: lurker-index-up.sgml
+lurker-index.1: lurker-index.sgml
 	docbook-to-man $< > $@
   -->
 
@@ -56,9 +56,9 @@ lurker-index-up.1: lurker-index-up.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg>-c &lt;config-file&gt;</arg>
-      <arg>-v</arg>
-      <arg>-m | -b &lt;count&gt;</arg>
       <arg>-l &lt;list&gt;</arg>
+      <arg>-m | -b &lt;count&gt;</arg>
+      <arg>-v -d</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -86,6 +86,12 @@ lurker-index-up.1: lurker-index-up.sgml
         <term><option>-v</option></term>
         <listitem>
           <para>Verbose operation</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-d</option></term>
+        <listitem>
+          <para>Drop duplicates per list</para>
         </listitem>
       </varlistentry>
       <varlistentry>
