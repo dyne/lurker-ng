@@ -1,4 +1,4 @@
-/*  $Id: mbox.cpp,v 1.8 2004-08-20 02:42:45 terpstra Exp $
+/*  $Id: mbox.cpp,v 1.9 2004-08-24 16:16:35 terpstra Exp $
  *  
  *  mbox.cpp - Handle a mbox/ command
  *  
@@ -33,7 +33,9 @@
 
 int handle_mbox(const Config& cfg, ESort::Reader* db, const string& param)
 {
-	if (!MessageId::is_full(param.c_str()))
+	Request req = parse_request(param);
+	
+	if (!MessageId::is_full(req.options.c_str()))
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
@@ -54,7 +56,7 @@ int handle_mbox(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
-	MessageId id(param.c_str());
+	MessageId id(req.options.c_str());
 	string ok;
 	
 	Summary source(id);
@@ -78,7 +80,7 @@ int handle_mbox(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
-	Cache cache(cfg, "mbox", param, "rfc822");
+	Cache cache(cfg, "mbox", param, req.ext);
 	cache.o << message.AsString().c_str();
 	
 	return 0;
