@@ -104,8 +104,7 @@
     </td>
     <td align="left" width="50%">
      <a href="{prev/summary/id}.{$ext}#{list/id}">
-      <xsl:value-of select="substring(prev/summary/subject,0,40)"/>
-      <xsl:if test="string-length(prev/summary/subject) &gt; 40">&#x2026;</xsl:if>
+      <xsl:value-of select="prev/summary/subject"/>
      </a>
     </td>
    </xsl:when>
@@ -141,7 +140,12 @@
    <div class="header">
     <table class="external">
      <tr>
-      <td align="left"><h1><xsl:value-of select="summary/subject"/></h1></td>
+      <td align="left">
+       <h1>
+        <xsl:value-of select="substring(summary/subject,1,40)"/>
+        <xsl:if test="string-length(summary/subject) &gt; 40">&#x2026;</xsl:if>
+       </h1>
+      </td>
       <td align="right">
        <h1><xsl:apply-templates mode="splash-link" select="server"/></h1>
       </td>
