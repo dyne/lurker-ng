@@ -24,6 +24,7 @@ v0.9:
 	Converted Wheat's html page to xslt and merged it in
 	Rewrote the entire UI to integrate the new topics page
 	Tidied up logic for author selection
+	Reject any email address with control or non-ascii chars
 
 v0.8:
 	@ signs are legitimate inside urls

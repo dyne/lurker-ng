@@ -1,4 +1,5 @@
 Ideas:
+	Maybe warn the user if the group/list search terms conflict?
 	Timezones suck. Need to localize times to the browser?
 	In-message forward/backward for search results?
 	Pack the threading tree more densely somehow?
