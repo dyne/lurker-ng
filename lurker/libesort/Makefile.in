@@ -125,6 +125,11 @@ libesort_a_SOURCES = \
 	DbMan.h Failer.h File.h Master.h Memory.h Merger.h Source.h \
 	Transaction.h View.h esort.h io.h
 
+
+noinst_PROGRAMS = dump
+
+dump_SOURCES = dump.cpp
+dump_LDADD = libesort.a
 subdir = libesort
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
@@ -139,6 +144,13 @@ am_libesort_a_OBJECTS = Parameters.$(OBJEXT) Memory.$(OBJEXT) \
 	Merger.$(OBJEXT) Failer.$(OBJEXT) View.$(OBJEXT) \
 	Master.$(OBJEXT) DbMan.$(OBJEXT)
 libesort_a_OBJECTS = $(am_libesort_a_OBJECTS)
+noinst_PROGRAMS = dump$(EXEEXT)
+PROGRAMS = $(noinst_PROGRAMS)
+
+am_dump_OBJECTS = dump.$(OBJEXT)
+dump_OBJECTS = $(am_dump_OBJECTS)
+dump_DEPENDENCIES = libesort.a
+dump_LDFLAGS =
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
@@ -147,7 +159,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/File.Po ./$(DEPDIR)/Master.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Memory.Po ./$(DEPDIR)/Merger.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Parameters.Po ./$(DEPDIR)/Source.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/Transaction.Po ./$(DEPDIR)/View.Po
+@AMDEP_TRUE@	./$(DEPDIR)/Transaction.Po ./$(DEPDIR)/View.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/dump.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -157,9 +170,9 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = $(libesort_a_SOURCES)
+DIST_SOURCES = $(libesort_a_SOURCES) $(dump_SOURCES)
 DIST_COMMON = $(srcdir)/Makefile.in Makefile.am
-SOURCES = $(libesort_a_SOURCES)
+SOURCES = $(libesort_a_SOURCES) $(dump_SOURCES)
 
 all: all-am
 
@@ -180,6 +193,12 @@ libesort.a: $(libesort_a_OBJECTS) $(libesort_a_DEPENDENCIES)
 	$(libesort_a_AR) libesort.a $(libesort_a_OBJECTS) $(libesort_a_LIBADD)
 	$(RANLIB) libesort.a
 
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+dump$(EXEEXT): $(dump_OBJECTS) $(dump_DEPENDENCIES) 
+	@rm -f dump$(EXEEXT)
+	$(CXXLINK) $(dump_LDFLAGS) $(dump_OBJECTS) $(dump_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
 
@@ -196,6 +215,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Source.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Transaction.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/View.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dump.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" \
@@ -307,7 +327,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LIBRARIES)
+all-am: Makefile $(LIBRARIES) $(PROGRAMS)
 
 installdirs:
 install: install-am
@@ -336,7 +356,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-noinstLIBRARIES mostlyclean-am
+clean-am: clean-generic clean-noinstLIBRARIES clean-noinstPROGRAMS \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -382,14 +403,15 @@ ps-am:
 uninstall-am: uninstall-info-am
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-noinstLIBRARIES ctags distclean distclean-compile \
-	distclean-generic distclean-tags distdir dvi dvi-am info \
-	info-am install install-am install-data install-data-am \
-	install-exec install-exec-am install-info install-info-am \
-	install-man install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
-	ps ps-am tags uninstall uninstall-am uninstall-info-am
+	clean-noinstLIBRARIES clean-noinstPROGRAMS ctags distclean \
+	distclean-compile distclean-generic distclean-tags distdir dvi \
+	dvi-am info info-am install install-am install-data \
+	install-data-am install-exec install-exec-am install-info \
+	install-info-am install-man install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am uninstall-info-am
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

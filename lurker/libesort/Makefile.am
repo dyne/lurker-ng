@@ -4,3 +4,8 @@ libesort_a_SOURCES = \
 	Merger.cpp Failer.cpp View.cpp Master.cpp DbMan.cpp \
 	DbMan.h Failer.h File.h Master.h Memory.h Merger.h Source.h \
 	Transaction.h View.h esort.h io.h
+
+noinst_PROGRAMS = dump
+
+dump_SOURCES = dump.cpp
+dump_LDADD = libesort.a

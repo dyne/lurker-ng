@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.27 2003-07-01 12:41:35 terpstra Exp $
+/*  $Id: Index.cpp,v 1.28 2004-01-08 22:14:46 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -289,9 +289,12 @@ int Index::index_id(time_t server)
 	
 	id = MessageId(stamp, hash);
 	
-	if (messageId.length() && my_keyword_digest_string(
-		messageId.c_str(), messageId.length(),
-		LU_KEYWORD_MESSAGE_ID, &feed_writer, this, 0) != 0)
+	if (messageId.length() && writer->insert(
+		LU_KEYWORD +
+		string(LU_KEYWORD_MESSAGE_ID) +
+		messageId +
+		'\0' + 
+		id.raw()) != 0)
 	{
 		cerr << "Failed to insert message id keyword!" << endl;
 		return -1;
@@ -499,9 +502,10 @@ int Index::index_control(time_t import)
 		vector<string> ids = extract_message_ids(
 			message.Headers().InReplyTo().AsString().c_str());
 		for (vector<string>::iterator i = ids.begin(); i != ids.end(); ++i)
-			if (my_keyword_digest_string(
-				i->c_str(), i->length(),
-				LU_KEYWORD_REPLY_TO, &feed_writer, this, 0) != 0)
+			if (writer->insert(
+				LU_KEYWORD
+				LU_KEYWORD_REPLY_TO +
+				*i + '\0' + id.raw()) != 0)
 				ok = false;
 	}
 	
@@ -511,9 +515,10 @@ int Index::index_control(time_t import)
 		vector<string> ids = extract_message_ids(
 			message.Headers().References().AsString().c_str());
 		for (vector<string>::iterator i = ids.begin(); i != ids.end(); ++i)
-			if (my_keyword_digest_string(
-				i->c_str(), i->length(),
-				LU_KEYWORD_REPLY_TO, &feed_writer, this, 0) != 0)
+			if (writer->insert(
+				LU_KEYWORD
+				LU_KEYWORD_REPLY_TO +
+				*i + '\0' + id.raw()) != 0)
 				ok = false;
 	}
 #endif

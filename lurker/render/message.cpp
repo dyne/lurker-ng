@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.33 2004-01-06 20:02:05 terpstra Exp $
+/*  $Id: message.cpp,v 1.34 2004-01-08 22:14:46 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -664,13 +664,6 @@ string MBox::load(ESort::Reader* db, const MessageId& rel, const Config& conf)
 	return "";
 }
 
-int rip_key(const char* keyword, void* arg)
-{
-	string* s = (string*)arg;
-	*s = keyword;
-	return 0;
-}
-
 int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 {
 	MessageId id(param.c_str());
@@ -753,14 +746,8 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		
 		for (mid = mids.begin(); mid != mids.end(); ++mid)
 		{
-			string mids;
-			my_keyword_digest_string(
-				mid->c_str(), mid->length(),
-				LU_KEYWORD_REPLY_TO, &rip_key, &mids, 0);
-			if (!mids.length()) continue;
-			
-			// cout << "MID: " << mids << "\n";
-			KeyReader k(db, Forward, mids);
+			// cout << "MID: " << *mid << "\n";
+			KeyReader k(db, Forward, LU_KEYWORD_REPLY_TO + *mid);
 			if ((ok = k.pull(1000, sums)) != "")
 				break;
 		}
@@ -800,13 +787,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		
 		for (mid = mids.begin(); mid != mids.end(); ++mid)
 		{
-			string mids;
-			my_keyword_digest_string(
-				mid->c_str(), mid->length(),
-				LU_KEYWORD_MESSAGE_ID, &rip_key, &mids, 0);
-			if (!mids.length()) continue;
-			
-			KeyReader k(db, Forward, mids);
+			KeyReader k(db, Forward, LU_KEYWORD_MESSAGE_ID + *mid);
 			if ((ok = k.pull(1000, sums)) != "")
 				break;
 		}

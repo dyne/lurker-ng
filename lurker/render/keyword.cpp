@@ -1,4 +1,4 @@
-/*  $Id: keyword.cpp,v 1.12 2003-07-03 15:18:17 terpstra Exp $
+/*  $Id: keyword.cpp,v 1.13 2004-01-08 22:14:46 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -56,7 +56,7 @@ string uri_encode(const string& str)
 	
 	string::size_type b = 0, e;
 	while ((e = str.find_first_not_of(
-		"abcdefghijklmnopqrstuvwxyz0123456789:", 
+		"abcdefghijklmnopqrstuvwxyz0123456789:.", 
 		b)) != string::npos)
 	{
 		out.append(str, b, e - b);
