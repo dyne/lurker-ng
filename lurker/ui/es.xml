@@ -36,7 +36,7 @@
  jump-to-date="Ir a los mensajes de esta lista de correo cercanos a la siguiente fecha:"
  search-list="Buscar mensajes dentro de esta lista de correo que contengan las siguientes palabras:"
  jump-button="¡Ir!"
- use-special-word-list="Usar la palabra clave "
+ use-special-word-list="Use la palabra clave "
  to-search-list=" para restringir su búsqueda a esta lista de correo."
  newest-messages="Ver los mensajes más nuevos"
  jump-group="Ir al grupo"
@@ -73,7 +73,7 @@
 
  unknown-address="Desconocido"
  deleted-name="Eliminado"
- posted-at=" arroba "
+ posted-at=", en fecha "
  admin-by="administrado por "
  version="versión "
 />
