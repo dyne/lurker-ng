@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.13 2002-02-11 01:40:50 terpstra Exp $
+/*  $Id: service.c,v 1.14 2002-02-11 02:09:50 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -739,7 +739,11 @@ static int my_service_search(st_netfd_t fd, const char* request)
 	if (my_service_xml_head(fd)                            != 0) goto my_service_search_error1;
 	if (my_service_buffer_write(fd, "<search>\n <offset>") != 0) goto my_service_search_error1;
 	if (my_service_write_int(fd, offset)                   != 0) goto my_service_search_error1;
-	if (my_service_buffer_write(fd, "</offset>\n")         != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(fd, "</offset>\n <query>") != 0) goto my_service_search_error1;
+	if (my_service_write_str(fd, delim+1)                  != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(fd, "</query>\n <hits>")   != 0) goto my_service_search_error1;
+	if (my_service_write_int(fd, 0)                        != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(fd, "</hits>\n")           != 0) goto my_service_search_error1;
 	
 	if (offset != 0)
 	{
