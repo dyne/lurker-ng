@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.36 2002-07-12 19:02:00 terpstra Exp $
+/*  $Id: main.c,v 1.37 2002-07-19 12:24:17 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -189,6 +189,18 @@ static void lu_cleanup_quit(int sig)
 
 #endif
 
+void help(const char* name)
+{
+	fprintf(stderr, _("Usage: %s [OPTIONS]...\n\n"), name);
+	
+	fputs(_("\t-v\tPrint version information\n"),   stderr);
+	fputs(_("\t-n\tDon't run as a daemon\n"),       stderr);
+	fputs(_("\t-i\tDon't import new messages\n"),	stderr);
+	fputs(_("\t-s\tDon't service requests\n"),	stderr);
+	fputs(_("\t-c file\tUse settings from file\n"), stderr);
+	exit(0);
+}
+
 int main(int argc, char** argv)
 {
 	FILE*		pid;
@@ -207,7 +219,7 @@ int main(int argc, char** argv)
 	textdomain(PACKAGE);
 	bind_textdomain_codeset(PACKAGE, "utf-8");
 	
-	while ((c = getopt(argc, (char *const *)argv, "vnc:")) != -1) {
+	while ((c = getopt(argc, (char *const *)argv, "vnsic:")) != -1) {
 		switch ((char)c) {
 		case 'c':
 			config = optarg;
@@ -215,18 +227,29 @@ int main(int argc, char** argv)
 		case 'n':
 			detach = 0;
 			break;
+		case 's':
+			lu_service_disable = 1;
+			break;
+		case 'i':
+			lu_mbox_disable_watch = 1;
+			break;
 		case 'v':
 			fprintf(stderr, STORAGE " v" VERSION "\n");
 			return (0);
 		default:
-			fprintf(stderr, _("Usage: %s [OPTIONS]...\n\n"), argv[0]);
-			
-			fputs(_("\t-v\tPrint version information\n"),   stderr);
-			fputs(_("\t-c file\tUse settings from file\n"), stderr);
-			fputs(_("\t-n\tDon't run as a daemon\n"),       stderr);
-			
-			return 1;
+			help(argv[0]);
 		}
+	}
+	
+	if (optind != argc)
+	{
+		help(argv[0]);
+	}
+	
+	if (lu_mbox_disable_watch && lu_service_disable)
+	{
+		fputs(_("What am I supposed to do if not service requests OR import messages?\n"), stderr);
+		return 1;
 	}
 	
 	srandom(time(0));

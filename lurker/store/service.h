@@ -1,4 +1,4 @@
-/*  $Id: service.h,v 1.3 2002-02-10 21:50:38 terpstra Exp $
+/*  $Id: service.h,v 1.4 2002-07-19 12:24:18 terpstra Exp $
  *  
  *  service.h - Knows how to deal with request from the cgi
  *  
@@ -31,6 +31,10 @@ extern int lu_service_open (void);
 extern int lu_service_sync (void);
 extern int lu_service_close(void);
 extern int lu_service_quit (void);
+
+/*------------------------------------------------- Public component variables */
+
+extern int lu_service_disable;
 
 /*------------------------------------------------- Request handler */
 

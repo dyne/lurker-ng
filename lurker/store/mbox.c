@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.38 2002-07-17 10:51:41 terpstra Exp $
+/*  $Id: mbox.c,v 1.39 2002-07-19 12:24:17 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -72,6 +72,10 @@
 #elif defined(HAVE_LOCKF)
 #define USE_LOCK_LOCKF
 #endif
+
+/*------------------------------------------------ Public global vars */
+
+int lu_mbox_disable_watch = 0;
 
 /*------------------------------------------------ Private global vars */
 
@@ -868,7 +872,11 @@ int lu_mbox_init(void)
 {
 	my_mbox_stop_watch = 0;
 	my_mbox_skip_watch = 1;
-	st_thread_create(&my_mbox_watch, 0, 0, 0);
+	
+	if (!lu_mbox_disable_watch)
+	{	/* start up import */
+		st_thread_create(&my_mbox_watch, 0, 0, 0);
+	}
 	
 #ifdef PROFILE
 	st_thread_create(&my_mbox_profile, 0, 0, 0);

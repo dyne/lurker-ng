@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.82 2002-07-18 11:03:34 terpstra Exp $
+/*  $Id: service.c,v 1.83 2002-07-19 12:24:18 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -70,6 +70,8 @@ extern void art_scan(const char** s, const char** e);
 extern void url_scan(const char** s, const char** e);
 extern void mailto_scan(const char** s, const char** e);
 extern void quote_scan(const char** s, const char** e);
+
+int lu_service_disable = 0;
 
 /*------------------------------------------------- Private types */
 
@@ -2720,8 +2722,14 @@ extern int lu_service_connection(st_netfd_t fd)
 #ifdef DEBUG
 	printf("Request: %s: %s . %s\n", mod, qs, ext);
 #endif
-	
-	if      (!strcmp(mod, "message")) my_service_message(&h, qs, ext);
+	if (lu_service_disable)
+	{
+		my_service_error(&h,
+			_("Service disabled"),
+			_("The lurker server has disabled access at this time"),
+			qs);
+	}
+	else if (!strcmp(mod, "message")) my_service_message(&h, qs, ext);
 	else if (!strcmp(mod, "mbox"))    my_service_mbox   (&h, qs, ext);
 	else if (!strcmp(mod, "attach"))  my_service_attach (&h, qs, ext);
 	else if (!strcmp(mod, "mindex"))  my_service_mindex (&h, qs, ext);
