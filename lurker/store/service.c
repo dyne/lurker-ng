@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.86 2002-07-22 12:17:31 terpstra Exp $
+/*  $Id: service.c,v 1.87 2002-07-26 13:33:05 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -2024,7 +2024,7 @@ static int my_service_jump(
 		goto my_service_jump_error0;
 	}
 	
-	out = kap_append_find(
+	out = kap_find(
 		lu_config_keyword,
 		&kr,
 		&lu_search_find_le,

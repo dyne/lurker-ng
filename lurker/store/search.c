@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.14 2002-07-13 12:20:55 terpstra Exp $
+/*  $Id: search.c,v 1.15 2002-07-26 13:33:05 terpstra Exp $
  *  
  *  search.c - Uses libkap to execute a given search
  *  
@@ -219,7 +219,7 @@ int lu_search_start(
 				return -1;
 			}
 			
-			out = kap_append_find(
+			out = kap_find(
 				lu_config_keyword,
 				&my_search_handle[my_search_handles],
 				&lu_search_find_le,
@@ -318,7 +318,7 @@ int lu_search_result(
 		}
 		
 		/* Ok, we know the smallest, largest, and which the largest is */
-		out = kap_append_find(
+		out = kap_find(
 			lu_config_keyword,
 			&my_search_handle[which],
 			&lu_search_find_le,
@@ -332,6 +332,7 @@ int lu_search_result(
 		}
 		else if (out)
 		{
+			*result = lu_common_minvalid;
 			return -1;
 		}
 	}
