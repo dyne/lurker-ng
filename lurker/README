@@ -1,0 +1,30 @@
+lurker is a real-time mail archiver which has several aims
+
+Non-functional requirements:
+	Ability to handle up to 4 billion messages
+	Fast search times: < 0.001s even at capacity
+	Fast rendering: < 0.001s even at capacity
+	Use the web server without cgi/mods for most pages
+
+Target feature set:
+	File attachment support
+	Multilingual support
+	Full boolean search with many fields
+	Threading without breaking time of arrival order
+
+Convenience goals:
+	No need to use any script to input email; watch the mboxs
+	No apache mods or special configuration of any sort
+	Able to install in any location / permissions
+
+Libraries used:
+	We wish to keep this to a minimum, right now we use:
+		libdb3
+		libst
+		libpopt
+		libc
+
+Portability:
+	At present, only linux is supported. However, the code should be
+	written so that it may later be easily ported to other architectures
+	with a minimal posix feature set.

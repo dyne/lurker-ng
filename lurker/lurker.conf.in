@@ -1,0 +1,13 @@
+dbdir   = @DBDIR_expand@
+wwwdir  = @WWWDIR_expand@
+pidfile = @LOCALSTATEDIR_expand@/run/@PACKAGE@.pid
+
+# Now follow the mboxs which will be monitored for incoming messages
+#
+# list 0 = Debian-Devel
+# 	description = Debian Developer Discussion Forum
+# 	address     = debian-devel@lists.debian.org
+#	
+# 	mbox 0 = /var/mail/history/archive.00020101
+# 	mbox 1 = /var/mail/history/archive.00020102
+# 	mbox 2 = /var/spool/mail/debian-devel

@@ -1,0 +1,25 @@
+Current target limits:
+	4 billion messages total -> still fast (<= 0.001s)
+
+The storage component's responsibilities include:
+	watching for new messages to index
+	maintaining the keyword database
+	maintaining summary information for messages
+	maintaining summary information for threads
+	maintaining thread joining database
+	purging rendered files which have been obsoleted
+	accepting queries from the render component
+
+It must support these queries:
+	starting at offset <x> give me the <y> summary blocks for search <z>
+		-> this is used for (obviously) search results
+		-> it is also used for mailing list summaries (mindex)
+	
+	starting at offset <x> give me the <y> tids in mbox <z>
+		-> this is used for tindex
+
+	give me all the information for mid <x>
+
+	give me all the summary blocks for messages in thread <x>
+		-> can say 'error, not head, try this: '
+			= we make a symlink
