@@ -1,24 +1,26 @@
 ---- Agenda for 1.2:
 
-Maildir support for import
-Set timestamp to config file + all used messages
-off-site mailing list links?
-delete a message from a command-line search!
+Make deleted message vanish from tree
+Reimport restores deleted messages... (fix)
 Access two databases at once
 
 
 -------------------------------------------------------------
 
 Ideas:
+	In-message forward/backward for search results
 	Bring back message count estimates
 	Maybe exclude tab indented paragraphs from pre-formatting
 	Printable css
-	In-message forward/backward for search results
 	Pack the threading tree more densely somehow
 	Phrase searching
 	Hover over tree pops up some of the subtree
 	Multi-level btree style files (faster search, slower import)
 	Re-add optional lurkerd to watch mboxs
+
+Set timestamp to config file + all used messages: hard
+	- would need to also fix language, timestamp, etc ...
+	- caching issue causes real problems since fed through xsltproc
 
 BUGS:
 	There is a slight bug in advance() pre-commit post-insert.

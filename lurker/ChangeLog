@@ -7,7 +7,7 @@ v1.2:
 	Cache depends not only on the config file, but also included files
 	Slightly modified the deutsch.xsl translation
 	Made all parameters in manual pages use unicode hyphens
-	Added a new config option "raw_email" to disable mbox/ and attach/
+	Added a new config option 'raw_email =' to disable mbox/ and attach/
 	Added an import option to select a file instead of stdin, '-i'
 	Improved the documentation for lurker-index -m and -b
 	Internal support for not, or, and, everything, and nothing searches
@@ -24,6 +24,12 @@ v1.2:
 	Searching by language is now possible; defaults to selected locale
 	The next year is no longer hard-coded
 	Added all ISO 639 language codes and included translated names
+	New 'offline =' list option added
+	Maildir support added
+	FAQ entries for new languages and maildir dates added
+	Removed all use of KeyReader in favour of Search (handles deletion)
+	Added a lurker-search command which can delete messages
+	Added a '-p' option to lurker-prune which kills off all cache
 
 v1.1:
 	Create mbox and attach directory upon install
