@@ -1,4 +1,4 @@
-/*  $Id: Merger.cpp,v 1.12 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: Merger.cpp,v 1.13 2004-10-20 23:53:59 terpstra Exp $
  *  
  *  Merger.cpp - Combine segments to obtain a database view
  *  
@@ -46,7 +46,7 @@ Merger::~Merger()
 		delete i->source;
 }
 
-int Merger::advance()
+int Merger::real_advance()
 {
 	// Did we last consume an empty queue?
 	if (point == eov)
@@ -210,20 +210,28 @@ int Merger::advance()
 				}
 			}
 			
-			// Eliminate duplicates.
-			if (unique && out == (int)key.length())
-			{
-				if (key.length() == 0 && didempty == false)
-				{	// output the empty string once
-					didempty = true;
-					return out;
-				}
-				else
-				{
-					return advance();
-				}
+			return out;
+		}
+	}
+}
+
+int Merger::advance()
+{
+	while (1)
+	{
+		int out = real_advance();
+		
+		// Eliminate duplicates.
+		if (unique && out == (int)key.length())
+		{
+			if (key.length() == 0 && didempty == false)
+			{	// output the empty string once
+				didempty = true;
+				return out;
 			}
-			
+		}
+		else
+		{
 			return out;
 		}
 	}

@@ -1,4 +1,4 @@
-/*  $Id: Merger.h,v 1.6 2003-04-26 12:10:14 terpstra Exp $
+/*  $Id: Merger.h,v 1.7 2004-10-20 23:53:59 terpstra Exp $
  *  
  *  Merger.h - Combine segments to obtain a database view
  *  
@@ -60,6 +60,8 @@ class Merger : public Walker
  	Element*		bov;
  	Element*		eov;
  	Element*		restart;
+ 	
+ 	int real_advance();
  	
  public:
  	Merger(bool unique_, bool forward_)
