@@ -2,6 +2,7 @@ Ideas:
 	Reorder threads by reply-to?
 	More robust detection of 'From ' lines? Too many people screw it up.
 		(Content-Length could help or maybe @ needed in email)
+	Turn off caching option?
 	Gpg keyring specification for signature checking + faces?
 	Printable css?
 	Hover over tree pops up some of the subtree?
@@ -13,15 +14,13 @@ Ideas:
 	Maybe make an effort to mangle email addresses?
 	Re-add optional lurkerd to watch mboxs?
 
-Unfulfilled requirements:
+Unfulfilled requirements (deferred for after 1.0):
 	Multi-level btree style files
 	Message count estimates
 	Boolean "or" in search
 	Phrase searching
 
 BUGS:
-	Some searches miss messages on intersection?
-		(http://sea.kevb.net:3000/lurker/search/20040101.000000.00000000@lurker,ml%3Aplug.html)
 	There is a slight bug in advance() pre-commit post-insert.
 		(you don't always see fresh keys if partially past it)
 		(... but this doesn't affect lurker, so not priority)
