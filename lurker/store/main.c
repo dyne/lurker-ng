@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.30 2002-06-16 08:46:41 terpstra Exp $
+/*  $Id: main.c,v 1.31 2002-06-21 18:11:23 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -154,6 +154,10 @@ static void* my_main_handle_client(void* arg)
 static void* lu_sched_sync(void* die)
 {	/* We know that at this point we aren't in the middle of a message
 	 * import thanks to the joys of controlled context switching.
+	 * 
+	 * Sadly, this is no longer true. We might also be in a yield
+	 * position my_calc_storage. However, it is harmless to exit at
+	 * this point.
 	 */
 	
 	my_main_sync();

@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.5 2002-06-21 13:15:37 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.6 2002-06-21 18:11:23 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that delays appends to the flatfile
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 /* #define DEBUG 1 */
 /* #define PROFILE 1 */
@@ -38,6 +39,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <st.h>
 
 /* Okay! It's time I got off my ass and wrote the write buffering since it is
  * now officially the bottleneck. First of all, a mathematical derivation that
@@ -154,37 +156,41 @@
 
 /*------------------------------------------------- Private data structures */
 
-typedef lu_word my_wbuffer_kptr;
 typedef lu_quad my_wbuffer_aptr;
+typedef lu_word my_wbuffer_kptr;
+
+typedef my_wbuffer_kptr	my_wbuffer_sptr;
+
+typedef struct My_WBuffer_Slot_T
+{
+	my_wbuffer_kptr	keyword;
+	
+	my_wbuffer_aptr	offset;
+	my_wbuffer_aptr	size;
+	my_wbuffer_aptr	fill;
+} My_WBuffer_Slot;
 
 typedef struct My_WBuffer_Keyword_T
 {
 	char key[LU_KEYWORD_LEN+1];
 	
-	my_wbuffer_aptr	offset;
-	my_wbuffer_aptr	size;
-	my_wbuffer_aptr	fill;
-	
-	message_id	hits;
-	
-	my_wbuffer_kptr	more_common;
-	my_wbuffer_kptr	less_common;
-	
 	lu_byte		skew;
 	my_wbuffer_kptr	left;
 	my_wbuffer_kptr	right;
+	
+	message_id	hits;
+	my_wbuffer_sptr	slot;
 } My_WBuffer_Keyword;
 
 /*------------------------------------------------- Private variables */
 
 static message_id*		my_wbuffer_acache;
 static My_WBuffer_Keyword*	my_wbuffer_kcache;
+static My_WBuffer_Slot*		my_wbuffer_scache;
 
-static my_wbuffer_kptr		my_wbuffer_least_common;
-static my_wbuffer_kptr		my_wbuffer_most_common;
-static my_wbuffer_kptr		my_wbuffer_root;
+static my_wbuffer_kptr		my_wbuffer_kroot;
+static message_id		my_wbuffer_kcache_fill; /* also slot fill */
 
-static message_id		my_wbuffer_kcache_fill;
 static message_id		my_wbuffer_count_down;
 static message_id		my_wbuffer_next_sync;
 
@@ -212,9 +218,10 @@ LU_BTREE_DEFINE(
  */
 static int my_flush_buffer(my_wbuffer_kptr k)
 {
+	my_wbuffer_sptr s = my_wbuffer_kcache[k].slot;
 	message_id out;
 	
-	if (my_wbuffer_kcache[k].fill)
+	if (my_wbuffer_scache[s].fill)
 	{
 #ifdef PROFILE
 #ifdef DEBUG
@@ -224,15 +231,14 @@ static int my_flush_buffer(my_wbuffer_kptr k)
 #endif
 		out = lu_flatfile_write_keyword_block(
 			my_wbuffer_kcache[k].key,
-			&my_wbuffer_acache[my_wbuffer_kcache[k].offset],
-			my_wbuffer_kcache[k].fill);
+			&my_wbuffer_acache[my_wbuffer_scache[s].offset],
+			my_wbuffer_scache[s].fill);
 		
 		if (out == lu_common_minvalid)
 			return -1;
 		
 		assert (out == my_wbuffer_kcache[k].hits);
-		
-		my_wbuffer_kcache[k].fill = 0;
+		my_wbuffer_scache[s].fill = 0;
 	}
 	
 	return 0;
@@ -240,50 +246,13 @@ static int my_flush_buffer(my_wbuffer_kptr k)
 
 /* Swap two records buffer locations.
  */
-static int my_swap_record_buffer(my_wbuffer_kptr a, my_wbuffer_kptr b)
+static int my_swap_slot(my_wbuffer_kptr a, my_wbuffer_kptr b)
 {
-	my_wbuffer_aptr i, e;
+	my_wbuffer_aptr i, e, atmp;
+	my_wbuffer_sptr as, bs;
 	message_id* ap;
 	message_id* bp;
 	message_id  tmp;
-	
-	if (my_wbuffer_kcache[a].fill > my_wbuffer_kcache[b].size)
-		if (my_flush_buffer(a) != 0) return -1;
-	if (my_wbuffer_kcache[b].fill > my_wbuffer_kcache[a].size)
-		if (my_flush_buffer(b) != 0) return -1;
-	
-	if (my_wbuffer_kcache[a].fill > my_wbuffer_kcache[b].fill)
-		e = my_wbuffer_kcache[a].fill;
-	else	e = my_wbuffer_kcache[b].fill;
-	
-	ap = &my_wbuffer_acache[my_wbuffer_kcache[a].offset];
-	bp = &my_wbuffer_acache[my_wbuffer_kcache[b].offset];
-	
-	for (i = 0; i != e; i++)
-	{	/* Swap the buffer contents */
-		tmp = bp[i];
-		bp[i] = ap[i];
-		ap[i] = tmp;
-	}
-	
-	/* Swap the offsets */
-	tmp = my_wbuffer_kcache[a].offset;
-	my_wbuffer_kcache[a].offset = my_wbuffer_kcache[b].offset;
-	my_wbuffer_kcache[b].offset = tmp;
-	
-	/* Swap the sizes */
-	tmp = my_wbuffer_kcache[a].size;
-	my_wbuffer_kcache[a].size = my_wbuffer_kcache[b].size;
-	my_wbuffer_kcache[b].size = tmp;
-	
-	return 0;
-}
-
-/* Swap the position of two records
- */
-static int my_swap_record_order(my_wbuffer_kptr a, my_wbuffer_kptr b)
-{
-	my_wbuffer_kptr amc, alc, bmc, blc;
 	
 	assert (a != b);
 	
@@ -293,80 +262,93 @@ static int my_swap_record_order(my_wbuffer_kptr a, my_wbuffer_kptr b)
 #endif
 		pswaps++;
 #endif
-
-	if (my_swap_record_buffer(a, b) != 0)
-		return -1;
 	
-	amc = my_wbuffer_kcache[a].more_common;
-	alc = my_wbuffer_kcache[a].less_common;
-	bmc = my_wbuffer_kcache[b].more_common;
-	blc = my_wbuffer_kcache[b].less_common;
+	as = my_wbuffer_kcache[a].slot;
+	bs = my_wbuffer_kcache[b].slot;
 	
-	if (a == bmc)
-	{	/* a was more common than b, now not */
-		assert (b == alc);
-		my_wbuffer_kcache[a].more_common = b;
-		my_wbuffer_kcache[b].less_common = a;
-	}
-	else
+	/* Make sure they will fit in their new homes */
+	if (my_wbuffer_scache[as].fill > my_wbuffer_scache[bs].size)
+		if (my_flush_buffer(a) != 0) return -1;
+	if (my_wbuffer_scache[bs].fill > my_wbuffer_scache[as].size)
+		if (my_flush_buffer(b) != 0) return -1;
+	
+	if (my_wbuffer_scache[as].fill > my_wbuffer_scache[bs].fill)
+		e = my_wbuffer_scache[as].fill;
+	else	e = my_wbuffer_scache[bs].fill;
+	
+	/* Swap the buffer contents */
+	ap = &my_wbuffer_acache[my_wbuffer_scache[as].offset];
+	bp = &my_wbuffer_acache[my_wbuffer_scache[bs].offset];
+	
+	for (i = 0; i != e; i++)
 	{
-		my_wbuffer_kcache[a].more_common = bmc;
-		my_wbuffer_kcache[b].less_common = alc;
-		if (alc != MY_WBUFFER_KMAX)
-			my_wbuffer_kcache[alc].more_common = b;
-		if (bmc != MY_WBUFFER_KMAX)
-			my_wbuffer_kcache[bmc].less_common = a;
+		tmp = bp[i];
+		bp[i] = ap[i];
+		ap[i] = tmp;
 	}
 	
-	if (b == amc)
-	{	/* Now a is more common than b */
-		assert (a == blc);
-		my_wbuffer_kcache[a].less_common = b;
-		my_wbuffer_kcache[b].more_common = a;
-	}
-	else
-	{
-		my_wbuffer_kcache[a].less_common = blc;
-		my_wbuffer_kcache[b].more_common = amc;
-		
-		if (amc != MY_WBUFFER_KMAX)
-			my_wbuffer_kcache[amc].less_common = b;
-		if (blc != MY_WBUFFER_KMAX)
-			my_wbuffer_kcache[blc].more_common = a;
-	}
+	/* Swap the slots  */
+	my_wbuffer_kcache[a].slot = bs;
+	my_wbuffer_kcache[b].slot = as;
+	my_wbuffer_scache[as].keyword = b;
+	my_wbuffer_scache[bs].keyword = a;
 	
-	if      (my_wbuffer_least_common == a) my_wbuffer_least_common = b;
-	else if (my_wbuffer_least_common == b) my_wbuffer_least_common = a;
-	
-	if      (my_wbuffer_most_common == a) my_wbuffer_most_common = b;
-	else if (my_wbuffer_most_common == b) my_wbuffer_most_common = a;
+	/* Swap the fill */
+	atmp = my_wbuffer_scache[as].fill;
+	my_wbuffer_scache[as].fill = my_wbuffer_scache[bs].fill;
+	my_wbuffer_scache[bs].fill = atmp;
 	
 	return 0;
 }
 
 /* Make sure that this key lives in the correct location */
-static int my_relocate(my_wbuffer_kptr k)
+static int my_relocate(my_wbuffer_kptr key)
 {
-	my_wbuffer_kptr mc;
-	my_wbuffer_kptr scan;
+	my_wbuffer_sptr slot;
+	my_wbuffer_sptr l, r, m;
+	my_wbuffer_kptr kscan;
+	message_id	hits;
 	
-	while ((mc = my_wbuffer_kcache[k].more_common) != MY_WBUFFER_KMAX &&
-	       my_wbuffer_kcache[k].hits > my_wbuffer_kcache[mc].hits)
-	{
-		for (scan =  mc;
-		     scan != MY_WBUFFER_KMAX;
-		     scan =  my_wbuffer_kcache[scan].more_common)
+	/* We must not just swap with our eventual position because
+	 * this would put the fellow we replace in a (possibly) undeserved
+	 * small location. So, we will swap out the largest of each group
+	 * of equal frequency records until we arrive at our resting place.
+	 * 
+	 * This is actually ok, because we usually only increased by one unless
+	 * this is a really common keyword we just haven't seen yet. But, these
+	 * are rare---and we probably see them first.
+	 */
+	while ((slot = my_wbuffer_kcache[key].slot) != 0 &&
+	       (hits = my_wbuffer_kcache[my_wbuffer_scache[slot-1].keyword].hits)
+	        < my_wbuffer_kcache[key].hits)
+	{	/* We deserve a bigger slot */
+		
+		/* Find the most common record which has hits equal to hits.
+		 * We maintain an interval [ l, r ) of candidates
+		 */
+		
+		l = 0;
+		r = slot;
+		
+		while (r - l > 1)
 		{
-			if (my_wbuffer_kcache[scan].hits >
-			    my_wbuffer_kcache[mc].hits)
-				break;
+			m = (l+r)/2;
+			assert (m > 0);
+			
+			kscan = my_wbuffer_scache[m-1].keyword;
+			if (my_wbuffer_kcache[kscan].hits == hits)
+			{	/* m-1 is better */
+				r = m;
+			}
+			else
+			{	/* m-1 is not a candidate */
+				l = m;
+			}
 		}
 		
-		if (scan == MY_WBUFFER_KMAX) scan = my_wbuffer_most_common;
-		else                         scan = my_wbuffer_kcache[scan].less_common;
-		
-		if (my_swap_record_order(k, scan) != 0)
-			return -1;
+		/* Ok, l now points to the largest record with correct hits */
+		kscan = my_wbuffer_scache[l].keyword;
+		my_swap_slot(kscan, key);
 	}
 	
 	return 0;
@@ -377,68 +359,64 @@ static int my_relocate(my_wbuffer_kptr k)
  * It should be invoked only rarely since the profile of keywords does not
  * fluctuate that much even if the individual keywords do.
  */
-static void my_calc_storage()
+static void my_calc_storage(int yield)
 {
 	double accum, val;
 	
 	my_wbuffer_aptr off;
 	my_wbuffer_aptr size;
 	
-	my_wbuffer_kptr	scan;
-	my_wbuffer_kptr	cutoff;
-	
+	my_wbuffer_kptr	kw;
+	my_wbuffer_sptr	scan;
+	my_wbuffer_sptr	cutoff;
 	
 	/* Pick an okay place to stop cache.
 	 */
 	accum = 0;
-	for (scan =  my_wbuffer_most_common;
-	     scan != MY_WBUFFER_KMAX;
-	     scan =  my_wbuffer_kcache[scan].less_common)
+	for (scan = 0; scan < my_wbuffer_kcache_fill; scan++)
 	{
-		val = sqrt(my_wbuffer_kcache[scan].hits);
+		kw = my_wbuffer_scache[scan].keyword;
+		val = sqrt(my_wbuffer_kcache[kw].hits);
 		if (MY_RECORD_CACHE * val / (val + accum) <= 2)
 			break;
 		
 		if (my_flush_buffer(scan) != 0) return;
+		if (yield) st_sleep(0);
 	}
 	cutoff = scan;
+	assert (cutoff > 0);
 	
 	/* Flush everything that doesn't make the cut */
-	for ( ;
-	     scan != MY_WBUFFER_KMAX; 
-	     scan =  my_wbuffer_kcache[scan].less_common)
+	for (scan = cutoff; scan < my_wbuffer_kcache_fill; scan++)
 	{	/* Don't waste time flushing if we hit a zero */
-		if (my_wbuffer_kcache[scan].size == 0) break;
-		if (my_flush_buffer(scan) != 0) return;
+		if (my_wbuffer_scache[scan].size == 0) break;
 		
-		my_wbuffer_kcache[scan].size = 0;
+		kw = my_wbuffer_scache[scan].keyword;
+		if (my_flush_buffer(kw) != 0) return;
+		
+		my_wbuffer_scache[scan].size = 0;
+		if (yield) st_sleep(0);
 	}
 	
 	/* Now, compute a sum properly from smallest to largest */
 	accum = 0;
-	
-	if (cutoff == MY_WBUFFER_KMAX)
-		scan = my_wbuffer_least_common;
-	else
-		scan = my_wbuffer_kcache[cutoff].more_common;
-	
-	for ( ;
-	     scan != MY_WBUFFER_KMAX;
-	     scan =  my_wbuffer_kcache[scan].more_common)
+	for (scan = cutoff-1; scan != 0; scan--)
 	{
-		accum += sqrt(my_wbuffer_kcache[scan].hits);
+		kw = my_wbuffer_scache[scan].keyword;
+		accum += sqrt(my_wbuffer_kcache[kw].hits);
 	}
+	kw = my_wbuffer_scache[0].keyword;
+	accum += sqrt(my_wbuffer_kcache[kw].hits);
 	
 	/* Begin assigning the buffer -- start from the large side so that
 	 * if we screw up due to rounding, only the small guy suffers
 	 */
 	off = 0;
-	for (scan =  my_wbuffer_most_common;
-	     scan != cutoff;
-	     scan =  my_wbuffer_kcache[scan].less_common)
+	for (scan = 0; scan != cutoff; scan++)
 	{
-		val = sqrt(my_wbuffer_kcache[scan].hits);
-		size = MY_RECORD_CACHE * val / accum;
+		kw = my_wbuffer_scache[scan].keyword;
+		val = sqrt(my_wbuffer_kcache[kw].hits);
+		size = lrint(MY_RECORD_CACHE * val / accum);
 		
 		if (size < 2) size = 2;
 		
@@ -447,13 +425,15 @@ static void my_calc_storage()
 		
 		/* printf("%f %f %d\n", val, accum, size); */
 		
-		my_wbuffer_kcache[scan].offset = off;
-		my_wbuffer_kcache[scan].size   = size;
+		my_wbuffer_scache[scan].offset = off;
+		my_wbuffer_scache[scan].size   = size;
 		
 		off += size;
 	}
 	
+#if defined(DEBUG) || defined(PROFILE)
 	printf("Cache roundoff: %d/%d\n", off, MY_RECORD_CACHE);
+#endif
 }
 
 /*------------------------------------------------- Public component methods */
@@ -476,8 +456,15 @@ int lu_wbuffer_init()
 		return -1;
 	}
 	
-	my_wbuffer_least_common = my_wbuffer_root = 
-	my_wbuffer_most_common  = MY_WBUFFER_KMAX;
+	my_wbuffer_scache = malloc(sizeof(My_WBuffer_Slot) * MY_KEYWORD_CACHE);
+	if (!my_wbuffer_scache)
+	{
+		fputs(_("Failed to allocate storage for wbuffer slots\n"),
+			stderr);
+		return -1;
+	}
+	
+	my_wbuffer_kroot = MY_WBUFFER_KMAX;
 	
 	my_wbuffer_count_down   = my_wbuffer_kcache_fill = 0;
 	my_wbuffer_next_sync	= 1024;
@@ -502,22 +489,22 @@ int lu_wbuffer_open()
 
 int lu_wbuffer_sync()
 {
-	my_calc_storage();
+	my_calc_storage(0);
 	return 0;
 }
 
 int lu_wbuffer_close()
 {
 #ifdef PROFILE
-	my_wbuffer_kptr scan;
-	for (scan =  my_wbuffer_least_common;
-	     scan != MY_WBUFFER_KMAX;
-	     scan =  my_wbuffer_kcache[scan].more_common)
+	my_wbuffer_sptr scan;
+	for (scan = my_wbuffer_kcache_fill-1; scan != MY_WBUFFER_KMAX; scan--)
 	{
+		my_wbuffer_kptr kw = my_wbuffer_scache[scan].keyword;
+		
 		printf("%9d:%9d - '%s'\n", 
-			my_wbuffer_kcache[scan].size,
-			my_wbuffer_kcache[scan].hits,
-			my_wbuffer_kcache[scan].key);
+			my_wbuffer_scache[scan].size,
+			my_wbuffer_kcache[kw].hits,
+			my_wbuffer_kcache[kw].key);
 	}
 	
 	printf("WBuffer Loads:   %d\n", ploads);
@@ -529,13 +516,17 @@ int lu_wbuffer_close()
 	printf("WBuffer Swaps:   %d\n", pswaps);
 #endif
 	
-	my_calc_storage();
+	my_calc_storage(0);
 	
 	return 0;
 }
 
 int lu_wbuffer_quit()
 {
+	free(my_wbuffer_scache);
+	free(my_wbuffer_kcache);
+	free(my_wbuffer_acache);
+	
 	return 0;
 }
 
@@ -548,12 +539,13 @@ int lu_wbuffer_append(
 	int		out;
 	int		dir;
 	message_id	hits;
-	my_wbuffer_kptr	scan;
 	my_wbuffer_aptr	pos;
+	my_wbuffer_sptr	slot;
+	my_wbuffer_kptr	scan;
 	my_wbuffer_kptr	tmp;
 	
 	/* Try to find the record in cache already */
-	scan = my_wbuffer_root;
+	scan = my_wbuffer_kroot;
 	while (scan != MY_WBUFFER_KMAX)
 	{
 		dir = strcmp(keyword, my_wbuffer_kcache[scan].key);
@@ -574,32 +566,28 @@ int lu_wbuffer_append(
 #endif
 		ploads++;
 #endif
-		scan = my_wbuffer_kcache_fill++;
-		
-		my_wbuffer_kcache[scan].less_common = MY_WBUFFER_KMAX;
-		my_wbuffer_kcache[scan].more_common = my_wbuffer_least_common;
-		
-		if (my_wbuffer_least_common != MY_WBUFFER_KMAX)
-			my_wbuffer_kcache[my_wbuffer_least_common].less_common = scan;
-		else
-			my_wbuffer_most_common = scan;
-		my_wbuffer_least_common = scan;
+		slot = scan = my_wbuffer_kcache_fill++;
 		
 		strcpy(my_wbuffer_kcache[scan].key, keyword);
-		my_wbuffer_kcache[scan].offset = 0;
-		my_wbuffer_kcache[scan].size   = 0;
-		my_wbuffer_kcache[scan].fill   = 0;
-		my_wbuffer_kcache[scan].hits   = 0; /* Filled in below */
+		my_wbuffer_kcache[scan].hits = 0; /* Filled in below */
+		my_wbuffer_kcache[scan].slot = slot;
 		
-		tmp = my_btree_wbuffer_insert(my_wbuffer_root, scan);
+		my_wbuffer_scache[slot].offset  = 0;
+		my_wbuffer_scache[slot].size    = 0;
+		my_wbuffer_scache[slot].fill    = 0;
+		my_wbuffer_scache[slot].keyword = scan;
+		
+		tmp = my_btree_wbuffer_insert(my_wbuffer_kroot, scan);
 		assert (tmp != MY_WBUFFER_KMAX);
-		my_wbuffer_root = tmp;
+		my_wbuffer_kroot = tmp;
 	}
 	
 	/* Are we dealing with a tracked keyword? */
 	if (scan != MY_WBUFFER_KMAX)
 	{
-		if (my_wbuffer_kcache[scan].size)
+		slot = my_wbuffer_kcache[scan].slot;
+		
+		if (my_wbuffer_scache[slot].size)
 		{
 #ifdef PROFILE
 #ifdef DEBUG
@@ -608,14 +596,14 @@ int lu_wbuffer_append(
 			phits++;
 #endif
 			/* This keyword has a buffer */
-			pos = my_wbuffer_kcache[scan].offset +
-			      my_wbuffer_kcache[scan].fill++;
+			pos = my_wbuffer_scache[slot].offset +
+			      my_wbuffer_scache[slot].fill++;
 			
 			my_wbuffer_acache[pos] = msg;
 			my_wbuffer_kcache[scan].hits++;
 			
-			if (my_wbuffer_kcache[scan].fill ==
-			    my_wbuffer_kcache[scan].size)
+			if (my_wbuffer_scache[slot].fill ==
+			    my_wbuffer_scache[slot].size)
 			{
 				out = my_flush_buffer(scan);
 			}
@@ -661,7 +649,10 @@ int lu_wbuffer_append(
 			keyword, &msg, 1);
 		out = (hits == lu_common_minvalid);
 		
-		if (out == 0 && hits > my_wbuffer_kcache[my_wbuffer_least_common].hits)
+		slot = my_wbuffer_kcache_fill-1;
+		scan = my_wbuffer_scache[slot].keyword;
+		
+		if (out == 0 && hits > my_wbuffer_kcache[scan].hits)
 		{	/* Promote this record to cache */
 #ifdef PROFILE
 #ifdef DEBUG
@@ -669,22 +660,21 @@ int lu_wbuffer_append(
 #endif
 			pentries++;
 #endif
-			my_flush_buffer(my_wbuffer_least_common);
 			
-			tmp = my_btree_wbuffer_remove(
-				my_wbuffer_root, my_wbuffer_least_common);
+			my_flush_buffer(scan);
+			
+			tmp = my_btree_wbuffer_remove(my_wbuffer_kroot, scan);
 			assert (tmp != MY_WBUFFER_KMAX);
-			my_wbuffer_root = tmp;
+			my_wbuffer_kroot = tmp;
 			
-			strcpy(my_wbuffer_kcache[my_wbuffer_least_common].key, keyword);
-			my_wbuffer_kcache[my_wbuffer_least_common].hits = hits;
+			strcpy(my_wbuffer_kcache[scan].key, keyword);
+			my_wbuffer_kcache[scan].hits = hits;
 			
-			tmp = my_btree_wbuffer_insert(
-				my_wbuffer_root, my_wbuffer_least_common);
+			tmp = my_btree_wbuffer_insert(my_wbuffer_kroot, scan);
 			assert (tmp != MY_WBUFFER_KMAX);
-			my_wbuffer_root = tmp;
+			my_wbuffer_kroot = tmp;
 			
-			my_relocate(my_wbuffer_least_common);
+			my_relocate(scan);
 		}
 	}
 	
@@ -692,7 +682,7 @@ int lu_wbuffer_append(
 	if (my_wbuffer_count_down == my_wbuffer_next_sync)
 	{
 		my_wbuffer_count_down = 0;
-		my_calc_storage();
+		my_calc_storage(1);
 		
 		if (my_wbuffer_next_sync < 8 * MY_RECORD_CACHE)
 			my_wbuffer_next_sync <<= 1;
@@ -708,7 +698,7 @@ int lu_wbuffer_flush(
 	my_wbuffer_kptr	scan;
 	
 	/* Try to find the record in cache already */
-	scan = my_wbuffer_root;
+	scan = my_wbuffer_kroot;
 	while (scan != MY_WBUFFER_KMAX)
 	{
 		dir = strcmp(keyword, my_wbuffer_kcache[scan].key);
