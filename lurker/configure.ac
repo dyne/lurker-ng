@@ -57,8 +57,8 @@ if test "x$with_mimelib_local" != "xno"; then
  AM_CONDITIONAL(LOCAL_MIMELIB, true)
  AC_MSG_CHECKING(for mimelib)
  AC_MSG_RESULT(local)
- CPPFLAGS="$CPPFLAGS -I\$(TOP)/mimelib"
- LIBS="-L\$(TOP)/mimelib -lmimelib $LIBS"
+ CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/mimelib"
+ LIBS="-L\$(top_srcdir)/mimelib -lmimelib $LIBS"
 else
  AM_CONDITIONAL(LOCAL_MIMELIB, false)
  AC_SEARCH_HEADER_DIRS(
