@@ -1,5 +1,5 @@
 /*
- * $Id: message.c,v 1.6 2002-01-28 06:30:46 cbond Exp $
+ * $Id: message.c,v 1.7 2002-01-28 08:20:15 cbond Exp $
  *  
  *  message.c - parse mail.
  *  
@@ -47,13 +47,18 @@ mail_parse(int fd, off_t offset)
 	char *buffer, *end, *off;
 	struct msg *out;
 	struct stat sb;
-	size_t maplog;
+	size_t maplog, offc;
 
 	if (fstat(fd, &sb) < 0)
 		return (NULL);
 
 	if ((out = (struct msg *)malloc(sizeof(struct msg))) == NULL)
 		return (NULL);
+
+	/*
+	 * Round offset down to the nearest page size multiple.
+	 */
+	offc = offset & ~(getpagesize() - 1);
 
 	buffer = end = NULL;
 
@@ -70,28 +75,36 @@ mail_parse(int fd, off_t offset)
 
 		if (maplog + offset >= sb.st_size)
 			maplog = sb.st_size - offset;
-		out->region = maplog;
 
-		buffer = (char *)mmap(NULL, maplog, PROT_READ | PROT_WRITE,
-					MAP_PRIVATE, fd, offset);
+		/*
+		 * Round length up to the nearest page size multiple, and
+		 * include compensation for the offset rounding.
+		 */
+		out->region = (maplog + offset - offc + getpagesize() - 1) &
+				~(getpagesize() - 1);
+		buffer = (char *)mmap(NULL, out->region, PROT_READ | PROT_WRITE,
+					MAP_PRIVATE, fd, offc);
 		if (buffer == MAP_FAILED)
 			return (NULL);
+
+		out->buffer = buffer + (offset - offc);
+		out->aaddr = buffer;
 
 		/*
 		 * If the end of file has been reached, assume that's
 		 * the end of this message as well.
 		 */
 		if (maplog > 1 << 10)
-			end = message_next(buffer + (maplog / 2), maplog / 2);
+			end = message_next(out->buffer + (maplog / 2),
+				maplog / 2);
 		else
-			end = message_next(buffer, maplog);
-		if (end == NULL && maplog == sb.st_size - offset)
-			end = buffer + maplog;
+			end = message_next(out->buffer, maplog);
+		if (end == NULL && maplog >= sb.st_size - offset)
+			end = out->buffer + maplog;
 	}
 
 	end[0] = 0;
-	out->buffer = buffer;
-	if (message_offset(buffer, &out->offset)) {
+	if (message_offset(out->buffer, &out->offset)) {
 		mail_free(out);
 		return (NULL);
 	}
@@ -101,15 +114,15 @@ mail_parse(int fd, off_t offset)
 	 * just past the headers.  Parse the headers and the MIME
 	 * structure and so forth.
 	 */
-	off = buffer + out->offset;
+	off = out->buffer + out->offset;
 	INIT(&out->bss, mail_string, off, (size_t)(end - off));
-	rfc822_parse_msg(&out->env, &out->body, buffer, (size_t)(off - buffer),
-		&out->bss, "localhost", 0);
+	rfc822_parse_msg(&out->env, &out->body, out->buffer,
+		(size_t)(off - buffer), &out->bss, "localhost", 0);
 
 	/*
 	 * Seek to the end of this message.
 	 */
-	if (lseek(fd, offset + end - buffer + 1, SEEK_SET) < 0)
+	if (lseek(fd, offset + end - out->buffer + 1, SEEK_SET) < 0)
 		return (NULL);
 
 	return (out);
@@ -191,7 +204,7 @@ mail_select(struct msg *in, struct mail_bodystruct *body, size_t *len, int *nfr)
 void
 mail_free(struct msg *in)
 {
-	munmap((void *)in->buffer, in->region);
+	munmap((void *)in->aaddr, in->region);
 	mail_free_body(&in->body);
 	mail_free_envelope(&in->env);
 	free(in);

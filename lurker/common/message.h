@@ -1,5 +1,5 @@
 /*
- * $Id: message.h,v 1.3 2002-01-28 06:23:41 cbond Exp $
+ * $Id: message.h,v 1.4 2002-01-28 08:20:15 cbond Exp $
  *  
  *  message.h - header file for mail parsing routines.
  *  
@@ -43,6 +43,7 @@ struct	msg {
 	size_t	offset;			/* Offset of the actual message */
 	size_t	region;			/* Size of the buffer */
 	char	*buffer;		/* Message contents */
+	char	*aaddr;			/* Properly aligned buffer */
 	STRING	bss;
 };
 
