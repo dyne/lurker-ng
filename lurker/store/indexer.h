@@ -1,4 +1,4 @@
-/*  $Id: indexer.h,v 1.7 2002-05-04 05:34:22 terpstra Exp $
+/*  $Id: indexer.h,v 1.8 2002-05-09 06:28:58 terpstra Exp $
  *  
  *  indexer.h - Handles indexing a message for keyword searching
  *  
@@ -34,12 +34,25 @@ extern int lu_indexer_quit (void);
 
 struct Lu_Mbox_Message;
 
-/* Call this to push all the keywords related to this file into the index
+/** This will prepare for a new bunch of keywords 
  */
-int lu_indexer_import(
-	struct Lu_Mbox_Message*	body, 
+void lu_indexer_prep();
+
+/** Call this to push all the keywords related to the location of the message
+ */
+void lu_indexer_location(
 	lu_word		list,
 	lu_word		mbox,
-	time_t		stamp,
-	message_id	id,
-	const char*	reply_id);
+	message_id	thread,
+	int		is_head);
+
+/** Call this to push all the keywords related to this message
+ */
+void lu_indexer_message(
+	struct Lu_Mbox_Message*	body, 
+	time_t			stamp,
+	const char*		reply_id);
+
+/** Call this to dump all the keywords added to the disk 
+ */
+int lu_indexer_dump(message_id id);

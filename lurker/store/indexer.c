@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.15 2002-05-04 05:34:22 terpstra Exp $
+/*  $Id: indexer.c,v 1.16 2002-05-09 06:28:58 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -497,23 +497,23 @@ int lu_indexer_quit()
 
 /*------------------------------------------------- Indexing algorithm */
 
-int lu_indexer_import(
-	struct Lu_Mbox_Message*	body, 
-	lu_word		list,
-	lu_word		mbox,
-	time_t		stamp,
-	message_id	id,
-	const char*	reply_id)
+void lu_indexer_prep()
 {
-	char buf[LU_KEYWORD_LEN+1];
-	struct tm* when;
-	
 	/* We have imported no keywords in this pass yet. */
 	my_indexer_dyn_off = ((char*)my_indexer_buf) + 
 		LU_INDEXER_MAX_KEYS * sizeof(My_Indexer_Tree) +
 		LU_INDEXER_MAX_DYNAMIC;
 	my_indexer_avl_off  = 0;
 	my_indexer_avl_root = 0;
+}
+
+void lu_indexer_location(
+	lu_word		list,
+	lu_word		mbox,
+	message_id	thread,
+	int		is_head)
+{
+	char buf[LU_KEYWORD_LEN+1];
 	
 	/* Push the mailing list keyword. */
 	snprintf(&buf[0], sizeof(buf), "%s%d", 
@@ -524,6 +524,28 @@ int lu_indexer_import(
 	snprintf(&buf[0], sizeof(buf), "%s%d:%d", 
 		LU_KEYWORD_MBOX, list, mbox);
 	my_indexer_push_keyword(&buf[0]);
+	
+	/* Push the thread keyword. */
+	snprintf(&buf[0], sizeof(buf), "%s%d",
+		LU_KEYWORD_THREAD, thread);
+	my_indexer_push_keyword(&buf[0]);
+	
+	if (is_head)
+	{
+		/* Push the head keyword */
+		snprintf(&buf[0], sizeof(buf), "%s%d",
+			LU_KEYWORD_LIST_THREADS, list);
+		my_indexer_push_keyword(&buf[0]);
+	}
+}
+
+void lu_indexer_message(
+	struct Lu_Mbox_Message*	body, 
+	time_t		stamp,
+	const char*	reply_id)
+{
+	char buf[LU_KEYWORD_LEN+1];
+	struct tm* when;
 	
 	/* Start working on the time keywords */
 	when = localtime(&stamp);
@@ -548,7 +570,7 @@ int lu_indexer_import(
 		LU_KEYWORD_WEEKDAY, my_indexer_dows[when->tm_wday]);
 	my_indexer_push_keyword(&buf[0]);
 	
-	/* Now, push keywords for the message id and reply-to */
+	/* Now, push keywords for the reply-to */
 	if (*reply_id)
 	{
 		snprintf(&buf[0], sizeof(buf), "%s%s",
@@ -589,7 +611,11 @@ int lu_indexer_import(
 	
 	/* Now, scan all the keywords in the body */
 	my_indexer_traverse(body, body->body);
-	
+}
+
+int lu_indexer_dump(
+	message_id id)	
+{
 	/* Ok, we have all the keyword - dump them. */
 #ifdef DEBUG
 	printf("%d: [ ", id);

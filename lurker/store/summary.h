@@ -1,4 +1,4 @@
-/*  $Id: summary.h,v 1.5 2002-05-04 05:34:22 terpstra Exp $
+/*  $Id: summary.h,v 1.6 2002-05-09 06:28:58 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -44,14 +44,14 @@ typedef struct Lu_Summary_Message_T
 	/* timestamp of the message */
 	lu_quad		timestamp;
 	
+	/* number of messages in-reply-to this */
+	lu_quad		replies;
+	
 	/* message that this is in-reply-to */
 	message_id	in_reply_to;
 	
-	/* union-find parent ptr */
-	message_id	thread_parent;
-	
-	/* next ptr for thread list */
-	message_id	thread_next;
+	/* thread starting message */
+	message_id	thread;
 } Lu_Summary_Message;
 
 /** Message variable length data database - variable.flat
@@ -60,30 +60,6 @@ typedef struct Lu_Summary_Message_T
  *   author name   <null>
  *   author email  <null>
  */
-
-/** Thread summary info - thread.hash
- *  Size - 24 bytes
- */
-typedef struct Lu_Summary_Thread_T
-{
-	/* Start date of the thread */
-	lu_quad		start;
-	
-	/* End date of the thread */
-	lu_quad		end;
-	
-	/* Number of messages in the thread */
-	message_id	message_count;
-	
-	/* Last record in the thread list */
-	message_id	thread_end;
-	
-	/* The next thread in mbox (sorted by end time) */
-	message_id	next_thread;
-	
-	/* The prev thread in mbox (sorted by end time) */
-	message_id	prev_thread;
-} Lu_Summary_Thread;
 
 /*------------------------------------------------- Public component methods */
 
@@ -104,18 +80,6 @@ extern message_id lu_summary_lookup_mid(
  */
 extern Lu_Summary_Message lu_summary_read_msummary(
 	message_id mid);
-
-/** Grab the summary information record for the specified tid
- */
-extern Lu_Summary_Thread lu_summary_read_tsummary(
-	message_id tid);
-
-/** Find the most recent thread id in a mailing list.
- *  lu_common_minvalid -> none or error
- */
-extern int lu_summary_last_thread(
-	lu_word list, 
-	message_id* out);
 
 /** This writes 'subject<null>authorname<null>authoremail<null>' to the
  *  specified file. This should be all the is required outside the db.c
@@ -148,15 +112,16 @@ extern time_t lu_summary_timestamp_heuristic(
  *  
  *  Next, you have to call lu_reply_to_resolution.
  */
-extern message_id lu_summary_import_message(
-	lu_word list, 
-	lu_word mbox, 
-	lu_addr mbox_offset,
-	time_t timestamp, 
-	const char* message_id,
-	const char* subject,
-	const char* author_name,
-	const char* author_email);
+extern int lu_summary_import_message(
+	lu_word		list, 
+	lu_word		mbox, 
+	lu_addr		mbox_offset,
+	time_t		timestamp, 
+	const char*	mmessage_id,
+	const char*	subject,
+	const char*	author_name,
+	const char*	author_email,
+	message_id*	out);
 
 /** This connects reply-to links for (possibly out of sequence) messages.
  *  Don't forget to push all the keywords after this (body, subject, list...)

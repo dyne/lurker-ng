@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.24 2002-05-04 05:34:22 terpstra Exp $
+/*  $Id: mbox.c,v 1.25 2002-05-09 06:28:58 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -248,6 +248,7 @@ static int my_mbox_process_mbox(
 	char			message_id[LU_KEYWORD_LEN+1];
 	char			reply_to  [LU_KEYWORD_LEN+1];
 	int			error;
+	int			new_message;
 	struct MD5Context	md5c;
 	unsigned char		digest[16];
 	
@@ -402,7 +403,12 @@ static int my_mbox_process_mbox(
 		return -1;
 	}
 	
-	id = lu_summary_import_message(
+	/* Prep the keyword indexer buffer */
+	lu_indexer_prep();
+	
+	/* Store the summary information for this message and link the thread 
+	 */
+	error = lu_summary_import_message(
 		list->id, 
 		mbox->id, 
 		mbox->length, 
@@ -410,33 +416,42 @@ static int my_mbox_process_mbox(
 		&message_id  [0],
 		&decode_subj [0], 
 		&author_name [0],
-		&author_email[0]);
+		&author_email[0],
+		&id);
 
-	if (id == lu_common_minvalid)
+	if (error == -1 || id == lu_common_minvalid)
 	{
 		lu_mbox_destroy_message(&m);
 		return -1;
 	}
-		
-	error = lu_indexer_import(
-		&m, 
-		list->id,
-		mbox->id,
-		stamp,
+	
+	new_message = (error == 0);
+	
+	error = lu_summary_reply_to_resolution(
 		id,
+		&message_id[0],
 		&reply_to[0]);
-		
 	if (error != 0)
 	{
 		lu_mbox_destroy_message(&m);
 		return -1;
 	}
 	
-	/*!!! Unwind the indexer pushes if reply_to fails */
-	lu_summary_reply_to_resolution(
-		id,
-		&message_id[0],
-		&reply_to[0]);
+	if (new_message)
+	{
+		lu_indexer_message(
+			&m, 
+			stamp,
+			&reply_to[0]);
+	}
+	
+	error = lu_indexer_dump(id);
+		
+	if (error != 0)
+	{
+		lu_mbox_destroy_message(&m);
+		return -1;
+	}
 	
 #ifdef DEBUG
 	printf("."); fflush(stdout);

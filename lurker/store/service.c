@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.41 2002-05-07 00:21:45 terpstra Exp $
+/*  $Id: service.c,v 1.42 2002-05-09 06:28:58 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -408,7 +408,7 @@ static int my_service_xml_head(
 {
 	return my_service_buffer_write(h, 
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-		"<?xml-stylesheet type=\"text/xml\" href=\"../fmt/render.xsl\"?>\n"
+		"<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/render.xsl\"?>\n"
 		);
 }
 
@@ -763,7 +763,7 @@ static int my_service_summary(
 	if (my_service_buffer_write(h, "</timestamp>\n   <time>") != 0) return -1;
 	if (my_service_write_time(h, msg.timestamp)               != 0) return -1;
 	if (my_service_buffer_write(h, "</time>\n   <thread>")    != 0) return -1;
-	if (my_service_write_int(h, msg.thread_parent)            != 0) return -1;
+	if (my_service_write_int(h, msg.thread)                   != 0) return -1;
 	if (my_service_buffer_write(h, "</thread>\n")             != 0) return -1;
 	
 	if (lu_summary_write_variable(
@@ -1194,7 +1194,7 @@ static int my_service_message(
 	if (my_service_buffer_write(h, "</timestamp>\n <time>") != 0) goto my_service_message_error3;
 	if (my_service_write_time  (h, msg.timestamp)           != 0) goto my_service_message_error3;
 	if (my_service_buffer_write(h, "</time>\n <thread>")    != 0) goto my_service_message_error3;
-	if (my_service_write_int   (h, msg.thread_parent)       != 0) goto my_service_message_error3;
+	if (my_service_write_int   (h, msg.thread)              != 0) goto my_service_message_error3;
 	if (my_service_buffer_write(h, "</thread>\n")           != 0) goto my_service_message_error3;
 	
 	if (msg.in_reply_to != lu_common_minvalid)
@@ -1418,8 +1418,6 @@ static int my_service_thread(
 	char*			eptr;
 	message_id		id;
 	
-	Lu_Summary_Thread	th;
-	
 	if (strcmp(ext, "xml") && strcmp(ext, "html"))
 	{
 		my_service_error(h,
@@ -1438,16 +1436,6 @@ static int my_service_thread(
 		my_service_error(h,
 			"Malformed request",
 			"Lurkerd received a request for a non-numeric thread",
-			request);
-		goto my_service_thread_error0;
-	}
-	
-	th = lu_summary_read_tsummary(id);
-	if (th.start == 0)
-	{
-		my_service_error(h,
-			"Malformed request",
-			"Request for non-existant thread",
 			request);
 		goto my_service_thread_error0;
 	}
