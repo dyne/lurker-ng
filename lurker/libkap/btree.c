@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.7 2002-07-01 16:21:24 terpstra Exp $
+/*  $Id: btree.c,v 1.8 2002-07-01 19:13:31 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -76,7 +76,7 @@
 
 /***************************************** Internal btree data */
 
-#define LIBKAP_BTREE_HEAD	"libkap btree v0.1\n\004"
+#define LIBKAP_BTREE_HEAD	"libkap btree v0.1\n\377"
 #define LIBKAP_BTREE_HEAD_LEN	20
 
 struct Kap_Btree
@@ -102,12 +102,6 @@ struct Kap_Btree
 #ifdef USE_MMAP
 	char*	mmap;
 #endif
-};
-
-struct Sector_Header
-{
-	unsigned int	leaf  : 1  __attribute__ ((packed)),
-			count : 15 __attribute__ ((packed));
 };
 
 /***************************************** Strategies for accessing the disk */
@@ -173,7 +167,7 @@ static void decode_offset(const unsigned char* where, off_t* out, short len)
 	while (len)
 	{
 		*out <<= 8;
-		*out |= where[len--];
+		*out |= where[--len];
 	}
 }
 
@@ -230,14 +224,30 @@ static int decode_header(Kap k, unsigned char* scan)
 	return 0;
 }
 
+#define SECTOR_HEADER_SIZE	2
+
+void decode_sector_header(const unsigned char* scan, int* leaf, int* hits)
+{
+	*leaf = (*scan & 0x80)?1:0;
+	*hits = (*scan++ & 0x7F) << 8;
+	*hits |= *scan;
+	
+}
+
+void encode_sector_header(unsigned char* scan, int leaf, int hits)
+{
+	*scan = (hits >> 8) & 0x7F;
+	if (leaf) *scan |= 0x80;
+	scan++;
+	*scan = hits;
+}
+
 /***************************************** Control btree parameters */
 
 struct Kap_Btree* btree_init(void)
 {
 	struct Kap_Btree* btree = malloc(sizeof(struct Kap_Btree));
 	if (!btree) return 0;
-	
-	assert (sizeof(struct Sector_Header) == 2);
 	
 	btree->sector_size  = 32*1024;
 	btree->max_key_size = 100;
@@ -266,10 +276,10 @@ int kap_btree_set_sectorsize(Kap k, ssize_t size)
 		return ERANGE;
 	if (size < 32)
 		return ERANGE;
-	if (sizeof(struct Sector_Header) + 1 + k->btree->leaf_size + k->btree->max_key_size 
+	if (SECTOR_HEADER_SIZE + 1 + k->btree->leaf_size + k->btree->max_key_size 
 		> size)
 		return ERANGE;
-	if (sizeof(struct Sector_Header) +   2*k->btree->tree_size + k->btree->max_key_size 
+	if (SECTOR_HEADER_SIZE +   2*k->btree->tree_size + k->btree->max_key_size 
 		> size)
 		return ERANGE;
 	
@@ -284,10 +294,10 @@ int kap_btree_set_maxkeysize(Kap k, ssize_t size)
 	
 	if (size < 2)
 		return ERANGE;
-	if (sizeof(struct Sector_Header) + 1 + k->btree->leaf_size + size
+	if (SECTOR_HEADER_SIZE + 1 + k->btree->leaf_size + size
 		> k->btree->sector_size)
 		return ERANGE;
-	if (sizeof(struct Sector_Header) +   2*k->btree->tree_size + size
+	if (SECTOR_HEADER_SIZE +   2*k->btree->tree_size + size
 		> k->btree->sector_size)
 		return ERANGE;
 	
@@ -305,7 +315,7 @@ int kap_btree_set_treesize(Kap k, short size)
 	if (size > sizeof(off_t))
 		return ERANGE;
 	
-	if (sizeof(struct Sector_Header) + 2*size + k->btree->max_key_size
+	if (SECTOR_HEADER_SIZE + 2*size + k->btree->max_key_size
 		> k->btree->sector_size)
 		return ERANGE;
 	
@@ -323,7 +333,7 @@ int kap_btree_set_leafsize(Kap k, ssize_t size)
 	if (size > 255)
 		return ERANGE;
 	
-	if (sizeof(struct Sector_Header) + 1 + size + k->btree->max_key_size
+	if (SECTOR_HEADER_SIZE + 1 + size + k->btree->max_key_size
 		> k->btree->sector_size)
 		return ERANGE;
 	
@@ -337,8 +347,6 @@ int kap_btree_open(Kap k, const char* dir, const char* prefix)
 {
 	ssize_t	got;
 	char	buf[200];
-	
-	struct Sector_Header root;
 	
 	if (!k->btree) return 0;
 	if (k->btree->fd != -1) return KAP_ALREADY_OPEN;
@@ -377,10 +385,8 @@ int kap_btree_open(Kap k, const char* dir, const char* prefix)
 			else		return KAP_BTREE_CORRUPT;
 		}
 		
-		root.leaf = 1;
-		root.count = 0;
 		memset(k->btree->secta, 0, k->btree->sector_size);
-		memcpy(k->btree->secta, &root, sizeof(struct Sector_Header));
+		encode_sector_header(k->btree->secta, 1, 0);
 		
 		got = write(k->btree->fd, k->btree->secta, k->btree->sector_size);
 		if (got != k->btree->sector_size)
@@ -531,11 +537,10 @@ static int is_full(Kap k, const unsigned char* sector)
 	size_t			size, remain;
 	const unsigned char*	scan;
 	
-	leaf  = ((struct Sector_Header*)sector)->leaf;
-	count = ((struct Sector_Header*)sector)->count;
+	decode_sector_header(sector, &leaf, &count);
 	
-	if (leaf) scan = sector + sizeof(struct Sector_Header);
-	else      scan = sector + sizeof(struct Sector_Header) + k->btree->tree_size;
+	if (leaf) scan = sector + SECTOR_HEADER_SIZE;
+	else      scan = sector + SECTOR_HEADER_SIZE + k->btree->tree_size;
 	
 	for (i = 0; i < count; i++)
 	{
@@ -577,6 +582,8 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	int hits, leaf, count;
 	size_t klen, follows, remains;
 	
+	int pl, ph, sl, sh;
+	
 	/* Amount after off in parent */
 	follows = k->btree->secta + k->btree->sector_size - off;
 	
@@ -586,10 +593,9 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	/* Find the mid point of the child */
 	mid = k->btree->sectb + k->btree->sector_size/2;
 	
-	leaf  = ((struct Sector_Header*)k->btree->sectb)->leaf;
-	count = ((struct Sector_Header*)k->btree->sectb)->count;
+	decode_sector_header(k->btree->sectb, &leaf, &count);
 	
-	scan = k->btree->sectb + sizeof(struct Sector_Header);
+	scan = k->btree->sectb + SECTOR_HEADER_SIZE;
 	if (!leaf) scan += k->btree->tree_size;
 	
 	for (hits = 0, next = scan; next < mid; scan = next, hits++)
@@ -634,7 +640,9 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	encode_offset(off, *new, k->btree->tree_size);
 	
 	/* Increase the hits in our parent */
-	((struct Sector_Header*)k->btree->secta)->count++;
+	decode_sector_header(k->btree->secta, &pl, &ph);
+	ph++;
+	encode_sector_header(k->btree->secta, pl, ph);
 	
 	
 	
@@ -643,21 +651,22 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	
 	
 	memset(k->btree->sectc, 0, k->btree->sector_size);
-	((struct Sector_Header*)k->btree->sectc)->leaf = leaf;
 	if (leaf)
 	{
-		((struct Sector_Header*)k->btree->sectc)->count = count - hits;
-		memcpy(	k->btree->sectc + sizeof(struct Sector_Header),
+		sh = count - hits;
+		memcpy(	k->btree->sectc + SECTOR_HEADER_SIZE,
 			scan,
 			remains);
 	}
 	else
 	{
-		((struct Sector_Header*)k->btree->sectc)->count = count - hits - 1;
-		memcpy(	k->btree->sectc + sizeof(struct Sector_Header),
+		sh = count - hits - 1;
+		memcpy(	k->btree->sectc + SECTOR_HEADER_SIZE,
 			scan+klen,
 			remains-klen);
 	}
+	sl = leaf;
+	encode_sector_header(k->btree->sectc, sl, sh);
 	
 	
 	/********** Prepare the old child */
@@ -665,7 +674,7 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	
 	/* Truncate the original record */
 	memset(scan, 0, remains);
-	((struct Sector_Header*)k->btree->sectb)->count = hits;
+	encode_sector_header(k->btree->sectb, leaf, hits);
 	
 	
 	/********** Done */
@@ -694,17 +703,19 @@ static int travel_down(Kap k, const char* key, off_t x,
 	unsigned char*	swap;
 	ssize_t		dlen, nlen;
 	size_t		remains;
+	int		leaf, hits;
 	
-	while (!((struct Sector_Header*)k->btree->secta)->leaf)
+	while (decode_sector_header(k->btree->secta, &leaf, &hits),
+	       !leaf)
 	{
 		/* Find the first address (ptr) such that the following
 		 * key (scan) obeys: key <= scan
 		 */
 		
 		for (i = 0, 
-			ptr = k->btree->secta + sizeof(struct Sector_Header),
+			ptr = k->btree->secta + SECTOR_HEADER_SIZE,
 			scan = ptr + k->btree->tree_size;
-		     i < ((struct Sector_Header*)k->btree->secta)->count;
+		     i < hits;
 		     i++, ptr = scan + klen + 1)
 		{
 			scan = ptr + k->btree->tree_size;
@@ -754,20 +765,20 @@ static int travel_down(Kap k, const char* key, off_t x,
 	/* Find the first key which is >= the search key */
 	i = 0;
 	out = -1;
-	scan = k->btree->secta + sizeof(struct Sector_Header);
-	while (i < ((struct Sector_Header*)k->btree->secta)->count)
+	scan = k->btree->secta + SECTOR_HEADER_SIZE;
+	while (i < hits)
 	{
 		out = strcmp(key, scan);
 		if (out <= 0) break;
 		
-		scan += strlen(scan);
+		scan += strlen(scan)+1;
 		scan += 1 + (*scan);
 		i++;
 	}
 	
 	if (out == 0)
 	{	/* key exists */
-		ptr = scan + strlen(scan);
+		ptr = scan + strlen(scan)+1;
 		dlen = *ptr++;
 		
 		memcpy(k->btree->scratch, ptr, dlen);
@@ -796,25 +807,33 @@ static int travel_down(Kap k, const char* key, off_t x,
 	if (out == 0)
 	{	/* key already exists; just new data. */
 		/* Shift remains */
-		klen = strlen(scan);
-		ptr = scan + klen + 1;
-		remains = k->btree->secta + k->btree->sector_size - ptr;
+		klen = strlen(scan)+1;
+		ptr = scan + klen;
+		*ptr++ = nlen;
 		
+		remains = k->btree->secta + k->btree->sector_size - ptr;
 		if (dlen < nlen)
 			memmove(ptr+nlen, ptr+dlen, remains - nlen);
 		else
 			memmove(ptr+nlen, ptr+dlen, remains - dlen);
+			
 		memcpy(ptr, k->btree->scratch, nlen);
 	}
 	else
 	{	/* Key did not exist */
-		klen = strlen(key);
+		klen = strlen(key)+1;
 		ptr = scan+klen+1+nlen;
+		
 		remains = k->btree->secta + k->btree->sector_size - ptr;
 		memmove(ptr, scan, remains);
-		memcpy(scan, key, klen+1);
-		scan += klen+1;
+		
+		memcpy(scan, key, klen);
+		scan += klen;
+		
+		*scan++ = nlen;
 		memcpy(scan, k->btree->scratch, nlen);
+		
+		encode_sector_header(k->btree->secta, leaf, hits+1);
 	}
 	
 	if (WRITE_SECTOR(k->btree, x, k->btree->secta) != 0)
@@ -865,10 +884,9 @@ int kap_btree_op(Kap k, const char* key,
 		
 		/* Setup sector a(new_root) with root as a child */
 		memset(k->btree->secta, 0, k->btree->sector_size);
-		((struct Sector_Header*)k->btree->secta)->leaf  = 0;
-		((struct Sector_Header*)k->btree->secta)->count = 0;
+		encode_sector_header(k->btree->secta, 0, 0);
 		
-		w = k->btree->secta + sizeof(struct Sector_Header);
+		w = k->btree->secta + SECTOR_HEADER_SIZE;
 		encode_offset(w, root, k->btree->tree_size);
 		w += k->btree->tree_size;
 		
