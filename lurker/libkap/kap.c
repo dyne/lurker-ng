@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.3 2002-07-08 18:03:50 terpstra Exp $
+/*  $Id: kap.c,v 1.4 2002-07-08 18:22:23 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -367,24 +367,22 @@ static int append_back(void* arg, const char* key, unsigned char* record, ssize_
 		memcpy(&kr, record, *len);
 	else	memset(&kr, 0, sizeof(KRecord));
 	
-	sz = kap_append_keyspace(&kr);
 	nfo->out = kap_append_append(nfo->k, &kr, nfo->data, nfo->len);
 	
-	if (kap_append_keyspace(&kr) != sz)
-	{
-		sz = kap_append_keyspace(&kr);
-		memcpy(record, &kr, sz);
-		*len = sz;
-		return 1;
-	}
+	sz = kap_append_keyspace(&kr);
+	memcpy(record, &kr, sz);
+	*len = sz;
 	
-	return 0;
+	return 1;
 }
 
 int kap_append(Kap k, const char* key, void* data, size_t len)
 {
 	struct AppendBack nfo;
 	int out;
+	
+	/* Silently ignore attempts to write nothing */
+	if (len == 0) return 0;
 	
 	nfo.k		= k;
 	nfo.key		= key;
