@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.3 2003-04-23 12:59:52 terpstra Exp $
+/*  $Id: esort.h,v 1.4 2003-04-24 11:56:18 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -38,7 +38,7 @@
  *
  *                    ESort           BTree            Hash
  * Insertion          O(1)            O(M*log(N))      O(M)
- * Read in sequence   O(1)            O(M)             O(M)
+ * Read in sequence   O(1)            O(M)             impossible
  * Seek to key        O(M*log^2(N))   O(M*log(N))      O(M)
  * Delete             impossible      O(M*log(N))      O(M)
  * 
