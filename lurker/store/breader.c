@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.6 2002-02-10 21:47:26 terpstra Exp $
+/*  $Id: breader.c,v 1.7 2002-02-10 22:54:06 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -221,6 +221,24 @@ static int my_breader_fetch_sector(
 	return 0;
 }
 
+static int my_breader_find_which(
+	My_Breader_Record* record,
+	message_id offset)
+{
+	int i;
+	
+	for (i = 0; i < LU_CACHE_RECORDS; i++)
+	{
+		if (offset >= record->cache[i].offset &&
+		    offset < record->cache[i].offset + LU_PULL_AT_ONCE)
+		{
+			return i;
+		}
+	}
+	
+	return -1;
+}
+
 static int my_breader_read(
 	My_Breader_Record* record, 
 	message_id offset, 
@@ -236,28 +254,22 @@ static int my_breader_read(
 		stat = my_breader_fetch_sector(record, offset);
 		if (stat != 0) return stat;
 		
-		for (i = 0; i < LU_CACHE_RECORDS; i++)
+		i = my_breader_find_which(record, offset);
+		ind = offset - record->cache[i].offset;
+		got = LU_PULL_AT_ONCE - ind;
+		
+		if (got > count)
 		{
-			if (offset >= record->cache[i].offset &&
-			    offset < record->cache[i].offset + LU_PULL_AT_ONCE)
-			{
-				ind = offset - record->cache[i].offset;
-				got = LU_PULL_AT_ONCE - ind;
-				
-				if (got > count)
-				{
-					got = count;
-				}
-				
-				memcpy(	out, 
-					&record->cache[i].buffer[ind],
-					got * sizeof(message_id));
-				
-				out    += got;
-				count  -= got;
-				offset += got;
-			}
+			got = count;
 		}
+			
+		memcpy(	out, 
+			&record->cache[i].buffer[ind],
+			got * sizeof(message_id));
+		
+		out    += got;
+		count  -= got;
+		offset += got;
 	}
 	
 	return 0;
@@ -268,19 +280,111 @@ static int my_breader_find(
 	message_id id,
 	message_id* offset)
 {
-	message_id	left_id,  right_id;
-	message_id	left_off, right_off;
+	int		which;
+	int		i;
+	int		dir;
+	my_breader_ptr	ptr;
 	
-	left_id  = 0;
+	message_id	left_off, right_off, mid_off;
+	
+	/* Boundary cases */
+	if (record->count == 0)
+	{
+		*offset = lu_common_minvalid;
+		return 0;
+	}
+	
+	if (id >= record->last_id)
+	{
+		*offset = record->count - 1;
+		return 0;
+	}
+	
+	/* These are the crude end-points that we know */
+	/* The id must lie in the range [left_off, right_off) */
+	/* Another invariant is that left_off is a multiple of LU_PULL_AT_ONCE */
+	
 	left_off = 0;
-	
-	right_id  = record->last_id;
 	right_off = record->count;
 	
-	/* The first goal is to find a record which contains the id */
+	/* Now, use the boundary data to refine them */
+	ptr = 0;
+	while (ptr != 0xFFFFUL)
+	{
+		dir = my_breader_compare(id, record->boundary[ptr].key);
+		if (dir < 0)
+		{	/* The answer is to the left */
+			right_off = record->boundary[ptr].index;
+			ptr = record->boundary[ptr].left;
+			/* We know that its not >= right, so
+			 * [left, right) is preserved
+			 */
+		}
+		else
+		{	/* The answer is to or on the right */
+			left_off = record->boundary[ptr].index;
+			ptr = record->boundary[ptr].right;
+			/* We know that it's not < left, so
+			 * [left, right) is preserved
+			 */
+		}
+	}
 	
-	return -1;
+	assert (left_off < right_off);
 	
+	/* Ok, using the boundary data we now have a range in which it must
+	 * lie. Lets refine this by reading the disk.
+	 */
+	
+	while (right_off - left_off > LU_PULL_AT_ONCE)
+	{
+		/* !!! For now, we use a BST */
+		mid_off = (left_off + right_off) / 2;
+		
+		my_breader_fetch_sector(record, mid_off);
+		which = my_breader_find_which(record, mid_off);
+		assert (which != -1);
+		
+		if (id < record->cache[which].buffer[0])
+		{	/* This lies to the right */
+			right_off = record->cache[which].offset;
+		}
+		else if (record->cache[which].buffer[LU_PULL_AT_ONCE-1] > id)
+		{	/* This lies to the left */
+			left_off = record->cache[which].offset + LU_PULL_AT_ONCE;
+		}
+		else
+		{
+			/* It lies in this record */
+			break;
+		}
+	}
+	
+	if (right_off - left_off <= LU_PULL_AT_ONCE)
+	{
+		my_breader_fetch_sector(record, left_off);
+		which = my_breader_find_which(record, left_off);
+		assert (which != -1);
+	}
+	
+	/* Ok! The largest id <= id is in this record, find it's index. */
+	
+	for (i = 0; i < LU_PULL_AT_ONCE; i++)
+		if (record->cache[which].buffer[i] > id)
+			break;
+	
+	/* i now points at the smallest record > id */
+	
+	if (i == 0)
+	{	/* There is no such record */
+		*offset = lu_common_minvalid;
+	}
+	else
+	{
+		*offset = record->cache[which].offset + i - 1;
+	}
+	
+	return 0;
 }
 
 static void my_breader_purify_record(
@@ -401,6 +505,17 @@ Lu_Breader_Handle lu_breader_new(
 		my_breader_records[best].count =
 			lu_flatfile_handle_records(
 				my_breader_records[best].flatfile);
+		
+		my_breader_records[best].last_id = lu_common_minvalid;
+		
+		if (my_breader_records[best].count > 0)
+		{
+			my_breader_read(
+				&my_breader_records[best], 
+				my_breader_records[best].count - 1, 
+				1,
+				&my_breader_records[best].last_id);
+		}
 	}
 	
 	my_breader_records[best].usage++;
@@ -444,6 +559,19 @@ message_id lu_breader_records(
 	record = &my_breader_records[h-1];
 	
 	return record->count;
+}
+
+message_id lu_breader_last(
+	Lu_Breader_Handle h)
+{
+	My_Breader_Record* record;
+	
+	assert (h <= LU_MAX_HANDLES && h > 0);
+	assert (my_breader_records[h-1].usage > 0);
+	
+	record = &my_breader_records[h-1];
+	
+	return record->last_id;
 }
 
 int lu_breader_read(
