@@ -145,7 +145,7 @@ AC_DEFUN(DB3_CHECK,
     DB_ITEST="-I$with_db3dir/include -I$with_db3dir"
   fi
 
-  AC_ARG_WITH(db3dir, AC_HELP_STRING(
+  AC_ARG_WITH(db3name, AC_HELP_STRING(
 	[--with-db3name], 
 	[db3 library name (default: db-3 or db3)]))
 

@@ -5445,9 +5445,9 @@ fi;
   fi
 
 
-# Check whether --with-db3dir or --without-db3dir was given.
-if test "${with_db3dir+set}" = set; then
-  withval="$with_db3dir"
+# Check whether --with-db3name or --without-db3name was given.
+if test "${with_db3name+set}" = set; then
+  withval="$with_db3name"
 
 fi;
 
