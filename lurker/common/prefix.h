@@ -1,4 +1,4 @@
-/*  $Id: prefix.h,v 1.5 2002-05-04 05:34:22 terpstra Exp $
+/*  $Id: prefix.h,v 1.6 2002-05-09 06:26:34 terpstra Exp $
  *  
  *  prefix.h - What to place in front of keywords we search for
  *  
@@ -25,6 +25,8 @@
 /* lu_import_message */
 #define	LU_KEYWORD_LIST		"ml:"	/* Mailing List */
 #define LU_KEYWORD_MBOX		"mb:"	/* Mail Box */
+#define LU_KEYWORD_THREAD	"th:"	/* THread */
+#define LU_KEYWORD_LIST_THREADS	"lt:"	/* List of Threads in mailing list */
 #define LU_KEYWORD_AUTHOR	"au:"	/* AUthor */
 #define LU_KEYWORD_SUBJECT	"sb:"	/* SuBject */
 
