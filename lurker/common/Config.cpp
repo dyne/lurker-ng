@@ -1,4 +1,4 @@
-/*  $Id: Config.cpp,v 1.6 2003-06-04 15:08:10 terpstra Exp $
+/*  $Id: Config.cpp,v 1.7 2003-06-04 15:29:18 terpstra Exp $
  *  
  *  Config.cpp - Knows how to load the config file
  *  
@@ -153,6 +153,12 @@ int Config::process_command(const string& key, const string& val)
 	
 	if (key == "group")
 	{
+		if (!isSimple(val) || val.length() == 0)
+		{
+			error << "Group id '" << val << "' is not a simple string!" << endl;
+			return -1;
+		}
+		
 		group = val;
 	}
 	else if (key == "list")

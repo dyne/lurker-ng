@@ -1,4 +1,4 @@
-/*  $Id: Keys.h,v 1.7 2003-05-10 20:08:42 terpstra Exp $
+/*  $Id: Keys.h,v 1.8 2003-06-04 15:29:19 terpstra Exp $
  *  
  *  Keys.h - What prefixs various database keys
  *  
@@ -50,6 +50,7 @@ using std::vector;
 
 /* lu_import_message */
 #define	LU_KEYWORD_LIST		"ml:"	/* Mailing List */
+#define LU_KEYWORD_GROUP	"gr:"	/* Mailing group */
 #define LU_KEYWORD_AUTHOR	"au:"	/* AUthor */
 #define LU_KEYWORD_SUBJECT	"sb:"	/* SuBject */
 

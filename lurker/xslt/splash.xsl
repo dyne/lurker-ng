@@ -14,6 +14,12 @@
  </option>
 </xsl:template>
 
+<xsl:template match="group" mode="select">
+ <option value="{title}">
+  <xsl:value-of select="title"/>
+ </option>
+</xsl:template>
+
 <xsl:template match="list">
  <a href="../mindex/{id}@{$last-date}.{$ext}">
   <xsl:value-of select="email/@name"/>
@@ -124,10 +130,21 @@
     <td>
      <select name="list" id="listdrop">
       <option value=""><xsl:value-of select="$all-li"/></option>
-      <xsl:apply-templates mode="select" select="list"/>
+      <xsl:apply-templates mode="select" select="group/list"/>
      </select>
     </td>
    </tr>
+   <xsl:if test="count(group) > 1">
+    <tr>
+     <th><xsl:value-of select="$appearingroup"/></th>
+     <td>
+      <select name="group" id="listdrop">
+       <option value=""><xsl:value-of select="$all-group"/></option>
+       <xsl:apply-templates mode="select" select="group"/>
+      </select>
+     </td>
+    </tr>
+   </xsl:if>
    <tr>
     <th><xsl:value-of select="$startdate"/></th>
     <td>

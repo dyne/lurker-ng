@@ -30,6 +30,7 @@
  <xsl:variable name="mailbox">the mailbox</xsl:variable>
  <xsl:variable name="mailboxof">of</xsl:variable>
  <xsl:variable name="appearinlist">List</xsl:variable>
+ <xsl:variable name="appearingroup">Group</xsl:variable>
  <xsl:variable name="theselists">these mailing lists</xsl:variable>
  <xsl:variable name="reply">reply</xsl:variable>
  
@@ -43,7 +44,6 @@
 
  <xsl:variable name="splash">Front Page</xsl:variable>
  <xsl:variable name="threading">Tree</xsl:variable>
- <xsl:variable name="lists">Mailing-Lists</xsl:variable>
  <xsl:variable name="titlesearch">Lurker Search</xsl:variable>
  <xsl:variable name="search">Search!</xsl:variable>
  <xsl:variable name="jump">Jump!</xsl:variable>
@@ -73,6 +73,7 @@
 
  <xsl:variable name="all-ye">All years</xsl:variable>
  <xsl:variable name="all-li">Any list</xsl:variable>
+ <xsl:variable name="all-group">Any group</xsl:variable>
  <xsl:variable name="info">Mailing-List Info</xsl:variable>
 
  <xsl:variable name="jumpto">Jump to...</xsl:variable>

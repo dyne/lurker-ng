@@ -10,6 +10,7 @@ v0.9:
 	Depend on zlib and find it like mimelib
 	Added lurker-list and lurker-params to facilitate script writing
 	Added a group option which can be used to categorize the splash
+	Searching by group is now supported
 
 v0.8:
 	@ signs are legitimate inside urls

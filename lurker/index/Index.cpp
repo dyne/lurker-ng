@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.13 2003-05-28 13:16:29 terpstra Exp $
+/*  $Id: Index.cpp,v 1.14 2003-06-04 15:29:19 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -452,6 +452,13 @@ int Index::index_control(time_t import)
 		LU_KEYWORD 
 		LU_KEYWORD_LIST +
 		list.mbox + 
+		'\0' + 
+		id.raw()) != 0) ok = false;
+	
+	if (writer->insert(
+		LU_KEYWORD 
+		LU_KEYWORD_GROUP +
+		list.group + 
 		'\0' + 
 		id.raw()) != 0) ok = false;
 	

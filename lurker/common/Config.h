@@ -1,4 +1,4 @@
-/*  $Id: Config.h,v 1.8 2003-06-04 15:08:10 terpstra Exp $
+/*  $Id: Config.h,v 1.9 2003-06-04 15:29:19 terpstra Exp $
  *  
  *  Config.h - Knows how to load the config file
  *  
@@ -91,7 +91,7 @@ class Config
 #endif
  	}
  	
- 	Config() : list(0), group("Mailing Lists") { }
+ 	Config() : list(0), group("Lists") { }
  	
  	// Open the config from this file.
  	int load(const char* file);
