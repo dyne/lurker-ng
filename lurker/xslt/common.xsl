@@ -4,6 +4,22 @@
     xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
 
+<!-- Truncate long strings -->
+
+<xsl:template name="truncate">
+ <xsl:param name="string"/>
+ <xsl:param name="length"/>
+ <xsl:choose>
+  <xsl:when test="string-length($string) &gt; $length">
+   <xsl:value-of select="substring($string,1,$length-3)"/>
+   <xsl:text>...</xsl:text>
+  </xsl:when>
+  <xsl:otherwise>
+   <xsl:value-of select="$string"/>
+  </xsl:otherwise>
+ </xsl:choose>
+</xsl:template>
+
 <!-- Format email address -->
 
 <xsl:template match="email[@address]">
