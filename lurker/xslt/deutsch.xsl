@@ -23,6 +23,7 @@
  <xsl:variable name="appearinmbox">Auffindbar im</xsl:variable>
  <xsl:variable name="mailboxof">von</xsl:variable>
  <xsl:variable name="mailbox">Briefkasten</xsl:variable>
+ <xsl:variable name="reply">antwort</xsl:variable>
 
  <xsl:variable name="thedate">den</xsl:variable>
  <xsl:variable name="ofdate"></xsl:variable>

@@ -70,7 +70,7 @@
    <a href="mailto:{reply}">(reply)</a>
   </xsl:if>
   <xsl:if test="not(reply)">
-   (reply)
+   (<xsl:value-of select="reply"/>)
   </xsl:if>
   <xsl:if test="threading/next">
    <xsl:apply-templates select="threading/next" mode="snippet"/>

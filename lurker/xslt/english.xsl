@@ -23,6 +23,7 @@
  <xsl:variable name="appearinmbox">Appearing in</xsl:variable>
  <xsl:variable name="mailbox">the mailbox</xsl:variable>
  <xsl:variable name="mailboxof">of</xsl:variable>
+ <xsl:variable name="reply">reply</xsl:variable>
  
  <xsl:variable name="thedate">the</xsl:variable>
  <xsl:variable name="ofdate">of</xsl:variable>
