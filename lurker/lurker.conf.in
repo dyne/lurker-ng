@@ -46,6 +46,8 @@ xslt = xsltproc --nonet -
 # 	--homedir /tmp
 # 	--always-trust
 # 	--no-secmem-warning
+# 	--batch
+# 	--quiet
 # 	--photo-viewer "cat %i >%p"
 # 	--show-photos
 # 	--charset utf-8
@@ -56,6 +58,8 @@ xslt = xsltproc --nonet -
 # 	--homedir /tmp
 # 	--always-trust
 # 	--no-secmem-warning
+# 	--batch
+# 	--quiet
 # 	--photo-viewer "cat %i >%p"
 # 	--show-photos
 # 	--charset utf-8
