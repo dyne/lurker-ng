@@ -1,4 +1,4 @@
-/*  $Id: mindex.c,v 1.4 2002-02-10 23:57:59 terpstra Exp $
+/*  $Id: mindex.c,v 1.5 2002-02-11 00:00:59 terpstra Exp $
  *  
  *  mindex.c - output results from a mindex/ lookup
  *  
@@ -46,8 +46,8 @@ int lu_mindex_handler(char* parameter)
 		return -1;
 	}
 	
-	fprintf(lu_server_link, "mindex %d %d%c", 
-		i, j, LU_PROTO_ENDREQ);
+	fprintf(lu_server_link, "%s%d %d%c", 
+		LU_PROTO_MINDEX, i, j, LU_PROTO_ENDREQ);
 	fflush(lu_server_link);
 	
 	if ((xml = lu_render_open(parameter)) == 0)

@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.2 2002-02-10 10:52:17 terpstra Exp $
+/*  $Id: search.c,v 1.3 2002-02-11 00:00:59 terpstra Exp $
  *  
  *  search.c - output results from a search/ lookup
  *  
@@ -24,15 +24,45 @@
 
 #include "common.h"
 #include "handler.h"
+#include "protocol.h"
 
 int lu_search_handler(char* parameter)
 {
-	FILE* f;
+	FILE* xml;
+	int fragment;
 	
-	if ((f = lu_render_open(parameter)) == 0)
+	char	buf[4096];
+	size_t	got;
+	size_t  get;
+	
+	fprintf(lu_server_link, "%s%s%c", 
+		LU_PROTO_SEARCH, parameter, LU_PROTO_ENDREQ);
+	fflush(lu_server_link);
+	
+	if ((xml = lu_render_open(parameter)) == 0)
 		return -1;
 	
-	fprintf(f, "This is an example page");
+	fragment = 0;
+	while (1)
+	{
+		if (fragment == 0)
+		{
+			if (fscanf(lu_server_link, "%d", &fragment) != 1)
+				break;
+			if (fgetc(lu_server_link) != '\n')
+				break;
+			if (fragment == 0)
+				break;
+		}
+		
+		get = sizeof(buf);
+		if (get > fragment) get = fragment;
+		
+		got = fread(&buf[0], 1, get, lu_server_link);
+		fwrite(&buf[0], 1, got, xml);
+		
+		fragment -= got;
+	}
 	
-	return lu_render_close(f);
+	return lu_render_close(xml);
 }
