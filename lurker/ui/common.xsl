@@ -5,7 +5,7 @@
 
 <xsl:variable name="lurker-url" select="'http://lurker.sourceforge.net/'"/>
 <xsl:variable name="last-date" select="'20380101.000000.00000000'"/>
-<xsl:variable name="jump-date" select="concat(/*/server/eoa-year, '101.000000.00000000')"/>
+<xsl:variable name="jump-date" select="concat(/*/server/eoa-year, '1201.000000.00000000')"/>
 
 <!-- Output control -->
 <xsl:variable name="type" select="'html'"/>
