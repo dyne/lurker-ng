@@ -1,4 +1,5 @@
 Why is lurker warning about From lines during my import?
+How do I change the output lanaguge?
 Why are all my dates off by a fixed hour / don't use "From " header?
 Why shouldn't I open the lurker mboxs with a mail reader?
 Why do I get "opening database: Operation not supported" on MacOS?
@@ -22,6 +23,12 @@ A: Lurker tries to detect corrupt mailboxes. If the quoted text included
    
    Be aware that when importing with '-m' lurker will always treat lines
    starting with 'From ' as part of the message body without a warning.
+
+
+Q: How do I change the output lanaguge?
+
+A: In common.xsl change <xsl:import href="english.xsl"/> to
+   <xsl:import href="deutsch.xsl"/> or something else.
 
 
 Q: Why are all my dates off by a fixed hour / don't use "From " header?
