@@ -10,6 +10,7 @@ v0.1e:
 	Support utf-8 mailto if escape-uri available
 	Mangle mailto:s regardless of escape-uri availability
 	Escape URLs entirely in the xslt without C assistence
+	XSL support detection via javascript added
 
 v0.1d:
 	Fixed an off by one error in btree.c (could assert-fail)

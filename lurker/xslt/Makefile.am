@@ -5,7 +5,7 @@ XSL =	render.xsl render-html.xsl common.xsl error.xsl redirect.xsl \
 	english.xsl deutsch.xsl japanese.xsl \
 	basic.css
 
-INDEX =	index.html index.xsl
+INDEX =	index.html browserdetect.js
 
 fmt_DATA = ${XSL}
 www_DATA = ${INDEX}

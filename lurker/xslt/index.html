@@ -1,16 +1,27 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="index.xsl"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
- <head>
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
-  <meta content="1;URL=splash/index.html" http-equiv="Refresh"/>
-  
-  <link rel="stylesheet" href="index.xsl" type="text/xsl"/>
-  <title>Your Browser Does Not Support XSL</title>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en" lang="en">
+<head>
+ <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+ <script language="javascript" type="text/javascript" src="browserdetect.js"></script>
+ <script language="JavaScript">
+<!--
+if (browser.isIE6up==true) {document.location.href='splash/index.xml'; }
+-->
+</script>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta content="8;URL=splash/index.html" http-equiv="Refresh">
+  <title>XML/HTML interface</title>
  </head>
  <body>
-  <p/>Your web browser does not appear to support XSL.
-     <a href="splash/index.html">Try the html version of our site instead.</a>
+  <h1>XML/HTML interface selection</h1>
+  <h2>Your web browser does not appear to support XSL</h2>
+
+  <p>Try <a href="splash/index.html">the html version of our site</a> instead.
+  You will automatically be redirected there in eight seconds.
+
+  <p>If you believe that your browser supports XSL, please
+  try <a href="splash/index.xml">the xml version of our site</a>.
+  If it appears to function, please email the authors of lurker with
+  details about your browser and version.
  </body>
 </html>
