@@ -107,12 +107,8 @@
     <xsl:otherwise>badsig</xsl:otherwise>
    </xsl:choose>
   </xsl:attribute>
-  <div class="details">
-   <xsl:if test="photo">
-    <img src="{photo}" class="photo"/>
-   </xsl:if>
-   <xsl:apply-templates mode="body" select="details"/>
-  </div>
+  <xsl:if test="photo"><img src="{photo}" class="photo"/></xsl:if>
+  <div class="details"><xsl:apply-templates mode="body" select="details"/></div>
   <xsl:apply-templates mode="body" select="data"/>
  </xsl:element>
 </xsl:template>

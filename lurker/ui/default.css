@@ -213,6 +213,7 @@ div.squash {
 div.goodsig {
   margin: 0px;
   padding: 0px;
+  overflow: hidden;
   border: 1px solid #0F0;
 }
 div.goodsig div.details {
@@ -222,6 +223,7 @@ div.goodsig div.details {
 div.badsig {
   margin: 0px;
   padding: 0px;
+  overflow: hidden;
   border: 1px solid #F00;
 }
 div.badsig div.details {
