@@ -1,4 +1,4 @@
-/*  $Id: avl.h,v 1.2 2002-07-09 22:42:45 terpstra Exp $
+/*  $Id: avl.h,v 1.3 2002-07-11 16:14:20 terpstra Exp $
  *  
  *  avl.h - Manage a AVL search tree
  *  
@@ -481,7 +481,7 @@ static int my_avl_##PREFIX##_rmv(RECTYPE* n, RECTYPE victim) \
 	if (TABLE[*n].left != INVALID) \
 	{ \
 		RECTYPE tn; \
-		int tmp = my_avl_##PREFIX##_kill_largest( \
+		tmp = my_avl_##PREFIX##_kill_largest( \
 			&TABLE[*n].left, &tn); \
 		\
 		TABLE[tn].left  = TABLE[*n].left; \
@@ -497,7 +497,7 @@ static int my_avl_##PREFIX##_rmv(RECTYPE* n, RECTYPE victim) \
 	if (TABLE[*n].right != INVALID) \
 	{ \
 		RECTYPE tn; \
-		int tmp = my_avl_##PREFIX##_kill_smallest( \
+		tmp = my_avl_##PREFIX##_kill_smallest( \
 			&TABLE[*n].right, &tn); \
 		\
 		TABLE[tn].left  = TABLE[*n].left; \
