@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.44 2002-08-14 10:14:20 terpstra Exp $
+/*  $Id: mbox.c,v 1.45 2003-01-04 20:27:01 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -325,8 +325,12 @@ static int my_mbox_process_mbox(
 	 * However, often we have people with personal name in the from
 	 * field even though they specified a reply-to. We pick this in
 	 * preference.
+	 * 
+	 * Another gotcha is that the reply_to address is sometimes the same
+	 * as the mailing list address.
+	 *
 	 */
-	  	           	 		          
+	
 	if (m.env->reply_to)
 	{
 		if (m.env->reply_to->personal)
@@ -351,6 +355,34 @@ static int my_mbox_process_mbox(
 			snprintf(&author_email[0], sizeof(author_email),
 				"%s@%s", m.env->reply_to->mailbox,
 				m.env->reply_to->host);
+		}
+		
+		if (list->address && !strcmp(&author_email[0], list->address))
+		{
+			if (m.env->from && m.env->from->host)
+			{
+				if (m.env->from->personal) lu_decode_header(
+					m.env->from->personal,
+					&author_name[0],
+					sizeof(author_name),
+					lu_mbox_find_charset(m.body));
+				
+				snprintf(&author_email[0], sizeof(author_email),
+					"%s@%s", m.env->from->mailbox,
+					m.env->from->host);
+			}
+			else if (m.env->sender && m.env->sender->host)
+			{
+				if (m.env->sender->personal) lu_decode_header(
+					m.env->sender->personal,
+					&author_name[0],
+					sizeof(author_name),
+					lu_mbox_find_charset(m.body));
+				
+				snprintf(&author_email[0], sizeof(author_email),
+					"%s@%s", m.env->sender->mailbox,
+					m.env->sender->host);
+			}
 		}
 	}
 	else if (m.env->from)

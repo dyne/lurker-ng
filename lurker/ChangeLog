@@ -1,3 +1,6 @@
+v0.5:
+	Ignore reply-to address if equal to mailing list address
+
 v0.1f:
 	Fixed overlong browser caching of last mindex for a list
 	Ignore SIGPIPE for cases where libst doesn't catch it
