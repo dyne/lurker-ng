@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT CXXCPP EGREP JAM BINDIR LIBDIR INCDIR VARDIR ETCDIR DATADIR LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT CXXCPP EGREP JAM BINDIR LIBDIR INCDIR VARDIR ETCDIR DATADIR MANDIR LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -2794,6 +2794,19 @@ prefix_backup="$prefix"
   DATADIR="$ac_define_dir_result"
 
 
+prefix_backup="$prefix"
+  exec_prefix_backup="$exec_prefix"
+  ac_define_dir_result=""${mandir}""
+  if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
+  if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
+  while echo "$ac_define_dir_result" | grep -q '\$'; do
+    ac_define_dir_result=`eval echo $ac_define_dir_result`
+  done
+  prefix="${prefix_backup}"
+  exec_prefix="${exec_prefix}"
+  MANDIR="$ac_define_dir_result"
+
+
 
                               ac_config_files="$ac_config_files Jamrules lurker.conf common/Version.h"
 
@@ -3448,6 +3461,7 @@ s,@INCDIR@,$INCDIR,;t t
 s,@VARDIR@,$VARDIR,;t t
 s,@ETCDIR@,$ETCDIR,;t t
 s,@DATADIR@,$DATADIR,;t t
+s,@MANDIR@,$MANDIR,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
