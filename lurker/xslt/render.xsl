@@ -24,7 +24,7 @@
 
 <!-- Document Root -->
 <xsl:template match="/">
- <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="{$lang}" lang="{$lang}">
+ <html xmlns="http://www.w3.org/1999/xhtml" lang="{$lang}">
   <head>
    <xsl:if test="/redirect/url">
     <meta content="0;URL=../{/redirect/url}.{$ext}" http-equiv="Refresh"/>

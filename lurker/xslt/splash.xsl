@@ -39,16 +39,16 @@
   </xsl:text>
   <tr>
    <xsl:if test="count($exist1) &gt; 0">
-    <td nowrap="true"><xsl:apply-templates select="$col1[position() = 1]"/></td>
+    <td nowrap="NOWRAP"><xsl:apply-templates select="$col1[position() = 1]"/></td>
    </xsl:if>
    <xsl:if test="count($exist2) &gt; 0">
-    <td nowrap="true"><xsl:apply-templates select="$col2[position() = 1]"/></td>
+    <td nowrap="NOWRAP"><xsl:apply-templates select="$col2[position() = 1]"/></td>
    </xsl:if>
    <xsl:if test="count($exist3) &gt; 0">
-    <td nowrap="true"><xsl:apply-templates select="$col3[position() = 1]"/></td>
+    <td nowrap="NOWRAP"><xsl:apply-templates select="$col3[position() = 1]"/></td>
    </xsl:if>
    <xsl:if test="count($exist4) &gt; 0">
-    <td nowrap="true"><xsl:apply-templates select="$col4[position() = 1]"/></td>
+    <td nowrap="NOWRAP"><xsl:apply-templates select="$col4[position() = 1]"/></td>
    </xsl:if>
   </tr>
   <xsl:call-template name="format">
