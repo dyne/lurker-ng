@@ -5,7 +5,7 @@ EXTRA_DIST = system.h.in
 libcommon_a_SOURCES = \
 	common.h common.c \
 	message.c message.h \
-	stub.c io.h protocol.h prefix.h
+	stub.c io.h prefix.h
 
 test_SOURCES = main.c
 test_LDADD = @STORAGE_LIBS@ libcommon.a
