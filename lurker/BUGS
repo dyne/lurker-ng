@@ -2,11 +2,14 @@ Ideas:
 	errordocument failthrough configable
 	maybe use: message/YYYYMM,email,20chars of subject,goop
 		-- human recognizable
+	secured lists? login required?
+	ml:debian-devel instead of ml:#
 
 Unfulfilled requirements:
 	Better packing of tree
 
 BUGS:
+	Read buffer in libkap has not been re-integrated
 	We don't check for double append
 	
 	Attachments are never cached because we need to tell the browser
