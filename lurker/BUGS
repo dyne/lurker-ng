@@ -18,8 +18,9 @@ Unfulfilled requirements:
 	them and discarded contents of <head><style>... for instance.
 
 BUGS:
+	Honour indenting in email
+	We don't check for double append
 	Presently we have no keyword write buffer
-	Also we don't check for double append
 	
 	Attachments are never cached because we need to tell the browser
 	the content-type and we have no way to record this.
