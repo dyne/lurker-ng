@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.25 2002-08-27 22:11:44 terpstra Exp $
+/*  $Id: append.c,v 1.26 2003-01-04 20:21:21 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -177,7 +177,7 @@ static int WRITE_RECORDS(struct Kap_Append* k, off_t sector, const void* buf, si
 		}
 		
 		memcpy(	&k->tail_cache[cache_cut - k->cache_off],
-			&((unsigned char*)buf)[cache_cut - sector],
+			&((const unsigned char*)buf)[cache_cut - sector],
 			cache_amt);
 		
 #ifdef DEBUG

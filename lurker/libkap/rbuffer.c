@@ -1,4 +1,4 @@
-/*  $Id: rbuffer.c,v 1.10 2002-08-25 15:59:12 terpstra Exp $
+/*  $Id: rbuffer.c,v 1.11 2003-01-04 20:21:21 terpstra Exp $
  *  
  *  rbuffer.c - Implements a buffering system that read combines
  *  
@@ -379,7 +379,7 @@ static void write(
 		/* Copy the write to cache */
 		memcpy(	&record->cache[i].buffer[k->rbuffer->recsize*
 				(start - record->cache[i].offset)],
-			((unsigned char*)out) + k->rbuffer->recsize*
+			((const unsigned char*)out) + k->rbuffer->recsize*
 				(start - offset),
 			(end - start) * k->rbuffer->recsize);
 	}
@@ -748,8 +748,9 @@ void kap_rbuffer_write(Kap k, const KRecord* kr,
 	{
 		if (k->rbuffer->records[i].id == kr->jumps[0])
 		{
-			return write(k, kr, &k->rbuffer->records[i],
+			write(k, kr, &k->rbuffer->records[i],
 				offset, out, amount);
+			return;
 		}
 	}
 	
