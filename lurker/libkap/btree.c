@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.10 2002-07-02 21:31:07 terpstra Exp $
+/*  $Id: btree.c,v 1.11 2002-07-02 21:42:11 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -579,7 +579,8 @@ static int is_full(Kap k, const unsigned char* sector)
 	
 	for (i = 0; i < count; i++)
 	{
-		scan += strlen(scan) + 1;
+		while (*scan) scan++;
+		scan++;
 		
 		if (leaf)	scan += 1 + (*scan);
 		else		scan += k->btree->tree_size;
@@ -639,7 +640,9 @@ static int split_child(Kap k, off_t parent, off_t child, off_t* new,
 	
 	for (hits = 0, next = scan; next < mid; scan = next, hits++)
 	{
-		next = scan + strlen(scan) + 1;
+		next = scan;
+		while (*next) next++;
+		next++;
 		
 		if (leaf)	next += 1 + (*next);
 		else		next += k->btree->tree_size;
@@ -1061,4 +1064,3 @@ int kap_btree_write(Kap k, const char* key,
 	
 	return 0;
 }
-
