@@ -105,7 +105,7 @@ lurker-search.1: lurker-search.sgml
     </variablelist>
   </refsect1>
   <refsect1>
-    <title>Search Terms</title>
+    <title>SEARCH TERMS</title>
 
     <para>Lurker-search accepts these keywords for searching:</para>
     <variablelist>
