@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.7 2004-08-20 02:42:45 terpstra Exp $
+/*  $Id: list.cpp,v 1.8 2004-08-24 16:18:07 terpstra Exp $
  *  
  *  list.cpp - Handle a list/ command
  *  
@@ -40,7 +40,7 @@
 
 #include "commands.h"
 #include "Cache.h"
-#include "KeyReader.h"
+#include "Summary.h"
 
 using namespace std;
 

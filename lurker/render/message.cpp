@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.36 2004-08-20 02:42:45 terpstra Exp $
+/*  $Id: message.cpp,v 1.37 2004-08-24 16:18:07 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -55,7 +55,7 @@
 
 #include "commands.h"
 #include "Threading.h"
-#include "KeyReader.h"
+#include "Search.h"
 #include "Cache.h"
 
 #define OLD_PGP_HEADER	"-----BEGIN PGP SIGNED MESSAGE-----\n"
@@ -638,8 +638,10 @@ string MBox::load(ESort::Reader* db, const MessageId& rel, const Config& conf)
 	string ok;
 	vector<Summary> sum;
 	
-	KeyReader n(db, Forward, LU_KEYWORD_LIST + cfg.mbox, rel);
-	if ((ok = n.pull(2, sum)) != "") return ok;
+	Search n(conf, db, Forward, rel);
+	n.keyword(LU_KEYWORD_LIST + cfg.mbox);
+	
+	if (!n.pull(2, sum)) return "Pulling next two failed";
 	
 	if (sum.size() < 1 || sum[0].id() != rel)
 		return "Relative message does not exist";
@@ -652,8 +654,10 @@ string MBox::load(ESort::Reader* db, const MessageId& rel, const Config& conf)
 	
 	sum.clear();
 	
-	KeyReader p(db, Backward, LU_KEYWORD_LIST + cfg.mbox, rel);
-	if ((ok = p.pull(1, sum)) != "") return ok;
+	Search p(conf, db, Backward, rel);
+	p.keyword(LU_KEYWORD_LIST + cfg.mbox);
+	
+	if (!p.pull(1, sum)) return "Pulling previous failed";
 	
 	if (sum.size() >= 1)
 	{
@@ -695,6 +699,18 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		cout <<	"Content-Type: text/html\r\n\r\n";
 		cout << error(_("Database message source pull failure"), ok,
 			_("The specified message does not exist."));
+		return 1;
+	}
+	
+	// No keywords means implicitly search for everything
+	vector<Summary> dead;
+	Search e(cfg, db, Forward, id);
+	if (!e.pull(1, dead) || dead.empty() || dead[0].id() != id)
+	{
+		cout << "Status: 200 OK\r\n";
+		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout << error(_("Database message source pull failure"), "not found",
+			_("The specified message has been deleted."));
 		return 1;
 	}
 	
@@ -751,8 +767,10 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		for (mid = mids.begin(); mid != mids.end(); ++mid)
 		{
 			// cout << "MID: " << *mid << "\n";
-			KeyReader k(db, Forward, LU_KEYWORD_REPLY_TO + *mid);
-			if ((ok = k.pull(1000, sums)) != "")
+			Search k(cfg, db, Forward);
+			k.keyword(LU_KEYWORD_REPLY_TO + *mid);
+			
+			if (!k.pull(1000, sums))
 				break;
 		}
 		
@@ -791,8 +809,10 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		
 		for (mid = mids.begin(); mid != mids.end(); ++mid)
 		{
-			KeyReader k(db, Forward, LU_KEYWORD_MESSAGE_ID + *mid);
-			if ((ok = k.pull(1000, sums)) != "")
+			Search k(cfg, db, Forward);
+			k.keyword(LU_KEYWORD_MESSAGE_ID + *mid);
+			
+			if (!k.pull(1000, sums))
 				break;
 		}
 		

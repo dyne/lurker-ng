@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.12 2004-08-20 02:42:45 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.13 2004-08-24 16:18:07 terpstra Exp $
  *  
  *  mindex.cpp - Handle a mindex/ command
  *  
@@ -33,7 +33,7 @@
 #include <Keys.h>
 
 #include "commands.h"
-#include "KeyReader.h"
+#include "Search.h"
 #include "Cache.h"
 
 using namespace std;
@@ -81,17 +81,20 @@ int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	vector<Summary> forward, backward, queue;
 	
-	KeyReader backwardk(db, Backward, LU_KEYWORD_LIST + list.mbox, id);
-	KeyReader forwardk (db, Forward,  LU_KEYWORD_LIST + list.mbox, id);
+	Search backwardk(cfg, db, Backward, id);
+	backwardk.keyword(LU_KEYWORD_LIST + list.mbox);
+	
+	Search forwardk (cfg, db, Forward,  id);
+	forwardk .keyword(LU_KEYWORD_LIST + list.mbox);
 	
 	string ok;
 	
-	if ((ok = forwardk .pull(35, forward )) != "" ||
-	    (ok = backwardk.pull(35, backward)) != "")
+	if (!forwardk .pull(35, forward ) ||
+	    !backwardk.pull(35, backward))
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database mindex seek failure"), ok,
+		cout << error(_("Database mindex seek failure"), "pull",
 			_("Something internal to the database failed. "
 			  "Please contact the lurker user mailing list for "
 			  "furth assistence."));
