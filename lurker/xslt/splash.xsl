@@ -68,10 +68,10 @@
   <xsl:variable name="off5" select="$off4+$size4"/>
   
   <xsl:call-template name="format">
-   <xsl:with-param name="col1" select="list[position() &gt; $off1 and position() &lt;= $off2]"/>
-   <xsl:with-param name="col2" select="list[position() &gt; $off2 and position() &lt;= $off3]"/>
-   <xsl:with-param name="col3" select="list[position() &gt; $off3 and position() &lt;= $off4]"/>
-   <xsl:with-param name="col4" select="list[position() &gt; $off4 and position() &lt;= $off5]"/>
+   <xsl:with-param name="col1" select="list[position() &gt;= $off1 and position() &lt; $off2]"/>
+   <xsl:with-param name="col2" select="list[position() &gt;= $off2 and position() &lt; $off3]"/>
+   <xsl:with-param name="col3" select="list[position() &gt;= $off3 and position() &lt; $off4]"/>
+   <xsl:with-param name="col4" select="list[position() &gt;= $off4 and position() &lt; $off5]"/>
   </xsl:call-template>
  </table>
  </div>
