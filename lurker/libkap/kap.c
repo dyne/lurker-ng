@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.13 2002-07-19 14:25:08 terpstra Exp $
+/*  $Id: kap.c,v 1.14 2002-07-22 10:57:10 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -516,11 +516,15 @@ static int append_back(void* arg, const char* key, unsigned char* record, ssize_
 	}
 	
 	nfo->out = kap_append_append(nfo->k, &kr, nfo->data, nfo->len);
-	
-	*len = kap_encode_krecord(record, &kr);
 	*nfo->recs = kr.records;
 	
-	return 1;
+	if (nfo->out == 0)
+	{
+		*len = kap_encode_krecord(record, &kr);
+		return 1;
+	}
+	
+	return 0;
 }
 
 int kap_append_real(Kap k, const char* key, void* data, size_t len,
