@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.17 2002-05-06 22:18:34 terpstra Exp $
+/*  $Id: main.c,v 1.18 2002-05-06 23:01:58 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -288,6 +288,7 @@ int main(int argc, char* argv[])
 	{
 		printf("Content-type: %s\r\n\r\n", type);
 	}
+	fflush(stdout);
 	
 	snprintf(&buf[0], sizeof(buf), "%s.%s", qs, ext);
 	fd = -1;
@@ -299,7 +300,6 @@ int main(int argc, char* argv[])
 			LU_S_READ | LU_S_WRITE)) != -1)
 		{
 			/* could cache, so do it */
-			fflush(stdout);
 			stdoutfd = dup(1);
 			close(1);
 			dup(fd);
