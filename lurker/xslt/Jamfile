@@ -23,6 +23,8 @@ InstallFile $(VARDIR)/www/$(PACKAGE)/fmt :
 	thread.xsl
 	;
 
+SoftLink lang.xsl : english.xsl ;
+
 InstallFile $(VARDIR)/www/$(PACKAGE)/attach  : stub ;
 InstallFile $(VARDIR)/www/$(PACKAGE)/mbox    : stub ;
 InstallFile $(VARDIR)/www/$(PACKAGE)/message : stub ;
