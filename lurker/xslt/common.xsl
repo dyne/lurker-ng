@@ -189,6 +189,7 @@
 </xsl:template>
 
 <xsl:template match="server" mode="footer">
+ Lurker <xsl:copy-of select="version"/> - 
  <xsl:copy-of select="$adminby"/> <xsl:apply-templates select="email"/>
 </xsl:template>
 

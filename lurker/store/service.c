@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.85 2002-07-21 19:26:08 terpstra Exp $
+/*  $Id: service.c,v 1.86 2002-07-22 12:17:31 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -490,12 +490,14 @@ static int my_service_server(
 	My_Service_Handle h)
 {
 	if (my_service_buffer_write(h, " <server>\n  <hostname>")       != 0) return -1;
-	if (my_service_write_str(h, lu_config_file->list_host)          != 0) return -1;
+	if (my_service_write_str   (h, lu_config_file->list_host)       != 0) return -1;
 	if (my_service_buffer_write(h, "</hostname>\n  <email name=\"") != 0) return -1;
-	if (my_service_write_str(h, lu_config_file->admin_name)         != 0) return -1;
+	if (my_service_write_str   (h, lu_config_file->admin_name)      != 0) return -1;
 	if (my_service_buffer_write(h, "\" address=\"")                 != 0) return -1;
-	if (my_service_write_str(h, lu_config_file->admin_address)      != 0) return -1;
-	if (my_service_buffer_write(h, "\"/>\n </server>\n")            != 0) return -1;
+	if (my_service_write_str   (h, lu_config_file->admin_address)   != 0) return -1;
+	if (my_service_buffer_write(h, "\"/>\n  <version>")             != 0) return -1;
+	if (my_service_write_str   (h, PACKAGE_VERSION)                 != 0) return -1;
+	if (my_service_buffer_write(h, "</version>\n </server>\n")      != 0) return -1;
 	
 	return 0;
 }
