@@ -1,4 +1,4 @@
-/*  $Id: kapdump.c,v 1.9 2002-07-11 16:24:31 terpstra Exp $
+/*  $Id: kapdump.c,v 1.10 2002-07-17 10:30:50 terpstra Exp $
  *  
  *  kapdump.c - Export a kap database to a human readable flat text file
  *  
@@ -127,7 +127,7 @@ int main(int argc, char * const * argv)
 			return 0;
 			
 		case 'b':
-			mode &= ~KAP_APPEND;
+			mode = KAP_BTREE;
 			break;
 		
 		case 'c':

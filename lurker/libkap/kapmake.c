@@ -1,4 +1,4 @@
-/*  $Id: kapmake.c,v 1.9 2002-07-11 16:24:31 terpstra Exp $
+/*  $Id: kapmake.c,v 1.10 2002-07-17 10:30:50 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool from kapdump raw text
  *  
@@ -123,7 +123,7 @@ int main(int argc, char * const * argv)
 			return 0;
 			
 		case 'b':
-			mode &= ~KAP_APPEND;
+			mode = KAP_BTREE;
 			break;
 		
 		case 's':

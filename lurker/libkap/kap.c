@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.11 2002-07-12 19:02:00 terpstra Exp $
+/*  $Id: kap.c,v 1.12 2002-07-17 10:30:50 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -120,6 +120,11 @@ int kap_create(Kap* k, int flags)
 {
 	*k = malloc(sizeof(struct Kap_T));
 	if (!*k) goto kap_create_error0;
+	
+	if ((flags & (KAP_WBUFFER|KAP_APPEND)) == KAP_WBUFFER)
+		return KAP_OPT_INVALID;
+	if ((flags & (KAP_WBUFFER|KAP_BTREE))  == KAP_WBUFFER)
+		return KAP_OPT_INVALID;
 	
 	(*k)->btree   = 0;
 	(*k)->append  = 0;
