@@ -6,6 +6,7 @@ v0.1e:
 	Output a Last-Modified and Date header from the lurker.cgi to match
 		what the webserver outputs
 	Removed an evil kludge that relies on C calling convention
+	Removed exslt dependency so IE6 xsl works again
 
 v0.1d:
 	Fixed an off by one error in btree.c (could assert-fail)

@@ -2,7 +2,6 @@
 <xsl:stylesheet 
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:exslt="http://exslt.org/common"
     version="1.0">
 
 
@@ -91,25 +90,21 @@
 <!-- Format summary lists -->
 
 <xsl:template name="msg-thread">
- <xsl:variable name="sum">
-  <xsl:choose>
-   <xsl:when test="ancestor::snippet">
-    <xsl:copy-of select="summary"/>
-   </xsl:when>
-   <xsl:when test="descendant::summary">
-    <xsl:copy-of select="descendant::summary"/>
-   </xsl:when>
-   <xsl:when test="ancestor::summary">
-    <xsl:copy-of select="ancestor::summary"/>
-   </xsl:when>
-  </xsl:choose>
- </xsl:variable>
- 
  <xsl:element name="a">
   <xsl:attribute name="class">thm</xsl:attribute>
   <xsl:attribute name="href">
    <xsl:text>../message/</xsl:text>
-   <xsl:value-of select="exslt:node-set($sum)/summary/mid"/>
+   <xsl:choose>
+    <xsl:when test="summary">
+     <xsl:value-of select="summary/mid"/>
+    </xsl:when>
+    <xsl:when test="ancestor::snippet">
+     <xsl:value-of select="descendant::snippet/mid"/>
+    </xsl:when>
+    <xsl:when test="ancestor::summary">
+     <xsl:value-of select="ancestor::summary/mid"/>
+    </xsl:when>
+   </xsl:choose>
    <xsl:text>.</xsl:text>
    <xsl:value-of select="$ext"/>
   </xsl:attribute>
@@ -118,7 +113,17 @@
    <xsl:attribute name="alt"><xsl:value-of select="$malt"/></xsl:attribute>
    
    <xsl:attribute name="title">
-    <xsl:apply-templates select="exslt:node-set($sum)" mode="post"/>
+    <xsl:choose>
+     <xsl:when test="summary">
+      <xsl:apply-templates select="summary" mode="post"/>
+     </xsl:when>
+     <xsl:when test="ancestor::snippet">
+      <xsl:apply-templates select="descendant::snippet" mode="post"/>
+     </xsl:when>
+     <xsl:when test="ancestor::summary">
+      <xsl:apply-templates select="ancestor::summary" mode="post"/>
+     </xsl:when>
+    </xsl:choose>
    </xsl:attribute>
    
    <xsl:attribute name="src">
