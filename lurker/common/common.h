@@ -1,4 +1,4 @@
-/*  $Id: common.h,v 1.15 2002-07-11 20:39:23 terpstra Exp $
+/*  $Id: common.h,v 1.16 2002-07-12 13:17:03 terpstra Exp $
  *  
  *  common.h - common definitions and types for all tools
  *  
@@ -32,6 +32,25 @@
 #define DEFAULT_CONFIG_FILE	SYSCONFDIR    "/"     PACKAGE ".conf"
 #define	DEFAULT_PID_FILE	LOCALSTATEDIR "/run/" PACKAGE "d.pid"
 
+#ifndef HAVE_TIME_T
+typedef long time_t;
+#endif
+
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h> 
+#endif
+
+#if TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
 #if SIZEOF_CHAR == 1
 typedef unsigned char lu_byte;
 #else
@@ -56,29 +75,12 @@ typedef unsigned long lu_quad;
 
 #if SIZEOF_LONG == 8
 typedef unsigned long lu_addr;
+#elif SIZEOF_OFF_T == 8
+typedef off_t lu_addr;
 #elif SIZEOF_LONG_LONG == 8
 typedef unsigned long long lu_addr;
 #else
 #error Need an 64bit type
-#endif
-
-#ifndef HAVE_TIME_T
-typedef long time_t;
-#endif
-
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h> 
-#endif
-
-#if TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
 #endif
 
 #ifdef HAVE_ERRNO_H
