@@ -35,7 +35,7 @@
 
  jump-to-date="Siirry niihin tämän listan viesteihin, jotka on lähetetty suunnilleen seuraavana ajankohtana:"
  search-list="Etsi tämän listan viestit, joissa esiintyvät seuraavat hakusanat:"
- jump-button="Siirry"
+ jump-button="Siirry!"
  use-special-word-list="Hakusanalla "
  to-search-list=" voit rajoittaa haun koskemaan vain tätä listaa."
  newest-messages="Näytä uusimmat viestit"
