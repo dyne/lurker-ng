@@ -1,2 +1,14 @@
+v0.1b:
+	Improved installation documentation
+	Configure allows dependencies to be in non root locations
+	Fixed a configure problem on MacOS X
+	Switched everything to ISO C99
+	Added the write caching algorithm (about a 15x import speedup)
+	Added a new database format for flatfile (about 2x speedup)
+	Breaders can now reclaim boundary info memory
+	Attempt to save the database on a segfault
+	Profiling code added
+	Minor bugfixes
+	
 v0.1a:
 	Initial alpha release to test core lurker functionality.
