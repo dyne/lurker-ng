@@ -1,5 +1,6 @@
 v0.1e:
 	Don't warn if a maildrop adds whitespace before "From ..."
+	Allow port numbers in URLs ("http://localhost:8080/foo")
 
 v0.1d:
 	Fixed an off by one error in btree.c (could assert-fail)
