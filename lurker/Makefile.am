@@ -1,4 +1,4 @@
-SUBDIRS = libesort common index prune render ui imgs
+SUBDIRS = . libesort common index prune render ui imgs
 
 EXTRA_DIST = FAQ
 

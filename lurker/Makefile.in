@@ -117,7 +117,7 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 wwwdir = @wwwdir@
-SUBDIRS = libesort common index prune render ui imgs
+SUBDIRS = . libesort common index prune render ui imgs
 
 EXTRA_DIST = FAQ
 
