@@ -3,6 +3,8 @@ Ideas:
 	maybe use: message/YYYYMM,email,20chars of subject,goop
 		-- human recognizable
 	secured lists? login required?
+	Managle mailto: up to the worst RFC allows.
+	Sort by other things than time
 	Maybe manually cache first two levels of btree
 	Maybe manually cache tail of the append layer
 
