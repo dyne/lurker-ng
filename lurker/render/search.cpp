@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.7 2003-04-28 00:34:31 terpstra Exp $
+/*  $Id: search.cpp,v 1.8 2003-06-10 02:31:13 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -306,7 +306,7 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 		param.substr(e, string::npos));
 	
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/render.xsl\"?>\n"
+		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/search.xsl\"?>\n"
 		<< "<search>\n"
 		<< " " << cfg << "\n"
 		<< " <query>" << xmlEscape << keys << "</query>\n";

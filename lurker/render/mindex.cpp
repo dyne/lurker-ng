@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.6 2003-05-18 20:15:48 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.7 2003-06-10 02:31:13 terpstra Exp $
  *  
  *  mindex.cpp - Handle a mindex/ command
  *  
@@ -143,7 +143,7 @@ int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 	Cache cache(cfg, "mindex", param);
 	
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/render.xsl\"?>\n"
+		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/mindex.xsl\"?>\n"
 		<< "<mindex>\n"
 		<< " " << cfg << "\n"
 		<< " " << list << "\n";

@@ -21,6 +21,8 @@ v0.9:
 	Make messages with no in-reply-to reachable in snippet view
 	Added new list page which include new topics
 	Current directory is now relative to generated content
+	Converted Wheat's html page to xslt and merged it in
+	Rewrote the entire UI to integrate the new topics page
 
 v0.8:
 	@ signs are legitimate inside urls

@@ -1,4 +1,4 @@
-/*  $Id: splash.cpp,v 1.4 2003-06-04 16:24:07 terpstra Exp $
+/*  $Id: splash.cpp,v 1.5 2003-06-10 02:31:13 terpstra Exp $
  *  
  *  splash.cpp - Handle a splash/ command
  *  
@@ -34,7 +34,7 @@ int handle_splash(const Config& cfg, ESort::Reader* db, const string& param)
 	Cache cache(cfg, "splash", param);
 	
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/render.xsl\"?>\n"
+		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/splash.xsl\"?>\n"
 		<< "<splash>\n"
 		<< " " << cfg << "\n";
 	
