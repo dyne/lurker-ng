@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.7 2002-02-10 08:20:44 terpstra Exp $
+/*  $Id: service.c,v 1.8 2002-02-10 09:33:53 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -51,11 +51,11 @@ static int  my_service_used;
 static int my_service_buffer_writel(
 	st_netfd_t fd, 
 	const char* str,
-	int len)
+	size_t len)
 {
 	while (len)
 	{
-		int amt = sizeof(my_service_buffer) - my_service_used;
+		size_t amt = sizeof(my_service_buffer) - my_service_used;
 		if (amt > len)
 			amt = len;
 		
@@ -67,6 +67,9 @@ static int my_service_buffer_writel(
 		
 		if (my_service_used == sizeof(my_service_buffer))
 		{
+#ifdef DEBUG
+			write(1, &my_service_buffer[0], sizeof(my_service_buffer));
+#endif
 			if (st_write(fd, &my_service_buffer[0],
 				sizeof(my_service_buffer), 5000000) !=
 				sizeof(my_service_buffer))
@@ -91,6 +94,10 @@ static int my_service_buffer_write(
 static int my_service_buffer_flush(
 	st_netfd_t fd)
 {
+#ifdef DEBUG
+	write(1, &my_service_buffer[0], my_service_used);
+#endif
+
 	if (st_write(fd, &my_service_buffer[0], my_service_used, 5000000) !=
 		my_service_used)
 	{
@@ -101,7 +108,7 @@ static int my_service_buffer_flush(
 	return 0;
 }
 
-static void my_service_write_strl(
+static int my_service_write_strl(
 	st_netfd_t fd,
 	const char* buf,
 	size_t length)
@@ -159,9 +166,10 @@ static void my_service_write_strl(
 	}
 	
 	my_service_buffer_writel(fd, start, buf - start);
+	return 0;
 }
 
-static void my_service_write_str(
+static int my_service_write_str(
 	st_netfd_t fd,
 	const char* buf)
 {
@@ -484,16 +492,24 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 		
 		my_service_buffer_write(fd, " <summary>\n  <id>");
 		my_service_write_int(fd, ids[i]);
-		my_service_buffer_write(fd, "</id>\n <timestamp>");
+		my_service_buffer_write(fd, "</id>\n  <timestamp>");
 		my_service_write_int(fd, msg.timestamp);
-		my_service_buffer_write(fd, "</timestamp>\n <thread>");
+		my_service_buffer_write(fd, "</timestamp>\n  <thread>");
 		my_service_write_int(fd, msg.thread_parent);
 		my_service_buffer_write(fd, "</thread>\n");
+		
+		lu_summary_write_variable(
+			&my_service_buffer_write,
+			&my_service_write_strl,
+			fd,
+			msg.flat_offset);
+		
+		my_service_buffer_write(fd, " </summary>\n");
 	}
 	
 	my_service_buffer_write(fd, "</mindex>\n");
 	
-	return 0;
+	return -1;
 }
 
 static int my_service_digest_request(st_netfd_t fd, const char* request)
@@ -501,11 +517,15 @@ static int my_service_digest_request(st_netfd_t fd, const char* request)
 	int out = -1;
 	
 	my_service_used = 0;
+
+#ifdef DEBUG
+	printf("Request: '%s'\n", request);
+#endif
 	
 	/* Determine what to do with the request */
-	if (memcmp(request, LU_PROTO_GETMSG, sizeof(LU_PROTO_GETMSG))) 
+	if (!memcmp(request, LU_PROTO_GETMSG, sizeof(LU_PROTO_GETMSG)-1)) 
 		out = my_service_getmsg(fd, request+sizeof(LU_PROTO_GETMSG)-1);
-	if (memcmp(request, LU_PROTO_MINDEX, sizeof(LU_PROTO_MINDEX))) 
+	if (!memcmp(request, LU_PROTO_MINDEX, sizeof(LU_PROTO_MINDEX)-1)) 
 		out = my_service_mindex(fd, request+sizeof(LU_PROTO_MINDEX)-1);
 	
 	/* Get rid of any buffering */
@@ -554,6 +574,9 @@ extern int lu_service_connection(st_netfd_t fd)
 	
 	off = 0;
 	
+#ifdef DEBUG
+	printf("Connect!\n");
+#endif
 	while (1)
 	{
 		got = st_read(fd, 

@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.3 2002-02-04 04:32:02 terpstra Exp $
+/*  $Id: summary.c,v 1.4 2002-02-10 09:33:53 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -678,16 +678,26 @@ Lu_Summary_Thread lu_summary_read_tsummary(
 }
 
 int lu_summary_write_variable(
-	FILE* out, 
+	int (*write)(void* arg, const char* str),
+	int (*quote)(void* arg, const char* str, size_t len),
+	void* arg,
 	lu_addr flat_offset)
 {
 	char	buf[4096];
 	char*	w;
 	char*	e;
+	char*	s;
 	int	nulls;
 	int	got;
+	int	have;
 	
-	off_t offset = flat_offset;
+	message_id	mask;
+	off_t		offset;
+	
+	mask = 0xFFFFU;
+	mask <<= (sizeof(message_id)*8-16);
+	
+	offset = flat_offset & ~mask;
 	
 	if (lseek(my_summary_variable_fd, offset, SEEK_SET) != offset)
 	{
@@ -695,20 +705,82 @@ int lu_summary_write_variable(
 	}
 	
 	nulls = 0;
+	have  = 0;
 	while (nulls < 3)
 	{
 		got = read(my_summary_variable_fd, &buf[0], sizeof(buf));
 		if (got <= 0) break;
 		e = &buf[got];
 		
-		for (w = &buf[0]; w != e;)
-			if (!*w++ && ++nulls == 3)
-				break;
+		for (s = w = &buf[0]; w != e && nulls != 3; w++)
+		{
+			if (!*w)
+			{
+				if (!have && w != s)
+				{
+					have = 1;
+					switch (nulls)
+					{
+					case 0:
+						write(arg, "  <subject>");
+						break;
+					case 1:
+						write(arg, " name=\"");
+						break;
+					case 2:
+						write(arg, " address=\"");
+						break;
+					}
+				}
+				
+				quote(arg, s, w - s);
+				
+				if (have)
+				{
+					switch (nulls)
+					{
+					case 0:
+						write(arg, "</subject>\n");
+						break;
+					case 1:
+						write(arg, "\"");
+						break;
+					case 2:
+						write(arg, "\"");
+						break;
+					}
+				}
+				
+				nulls++;
+				s = w+1;
+				have = 0;
+				
+				if (nulls == 1)
+					write(arg, "  <email");
+			}
+		}
 		
-		fwrite(&buf[0], 1, (w - &buf[0]), out);
+		if (!have && w != s)
+		{
+			have = 1;
+			switch (nulls)
+			{
+			case 0:
+				write(arg, "  <subject>");
+				break;
+			case 1:
+				write(arg, "name=\"");
+				break;
+			case 2:
+				write(arg, "address=\"");
+				break;
+			}
+		}
+		
+		quote(arg, s, w - s);
 	}
 	
-	if (nulls != 3) return -1;
+	write(arg, "/>\n");
 	
 	return 0;
 }

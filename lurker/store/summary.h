@@ -1,4 +1,4 @@
-/*  $Id: summary.h,v 1.1 2002-02-03 03:13:27 terpstra Exp $
+/*  $Id: summary.h,v 1.2 2002-02-10 09:33:53 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -116,7 +116,9 @@ extern int lu_summary_last_thread(
  *  module. The flat_offset can be found in a message summary record.
  */
 extern int lu_summary_write_variable(
-	FILE* out, 
+	int (*write)(void* arg, const char* str),
+	int (*quote)(void* arg, const char* str, size_t len),
+	void* arg,
 	lu_addr flat_offset);
 
 /** Pass the timestamp of the server arrival time and the client send

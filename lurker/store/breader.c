@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.4 2002-02-10 08:20:44 terpstra Exp $
+/*  $Id: breader.c,v 1.5 2002-02-10 09:33:52 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -251,7 +251,7 @@ static int my_breader_read(
 				
 				memcpy(	out, 
 					&record->cache[i].buffer[ind],
-					got);
+					got * sizeof(message_id));
 				
 				out    += got;
 				count  -= got;
