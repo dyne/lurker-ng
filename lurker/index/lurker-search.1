@@ -1,0 +1,129 @@
+.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-search.1,v 1.1 2004-08-24 17:13:30 terpstra Exp $
+.\"
+.\"	transcript compatibility for postscript use.
+.\"
+.\"	synopsis:  .P! <file.ps>
+.\"
+.de P!
+.fl
+\!!1 setgray
+.fl
+\\&.\"
+.fl
+\!!0 setgray
+.fl			\" force out current output buffer
+\!!save /psv exch def currentpoint translate 0 0 moveto
+\!!/showpage{}def
+.fl			\" prolog
+.sy sed -e 's/^/!/' \\$1\" bring in postscript file
+\!!psv restore
+.
+.de pF
+.ie     \\*(f1 .ds f1 \\n(.f
+.el .ie \\*(f2 .ds f2 \\n(.f
+.el .ie \\*(f3 .ds f3 \\n(.f
+.el .ie \\*(f4 .ds f4 \\n(.f
+.el .tm ? font overflow
+.ft \\$1
+..
+.de fP
+.ie     !\\*(f4 \{\
+.	ft \\*(f4
+.	ds f4\"
+'	br \}
+.el .ie !\\*(f3 \{\
+.	ft \\*(f3
+.	ds f3\"
+'	br \}
+.el .ie !\\*(f2 \{\
+.	ft \\*(f2
+.	ds f2\"
+'	br \}
+.el .ie !\\*(f1 \{\
+.	ft \\*(f1
+.	ds f1\"
+'	br \}
+.el .tm ? font underflow
+..
+.ds f1\"
+.ds f2\"
+.ds f3\"
+.ds f4\"
+'\" t 
+.ta 8n 16n 24n 32n 40n 48n 56n 64n 72n  
+.TH "LURKER\-SEARCH" "1" 
+.SH "NAME" 
+lurker\-search \(em parses parameters from the config file 
+.SH "SYNOPSIS" 
+.PP 
+\fBlurker\-search\fR [\-c <config-file>]  [\-d \-f \-v \-q]  [<terms>*]  
+.SH "DESCRIPTION" 
+.PP 
+\fBlurker\-search\fR searches a lurker database the same 
+way as the web interface. It can output summary information and delete 
+messages. 
+.SH "OPTIONS" 
+.IP "\fB\-c config-file\fP" 10 
+Use this config file for lurker settings. 
+.IP "\fB\-d\fP" 10 
+Delete the messages found by this search 
+.IP "\fB\-f\fP" 10 
+Don't prompt before deleting 
+.IP "\fB\-v\fP" 10 
+Output message summary information 
+.IP "\fB\-q\fP" 10 
+Don't output message ids or status 
+.SH "Search Terms" 
+.PP 
+Lurker-search accepts these keywords for searching: 
+.IP "\fB\-xxx\fP" 10 
+select messages which do NOT match this term 
+.IP "\fBid:xxx\fP" 10 
+select a message by the Message-ID field 
+.IP "\fBrt:xxx\fP" 10 
+select messages which reply to the chosen Message-ID 
+.IP "\fBth:xxx\fP" 10 
+select messages included in this thread 
+.IP "\fBml:xxx\fP" 10 
+select messages in this mailing list 
+.IP "\fBgr:xxx\fP" 10 
+select messages in this mailing list group 
+.IP "\fBau:xxx\fP" 10 
+select messages with this term in the author fields 
+.IP "\fBsb:xxx\fP" 10 
+select messages with this word in the subject 
+.IP "\fBlang:xxx\fP" 10 
+select messages in this language 
+.SH "SEE ALSO" 
+.PP 
+lurker\-index(1), lurker\-prune(1), lurker\-params(1), lurker\-list(1) 
+.PP 
+lurker documentation on http://lurker.sourceforge.net/ 
+.SH "COPYRIGHT" 
+.PP 
+Copyright (C) 2002: Wesley W. Terpstra <terpstra@users.sourceforge.net> 
+ 
+.PP 
+This program is free software; you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by 
+the Free Software Foundation; version 2. 
+ 
+.PP 
+This program is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of 
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+GNU General Public License for more details. 
+ 
+.PP 
+You should have received a copy of the GNU General Public License 
+along with this program; if not, write to the Free Software 
+Foundation, Inc., 59 Temple Place - Suite 330, 
+Boston, MA 02111-1307, USA. 
+ 
+.SH "BUGS" 
+.PP 
+Before reporting a bug, please confirm that the bug you found is 
+still present in the latest official release. If the problem persists, 
+then send mail with instructions describing how to reproduce the bug to 
+<lurker\-users@lists.sourceforge.net>. 
+.\" created by instant / docbook-to-man, Mon 23 Aug 2004, 18:12 

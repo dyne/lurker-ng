@@ -1,0 +1,229 @@
+<!doctype refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+
+<!-- Process this file with docbook-to-man to generate an nroff manual
+     page: `docbook-to-man lurker-search.sgml > lurker-search.1'.
+     You may view the manual page with:
+     `docbook-to-man lurker-search.sgml | nroff -man | less'.
+     A typical entry in a Makefile or Makefile.am is:
+
+lurker-search.1: lurker-search.sgml
+	docbook-to-man $< > $@
+  -->
+
+  <!-- Fill in your name for FIRSTNAME and SURNAME. -->
+  <!ENTITY dhfirstname "<firstname>Wesley W.</firstname>">
+  <!ENTITY dhsurname   "<surname>Terpstra</surname>">
+  <!-- Please adjust the date whenever revising the manpage. -->
+  <!ENTITY dhdate      "<date>Jun 4, 2003</date>">
+  <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
+       allowed: see man(7), man(1). -->
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>terpstra@users.sourceforge.net</email>">
+  <!ENTITY dhusername  "Wesley W. Terpstra">
+  <!ENTITY support     "<email>lurker\-users@lists.sourceforge.net</email>">
+  <!ENTITY dhucpackage "<refentrytitle>LURKER\-SEARCH</refentrytitle>">
+  <!ENTITY dhpackage   "lurker\-search">
+
+  <!ENTITY lurker      "<productname>lurker</productname>">
+  <!ENTITY gnu         "<acronym>GNU</acronym>">
+]>
+
+<refentry>
+  <refentryinfo>
+    <address>
+      &dhemail;
+    </address>
+    <author>
+      &dhfirstname;
+      &dhsurname;
+    </author>
+    <copyright>
+      <year>2004</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    &dhdate;
+  </refentryinfo>
+  <refmeta>
+    &dhucpackage;
+
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+
+    <refpurpose>parses parameters from the config file</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg>\-c &lt;config-file&gt;</arg>
+      <arg>\-d \-f \-v \-q</arg>
+      <arg>&lt;terms&gt;*</arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>DESCRIPTION</title>
+
+    <para><command>&dhpackage;</command> searches a lurker database the same
+    way as the web interface. It can output summary information and delete
+    messages.</para>
+
+  </refsect1>
+  <refsect1>
+    <title>OPTIONS</title>
+    <variablelist>
+      <varlistentry>
+        <term><option>\-c config-file</option></term>
+        <listitem>
+          <para>Use this config file for lurker settings.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>\-d</option></term>
+        <listitem>
+          <para>Delete the messages found by this search</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>\-f</option></term>
+        <listitem>
+          <para>Don't prompt before deleting</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>\-v</option></term>
+        <listitem>
+          <para>Output message summary information</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>\-q</option></term>
+        <listitem>
+          <para>Don't output message ids or status</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>Search Terms</title>
+
+    <para>Lurker-search accepts these keywords for searching:</para>
+    <variablelist>
+      <varlistentry>
+        <term><option>\-xxx</option></term>
+        <listitem>
+          <para>select messages which do NOT match this term</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>id:xxx</option></term>
+        <listitem>
+          <para>select a message by the Message-ID field</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>rt:xxx</option></term>
+        <listitem>
+          <para>select messages which reply to the chosen Message-ID</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>th:xxx</option></term>
+        <listitem>
+          <para>select messages included in this thread</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>ml:xxx</option></term>
+        <listitem>
+          <para>select messages in this mailing list</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>gr:xxx</option></term>
+        <listitem>
+          <para>select messages in this mailing list group</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>au:xxx</option></term>
+        <listitem>
+          <para>select messages with this term in the author fields</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>sb:xxx</option></term>
+        <listitem>
+          <para>select messages with this word in the subject</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>lang:xxx</option></term>
+        <listitem>
+          <para>select messages in this language</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+    
+    <para>lurker\-index(1), lurker\-prune(1), lurker\-params(1), lurker\-list(1)</para>
+    <para>lurker documentation on http://lurker.sourceforge.net/</para>
+
+  </refsect1>
+  <refsect1>
+    <title>COPYRIGHT</title>
+
+    <para>
+    Copyright (C) 2002: &dhusername; &lt;&dhemail;&gt;
+    </para>
+
+    <para>
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; version 2.
+    </para>
+    
+    <para>
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    </para>
+    
+    <para>
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    </para>
+  </refsect1>
+  
+  <refsect1>
+    <title>BUGS</title>
+
+    <para>Before reporting a bug, please confirm that the bug you found is
+    still present in the latest official release. If the problem persists,
+    then send mail with instructions describing how to reproduce the bug to
+    &lt;&support;&gt;.</para>
+
+  </refsect1>
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document:nil
+sgml-default-dtd-file:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+-->
