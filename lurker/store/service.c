@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.27 2002-02-25 03:56:57 terpstra Exp $
+/*  $Id: service.c,v 1.28 2002-02-25 04:05:03 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -430,7 +430,7 @@ static char* my_service_find_charset(
 {
 	PARAMETER* scan;
 	
-	for (scan = body->disposition.parameter; scan; scan = scan->next)
+	for (scan = body->parameter; scan; scan = scan->next)
 	{
 		if (	scan->attribute &&
 			(scan->attribute[0] == 'c' || scan->attribute[0] == 'C') &&
@@ -440,7 +440,7 @@ static char* my_service_find_charset(
 			(scan->attribute[4] == 's' || scan->attribute[4] == 'S') &&
 			(scan->attribute[5] == 'e' || scan->attribute[5] == 'E') &&
 			(scan->attribute[6] == 't' || scan->attribute[6] == 'T') &&
-			scan->attribute[7])
+			!scan->attribute[7])
 		{
 			return scan->value;
 		}
