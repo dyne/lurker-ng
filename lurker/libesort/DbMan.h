@@ -1,4 +1,4 @@
-/*  $Id: DbMan.h,v 1.5 2003-07-01 13:27:31 terpstra Exp $
+/*  $Id: DbMan.h,v 1.6 2003-07-01 13:48:31 terpstra Exp $
  *  
  *  DbMan.h - Manage the commit'd segments and parameters
  *  
@@ -27,6 +27,8 @@
 
 #include <set>
 #include <string>
+
+#include "io.h" // string on solaris undefs open, so this comes after
 
 namespace ESort
 {

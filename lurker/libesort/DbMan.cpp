@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.19 2003-07-01 13:27:31 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.20 2003-07-01 13:48:31 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -27,7 +27,6 @@
 
 // #define DEBUG 1
   
-#include "io.h"
 #include "DbMan.h"
 #include "esort.h"
 #include "View.h"
