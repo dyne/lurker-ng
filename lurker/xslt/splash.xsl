@@ -29,20 +29,36 @@
  <xsl:param name="col2"/>
  <xsl:param name="col3"/>
  <xsl:param name="col4"/>
+ <xsl:param name="exist1"/>
+ <xsl:param name="exist2"/>
+ <xsl:param name="exist3"/>
+ <xsl:param name="exist4"/>
  <xsl:if test="count($col1) &gt; 0 or count($col2) &gt; 0 or count($col3) &gt; 0 or count($col4) &gt; 0">
-<xsl:text>
-</xsl:text>
+  <xsl:text>
+  </xsl:text>
   <tr>
-   <td><xsl:apply-templates select="$col1[position() = 1]"/></td>
-   <td><xsl:apply-templates select="$col2[position() = 1]"/></td>
-   <td><xsl:apply-templates select="$col3[position() = 1]"/></td>
-   <td><xsl:apply-templates select="$col4[position() = 1]"/></td>
+   <xsl:if test="count($exist1) &gt; 0">
+    <td><xsl:apply-templates select="$col1[position() = 1]"/></td>
+   </xsl:if>
+   <xsl:if test="count($exist2) &gt; 0">
+    <td><xsl:apply-templates select="$col2[position() = 1]"/></td>
+   </xsl:if>
+   <xsl:if test="count($exist3) &gt; 0">
+    <td><xsl:apply-templates select="$col3[position() = 1]"/></td>
+   </xsl:if>
+   <xsl:if test="count($exist4) &gt; 0">
+    <td><xsl:apply-templates select="$col4[position() = 1]"/></td>
+   </xsl:if>
   </tr>
   <xsl:call-template name="format">
    <xsl:with-param name="col1" select="$col1[position() &gt; 1]"/>
    <xsl:with-param name="col2" select="$col2[position() &gt; 1]"/>
    <xsl:with-param name="col3" select="$col3[position() &gt; 1]"/>
    <xsl:with-param name="col4" select="$col4[position() &gt; 1]"/>
+   <xsl:with-param name="exist1" select="$exist1"/>
+   <xsl:with-param name="exist2" select="$exist2"/>
+   <xsl:with-param name="exist3" select="$exist3"/>
+   <xsl:with-param name="exist4" select="$exist4"/>
   </xsl:call-template>
  </xsl:if>
 </xsl:template>
@@ -66,12 +82,16 @@
   <xsl:variable name="off3" select="$off2+$size2"/>
   <xsl:variable name="off4" select="$off3+$size3"/>
   <xsl:variable name="off5" select="$off4+$size4"/>
-  
+
   <xsl:call-template name="format">
    <xsl:with-param name="col1" select="list[position() &gt;= $off1 and position() &lt; $off2]"/>
    <xsl:with-param name="col2" select="list[position() &gt;= $off2 and position() &lt; $off3]"/>
    <xsl:with-param name="col3" select="list[position() &gt;= $off3 and position() &lt; $off4]"/>
    <xsl:with-param name="col4" select="list[position() &gt;= $off4 and position() &lt; $off5]"/>
+   <xsl:with-param name="exist1" select="list[position() &gt;= $off1 and position() &lt; $off2]"/>
+   <xsl:with-param name="exist2" select="list[position() &gt;= $off2 and position() &lt; $off3]"/>
+   <xsl:with-param name="exist3" select="list[position() &gt;= $off3 and position() &lt; $off4]"/>
+   <xsl:with-param name="exist4" select="list[position() &gt;= $off4 and position() &lt; $off5]"/>
   </xsl:call-template>
  </table>
  </div>
