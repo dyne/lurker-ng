@@ -120,7 +120,7 @@
 <!-- <lang code="nd" localized="no">North Ndebele</lang> -->
  <lang code="ne" localized="no">नेपाली</lang>
 <!-- <lang code="ng" localized="no">Ndongo</lang> -->
- <lang code="nl" localized="no">Nederlands</lang>
+ <lang code="nl" localized="yes">Nederlands</lang>
 <!-- <lang code="nn" localized="no">Nynorsk</lang> -->
  <lang code="no" localized="no">Norsk</lang>
 <!-- <lang code="nr" localized="no">South Ndebele</lang> -->
