@@ -82,14 +82,16 @@ dist_fmt_DATA = \
 	english.xsl \
 	basic.css
 
+
+dist_www_DATA = index.html index.xsl
 subdir = xslt
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/system.h
 CONFIG_CLEAN_FILES =
 DIST_SOURCES =
-DATA = $(dist_fmt_DATA)
+DATA = $(dist_fmt_DATA) $(dist_www_DATA)
 
-DIST_COMMON = $(dist_fmt_DATA) Makefile.am Makefile.in
+DIST_COMMON = $(dist_fmt_DATA) $(dist_www_DATA) Makefile.am Makefile.in
 all: all-am
 
 .SUFFIXES:
@@ -117,6 +119,23 @@ uninstall-dist_fmtDATA:
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " rm -f $(DESTDIR)$(fmtdir)/$$f"; \
 	  rm -f $(DESTDIR)$(fmtdir)/$$f; \
+	done
+install-dist_wwwDATA: $(dist_www_DATA)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(wwwdir)
+	@list='$(dist_www_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(wwwdir)/$$f; \
+	done
+
+uninstall-dist_wwwDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_www_DATA)'; for p in $$list; do \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " rm -f $(DESTDIR)$(wwwdir)/$$f"; \
+	  rm -f $(DESTDIR)$(wwwdir)/$$f; \
 	done
 tags: TAGS
 TAGS:
@@ -148,7 +167,7 @@ check: check-am
 all-am: Makefile $(DATA)
 
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(fmtdir)
+	$(mkinstalldirs) $(DESTDIR)$(fmtdir) $(DESTDIR)$(wwwdir)
 
 install: install-am
 install-exec: install-exec-am
@@ -189,7 +208,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-data-local install-dist_fmtDATA
+install-data-am: install-data-local install-dist_fmtDATA \
+	install-dist_wwwDATA
 
 install-exec-am:
 
@@ -207,16 +227,18 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-generic
 
-uninstall-am: uninstall-dist_fmtDATA uninstall-info-am uninstall-local
+uninstall-am: uninstall-dist_fmtDATA uninstall-dist_wwwDATA \
+	uninstall-info-am uninstall-local
 
 .PHONY: all all-am check check-am clean clean-generic distclean \
 	distclean-generic distdir dvi dvi-am info info-am install \
 	install-am install-data install-data-am install-data-local \
-	install-dist_fmtDATA install-exec install-exec-am install-info \
-	install-info-am install-man install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	uninstall uninstall-am uninstall-dist_fmtDATA uninstall-info-am \
+	install-dist_fmtDATA install-dist_wwwDATA install-exec \
+	install-exec-am install-info install-info-am install-man \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-generic uninstall uninstall-am \
+	uninstall-dist_fmtDATA uninstall-dist_wwwDATA uninstall-info-am \
 	uninstall-local
 
 

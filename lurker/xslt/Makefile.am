@@ -6,6 +6,8 @@ dist_fmt_DATA = \
 	english.xsl \
 	basic.css
 
+dist_www_DATA = index.html index.xsl
+
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)${fmtdir}
 	ln -fs basic.css   $(DESTDIR)${fmtdir}/default.css
