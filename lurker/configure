@@ -4598,7 +4598,8 @@ fi
 
 
 
-for ac_header in iconv.h unistd.h signal.h fcntl.h io.h time.h sys/mman.h sys/time.h sys/file.h assert.h sys/fcntl.h errno.h syslog.h
+
+for ac_header in iconv.h sys/iconv.h unistd.h signal.h fcntl.h io.h time.h sys/mman.h sys/time.h sys/file.h assert.h sys/fcntl.h errno.h syslog.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
@@ -6058,7 +6059,7 @@ echo "$as_me: error: Unable to locate libdb >= 3.2 header files" >&2;}
 echo $ECHO_N "checking for c-client... $ECHO_C" >&6
 
   save_LIBS=$LIBS
-  LIBS="$LIBS -lc-client"
+  LIBS="$LIBS -L/usr/local/lib -lc-client"
   cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 #include "confdefs.h"

@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.44 2002-05-10 01:12:41 terpstra Exp $
+/*  $Id: service.c,v 1.45 2002-05-11 07:50:39 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -40,7 +40,14 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+
+#if defined(HAVE_ICONV_H)
 #include <iconv.h>
+#elif defined(HAVE_ICONV_H)
+#include <sys/iconv.h>
+#else
+#error Missing iconv
+#endif
 
 #define LU_PROTO_INDEX	20
 

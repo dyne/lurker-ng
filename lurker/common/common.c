@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.13 2002-05-06 22:44:43 terpstra Exp $
+/*  $Id: common.c,v 1.14 2002-05-11 07:50:38 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -28,8 +28,15 @@
 #include "prefix.h"
 
 #include <ctype.h>
-#include <iconv.h>
 #include <string.h>
+
+#if defined(HAVE_ICONV_H)
+#include <iconv.h>
+#elif defined(HAVE_ICONV_H)
+#include <sys/iconv.h>
+#else
+#error Missing iconv
+#endif
 
 /*------------------------------------------------ Private global vars */
 

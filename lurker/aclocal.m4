@@ -63,7 +63,7 @@ AC_DEFUN(C_CLIENT_CHECK, [
   AC_MSG_CHECKING(for c-client)
   
   save_LIBS=$LIBS
-  LIBS="$LIBS -lc-client"
+  LIBS="$LIBS -L/usr/local/lib -lc-client"
   AC_TRY_LINK(
 [void mm_expunged() {}
 void mm_diskerror() {}
