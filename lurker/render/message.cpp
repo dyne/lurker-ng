@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.22 2003-06-25 17:29:15 terpstra Exp $
+/*  $Id: message.cpp,v 1.23 2003-06-25 19:01:53 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -225,11 +225,49 @@ bool handle_signed_inline(ostream& o, DwEntity& e)
 	string cleartext = pgp_tmpfile("cleartext");
 	find_and_replace(command, "%b", cleartext);
 	
+	// Oldschool pgp usually works by invoking a helper program which
+	// cannot control how the email client then encodes the signed data.
+	// Hence we nede to decode the transfer-encoding for verification
+	// to get back what the helper program probably gave the MUA.
+	
+	DwString out;
+	// if (e.hasHeaders() && 
+	if (e.Headers().HasContentTransferEncoding())
+	{
+		switch (e.Headers().ContentTransferEncoding().AsEnum())
+		{
+		case DwMime::kCteQuotedPrintable:
+			DwDecodeQuotedPrintable(e.Body().AsString(), out);
+			break;
+			
+		case DwMime::kCteBase64:
+			DwDecodeBase64(e.Body().AsString(), out);
+			break;
+		
+		case DwMime::kCteNull:
+		case DwMime::kCteUnknown:
+		case DwMime::kCte7bit:
+		case DwMime::kCte8bit:
+		case DwMime::kCteBinary:
+			out = e.Body().AsString();
+			break;
+		}
+		
+	}
+	else
+	{
+		out = e.Body().AsString();
+	}
+	
+	// We do NOT convert the charset because the user probably signed
+	// the text in the charset as which it was delivered. If it wasn't,
+	// we wouldn't be able to help anyways because we don't know what 
+	// to convert to.
+	
 	if (1)
 	{ // create the cleartext
 		std::ofstream body(cleartext.c_str());
-		body.write(	e.Body().AsString().c_str(), 
-				e.Body().AsString().length());
+		body.write(out.c_str(), out.length());
 	}
 	
 	run_pgp(o, command);
