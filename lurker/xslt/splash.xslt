@@ -75,7 +75,9 @@
       <tr><td>Subject</td><td><input type="text" name="subject" size="50" value=""/></td></tr>
       <tr><td>Date</td><td>
      <select name="weekday">
-       <option value="">Sun-Sat</option>
+       <xsl:text disable-output-escaping="yes">
+       &lt;option value=""&gt;Sun-Sat&lt;/option&gt;
+       </xsl:text>
        <option value="sun">Sunday</option>
        <option value="mon">Monday</option>
        <option value="tue">Tuesday</option>
@@ -85,7 +87,9 @@
        <option value="sat">Saturday</option>
      </select>, the
      <select name="dom">
-       <option value="">1st-31st</option>
+       <xsl:text disable-output-escaping="yes">
+       &lt;option value=""&gt;1st-31st&lt;/option&gt;
+       </xsl:text>
        <option value="1">1st</option>
        <option value="2">2nd</option>
        <option value="3">3rd</option>
@@ -119,7 +123,9 @@
        <option value="31">31st</option>
      </select> of
      <select name="month">
-       <option value="">All months</option>
+       <xsl:text disable-output-escaping="yes">
+       &lt;option value=""&gt;Any month&lt;/option&gt;
+       </xsl:text>
        <option value="jan">January</option>
        <option value="feb">Feburary</option>
        <option value="mar">March</option>
@@ -134,7 +140,9 @@
        <option value="dec">Decemember</option>
      </select> /
      <select name="year">
-       <option value="">All years</option>
+       <xsl:text disable-output-escaping="yes">
+       &lt;option value=""&gt;All years&lt;/option&gt;
+       </xsl:text>
        <option value="2002">2002</option>
        <option value="2001">2001</option>
        <option value="2000">2000</option>
@@ -161,7 +169,9 @@
      </select></td></tr>
      <tr><td>Appearing in</td><td>
      <select name="list">
-        <option value="">Any list</option>
+       <xsl:text disable-output-escaping="yes">
+       &lt;option value=""&gt;Any list&lt;/option&gt;
+       </xsl:text>
         <xsl:apply-templates mode="select" select="/lists/list"/>
      </select></td></tr></table>
    </p>
