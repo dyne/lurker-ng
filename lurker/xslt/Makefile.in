@@ -74,7 +74,9 @@ install_sh = @install_sh@
 
 wwwdir = @wwwdir@
 
-EXTRA_DIST = message.xslt mindex.xslt search.xslt splash.xslt
+EXTRA_DIST = message.xslt mindex.xslt search.xslt splash.xslt \
+	mbox.xslt attach.xslt
+
 subdir = xslt
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/system.h

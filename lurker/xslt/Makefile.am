@@ -1,6 +1,7 @@
 wwwdir = @wwwdir@
 
-EXTRA_DIST = message.xslt mindex.xslt search.xslt splash.xslt
+EXTRA_DIST = message.xslt mindex.xslt search.xslt splash.xslt \
+	mbox.xslt attach.xslt
 
 install-data-local:
 	@list='$(EXTRA_DIST)'; for p in $$list; do \
