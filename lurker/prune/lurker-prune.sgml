@@ -144,7 +144,7 @@ lurker-prune.1: lurker-prune.sgml
   <refsect1>
     <title>SEE ALSO</title>
     
-    <para>lurker\-index(1), lurkerÜ-params(1), lurker\-list(1)</para>
+    <para>lurker\-index(1), lurker\-params(1), lurker\-list(1)</para>
     <para>lurker documentation on http://lurker.sourceforge.net/</para>
 
   </refsect1>
