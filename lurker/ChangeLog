@@ -23,6 +23,7 @@ v0.7:
 	Have a valid 'jump-to' date even with no messages
 	Removed follow-ups; the tree already has them
 	Give nice error messages for non-existant messages
+	Don't reorder or prune chars from search terms
 
 v0.6:
 	Jam replaces automake + overkill autoconf madness; hooray!

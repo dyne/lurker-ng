@@ -1,4 +1,4 @@
-/*  $Id: keyword.cpp,v 1.3 2003-04-23 22:57:42 terpstra Exp $
+/*  $Id: keyword.cpp,v 1.4 2003-04-27 18:57:21 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -30,14 +30,21 @@
 #include "parse.h"
 
 #include <set>
+#include <vector>
 
 using std::set;
 
-set<string> keys;
+vector<string> keys;
+set<string> dups;
 
 int push_key(const char* keyword, void* arg)
 {
-	keys.insert(keyword);
+	if (dups.find(keyword) != dups.end())
+	{
+		dups.insert(keyword);
+		keys.push_back(keyword);
+	}
+	
 	return 0;
 }
 
@@ -72,7 +79,7 @@ int main()
 		LU_KEYWORD_LIST, &push_key, 0, 0);
 	
 	string url = args["doc-url"] + "/search/" + string(buf) + ".00000000@";
-	set<string>::iterator i;
+	vector<string>::iterator i;
 	for (i = keys.begin(); i != keys.end(); ++i)
 	{
 		if (i != keys.begin()) url += ",";

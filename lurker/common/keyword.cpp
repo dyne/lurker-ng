@@ -1,4 +1,4 @@
-/*  $Id: keyword.cpp,v 1.2 2003-04-21 18:25:31 terpstra Exp $
+/*  $Id: keyword.cpp,v 1.3 2003-04-27 18:57:21 terpstra Exp $
  *  
  *  prefix.c - Digest a hunk of string into keywords.
  *  
@@ -120,19 +120,13 @@ static int my_keyword_digest_hunk(
 	/*!!! Make me work with non-romanian languages (eg. japanese) */
 	/* Japanese has no spaces to delineate words */
 	
-	/* Firstly, index the entire chunk, but without leading or trailing
-	 * chars from is_split.
+	/* Don't index vapour.
 	 */
+	if (buf == eos)
+		return 0;
 	
-	while (buf != eos && my_keyword_is_split[((int)*buf)])    buf++;
-	
-	/* Don't index the ether */
-	if (buf == eos) return 0;
-	
-	/* We know there's at least one non-split char so we can keep
-	 * knocking off the eos without testing for emptiness.
+	/* Firstly, index the entire chunk, with leading and trailing chars.
 	 */
-	while (my_keyword_is_split[((int)*(eos-1))]) eos--;
 	
 	/* Index the entire hunk. */
 	if (my_keyword_index_hunk(buf, eos, prefix, writefn, arg) != 0)
@@ -141,23 +135,29 @@ static int my_keyword_digest_hunk(
 	if (!do_div) return 0;
 	
 	/* Now, divide the chunk into bits which we will keyword index */
-	start = buf;
+	start = 0;
 	for (scan = buf; scan != eos; scan++)
 	{
 		if (my_keyword_is_split[((int)*scan)])
 		{
-			if (start != scan)
+			if (start)
 			{
 				if (my_keyword_index_hunk(start, scan, 
 					prefix, writefn, arg) != 0)
 					return -1;
+				start = 0;
 			}
-			
-			start = scan+1;
+		}
+		else
+		{
+			if (!start)
+			{
+				start = scan;
+			}
 		}
 	}
 	
-	if (start != eos)
+	if (start)
 	{
 		if (my_keyword_index_hunk(start, eos, prefix, writefn, arg) != 0)
 			return -1;
