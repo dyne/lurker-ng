@@ -39,6 +39,13 @@
   </tr>
 </xsl:template>
 
+<xsl:template match="list" mode="select">
+  <option value="{id}"><xsl:value-of select="email/@name"/>
+  <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
+  <xsl:if test="email/@address">&lt;<xsl:value-of select="email/@address"/>&gt;</xsl:if>
+  </option>
+</xsl:template>
+
 <!-- Document Root -->
 <xsl:template match="/">
  <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -151,6 +158,11 @@
        <option value="1982">1982</option>
        <option value="1981">1981</option>
        <option value="1980">1980</option>
+     </select></td></tr>
+     <tr><td>Appearing in</td><td>
+     <select name="list">
+        <option value="">Any list</option>
+        <xsl:apply-templates mode="select" select="/lists/list"/>
      </select></td></tr></table>
    </p>
   </form></p>
