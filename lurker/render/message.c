@@ -1,4 +1,4 @@
-/*  $Id: message.c,v 1.15 2002-02-22 02:02:54 terpstra Exp $
+/*  $Id: message.c,v 1.16 2002-02-22 02:19:38 terpstra Exp $
  *  
  *  message.c - output results from a message/ lookup
  *  
@@ -134,5 +134,38 @@ int lu_mbox_handler(
 		write(1, &buf[0], got);
 	
 	fclose(out);
+	return -1;
+}
+
+int lu_attach_handler(
+	char* parameter, 
+	const char* uri, 
+	lu_doctype t)
+{
+	int    i, j;
+	
+	if (sscanf(parameter, "%d@%d", &i, &j) != 2)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Reading parameters",
+			parameter,
+			"Not formatted as &lt;message-id&gt@&lt;attach-id&gt;*");
+		return -1;
+	}
+	
+	/* We NEVER dump attachments to disk b/c we'd not be able to tell the
+	 * user the content-type then.
+	 */
+	
+	fprintf(lu_server_link, "%s %i %i%c", 
+		LU_PROTO_ATTACH, i, j, LU_PROTO_ENDREQ);
+	
+	printf("Status: 200 OK\r\n");
+	/* The lurkerd actually sends the content-type ;-) */
+	lu_forward_data(stdout);
+	fflush(stdout);
+	
 	return -1;
 }
