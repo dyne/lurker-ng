@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.7 2002-02-12 07:04:43 terpstra Exp $
+/*  $Id: summary.c,v 1.8 2002-02-12 09:15:31 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -721,11 +721,11 @@ int lu_summary_write_variable(
 	int	have;
 	int	my_var_fd;
 	
-	message_id	mask;
+	lu_addr		mask;
 	off_t		offset;
 	
 	mask = 0xFFFFU;
-	mask <<= (sizeof(message_id)*8-16);
+	mask <<= (sizeof(lu_addr)-2)*8;
 	
 	/* We need a duplicate handle b/c the other thread could be 
 	 * importing while we are doing this.
