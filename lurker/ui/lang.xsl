@@ -2,11 +2,13 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
 <xsl:variable name="lang" select="/*/@xml:lang"/>
-<xsl:variable name="testfile" select="concat($lang, '.xml')"/>
+<xsl:variable name="localefile" select="concat($lang, '.xml')"/>
+<xsl:variable name="isofile" select="translate($localefile, '-ABCDEFGHIJKLMNOPQRSTUVWXYZ', '')"/>
 
 <xsl:variable name="langfile">
  <xsl:choose>
-  <xsl:when test="document($testfile)/text"><xsl:value-of select="$testfile"/></xsl:when>
+  <xsl:when test="document($localefile)/text"><xsl:value-of select="$localefile"/></xsl:when>
+  <xsl:when test="document($isofile)/text"><xsl:value-of select="$isofile"/></xsl:when>
   <xsl:otherwise>en.xml</xsl:otherwise>
  </xsl:choose>
 </xsl:variable>

@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.11 2004-08-20 02:42:45 terpstra Exp $
+/*  $Id: main.cpp,v 1.12 2004-08-26 16:44:18 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -110,7 +110,7 @@ void help(const string& about)
 Request parse_request(const string& param)
 {
 	string::size_type dot1 = param.rfind('.');
-	if (dot1 == string::npos)
+	if (dot1 == string::npos || dot1 == 0)
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
@@ -120,7 +120,15 @@ Request parse_request(const string& param)
 	}
 	
 	string::size_type dot2 = param.rfind('.', dot1-1);
-	if (dot1 - dot2 != 3) dot2 = string::npos;
+	
+	// This is an attempt at backwards compatability.
+	// Previously lurker had no language code in the URL, but still had
+	// period delimited fields in message ids. The last part is always 8
+	// characters long, so we assume english if the country code is
+	// not of length in [2, 8).
+	// NOTE: some search URLs will still be broken (those with .s)
+	if (dot2 != string::npos && (dot1 - dot2 < 2+1 || dot1 - dot2 >= 8+1))
+		dot2 = string::npos;
 	
 	Request out;
 	
