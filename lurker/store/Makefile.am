@@ -16,6 +16,7 @@ EXTRA_DIST = Design
 	breader.h  breader.c  \
 	search.h   search.c   \
 	service.h  service.c  \
-	main.c     btree.h
+	main.c     btree.h    \
+	expiry.c   expiry.h
 
 @PACKAGE@d_LDADD = @STORAGE_LIBS@ ../common/libcommon.a

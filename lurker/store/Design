@@ -40,6 +40,7 @@ load order:
 	breader
 	search
 	summary
+        expiry
 	mbox
 	service
 
@@ -55,6 +56,10 @@ main:
 		-> creates a new thread
 		-> watches for requests
 		-> passes them off to the service
+
+expiry:
+	Tracks all the currently on-disk cache data.
+	Deletes cache on cache expiry and space constraint limits.
 
 mbox:
 	Knows how to follow mboxes for appends and import messages

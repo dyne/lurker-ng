@@ -15,7 +15,8 @@ Alright, time to get organized; we've not put in enough work lately, TODO:
 		a: record generated pages, size, creation time, and ttl
 		b: Delete the oldest pages when space / file count exhausted
 		c: Delete pages after ttl expiry
-		d: Somehow implement dependent cache expiry:
+		d: Don't create files over a certain size
+		e: Somehow implement dependent cache expiry:
 		
 	General plan atm: 
 		Use a priority queue for ttl expiry.
@@ -42,7 +43,8 @@ Alright, time to get organized; we've not put in enough work lately, TODO:
 				import. Just cache these for a short period
 				of time, and hope for the best.
 			message pages: Only changed if the threading
-				structure near it changes.
+				structure near it changes; cache and hope
+				for the best.
 
 	#2 *** Message ID instead of docid should be URL
 		a: find a good md5 implementation.

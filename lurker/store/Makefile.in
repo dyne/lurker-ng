@@ -90,7 +90,8 @@ EXTRA_DIST = Design
 	breader.h  breader.c  \
 	search.h   search.c   \
 	service.h  service.c  \
-	main.c     btree.h
+	main.c     btree.h    \
+	expiry.c   expiry.h
 
 
 @PACKAGE@d_LDADD = @STORAGE_LIBS@ ../common/libcommon.a
@@ -104,7 +105,7 @@ PROGRAMS = $(sbin_PROGRAMS)
 am_@PACKAGE@d_OBJECTS = config.$(OBJEXT) flatfile.$(OBJEXT) \
 	wbuffer.$(OBJEXT) indexer.$(OBJEXT) summary.$(OBJEXT) \
 	mbox.$(OBJEXT) breader.$(OBJEXT) search.$(OBJEXT) \
-	service.$(OBJEXT) main.$(OBJEXT)
+	service.$(OBJEXT) main.$(OBJEXT) expiry.$(OBJEXT)
 @PACKAGE@d_OBJECTS = $(am_@PACKAGE@d_OBJECTS)
 @PACKAGE@d_DEPENDENCIES = ../common/libcommon.a
 @PACKAGE@d_LDFLAGS =
@@ -116,10 +117,11 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
 @AMDEP_TRUE@DEP_FILES = $(DEPDIR)/breader.Po $(DEPDIR)/config.Po \
-@AMDEP_TRUE@	$(DEPDIR)/flatfile.Po $(DEPDIR)/indexer.Po \
-@AMDEP_TRUE@	$(DEPDIR)/main.Po $(DEPDIR)/mbox.Po \
-@AMDEP_TRUE@	$(DEPDIR)/search.Po $(DEPDIR)/service.Po \
-@AMDEP_TRUE@	$(DEPDIR)/summary.Po $(DEPDIR)/wbuffer.Po
+@AMDEP_TRUE@	$(DEPDIR)/expiry.Po $(DEPDIR)/flatfile.Po \
+@AMDEP_TRUE@	$(DEPDIR)/indexer.Po $(DEPDIR)/main.Po \
+@AMDEP_TRUE@	$(DEPDIR)/mbox.Po $(DEPDIR)/search.Po \
+@AMDEP_TRUE@	$(DEPDIR)/service.Po $(DEPDIR)/summary.Po \
+@AMDEP_TRUE@	$(DEPDIR)/wbuffer.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -177,6 +179,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/breader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/config.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/expiry.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/flatfile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/indexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/main.Po@am__quote@

@@ -1,4 +1,4 @@
-/*  $Id: config.h,v 1.10 2002-05-03 01:29:16 terpstra Exp $
+/*  $Id: config.h,v 1.11 2002-05-03 05:21:27 terpstra Exp $
  *  
  *  config.h - Knows how to load the config file
  *  
@@ -80,7 +80,7 @@ typedef struct Lu_Config_List_T
 	int		mboxs;
 	
 	/* Used in the expiry module for fast lookups */
-	long		cache_head;
+	lu_word		cache_head;
 	
 	/* only used during load of config */
 	Lu_Config_Mbox*			mbox_head;
