@@ -1,3 +1,6 @@
+v1.1:
+	Create mbox directory upon install
+
 v1.0:
 	Froze the 1.* series against all changes other than bug fixes
 
