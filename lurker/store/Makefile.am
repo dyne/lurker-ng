@@ -29,6 +29,7 @@ install-data-local:
 	  echo "$(mkinstalldirs) $(DESTDIR)$(wwwdir)/$$p"; \
 	  $(mkinstalldirs) $(DESTDIR)$(wwwdir)/$$p; \
 	done
+	-$(mkinstalldirs) $(DESTDIR)$(localstatedir)/run
 
 uninstall-local:
 	@list='$(REQUESTS)'; for p in $$list; do \
@@ -37,3 +38,5 @@ uninstall-local:
 	  echo "rmdir $(DESTDIR)$(wwwdir)/$$p"; \
 	  rmdir $(DESTDIR)$(wwwdir)/$$p; \
 	done
+	rm -f $(DESTDIR)$(localstatedir)/run/lurker.pid
+	-rmdir $(DESTDIR)$(localstatedir)/run
