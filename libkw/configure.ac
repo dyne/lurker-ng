@@ -1,4 +1,4 @@
-AC_INIT(lurker.conf.in)
+AC_INIT(libesort/esort.h)
 AC_CONFIG_AUX_DIR(tools)
 AC_PREREQ(2.57)
 AM_INIT_AUTOMAKE(lurker, 1.0)
