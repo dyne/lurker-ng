@@ -100,7 +100,8 @@ noinst_LIBRARIES = libkap.a
 
 libkap_a_SOURCES = \
 	kap.h private.h \
-	btree.c
+	btree.c \
+	kap.c
 
 subdir = libkap
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
@@ -110,7 +111,7 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 libkap_a_AR = $(AR) cru
 libkap_a_LIBADD =
-am_libkap_a_OBJECTS = btree.$(OBJEXT)
+am_libkap_a_OBJECTS = btree.$(OBJEXT) kap.$(OBJEXT)
 libkap_a_OBJECTS = $(am_libkap_a_OBJECTS)
 
 DEFS = @DEFS@
@@ -119,7 +120,7 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/btree.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/btree.Po $(DEPDIR)/kap.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -157,6 +158,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/btree.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/kap.Po@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)

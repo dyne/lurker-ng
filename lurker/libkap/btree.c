@@ -1,4 +1,4 @@
-/*  $Id: btree.c,v 1.4 2002-07-01 15:22:42 terpstra Exp $
+/*  $Id: btree.c,v 1.5 2002-07-01 15:41:46 terpstra Exp $
  *  
  *  btree.c - Implementation of the btree access methods.
  *  
@@ -210,16 +210,16 @@ static int decode_header(Kap k, unsigned char* scan)
 	scan += LIBKAP_BTREE_HEAD_LEN;
 	
 	decode_offset(scan, &tmp, 4); scan += 4;
-	if (k->btree->sector_size != tmp) return KAP_BTREE_CORRUPT;
+	if (k->btree->sector_size != tmp) return KAP_WRONG_SECTOR_SIZE;
 		
 	decode_offset(scan, &tmp, 4); scan += 4;
-	if (k->btree->max_key_size != tmp) return KAP_BTREE_CORRUPT;
+	if (k->btree->max_key_size != tmp) return KAP_WRONG_MAX_KEY_SIZE;
 	
 	decode_offset(scan, &tmp, 1); scan += 1;
-	if (k->btree->tree_size != tmp) return KAP_BTREE_CORRUPT;
+	if (k->btree->tree_size != tmp) return KAP_WRONG_TREE_SIZE;
 	
 	decode_offset(scan, &tmp, 1); scan += 1;
-	if (k->btree->leaf_size != tmp) return KAP_BTREE_CORRUPT;
+	if (k->btree->leaf_size != tmp) return KAP_WRONG_LEAF_SIZE;
 	
 	decode_offset(scan, &k->btree->size, 8); scan += 8;
 	decode_offset(scan, &k->btree->root, 8); scan += 8;

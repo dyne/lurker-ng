@@ -1,4 +1,4 @@
-/*  $Id: kap.h,v 1.1 2002-07-01 11:15:45 terpstra Exp $
+/*  $Id: kap.h,v 1.2 2002-07-01 15:41:46 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -63,8 +63,11 @@ typedef struct KRecord_T
 #define KAP_BTREE_CORRUPT	-100
 #define KAP_APPEND_CORRUPT	-101
 #define KAP_WRONG_RECORD_SIZE	-102
-#define KAP_WRONG_MAY_KEY_SIZE	-103
-#define KAP_KEY_EXIST		-104
+#define KAP_WRONG_SECTOR_SIZE	-103
+#define KAP_WRONG_MAX_KEY_SIZE	-104
+#define KAP_WRONG_TREE_SIZE	-105
+#define KAP_WRONG_LEAF_SIZE	-106
+#define KAP_KEY_EXIST		-107
 
 #define KAP_ALREADY_OPEN	-200
 #define KAP_NOT_OPEN		-201
@@ -106,6 +109,11 @@ int	kap_open(Kap k, const char* dir, const char* prefix);
  *  Errors: all kap_append(), msync(), and fsync() errors
  */
 int	kap_sync(Kap k);
+
+/** Close the kap subsystem.
+ *  Errors: all kap_sync()
+ */
+int	kap_close(Kap k);
 
 
 
