@@ -1,4 +1,4 @@
-/*  $Id: private.h,v 1.1 2002-07-01 11:16:25 terpstra Exp $
+/*  $Id: private.h,v 1.2 2002-07-01 12:54:09 terpstra Exp $
  *  
  *  kap.h - Public interface to the kap database
  *  
@@ -41,4 +41,5 @@ struct Kap_T
 struct Kap_Btree* btree_init(void);
 
 int kap_btree_open(Kap k, const char* dir, const char* prefix);
+int kap_btree_sync(Kap k);
 int kap_btree_close(Kap k);
