@@ -1,4 +1,4 @@
-/*  $Id: btree.h,v 1.2 2002-02-10 04:19:08 terpstra Exp $
+/*  $Id: btree.h,v 1.3 2002-02-20 03:24:25 terpstra Exp $
  *  
  *  btree.h - Knows how manage a binary search tree
  *  
@@ -276,4 +276,132 @@ static int my_btree_##PREFIX##_insert(RECTYPE recno) \
 		return -1; \
 	\
 	return 0; \
+} \
+\
+\
+inline int my_btree_##PREFIX##_left_shrunk(RECTYPE* n) \
+{ \
+	switch (TABLE[*n].skew) \
+	{ \
+	case LU_BTREE_LEFT: \
+		TABLE[*n].skew = LU_BTREE_EQUAL; \
+		return LU_BTREE_BALANCE; \
+		\
+	case LU_BTREE_EQUAL: \
+		TABLE[*n].skew = LU_BTREE_RIGHT; \
+		return LU_BTREE_OK; \
+		\
+	case LU_BTREE_RIGHT: \
+		switch (TABLE[TABLE[*n].right].skew) \
+		{ \
+		case LU_BTREE_RIGHT: \
+			TABLE[*n].skew = TABLE[TABLE[*n].right].skew = LU_BTREE_EQUAL; \
+			my_btree_##PREFIX##_rot_left(n); \
+			return LU_BTREE_BALANCE; \
+			\
+		case LU_BTREE_EQUAL: \
+			TABLE[*n].skew = LU_BTREE_RIGHT; \
+			TABLE[TABLE[*n].right].skew = LU_BTREE_LEFT; \
+			my_btree_##PREFIX##_rot_left(n); \
+			return LU_BTREE_OK; \
+			\
+		case LU_BTREE_LEFT: \
+			switch (TABLE[TABLE[TABLE[*n].right].left].skew) \
+			{ \
+			case LU_BTREE_LEFT: \
+				TABLE[*n].skew = LU_BTREE_EQUAL; \
+				TABLE[TABLE[*n].right].skew = LU_BTREE_RIGHT; \
+				break; \
+				\
+			case LU_BTREE_RIGHT: \
+				TABLE[*n].skew = LU_BTREE_LEFT; \
+				TABLE[TABLE[*n].right].skew = LU_BTREE_EQUAL; \
+				break; \
+				\
+			case LU_BTREE_EQUAL: \
+				TABLE[*n].skew = LU_BTREE_EQUAL; \
+				TABLE[TABLE[*n].right].skew = LU_BTREE_EQUAL; \
+				break; \
+				\
+			default: \
+				assert(0); \
+			} \
+			\
+			TABLE[TABLE[TABLE[*n].right].left].skew = LU_BTREE_EQUAL; \
+			my_btree_##PREFIX##_rot_right(&TABLE[*n].right); \
+			my_btree_##PREFIX##_rot_left(n); \
+			return LU_BTREE_BALANCE; \
+			\
+		default: \
+			assert(0); \
+		} \
+		\
+	default: \
+		assert(0); \
+		return -1; /* unreached */ \
+	} \
+} \
+\
+\
+inline int my_btree_##PREFIX##_right_shrunk(RECTYPE* n) \
+{ \
+	switch (TABLE[*n].skew) \
+	{ \
+	case LU_BTREE_RIGHT: \
+		TABLE[*n].skew = LU_BTREE_EQUAL; \
+		return LU_BTREE_BALANCE; \
+		\
+	case LU_BTREE_EQUAL: \
+		TABLE[*n].skew = LU_BTREE_LEFT; \
+		return LU_BTREE_OK; \
+		\
+	case LU_BTREE_LEFT: \
+		switch (TABLE[TABLE[*n].left].skew) \
+		{ \
+		case LU_BTREE_LEFT: \
+			TABLE[*n].skew = TABLE[TABLE[*n].left].skew = LU_BTREE_EQUAL; \
+			my_btree_##PREFIX##_rot_right(n); \
+			return LU_BTREE_BALANCE; \
+			\
+		case LU_BTREE_EQUAL: \
+			TABLE[*n].skew = LU_BTREE_LEFT; \
+			TABLE[TABLE[*n].left].skew = LU_BTREE_RIGHT; \
+			my_btree_##PREFIX##_rot_right(n); \
+			return LU_BTREE_OK; \
+			\
+		case LU_BTREE_RIGHT: \
+			switch (TABLE[TABLE[TABLE[*n].left].right].skew) \
+			{ \
+			case LU_BTREE_RIGHT: \
+				TABLE[*n].skew = LU_BTREE_EQUAL; \
+				TABLE[TABLE[*n].left].skew = LU_BTREE_LEFT; \
+				break; \
+				\
+			case LU_BTREE_LEFT: \
+				TABLE[*n].skew = LU_BTREE_RIGHT; \
+				TABLE[TABLE[*n].left].skew = LU_BTREE_EQUAL; \
+				break; \
+				\
+			case LU_BTREE_EQUAL: \
+				TABLE[*n].skew = LU_BTREE_EQUAL; \
+				TABLE[TABLE[*n].left].skew = LU_BTREE_EQUAL; \
+				break; \
+				\
+			default: \
+				assert(0); \
+			} \
+			\
+			TABLE[TABLE[TABLE[*n].left].right].skew = LU_BTREE_EQUAL; \
+			my_btree_##PREFIX##_rot_left(&TABLE[*n].left); \
+			my_btree_##PREFIX##_rot_right(n); \
+			return LU_BTREE_BALANCE; \
+			\
+		default: \
+			assert(0); \
+		} \
+		\
+	default: \
+		assert(0); \
+		return -1; /* unreached */ \
+	} \
 }
