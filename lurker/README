@@ -5,33 +5,93 @@ For contact information please read AUTHORS.
 What is lurker?
 ---------------
 
-lurker is a real-time mail archiver which has several aims
+ An archiver which can handle extremely large amounts of email. 
+ It is fast, scalable, and customizable.
+ 
+ Noteworthy features;
+    - Full field *fast* searching
+         This allows searches like "find me all messages on a wednesday with
+         foo and bar in the body, and beer in the subject" and much more.
 
-Non-functional requirements:
+    - Multi-lingual support
+         Lurker uses utf-8 and can therefore support chinese characters in
+         the same page as german. Further, it is easily localized with
+         translations already available for English, German, and Russian.
+
+    - Chronological threading
+         Every other package with threaded-view breaks the arrival order of
+         messages in order to display linkage. Often, they also indent quite
+         deeply and eventually break when people reply back and forth enough
+         times.  Lurker uses a different approach which not only preserves
+         arrival order, but also does not nest so deeply that it fails when
+         the replies are too deep. Plus, it's prettier. :-)
+
+    - Message threading navigation
+         Lurker has a handy navigation graphic available in each message
+         which allows a user to easily see and move between messages that
+         are replies.
+
+    - File attachment support
+         Not only does lurker fully understand MIME, it makes file
+         attachments available for download and directly embeds those a
+         browser can display in the message view.
+
+    - Directly watches mailboxes
+         There is no need to hook lurker up to your mail transport agent.
+         Simply point it at your mbox archive and it will load it. This
+         makes it easy to run in a situation where procmail and root are
+         unavailable.
+
+    - Cache files available directly to the web server
+         Instead of generating each page dynamically, lurker operates as an
+         error document and creates missing pages on the fly which the web
+         server can then reserve for later requests. It cleans up cache
+         sensibily when database changes occure or its resource limit is
+         exceeded. This system allows lurker to survive a slashdotting more
+         easily since the pages do not need to be rerendered each time.
+
+    - Completely customizable output
+         Lurker outputs XML which is formatted via XSLT. If a site wishes to
+         simply change the formatting, colours, or graphics, it need merely
+         change the stylesheet (or choose an existing alternative). If the
+         site needs to make actual structural changes, this is as easy as
+         editing the xsl used to render the html. Further, if browsers
+         support it, lurker will transmit the gzipped xml directly thus
+         reducing bandwidth usage for the heftier html.
+
+---------------------------
+What were the design goals?
+---------------------------
+
+ Non-functional requirements:
 	Ability to handle up to 4 billion messages
 	Fast search times: < 0.001s even at capacity
 	Fast rendering: < 0.001s even at capacity
 	Pages should be created and cached in all cases
 
-Target feature set:
+ Target feature set:
 	File attachment support
 	Multilingual support
 	Full boolean search with many fields
 	Threading without breaking time of arrival order
 
-Convenience goals:
+ Convenience goals:
 	No need to use any script to input email; watch the mboxs
 	No apache mods or special configuration of any sort
 	Able to install in any location / permissions
 
-Libraries used:
-	We wish to keep this to a minimum, right now we use:
-		libst
-		libdb3
-		libxslt1
-		libc-client
+ Libraries used (should be minimal):
+	libst
+	libdb3
+	libxslt1
+	libc-client
 
-Portability:
-	At present, only linux is supported. However, the code should be
-	written so that it may later be easily ported to other architectures
-	with a minimal posix feature set.
+ Portability: 
+	
+	At present, only linux is officially supported. However, the code
+	has been tested occasionally on MacOS X and BSD. It requires only
+	the X/Open C interfaces.
+	
+	For beta, we will be supporting many more platforms, but until then
+	only the occasional attempt to port it is being made since
+	functionality must come first.
