@@ -1,4 +1,4 @@
-/*  $Id: Thread.cpp,v 1.5 2003-06-23 14:38:41 terpstra Exp $
+/*  $Id: Thread.cpp,v 1.6 2003-06-27 11:06:53 terpstra Exp $
  *  
  *  Thread.h - Helper class for calculating threading
  *  
@@ -46,7 +46,8 @@ inline bool lu_isalnum(char x)
 {
 	return	(x >= 'a' && x <= 'z') || 
 		(x >= 'A' && x <= 'Z') ||
-		(x >= '0' && x <= '9');
+		(x >= '0' && x <= '9') ||
+		(((unsigned char)x) >= 0x80); // utf-8 is allowed
 }
 
 inline char lu_tolower(char x)
