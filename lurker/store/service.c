@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.91 2002-08-18 21:11:54 terpstra Exp $
+/*  $Id: service.c,v 1.92 2002-08-18 21:36:21 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -917,6 +917,11 @@ static int my_service_summary_body(
 	if (my_service_buffer_write(h, "</time>\n   <thread>")    != 0) return -1;
 	if (my_service_write_int(h, msg->thread)                  != 0) return -1;
 	if (my_service_buffer_write(h, "</thread>\n")             != 0) return -1;
+	
+	if (msg->thread == id)
+	{
+		if (my_service_buffer_write(h, "   <thread-head>yes</thread-head>\n") != 0) return -1;
+	}
 	
 	if (lu_summary_write_variable(
 		(int(*)(void*, const char*))        &my_service_buffer_write,
