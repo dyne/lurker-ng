@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.9 2003-05-07 16:15:31 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.10 2003-05-14 11:44:48 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -42,11 +42,11 @@ static int shared_file_lock(int fd)
 	if (flock(fd, LOCK_SH) != 0) return -1;
 #else
 #ifdef F_SETLK
-	 struct flock lock;
-	 memset(&lock, 0, sizeof(lock));
-	 lock.l_type = F_RDLCK;
-	 lock.l_whence = SEEK_SET;
-	 if (fcntl(fd, F_SETLKW, &lock) != 0) return -1;
+	struct flock lock;
+	memset(&lock, 0, sizeof(lock));
+	lock.l_type = F_RDLCK;
+	lock.l_whence = SEEK_SET;
+	if (fcntl(fd, F_SETLKW, &lock) != 0) return -1;
 #endif
 #endif
 	return 0;
@@ -58,11 +58,11 @@ static int exclusive_file_lock(int fd)
 	if (flock(fd, LOCK_EX) != 0) return -1;
 #else
 #ifdef F_SETLK
-	 struct flock lock;
-	 memset(&lock, 0, sizeof(lock));
-	 lock.l_type = F_WRLCK;
-	 lock.l_whence = SEEK_SET;
-	 if (fcntl(fd, F_SETLKW, &lock) != 0) return -1;
+	struct flock lock;
+	memset(&lock, 0, sizeof(lock));
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_SET;
+	if (fcntl(fd, F_SETLKW, &lock) != 0) return -1;
 #endif
 #endif
 	return 0;
@@ -74,11 +74,11 @@ static int unlock_file_lock(int fd)
 	if (flock(fd, LOCK_UN) != 0) return -1;
 #else
 #ifdef F_SETLK
-	 struct flock lock;
-	 memset(&lock, 0, sizeof(lock));
-	 lock.l_type = F_UNLCK;
-	 lock.l_whence = SEEK_SET;
-	 if (fcntl(fd, F_SETLKW, &lock) != 0) return -1;
+	struct flock lock;
+	memset(&lock, 0, sizeof(lock));
+	lock.l_type = F_UNLCK;
+	lock.l_whence = SEEK_SET;
+	if (fcntl(fd, F_SETLKW, &lock) != 0) return -1;
 #endif
 #endif
 	return 0;
@@ -227,7 +227,7 @@ int DbMan::open(View& view, const string& db, int mode)
 	// ignore the error; some OSes don't allow opening directories
 	
 	int ok = lock_snapshot_rw();
-	if (!ok) return ok;
+	if (ok != 0) return ok;
 	
 	bool empty = fseek(dbfile, 0, SEEK_END) == 0;
 	fseek(dbfile, 0, SEEK_SET);
