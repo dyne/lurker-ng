@@ -1597,7 +1597,7 @@ fi
 ALL_LINGUAS=""
 
 if test "x$USE_MAINTAINER_MODE" != "xno"; then
-  CFLAGS="$CFLAGS -ansi -pedantic -Wtraditional -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wnested-externs -Wlong-long -Winline"
+  CFLAGS="-Wall -O2 -g -ansi -pedantic -Wtraditional -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wnested-externs -Winline"
 fi
 
 
