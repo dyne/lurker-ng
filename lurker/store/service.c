@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.8 2002-02-10 09:33:53 terpstra Exp $
+/*  $Id: service.c,v 1.9 2002-02-10 10:09:40 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -208,6 +208,41 @@ static void my_service_error(
 	my_service_buffer_write(fd, "</message>\n <detail>");
 	my_service_write_str(fd, detail);
 	my_service_buffer_write(fd, "</detail>\n</error>\n");
+}
+
+static void my_service_list(
+	st_netfd_t fd,
+	Lu_Config_List* l,
+	message_id msgs)
+{
+	my_service_buffer_write(fd, " <list>\n  <id>");
+	my_service_write_int(fd, l->id);
+	my_service_buffer_write(fd, "</id>\n  <messages>");
+	my_service_write_int(fd, msgs);
+	my_service_buffer_write(fd, "</messages>\n");
+	
+	if (l->name)
+	{
+		my_service_buffer_write(fd, "  <name>");
+		my_service_write_str(fd, l->name);
+		my_service_buffer_write(fd, "</name>\n");
+	}
+	
+	if (l->address)
+	{
+		my_service_buffer_write(fd, "  <address>");
+		my_service_write_str(fd, l->address);
+		my_service_buffer_write(fd, "</address>\n");
+	}
+	
+	if (l->description)
+	{
+		my_service_buffer_write(fd, "  <desc>");
+		my_service_write_str(fd, l->description);
+		my_service_buffer_write(fd, "</desc>\n");
+	}
+	
+	my_service_buffer_write(fd, " </list>\n");
 }
 
 static int my_service_getmsg(st_netfd_t fd, const char* request)
@@ -420,12 +455,14 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 {
 	Lu_Breader_Handle	h;
 	Lu_Summary_Message	msg;
+	Lu_Config_List*		l;
 	message_id		offset;
 	int			list;
 	char			keyword[40];
 	message_id		ids[LU_PROTO_INDEX];
 	int			i;
 	message_id		count;
+	time_t			tm;
 	
 	if (sscanf(request, "%d %d", &list, &offset) != 2)
 	{	/* They did something funny. */
@@ -447,6 +484,17 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 		return -1;
 	}
 	
+	l = lu_config_find_list(list);
+	if (l == 0)
+	{
+		my_service_error(fd,
+			"Invalid request",
+			"Lurkerd received a request for a non-existant list",
+			request);
+		
+		return -1;
+	}
+	
 	sprintf(&keyword[0], "%s%d", LU_KEYWORD_LIST, list);
 	h = lu_breader_new(&keyword[0]);
 	if (h == 0)
@@ -462,7 +510,7 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 	if (offset >= lu_breader_records(h))
 	{
 		my_service_error(fd,
-			"Malformed request",
+			"Invalid request",
 			"Lurkerd received a mindex request past the end of the list",
 			request);
 		
@@ -484,17 +532,40 @@ static int my_service_mindex(st_netfd_t fd, const char* request)
 	}
 	
 	my_service_xml_head(fd);
-	my_service_buffer_write(fd, "<mindex>\n");
+	my_service_buffer_write(fd, "<mindex>\n <offset>");
+	my_service_write_int(fd, offset);
+	my_service_buffer_write(fd, "</offset>\n");
+	
+	if (offset + count != lu_breader_records(h))
+	{
+		my_service_buffer_write(fd, " <next>");
+		my_service_write_int(fd, offset + LU_PROTO_INDEX);
+		my_service_buffer_write(fd, "</next>\n");
+	}
+	
+	if (offset != 0)
+	
+	{
+		my_service_buffer_write(fd, " <prev>");
+		my_service_write_int(fd, offset - LU_PROTO_INDEX);
+		my_service_buffer_write(fd, "</prev>\n");
+	}
+	
+	my_service_list(fd, l, lu_breader_records(h));
 	
 	for (i = 0; i < count; i++)
 	{
 		msg = lu_summary_read_msummary(ids[i]);
 		
+		tm = msg.timestamp;
+		
 		my_service_buffer_write(fd, " <summary>\n  <id>");
 		my_service_write_int(fd, ids[i]);
 		my_service_buffer_write(fd, "</id>\n  <timestamp>");
 		my_service_write_int(fd, msg.timestamp);
-		my_service_buffer_write(fd, "</timestamp>\n  <thread>");
+		my_service_buffer_write(fd, "</timestamp>\n  <time>");
+		my_service_write_str(fd, ctime(&tm));
+		my_service_buffer_write(fd, "</time>\n  <thread>");
 		my_service_write_int(fd, msg.thread_parent);
 		my_service_buffer_write(fd, "</thread>\n");
 		

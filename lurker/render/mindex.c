@@ -1,4 +1,4 @@
-/*  $Id: mindex.c,v 1.1.1.1 2002-01-21 00:03:06 terpstra Exp $
+/*  $Id: mindex.c,v 1.2 2002-02-10 10:09:40 terpstra Exp $
  *  
  *  mindex.c - output results from a mindex/ lookup
  *  
@@ -24,15 +24,40 @@
 
 #include "config.h"
 #include "handler.h"
+#include "common.h"
+#include "protocol.h"
 
 int lu_mindex_handler(char* parameter)
 {
-	FILE* f;
+	FILE* xml;
+	int i, j;
 	
-	if ((f = lu_render_open(parameter)) == 0)
+	char	buf[4096];
+	size_t	got;
+	
+	if (sscanf(parameter, "%d@%d", &i, &j) != 2)
+	{
+		printf("Status: 200 OK\r\n");
+		printf("Content-type: text/html\r\n\r\n");
+		printf(&basic_error[0], 
+			"Reading parameters",
+			parameter,
+			"Not formatted as &lt;list&gt;@&lt;ffset&gt;");
+		return -1;
+	}
+	
+	fprintf(lu_server_link, "mindex %d %d%c", 
+		i, j, LU_PROTO_ENDREQ);
+	fflush(lu_server_link);
+	
+	if ((xml = lu_render_open(parameter)) == 0)
 		return -1;
 	
-	fprintf(f, "This is an example page");
+	do
+	{
+		got = fread(&buf[0], 1, sizeof(buf), lu_server_link);
+		fwrite(&buf[0], 1, got, xml);
+	} while (got > 0);
 	
-	return lu_render_close(f);
+	return lu_render_close(xml);
 }
