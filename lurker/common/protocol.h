@@ -1,4 +1,4 @@
-/*  $Id: protocol.h,v 1.1 2002-02-04 00:14:31 terpstra Exp $
+/*  $Id: protocol.h,v 1.2 2002-02-04 01:03:23 terpstra Exp $
  *  
  *  protocol.h - What do we use to communicate
  *  
@@ -22,6 +22,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#define LU_PROTO_ENDREQ		'\n'
 #define LU_PROTO_GETMSG		"getmsg "
 
 typedef struct Lu_Proto_Message_T
@@ -36,11 +37,12 @@ typedef struct Lu_Proto_Message_T
 	
 	lu_quad		timestamp;
 	message_id	in_reply_to;
-	message_id	thread_parent;
+	message_id	thread;
 	
 	lu_word		replys;		/* How many replys are there */
-	lu_quad		length;		/* The length of the message */
 	
 	message_id	reply[0];	/* All the replys to this message */
-	char		body[0];	/* The message follows */
+	char		body[0];	/* The message follows - terminated by
+					 * the connection closing.
+					 */
 } Lu_Proto_Message;
