@@ -1,7 +1,7 @@
 AC_INIT(lurker, 0.1c)
 
 AC_PREREQ(2.52)
-AC_REVISION($Id: configure.ac,v 1.34 2002-07-12 16:42:31 terpstra Exp $)
+AC_REVISION($Id: configure.ac,v 1.35 2002-07-12 17:14:32 terpstra Exp $)
 AC_CONFIG_SRCDIR(store/main.c)
 AC_CONFIG_AUX_DIR(tools)
 
@@ -152,4 +152,5 @@ AC_OUTPUT([
   doc/lurker.mbox
   store/backup
   store/restore
+  store/purge
   render/.htaccess])
