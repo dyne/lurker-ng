@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.34 2003-06-26 21:35:01 terpstra Exp $
+/*  $Id: main.cpp,v 1.35 2003-06-26 22:12:51 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -305,6 +305,7 @@ int index(DwString& msg, long batch, bool check, bool compress)
 		
 		// Write out the annoying gzip tail field
 		unsigned long crc = crc32(0, Z_NULL, 0);
+		crc = crc32(crc, (unsigned char*)prefix, strlen(prefix));
 		crc = crc32(crc, (unsigned char*)msg.c_str(), msg.length());
 		int n;
 		for (n = 0; n < 4; ++n)
@@ -312,7 +313,7 @@ int index(DwString& msg, long batch, bool check, bool compress)
 			append += ((char)(crc & 0xFF));
 			crc >>= 8;
 		}
-		unsigned long len = msg.length();
+		unsigned long len = msg.length() + strlen(prefix);
 		for (n = 0; n < 4; ++n)
 		{
 			append += ((char)(len & 0xFF));
