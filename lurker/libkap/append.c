@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.5 2002-07-09 00:09:38 terpstra Exp $
+/*  $Id: append.c,v 1.6 2002-07-09 01:12:34 terpstra Exp $
  *  
  * append.c - Implementation of the append access methods.
  *  
@@ -248,7 +248,7 @@ size_t kap_decode_krecord(const unsigned char* where, KRecord* kr)
 		where += 5;
 	}
 	
-	return 4 + (i+1)*5;
+	return 4 + (recs+1)*5;
 }
 
 size_t kap_encode_krecord(unsigned char* where, const KRecord* kr)
@@ -265,7 +265,7 @@ size_t kap_encode_krecord(unsigned char* where, const KRecord* kr)
 		where += 5;
 	}
 	
-	return 4 + (i+1)*5;
+	return 4 + (recs+1)*5;
 }
 
 int kap_append_read(Kap k, const KRecord* kr,
