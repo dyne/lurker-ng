@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.8 2002-02-22 01:09:21 terpstra Exp $
+/*  $Id: search.c,v 1.9 2002-03-04 04:03:55 terpstra Exp $
  *  
  *  search.c - output results from a search/ lookup
  *  
@@ -38,7 +38,7 @@ static void extract_keyword(
 	const char* prefix,
 	const char* field)
 {
-	char* t;
+	const char* t;
 	char* s;
 	
 	if ((s = strstr(parameter, field)) == 0)
@@ -46,27 +46,35 @@ static void extract_keyword(
 	
 	s += strlen(field); /* skip the field */
 	if (!*s++) return;	/* skip the = */
-	if (!*s || *s == '&') return; /* empty field */
 	
-	for (t = "%20"; *w != e && *t; t++)
-		*(*w)++ = *t;
-	
-	for (; *w != e && *prefix; prefix++)
-		*(*w)++ = *prefix;
-	
-	for (; *w != e && *s; s++)
+	while (*w != e && *s && *s != '&')
 	{
-		if (*s == '+')
+		while (*s)
 		{
-			*(*w)++ = '%';
-			if (*w == e) break;
-			*(*w)++ = '2';
-			if (*w == e) break;
-			*(*w)++ = '0';
+			if (*s == '+') { s++; continue; }
+			if (*s == ' ') { s++; continue; }
+			if (*s == '%' && *(s+1) == '2' && *(s+2) == '0')
+			{
+				s += 3;
+				continue;
+			}
+			break;
 		}
-		else
+		
+		for (t = "%20"; *w != e && *t; t++)
+			*(*w)++ = *t;
+		
+		for (t = prefix; *w != e && *t; t++)
+			*(*w)++ = *t;
+		
+		for (; *w != e && *s; s++)
 		{
-			if (*s == '&') break;
+			if (*s == '+' || *s == ' ' || *s == '&' || 
+			    (*s == '%' && *(s+1) == '2' && *(s+2) == '0'))
+			{
+				break;
+			}
+			
 			*(*w)++ = *s;
 		}
 	}
