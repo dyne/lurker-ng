@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.5 2003-06-23 14:38:43 terpstra Exp $
+/*  $Id: thread.cpp,v 1.6 2003-06-26 18:50:05 terpstra Exp $
  *  
  *  thread.cpp - Handle a thread/ command
  *  
@@ -72,11 +72,17 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
+	set<string> lists;
 	for (Threading::Key j = 0; j < thread.size(); ++j)
 	{
 		Summary& sum = thread.getSummary(j);
 		if (!sum.loaded() && (ok = sum.load(db)) != "")
 			break;
+		
+		const set<string>& mboxs = sum.mboxs();
+		set<string>::const_iterator i;
+		for (i = mboxs.begin(); i != mboxs.end(); ++i)
+			lists.insert(*i);
 	}
 	
 	if (ok != "")
@@ -97,6 +103,14 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 		<< "<thread>\n"
 		<< " " << cfg << "\n"
 		<< " <hash>" << subject_hash(source.subject().c_str()) << "</hash>\n";
+	
+	set<string>::const_iterator list;
+	for (list = lists.begin(); list != lists.end(); ++list)
+	{
+		Config::Lists::const_iterator desc = cfg.lists.find(*list);
+		if (desc == cfg.lists.end()) continue;
+		cache.o << " " << desc->second << "\n";
+	}
 	
 	int head = -1;
 	for (Threading::Key i = 0; i < thread.size(); ++i)
