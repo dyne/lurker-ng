@@ -86,7 +86,7 @@
      <tr>
       <td>
         <!-- make this the same height as mindex -->
-        <img src="../imgs/a.png" width="1" height="24"/>
+        <img src="../imgs/a.png" width="1" height="24" alt=""/>
       </td>
       <td nowrap="NOWRAP" align="center" width="100%">
        <form action="{server/cgi-url}/jump.cgi">
@@ -148,7 +148,7 @@
      <tr>
       <td>
         <!-- make this the same height as mindex -->
-        <img src="../imgs/a.png" width="1" height="24"/>
+        <img src="../imgs/a.png" width="1" height="24" alt=""/>
       </td>
       <td nowrap="NOWRAP" align="center">
        <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">

@@ -47,6 +47,11 @@
 <xsl:variable name="use-special-word-thread" select="'Use the keyword '"/>
 <xsl:variable name="to-search-thread" select="' to restrict your search to this thread.'"/>
 
+<xsl:variable name="refine-search" select="'Refine the search results to only those messages containing the following keywords:'"/>
+<xsl:variable name="jump-search" select="'Jump to those matching messages which are nearest to the following date:'"/>
+<xsl:variable name="no-refine" select="'The result set will remain unchanged. Only the displayed date-range of the messages is affected.'"/>
+<xsl:variable name="useful-prefixs" select="'Search terms may include the prefixes au: sb: ml: to match author subject and mailing list respectively.'"/>
+
 <xsl:variable name="jan">January</xsl:variable>
 <xsl:variable name="feb">February</xsl:variable>
 <xsl:variable name="mar">March</xsl:variable>

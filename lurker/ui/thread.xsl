@@ -46,7 +46,7 @@
      <tr>
       <td>
         <!-- make this the same height as mindex -->
-        <img src="../imgs/a.png" width="1" height="24"/>
+        <img src="../imgs/a.png" width="1" height="24" alt=""/>
       </td>
       <td nowrap="NOWRAP" align="center">
        <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">
@@ -76,7 +76,7 @@
      <tr>
       <th><xsl:value-of select="$thread"/></th>
       <th><xsl:value-of select="$author"/></th>
-      <th><xsl:value-of select="$date"/> (UTC)</th>
+      <th><xsl:value-of select="$date"/>&#160;(UTC)</th>
      </tr>
      <xsl:apply-templates mode="message" select="row"/>
     </table>
@@ -84,8 +84,10 @@
    
    
    <div class="footer">
+<!-- fixme (have lists)
     <table class="navigation">
     </table>
+-->
     <xsl:call-template name="lurker-signature"/>
    </div>
   </body>
