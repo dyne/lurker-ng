@@ -212,7 +212,6 @@
 
 
 <xsl:template match="message" mode="title">
- <xsl:value-of select="mbox/list/email/@name"/> -
  <xsl:value-of select="summary/subject"/>
 </xsl:template>
 
