@@ -25,5 +25,8 @@
 # can be useful for creating a module that consists of many directories
 # spread out over the entire source repository.
 
-lurker lurker &libesort
-libkw  libkw  &libesort
+
+# Disable till we remove libesort/*
+# lurker lurker &libesort
+
+libkw  libkw  &libesort &libkfind
