@@ -1,4 +1,4 @@
-/*  $Id: db.c,v 1.11 2002-01-31 03:46:19 terpstra Exp $
+/*  $Id: db.c,v 1.12 2002-01-31 05:42:40 terpstra Exp $
  *  
  *  db.c - manage the databases
  *  
@@ -330,7 +330,87 @@ static int lu_squishy_subject(const char* subject, char* target)
  */
 static int pop_thread(message_id thread_id, ThreadSummary* thread)
 {
-	/*!!!*/
+	int		error;
+	DBT		key;
+	DBT		val;
+	ThreadSummary	left;
+	ThreadSummary	right;
+	
+	key.size = sizeof(message_id);
+	val.ulen = sizeof(left);
+	val.flags = DB_DBT_USERMEM;
+	
+	if (thread->prev_thread != lu_kw_invalid)
+	{
+		key.data = &thread->prev_thread;
+		val.data = &left;
+	
+		if ((error = lu_thread_db->get(lu_thread_db, 0, &key, &val, 0)) != 0)
+		{
+			syslog(LOG_ERR, "Thread-linkage corrupt - left missing for %d\n",
+				thread_id);
+			return -1;
+		}
+		
+		left.next_thread = thread->next_thread;
+	}
+	
+	if (thread->next_thread != lu_kw_invalid)
+	{
+		key.data = &thread->next_thread;
+		val.data = &right;
+		
+		if ((error = lu_thread_db->get(lu_thread_db, 0, &key, &val, 0)) != 0)
+		{
+			syslog(LOG_ERR, "Thread-linkage corrupt - right missing for %d\n",
+				thread_id);
+			return -1;
+		}
+		
+		right.prev_thread = thread->prev_thread;
+	}
+	
+	if (thread->prev_thread != lu_kw_invalid)
+	{
+		key.data = &thread->prev_thread;
+		val.data = &left;
+	
+		if ((error = lu_thread_db->put(lu_thread_db, 0, &key, &val, 0)) != 0)
+		{
+			syslog(LOG_ERR, "Unable to rewrite left link for %d\n",
+				thread_id);
+			return -1;
+		}
+	}
+	
+	if (thread->next_thread != lu_kw_invalid)
+	{
+		key.data = &thread->next_thread;
+		val.data = &right;
+		
+		if ((error = lu_thread_db->put(lu_thread_db, 0, &key, &val, 0)) != 0)
+		{
+			syslog(LOG_ERR, "Thread-linkage corrupt - right missing for %d\n",
+				thread_id);
+			
+			if (thread->prev_thread != lu_kw_invalid)
+			{
+				left.next_thread = thread_id;
+				key.data = &thread->prev_thread;
+				val.data = &left;
+				
+				if ((error = lu_thread_db->put(lu_thread_db, 0, &key, &val, 0)) != 0)
+				{
+					syslog(LOG_ERR, "Unable to restore left link for %d - broken linkage!\n",
+						thread_id);
+				}
+			}
+			
+			return -1;
+		}
+	}
+	
+	return 0;
 }
 
 /* Append the thread to the linked list of threads in the hash.
@@ -339,14 +419,21 @@ static int pop_thread(message_id thread_id, ThreadSummary* thread)
  */
 static int push_thread(message_id thread_id, ThreadSummary* thread)
 {
-	/*!!!*/
+	/*!!! how do we find the end?*/
+	return 0;
 }
 
+/* By default, if two messages with similar subject arrive within 14 days
+ * on the same mailing list, we consider them the same thread. If they have
+ * the same squishy subject and a reply-to linkage, we may merge threads
+ * at that time.
+ */
 #define LU_THREAD_OVERLAP_TIME	60*60*24*14
 
 /* This function uses the given data to try and find a thread which the given
- * message would belong in. If the message brings the timestamp of two seperate
- * threads close enough together, it will merge them.
+ * message would belong in. I initially thought that I would need to merge
+ * threads. However, because we have guaranteed import order, a missing link
+ * is an impossibility. It can only possibly connect to the previous thread.
  * 
  * lu_keyword_invalid -> no thread existed, make your own.
  * 
@@ -354,18 +441,12 @@ static int push_thread(message_id thread_id, ThreadSummary* thread)
  * returned id if != lu_keyword_invalid. Also, he must insert himself into
  * the linked list for the thread. The parent summary is returned as a 
  * convenience (less disk hits). message_count++ is a good move too.
- * 
- * The caller does not need to undo this operation if the import fails since 
- * merging two threads that ARE related and leaving them merged is harmless.
- * ie: the message does exist, so these are the same thread, so we don't need
- * to back out of this change.
  */
-static int lu_find_thread_maybe_merge(
+static int lu_find_thread(
 	lu_word list, const char* subject, time_t timestamp,
 	ThreadSummary* parent, message_id* out)
 {
-	char		thread_key_after[sizeof(lu_word) + LU_SQUISHY_MAX + sizeof(lu_quad)];
-	char		thread_key_prior[sizeof(lu_word) + LU_SQUISHY_MAX + sizeof(lu_quad)];
+	char		thread_key[sizeof(lu_word) + LU_SQUISHY_MAX + sizeof(lu_quad)];
 	int		thread_key_len;
 	char		squishy[LU_SQUISHY_MAX];
 	int		squishy_len;
@@ -375,28 +456,22 @@ static int lu_find_thread_maybe_merge(
 	DBT		ind;
 	DBT		val;
 	int		error;
-	int		is_before;
-	int		is_after;
 	ThreadSummary	prior;
-	ThreadSummary	after;
 	message_id	prior_id;
-	message_id	after_id;
-	lu_quad		prior_time, after_time;
-	
-	/*------------------------- Step one: find the threads we might join */
+	lu_quad		prior_time;
 	
 	/* Get the key for where this thread lies */
 	tm = timestamp;
 	thread_key_len = sizeof(lu_word);
-	memcpy(&thread_key_after[0], &list, thread_key_len);
-	thread_key_len += lu_squishy_subject(subject, &thread_key_after[thread_key_len]);
-	memcpy(&thread_key_after[thread_key_len], &tm, sizeof(lu_quad));
+	memcpy(&thread_key[0], &list, thread_key_len);
+	thread_key_len += lu_squishy_subject(subject, &thread_key[thread_key_len]);
+	memcpy(&thread_key[thread_key_len], &tm, sizeof(lu_quad));
 	thread_key_len += sizeof(lu_quad);
 	
 	squishy_len = lu_squishy_subject(subject, &squishy[0]);
 	
 	/* Find the smallest entry >= our thread in the thread btree */
-	error = lu_thread_db->cursor(lu_thread_db, 0, &cursor, 0);
+	error = lu_merge_db->cursor(lu_merge_db, 0, &cursor, 0);
 	if (error)
 	{
 		syslog(LOG_ERR, "Unable to create thread DB cursor: %s\n",
@@ -408,17 +483,17 @@ static int lu_find_thread_maybe_merge(
 	memset(&ind, 0, sizeof(DBT));
 	memset(&val, 0, sizeof(DBT));
 	
-	key.ulen = sizeof(thread_key_after);
+	key.ulen = sizeof(thread_key);
 	key.flags = DB_DBT_USERMEM;
 	ind.ulen = sizeof(message_id);
 	ind.flags = DB_DBT_USERMEM;
 	val.ulen = sizeof(ThreadSummary);
 	val.flags = DB_DBT_USERMEM;
 	
-	key.data = &thread_key_after[0];
+	key.data = &thread_key[0];
 	key.size = thread_key_len;
-	ind.data = &after_id;
-	val.data = &after;
+	ind.data = &prior_id;
+	val.data = &prior;
 	
 	error = cursor->c_get(cursor, &key, &ind, DB_SET_RANGE);
 	if (error && error != DB_NOTFOUND)
@@ -428,65 +503,16 @@ static int lu_find_thread_maybe_merge(
 		return -1;
 	}
 	
-	if (error == DB_NOTFOUND || 
-	    memcmp(&squishy[0], &thread_key_after[sizeof(lu_word)], squishy_len))
-	{
-		after_time = 0;
-	}
-	else
-	{
-		if (error != DB_NOTFOUND)
-		{
-			error = lu_thread_db->get(lu_thread_db, 0, &ind, &val, 0);
-			if (error)
-			{
-				syslog(LOG_ERR, "Unable to retrieve thread summary: %s\n",
-					db_strerror(error));
-				return -1;
-			}
-		}
-		
-		memcpy(&after_time, &thread_key_after[key.size-sizeof(lu_quad)], 
-			sizeof(lu_quad));
-	}
-	
-	key.data = &thread_key_prior[0];
-	/* key.len unset b/c db3 writes into the key w/o reading it */
-	ind.data = &prior_id;
-	val.data = &prior;
-	
 	if (error == DB_NOTFOUND)
-		error = cursor->c_get(cursor, &key, &val, DB_LAST);
+		error = cursor->c_get(cursor, &key, &ind, DB_LAST);
 	else
-		error = cursor->c_get(cursor, &key, &val, DB_PREV);
+		error = cursor->c_get(cursor, &key, &ind, DB_PREV);
 	
 	if (error && error != DB_NOTFOUND)
 	{
 		syslog(LOG_ERR, "Unable to find prev thread record: %s\n",
 			db_strerror(error));
 		return -1;
-	}
-	
-	if (error == DB_NOTFOUND ||
-	    memcmp(&squishy[0], &thread_key_prior[sizeof(lu_word)], squishy_len))
-	{
-		prior_time = 0;
-	}
-	else
-	{
-		if (error != DB_NOTFOUND)
-		{
-			error = lu_thread_db->get(lu_thread_db, 0, &ind, &val, 0);
-			if (error)
-			{
-				syslog(LOG_ERR, "Unable to retrieve thread summary: %s\n",
-					db_strerror(error));
-				return -1;
-			}
-		}
-		
-		memcpy(&prior_time, &thread_key_prior[key.size-sizeof(lu_quad)], 
-			sizeof(lu_quad));
 	}
 	
 	error = cursor->c_close(cursor);
@@ -496,58 +522,45 @@ static int lu_find_thread_maybe_merge(
 			db_strerror(error));
 		return -1;
 	}
-		
-	/* Ok, we now have the data loaded, do a quick consistency check */
-	if (after_time != 0 && (after_time != after.start || after.start > after.end))
+	
+	if (error == DB_NOTFOUND ||
+	    memcmp(&squishy[0], &thread_key[sizeof(lu_word)], squishy_len))
+	{	/* There is no prior thread */
+		*out = lu_kw_invalid;
+		return 0;
+	}
+	else
 	{
-		syslog(LOG_ERR, "Corrupt thread database - aftert\n");
-		return -1;
+		error = lu_thread_db->get(lu_thread_db, 0, &ind, &val, 0);
+		if (error)
+		{
+			syslog(LOG_ERR, "Unable to retrieve thread summary: %s\n",
+				db_strerror(error));
+			return -1;
+		}
+		
+		memcpy(&prior_time, &thread_key[key.size-sizeof(lu_quad)], 
+			sizeof(lu_quad));
 	}
 	
-	if (prior_time != 0 && (prior_time != prior.start || prior.start > prior.end))
+	/* Ok, we now have the data loaded, do a quick consistency check */
+	if (prior_time != prior.start || prior.start > prior.end)
 	{
 		syslog(LOG_ERR, "Corrupt thread database - prior\n");
 		return -1;
 	}
 	
-	/*------------------------- Step two: decide what to do */
-	
 	/* Now will the new message land in the prior thread? */
-	is_before = (prior_time != 0 && 
-	    timestamp + LU_THREAD_OVERLAP_TIME > prior.start &&
-	    prior.end + LU_THREAD_OVERLAP_TIME > timestamp);
-	
-	is_after = (after_time != 0 &&
-	    timestamp + LU_THREAD_OVERLAP_TIME > after.start &&
-	    after.end + LU_THREAD_OVERLAP_TIME > timestamp);
-	
-	if (is_before && !is_after)
+	if (timestamp + LU_THREAD_OVERLAP_TIME > prior.start &&
+	    prior.end + LU_THREAD_OVERLAP_TIME > timestamp)
 	{	/* Ok, merge with the prior thread and not the later */
 		memcpy(parent, &prior, sizeof(ThreadSummary));
 		*out = prior_id;
 		return 0;
 	}
 	
-	if (is_after && !is_before)
-	{
-		memcpy(parent, &after, sizeof(ThreadSummary));
-		*out = after_id;
-		return 0;
-	}
-	
-	if (!is_after && !is_before)
-	{	/* thread for this record */
-		*out = lu_kw_invalid;
-		return 0;
-	}
-	
-	/*------------------------- Step three: merge threads */
-	
-	/* Union-find dictates that the larger set be the parent.
-	 */
-	/*!!!*/
-	
-	*out = prior_id;
+	/* New thread for this record */
+	*out = lu_kw_invalid;
 	return 0;
 }
 
@@ -560,8 +573,7 @@ message_id lu_import_message(
 {
 	/* This function has to create the message stub info:
 	 * 
-	 * First, find what thread to plop it in and possibly merge threads
-	 * that this joins.
+	 * First, find what thread to plop it in.
 	 * 
 	 * We must push the variable information for the message.
 	 * Then we must push summary information for the message.
@@ -589,7 +601,7 @@ message_id lu_import_message(
 	
 	id = lu_msg_free;
 	
-	if (lu_find_thread_maybe_merge(list, subject, timestamp,
+	if (lu_find_thread(list, subject, timestamp,
 		&thread, &thread_id) != 0)
 	{
 		goto lu_import_message_error0;
@@ -687,7 +699,7 @@ message_id lu_import_message(
 		ind.size = DB_DBT_USERMEM;
 		ind.data = &id;
 		
-		error = lu_thread_db->put(lu_thread_db, 0, &key, &ind, 0);
+		error = lu_merge_db->put(lu_merge_db, 0, &key, &ind, 0);
 		if (error)
 		{
 			syslog(LOG_ERR, "Failed to push indirect thread reference: %s\n",
@@ -804,7 +816,7 @@ lu_import_message_error3:
 	/* The other case is that we need to yank out a record which we placed
 	 * in the btree to locate the thread hash entry.
 	 */
-		error = lu_thread_db->del(lu_thread_db, 0, &key, 0);
+		error = lu_merge_db->del(lu_merge_db, 0, &key, 0);
 		if (error)
 		{
 			syslog(LOG_ERR, "Failed to remove indirect thread reference: %s\n",
