@@ -101,7 +101,7 @@
           <select name="list">
            <option value=""><xsl:value-of select="$all-lists"/></option>
            <xsl:for-each select="group/list">
-            <xsl:sort select="email/@name"/>
+            <xsl:sort select="id"/>
             <xsl:apply-templates mode="list-select" select="."/>
            </xsl:for-each>
           </select>
