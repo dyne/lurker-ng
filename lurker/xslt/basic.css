@@ -1,5 +1,7 @@
 body { padding:10px; margin:0 }
 
+body { background-color:#FFF }
+
 /* This makes the two pages have the same top offset
  */
 body > h1:first-node {
