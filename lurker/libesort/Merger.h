@@ -1,4 +1,4 @@
-/*  $Id: Merger.h,v 1.4 2003-04-25 14:55:43 terpstra Exp $
+/*  $Id: Merger.h,v 1.5 2003-04-25 21:06:11 terpstra Exp $
  *  
  *  Merger.h - Combine segments to obtain a database view
  *  
@@ -90,11 +90,12 @@ class Merger : public Walker
 class PrefixMerger : public Merger
 {
  protected:
+ 	enum State { pSKIP, pFIRST, pPART, pEOF } state;
  	long minDup;
  	
  public:
  	PrefixMerger(bool unique_, bool forward_)
- 	 : Merger(unique_, forward_), minDup(-1) { }
+ 	 : Merger(unique_, forward_), state(pSKIP) { }
  	
  	int advance(); // overload with the prefix test.
  	

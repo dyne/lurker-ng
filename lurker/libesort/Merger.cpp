@@ -1,4 +1,4 @@
-/*  $Id: Merger.cpp,v 1.6 2003-04-25 20:27:09 terpstra Exp $
+/*  $Id: Merger.cpp,v 1.7 2003-04-25 21:06:10 terpstra Exp $
  *  
  *  Merger.cpp - Combine segments to obtain a database view
  *  
@@ -263,22 +263,33 @@ int Merger::skiptill(const string& k, bool forward)
 
 int PrefixMerger::advance()
 {
-	if (minDup == -1)
-	{	// already at eof!
-		errno = 0;
-		return -1;
-	}
+	int o;
 	
-	int o = Merger::advance();
-	if (o < minDup && o != -1)
-	{	// hit eof
-		minDup = -1;
+	switch (state)
+	{
+	case pSKIP:
+		// pass through during skiptill
+		return Merger::advance();
+	
+	case pFIRST:
+		Merger::advance();
+		state = pPART;
+		return 0;
+	
+	case pPART:
+		o = Merger::advance();
+		if (o >= minDup) return o;
+		if (o == -1) return -1;
+		state = pEOF; // pass through
+	
+	case pEOF:
 		errno = 0;
 		return -1;
-	}
-	else
-	{
-		return o;
+		
+	default:
+		assert (0);
+		errno = EINVAL;
+		return -1;
 	}
 }
 
@@ -289,11 +300,12 @@ int PrefixMerger::skiptill(const string& pfx, const string& x, bool forward)
 	
 	// This much must be in common
 	minDup = pfx.length();
+	state  = pFIRST;
 	
 	// Use the fact we already loaded the first key
 	if (key.substr(0, minDup) != pfx)
 	{	// already hit eof
-		minDup = -1;
+		state = pEOF;
 	}
 	
 	return 0;
