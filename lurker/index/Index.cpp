@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.8 2003-04-26 13:01:55 terpstra Exp $
+/*  $Id: Index.cpp,v 1.9 2003-05-03 19:29:17 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -133,6 +133,8 @@ int Index::index_author()
 {
 	// one always has headers, but not always this function:
 	// if (message.hasHeaders())
+	
+	charset = "ISO-8859-1"; // a good default as any
 	
 	if (message.Headers().HasContentType())
 	{

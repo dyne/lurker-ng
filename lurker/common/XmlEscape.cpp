@@ -1,4 +1,4 @@
-/*  $Id: XmlEscape.cpp,v 1.4 2003-04-22 13:52:39 terpstra Exp $
+/*  $Id: XmlEscape.cpp,v 1.5 2003-05-03 19:29:17 terpstra Exp $
  *  
  *  XmlEscape.cpp - A stream manipulator-like thing for escaping XML
  *  
@@ -40,7 +40,7 @@ ostream& XmlOstream::operator << (char c)
 		{
 		case '\n':	return o << "<br/>\n";
 		case '\t':	return o << " ";
-		default:	return o; // drop the char
+		default:	return o << "?"; // drop the char
 		}
 	}
 	else
@@ -53,32 +53,67 @@ ostream& XmlOstream::operator << (char c)
 		case '"':	return o << "&quot;";
 		case '&':	return o << "&amp;";
 		default:	return o << c; // leave it alone
+				// this case includes high-ascii utf-8
 		}
 	}
 }
 
-ostream& XmlOstream::operator << (const string& s)
+string::size_type find_first_offensive_byte(const char* s, const char* e)
 {
-	string::size_type b = 0, e;
-	while ((e = s.find_first_of("'<>\"&\n", b)) != string::npos)
+	const char* b = s;
+	while (s != e)
 	{
-		o.write(s.c_str() + b, e - b);
-		*this << s[e];
-		b = e+1;
+		char x = *s;
+		if (x >= 0 && x <= 0x1f)
+		{	// control char in utf-8 eh?
+			return s - b;
+		}
+		else
+		{
+			switch (x)
+			{
+			case '\'':
+			case '<':
+			case '>':
+			case '"':
+			case '&':
+				// xml doesn't like these dudes
+				return s - b;
+			}
+		}
+		
+		++s;
 	}
 	
-	return o.write(s.c_str() + b, s.length() - b);
+	return s - b; // the eos
+}
+
+ostream& XmlOstream::operator << (const string& s)
+{
+	string::size_type b = 0, e = s.length();
+	while (1)
+	{
+		string::size_type x = find_first_offensive_byte(
+			s.c_str() + b, s.c_str() + e) + b;
+		
+		o.write(s.c_str() + b, x - b);
+		if (x == e) return o;
+		
+		*this << s[x];
+		b = x+1;
+	}
 }
 
 ostream& XmlOstream::operator << (const char* s)
 {
 	while (1)
 	{
-		size_t bad = strcspn(s, "'<>\"&\n");
-		o.write(s, bad);
-		s += bad;
+		string::size_type x = find_first_offensive_byte(s, 0);
 		
+		o.write(s, x);
+		s += x;
 		if (!*s) return o;
+		
 		*this << *s;
 		++s;
 	}

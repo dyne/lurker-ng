@@ -5,10 +5,12 @@ v0.8:
 	Don't compile network-enabled bits of mimelib
 	Getopt.h is not required and unavailable on some platforms
 	Solaris has no grep -q, use /dev/null
-	Include fcntl for Solaris O_RDONLY
+	Include fcntl.h for Solaris O_RDONLY
 	Don't use TZ for my_timegm; unsetenv is not in Solaris
 	Fsync files to disk for file-system transaction guarantees
 	Don't use flock if unavailable, try fcntl instead
+	Have better fallback behaviour for screwy charsets
+	Crop anything that even smells like a control char in xml
 
 v0.7:
 	Made VERSION controlled by one place: configure.ac

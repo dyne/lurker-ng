@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.5 2003-05-02 11:18:41 terpstra Exp $
+/*  $Id: message.cpp,v 1.6 2003-05-03 19:29:17 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -190,7 +190,7 @@ void message_display(ostream& o, DwEntity& e)
 		out = e.Body().AsString();
 	}
 	
-	string charset;
+	string charset = "ISO-8859-1"; // a nice default for ascii
 	if (e.Headers().HasContentType())
 	{
 		DwParameter* p = e.Headers().ContentType().FirstParameter();
@@ -202,13 +202,15 @@ void message_display(ostream& o, DwEntity& e)
 		}
 	}
 	
-	CharsetEscape decode(charset.c_str());
-	
 #if __GNUC__ == 2
 	strstream utf8;
 #else
 	std::stringstream utf8;
 #endif
+	
+	CharsetEscape decode(charset.c_str());
+	if (!decode.valid())
+		utf8 << "<-- Warning: charset '" << charset << "' is not supported -->\n\n";
 	
 	decode.write(utf8, out.c_str(), out.length());
 	out.clear();

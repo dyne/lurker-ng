@@ -1,4 +1,4 @@
-/*  $Id: CharsetEscape.cpp,v 1.5 2003-05-03 19:13:39 terpstra Exp $
+/*  $Id: CharsetEscape.cpp,v 1.6 2003-05-03 19:29:16 terpstra Exp $
  *  
  *  CharsetEscape.h - A stream manipulator-like thing for charset conversion
  *  
@@ -70,7 +70,7 @@ void CharsetEscape::write(ostream& o, const char* ib, size_t is)
 			
 			for (s = ib, e = s + is; s != e; ++s)
 			{	// if it moves, kill it!
-				if ((*s < 0x20 || *s >= 127) &&
+				if ((*s < 0x20 || *s >= 0x7f) &&
 				    (*s != '\n' && *s != '\t'))
 				{
 					break;
@@ -83,15 +83,13 @@ void CharsetEscape::write(ostream& o, const char* ib, size_t is)
 			is -= long(s - ib);
 			ib = s;
 			
-			if (!is) break;
+			if (!is) return;
 			
 			// skip the offensive byte
 			++ib;
 			--is;
 			o << '?';
 		}
-		
-		return;
 	}
 	
 	char buf[8096];
