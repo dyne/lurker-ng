@@ -29,8 +29,6 @@
     <a href="../message/{summary/id}.{$ext}">
      <xsl:value-of select="summary/subject"/>
     </a>
-    <!-- make this the same height as thread -->
-    <img src="../imgs/a.png" width="1" height="24" alt=""/>
    </div>
   </td>
   <td nowrap="NOWRAP" class="clipped">

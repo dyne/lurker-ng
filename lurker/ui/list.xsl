@@ -50,8 +50,6 @@
     <a href="../thread/{summary/id}.{$ext}">
      <xsl:value-of select="summary/subject"/>
     </a>
-    <!-- make this the same height as thread -->
-    <img src="../imgs/a.png" width="1" height="24" alt=""/>
    </div>
   </td>
   <td nowrap="NOWRAP" class="clipped">
@@ -70,8 +68,6 @@
    </xsl:for-each>
   </td>
   <td align="right">
-   <!-- make this the same height as mindex -->
-   <img src="../imgs/a.png" width="1" height="24" alt=""/>
    <xsl:value-of select="sum(day)"/>
   </td>
  </xsl:element>

@@ -245,6 +245,8 @@ img.photo {
 }
 .padded td { padding-bottom:1px }  /* Adds padding to output tables containing Discussion Tree icon */
 
+table.index tr { height: 24px; }
+
 .na { color:#BBB }  /* used to fade text when link not available, but still has placeholder text */
 .mime-label { text-align:right; padding:4px }  /* Mime labels in message contents */
 .longtext  { width:500px }  /* sets width of text entry fields */
