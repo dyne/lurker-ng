@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.25 2002-07-11 23:42:07 terpstra Exp $
+/*  $Id: summary.c,v 1.26 2002-07-12 12:57:14 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -383,6 +383,70 @@ int lu_summary_read_msummary(message_id mid, Lu_Summary_Message* m)
 	}
 	
 	return 0;
+}
+
+message_id lu_summary_num_messages(void)
+{
+	return my_summary_msg_free;
+}
+
+message_id lu_summary_find_timestamp(time_t tm)
+{
+	message_id l, r, m;
+	Lu_Summary_Message msg;
+	
+	/* Goal:
+	 *  Find the largest id such that all messages prior to it are prior
+	 *  to time tm. AKA: find the first message with timestamp >= tm.
+	 * Invariant:
+	 *  The first message with timestamp >= tm is in [l, r) or DNE
+	 *  r >= l
+	 */
+	l = 0;
+	r = lu_summary_num_messages();
+	
+	while (r - l > 1)
+	{
+		m = (r+l)/2;
+		
+		lu_summary_read_msummary(m-1, &msg);
+		
+		if (msg.timestamp < tm)
+		{	/* We know that m-1 is < tm. Therefore, >= m would
+			 * satisfy all messages prior to it are prior to tm.
+			 * Thus the answer lies in  [m, inf)
+			 * Intersect with invariant -> [m, r)
+			 */
+			l = m;
+		}
+		else
+		{	/* We know that m-1 is >= tm
+			 * Therefore m is not the first thing >= tm.
+			 * So, (-inf, m) is only possible.
+			 * Intersect to get [l, m)
+			 */
+			r = m;
+		}
+	}
+	
+	if (r == l)
+	{	/* No match */
+		return lu_common_minvalid;
+	}
+	
+	/* Okay, [l, r) = [l, l+1) = [l, l] is only possible answer.
+	 * However, l itself may be < tm.
+	 */
+	lu_summary_read_msummary(l, &msg);
+	
+	if (msg.timestamp < tm)
+	{	/* Ok, so therefore, everything must be < tm. */
+		return lu_common_minvalid;
+	}
+	else
+	{
+		return l;
+	}
 }
 
 int lu_summary_write_variable(

@@ -1,4 +1,4 @@
-/*  $Id: summary.h,v 1.9 2002-07-11 20:35:07 terpstra Exp $
+/*  $Id: summary.h,v 1.10 2002-07-12 12:57:14 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -83,6 +83,15 @@ extern message_id lu_summary_lookup_mid(
  */
 extern int lu_summary_read_msummary(
 	message_id mid, Lu_Summary_Message* m);
+
+/** Return the number of imported messages
+ */
+extern message_id lu_summary_num_messages(void);
+
+/** Find the largest id such that all ids prior to it are prior to time tm 
+ *  If all messages are prior to tm. Then return lu_common_minvalid
+ */
+message_id lu_summary_find_timestamp(time_t tm);
 
 /** This writes the variable information out via the given callbacks.
  *  The flat_offset can be found in a message summary record.
