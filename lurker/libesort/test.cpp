@@ -1,4 +1,4 @@
-/*  $Id: test.cpp,v 1.1 2003-04-25 11:06:35 terpstra Exp $
+/*  $Id: test.cpp,v 1.2 2003-04-25 11:09:03 terpstra Exp $
  *  
  *  test.cpp - Write lots of crap and compare with RAM
  *  
@@ -36,6 +36,9 @@
 #include <cerrno>
 #include <cassert>
 
+#define DEBUG 1
+//#define DEBUG 0
+
 using namespace std;
 using namespace ESort;
 
@@ -68,6 +71,8 @@ string makeBin()
 
 void check_forward(const string& k)
 {
+	if (DEBUG) cout << "Forward check: " << k << endl;
+	
 	multiset<string>::iterator i;
 	int eo;
 	
@@ -78,6 +83,8 @@ void check_forward(const string& k)
 	     eo != -1 && i != ram.end();
 	     eo = walk->advance(), ++i)
 	{
+		if (DEBUG) cout << " Vals: " << walk->key << " - " << *i << endl;
+		
 		if (walk->key != *i)
 		{
 			cerr << "Wrong forward keys: " << walk->key << " != " << *i << endl;
@@ -102,6 +109,8 @@ void check_forward(const string& k)
 
 void check_backward(const string& k)
 {
+	if (DEBUG) cout << "Backard check: " << k << endl;
+	
 	multiset<string>::iterator i;
 	int eo;
 	
@@ -113,6 +122,8 @@ void check_backward(const string& k)
 	     eo = walk->advance())
 	{
 		--i;
+		
+		if (DEBUG) cout << " Vals: " << walk->key << " - " << *i << endl;
 		
 		if (walk->key != *i)
 		{
@@ -153,6 +164,8 @@ void check()
 
 void insert(const string& k)
 {
+	if (DEBUG) cout << "Insert: " << k << endl;
+	
 	int o = db->insert(k);
 	if (o == -1)
 	{
@@ -194,6 +207,8 @@ int main(int argc, char** argv)
 		}
 		
 		check();
+		
+		if (DEBUG) cout << "Committing" << endl;
 		
 		int c = db->commit();
 		if (c != -1)
