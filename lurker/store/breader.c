@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.15 2002-06-10 22:36:54 terpstra Exp $
+/*  $Id: breader.c,v 1.16 2002-06-11 13:48:34 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -540,6 +540,9 @@ Lu_Breader_Handle lu_breader_new(
 {
 	static lu_quad age = 1;
 	
+	message_id new_off;
+	int        which;
+	
 	int	i;
 	int	best;
 	
@@ -588,9 +591,22 @@ Lu_Breader_Handle lu_breader_new(
 			return 0;
 		}
 		
-		my_breader_records[best].count =
-			lu_flatfile_handle_records(
+		new_off = lu_flatfile_handle_records(
 				my_breader_records[best].flatfile);
+		
+		/* Kill off cache that is at the eof */
+		if (my_breader_records[best].count != new_off)
+		{
+			which = my_breader_find_which(
+				&my_breader_records[best],
+				my_breader_records[best].count);
+			if (which != -1)
+			{
+				my_breader_records[best].cache[which].offset = 
+					lu_common_minvalid;
+			}
+			my_breader_records[best].count = new_off;
+		}
 		
 		my_breader_records[best].last_id = lu_common_minvalid;
 		

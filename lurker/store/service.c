@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.64 2002-06-10 22:36:54 terpstra Exp $
+/*  $Id: service.c,v 1.65 2002-06-11 13:44:48 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -46,6 +46,9 @@
 #include <regex.h>
 
 #define LU_PROTO_INDEX	20
+
+/* #define PACK_STRATEGY_DEEP_FIRST */
+#define PACK_STRATEGY_SPACE_WASTE
 
 #define	EMPTY_CELL	"<a/>"
 #define BAR_NS		"<b/>"
@@ -1614,7 +1617,6 @@ static int my_service_draw_snippet(
 	
 	return col;
 }
-
 static void my_service_draw_snippet_row(
 	My_Service_Handle	h,
 	My_Service_Reply_Tree*	tree, 
@@ -2165,6 +2167,7 @@ my_service_mindex_error0:
 	return -1;
 }
 
+#ifdef PACK_STRATEGY_DEEP_FIRST
 /* return what we use up to */
 static int my_service_draw_tree(
 	My_Service_Reply_Tree* tree, 
@@ -2191,6 +2194,17 @@ static int my_service_draw_tree(
 	
 	return tree[n].column;
 }
+#endif
+
+#ifdef PACK_STRATEGY_SPACE_WASTE
+/* return space wasted */
+static int my_service_draw_tree(
+	My_Service_Reply_Tree* tree, 
+	int n, int u)
+{
+}
+#endif
+
 
 static void my_service_draw_tree_row(
 	My_Service_Handle	h,
