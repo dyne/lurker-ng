@@ -8,6 +8,7 @@ v0.1e:
 	Removed an evil kludge that relies on C calling convention
 	Removed exslt dependency so IE6 xsl works again
 	Made output html w3c compliant
+	Got mozilla xslt to work!
 	Mangle mailto:s regardless of xf:escape-uri availability
 	Support utf-8 mailto if xf:escape-uri available
 	XSL support detection via javascript added
