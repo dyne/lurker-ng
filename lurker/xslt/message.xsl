@@ -64,7 +64,7 @@
    <xsl:apply-templates select="threading/prev" mode="snippet"/>
   </xsl:if>
   <xsl:if test="not(threading/prev)">
-   <img src="../imgs/a.png"/>
+   <img alt="" src="../imgs/a.png"/>
   </xsl:if>
   <xsl:if test="reply">
    <a href="mailto:{reply}">(<xsl:value-of select="$reply"/>)</a>
@@ -76,7 +76,7 @@
    <xsl:apply-templates select="threading/next" mode="snippet"/>
   </xsl:if>
   <xsl:if test="not(threading/next)">
-   <img src="../imgs/a.png"/>
+   <img alt="" src="../imgs/a.png"/>
   </xsl:if>
  </div>
  <hr/>
