@@ -18,4 +18,5 @@ InstallFile $(VARDIR)/www/$(PACKAGE)/imgs :
 	prev.png
 	tree.png
 	bar.png
+	paperclip.png
 	;
