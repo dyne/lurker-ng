@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.18 2002-07-22 12:07:27 terpstra Exp $
+/*  $Id: append.c,v 1.19 2002-07-26 13:40:30 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -284,8 +284,10 @@ static off_t allocate_cell(Kap k, int jump)
 	
 	/* New official eof */
 	off_t	eof;
+#ifdef USE_MMAP
 	void*	tmp;
-
+#endif
+	
 	unsigned char	buf[8192];
 	unsigned char	out[sizeof(off_t)];
 	
@@ -837,6 +839,7 @@ int kap_append_open(Kap k, const char* dir, const char* prefix)
 	
 	k->append->prealloc = k->append->eof;
 	
+#ifdef USE_MMAP
 	k->append->mmap = mmap(
 		0,
 		round_mmap_up(k->append->eof),
@@ -851,7 +854,8 @@ int kap_append_open(Kap k, const char* dir, const char* prefix)
 		else		out = ENOMEM;
 		goto kap_append_open_error2;
 	}
-	
+#endif
+		
 	return 0;
 
 kap_append_open_error2:
