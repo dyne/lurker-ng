@@ -143,7 +143,7 @@
 </xsl:template>
 
 <xsl:template match="art">
- <pre><xsl:apply-templates/></pre>
+ <pre class="art"><xsl:apply-templates/></pre>
 </xsl:template>
 
 <xsl:template match="br">
