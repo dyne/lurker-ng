@@ -1,4 +1,4 @@
-/*  $Id: Merger.cpp,v 1.5 2003-04-25 14:55:42 terpstra Exp $
+/*  $Id: Merger.cpp,v 1.6 2003-04-25 20:27:09 terpstra Exp $
  *  
  *  Merger.cpp - Combine segments to obtain a database view
  *  
@@ -211,6 +211,7 @@ int Merger::advance()
 			}
 			
 			// Eliminate duplicates.
+			// !!! kills off null string, erg.
 			if (unique && out == (int)key.length())
 				return advance();
 			
