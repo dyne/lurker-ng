@@ -251,10 +251,15 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
   <tr>
    <td class="mini">
     <b><a href="{$lurker-url}">Lurker</a></b>
-    (<xsl:value-of select="$version"/> <xsl:value-of select="server/version"/>)
+    <xsl:text> (</xsl:text>
+    <xsl:value-of select="$version"/>
+    <xsl:text> </xsl:text>
+    <xsl:value-of select="server/version"/>
+    <xsl:text>)</xsl:text>
    </td>
    <td class="mini" align="right">
     <xsl:value-of select="$admin-by"/>
+    <xsl:text> </xsl:text>
     <xsl:apply-templates mode="email-link" select="server/email"/>
    </td>
   </tr>
