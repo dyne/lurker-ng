@@ -32,14 +32,14 @@
  deleted-message="mensagem apagada"
  search="Procurar"
 
- jump-to-date="Ir para as mensagens da mailing list com datas próximas à data seguinte:"
+ jump-to-date="Pule para as mensagens desta lista que estão mais próximas á seguinte data:"
  search-list="Procurar por mensagens na mailing list que contenham as seguintes palavras:"
  jump="Ir"
- use-special-word-list="Utilizar a palavra "
+ use-special-word-list="Use a palavra-chave "
  to-search-list=" para restringir a sua procura a esta mailing list."
  newest-messages="Ver Mensagens Novas"
  jump-group="Ir para o Grupo"
- post-new="Iniciar um Novo Artigo"
+ post-new="Inicie uma Nova Discussão"
  subscribe="Visitar a Página de Inscrição"
  recent-poster="Última Pessoa a Colocar uma Mensagem"
  new-threads="Artigos Activos"
@@ -48,12 +48,12 @@
 
  search-thread="Procurar por mensagens dentro deste artigo que contenham as seguintes palavras:"
  use-special-word-thread="Utilizar a palavra "
- to-search-thread=" para restringir a sua procura a este artigo."
+ to-search-thread=" para restringir sua procura á esta lista de discussão."
 
- refine-search="Refinar os resultados da pesquisa apenas às mensagens que contenham as seguintes palavras:"
- jump-search="Ir para essas mensagens coincidentes que estão próximas da seguinte data:"
+ refine-search="Refinar os resultados da busca somente para aquelas mensagens que contenham as seguintes palavras-chave:"
+ jump-search="Pule para as mensagens encontradas que estão mais próximas á seguinte data:"
  no-refine="O resultado irá manter-se inalterado. Apenas o intervalo de datas das mensagens apresentado é afectado."
- useful-prefixs="A pesquisa por termos pod incluir os prefixos au: sb: ml: para procurar em autores, assunto e mailing list respectively."
+ useful-prefixs="Os termos de procura podem incluir os prefixos au: sb: ml: para encontrar autor assunto e lista respectivamente."
 
  day-suffix=""
  
