@@ -1,51 +1,118 @@
-# To the user: You will probably want to change the first three options here
-# and add mailing lists at the bottom of the file.
+# The name lurker uses to refer to the archive.
+# 
+# This will be displayed at the top-right of every page.
+# Clicking on it will return the user to the front page.
+# Since it is up top, you should try to keep it relatively short.
+# The example below is about the maximum string length you should consider.
 
-# What name should lurker use when refering to the archive?
 archive = Some Mailing List Archive
 
-# This is the administrator information used at the bottom of generated
-# pages. You should probably set it to something useful.
+# The administrative contact information.
+# 
+# This will be displayed at the bottom-right of every page.
+# Users can use this information to help you fix things on your archive.
+# However, using your private address is probably a bad idea due to spam.
+
 admin_name    = Unconfigured
 admin_address = nill@bitbucket.org
 
 # The command to invoke to transform xml into html.
-# This command is fed xml via stdin and expected to produce on stdout.
+# 
+# Lurker normally generates xml web pages from the database.
+# However, this is very badly supported in even mainstream browsers.
+# Thus lurker is designed to have the output xml transformed to html.
+# Default xslt stylesheets are included with lurker for this purpose.
+# Lurker itself does not provide facilities to perform the xslt transform.
+# This command is fed xml via stdin and expected to produce html on stdout.
+
 xslt = xsltproc --nonet -
 
 # The commands lurker uses to verify signatures.
+# 
+# Lurker can optionally invoke a command to verify pgp signatures.
+# gpg can be used for this purpose although >= 1.2 is needed.
+# Personally I just keep a keyring of only keys which I trust.
+# Then gpg has no need to check trust or consult keyservers -> faster.
+# 
 # The output of these commands is displayed in the signature block.
 # The output must be encoded with a charset of UTF-8.
 # The return status must be 0 exactly when the signature is correct.
 # The photo id (if any) should be output to provided photo filename.
 # The substitutions %s, %b, and %p are the signature, body, and photo.
 # 
-# pgp_verify_mime   = gpg --photo-viewer "cat %i >%p" --show-photos --charset utf-8 --verify %s %b 2>&1
-# pgp_verify_inline = gpg --photo-viewer "cat %i >%p" --show-photos --charset utf-8 --verify    %b 2>&1
-# 
-# If you use gpg like above, you may also want --keyring /usr/share/keyrings/debian-keyring.gpg --no-default-keyring --homedir /tmp
+# pgp_verify_mime   = gpg 
+# 	--keyring /home/terpstra/runtime/debian-keyring.gpg
+# 	--no-default-keyring
+# 	--homedir /tmp
+# 	--always-trust
+# 	--no-secmem-warning
+# 	--photo-viewer "cat %i >%p"
+# 	--show-photos
+# 	--charset utf-8
+# 	--verify %s %b 2>&1
+# pgp_verify_inline = gpg
+# 	--keyring /home/terpstra/runtime/debian-keyring.gpg
+# 	--no-default-keyring
+# 	--homedir /tmp
+# 	--always-trust
+# 	--no-secmem-warning
+# 	--photo-viewer "cat %i >%p"
+# 	--show-photos
+# 	--charset utf-8
+# 	--verify %b 2>&1
 
-# The directory where lurker will keep it's database information.
+# The directory where lurker keeps the database.
+# 
+# This database directory should be writeable by lurker-index.
+# It should be readable by lurker.cgi and lurker-prune.
+# Do not mess with the files in this directory on pain of death.
+# Before taking a backup, make sure your MTA has a frozen mail queue.
+
 dbdir = @VARDIR@/lib/@PACKAGE_NAME@
 
-# Include another file for additional configuration
+# Include another file for additional configuration.
+# 
+# If you have a large number of mailing lists it may help to group them.
+# One strategy to keep organized is to have one config file per group.
+# This also allows collaboratively maintained archives (different owners).
+# 
 # include = another.conf
 
-# Tell lurker to stop generating web cache
+# Tell lurker to stop generating web cache.
+# 
+# Normally, lurker writes request output to the www directory for caching.
+# Then repeated requests only need to be uploaded and not recomputed.
+# This additionally allows things like HEAD requests to check for changes.
+# However, the cache is only updated whenever lurker-prune is run.
+# If you are debugging your installation it may help to turn caching off.
+# 
 # web_cache = off
 
-# Now comes configuration for the mailing lists lurker is host
+
+
+#############################################################################
+
+
+# Mailing list configuration.
 # 
-# Once lurker has been configured to use a list, you must never take it
-# away. If you do, you must purge the database (rm -rf) and start over.
+# Lurker needs to be told all of the lists you will be archiving here.
+# Once lurker has imported any mail for a list, it must never be removed.
+# New mailing lists may be added at any time and the archive will adjust.
+# If you must remove a list, purge the database (rm -rf) and reimport.
 # 
-# The list 'id' should be short as it occures in urls and the database.
-# The 'id' (devel in the example) will also be the name of the lurker mbox.
+# Mailing lists are collected into groups on the front page.
+# Each group has an id used for searching and urls and a heading.
+# The id of a group must be a string containing only a-z 0-9 and -_.
+# 
+# Each mailing list must also have an id for urls and searching.
+# These identifiers must be shorter than 32 bytes and simple like group ids.
+# Mailing lists may have a title, address, link, and description.
 #
-# Here is an example:
-#
+# This is best explained by an example
+# 
 # group = lists
 #   heading = Mailing Lists
+#   
 #   list = devel
 #	title       = Debian-Devel
 #	address     = debian-devel@lists.debian.org
