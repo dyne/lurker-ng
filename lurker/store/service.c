@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.77 2002-07-11 23:33:26 terpstra Exp $
+/*  $Id: service.c,v 1.78 2002-07-12 13:11:08 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1950,29 +1950,21 @@ my_service_message_error0:
 	return -1;
 }
 
-static int my_service_earlier_than(
-	void*		arg,
-	message_id	id)
-{
-	lu_quad			tm = *(lu_quad*)arg;
-	Lu_Summary_Message	sum;
-	
-	lu_summary_read_msummary(id, &sum);
-	if (sum.timestamp < tm) return 1;
-	return 0;
-}
-
 static int my_service_jump(
 	My_Service_Handle h, 
 	const char* request,
 	const char* ext)
 {
-	Lu_Breader_Handle	b;
 	lu_quad			tm;
 	int			list;
-	message_id		offset;
-	message_id		count;
+	
 	char			keyword[40];
+	KRecord			kr;
+	int			out;
+	
+	message_id		jump;
+	ssize_t			off;
+	message_id		ljump;
 	
 	if (sscanf(request, "%d@%d", &list, &tm) != 2)
 	{	/* They did something funny. */
@@ -1994,41 +1986,49 @@ static int my_service_jump(
 		goto my_service_jump_error0;
 	}
 	
+	/* Ok, every prior to here is prior to tm. */
+	jump = lu_summary_find_timestamp(tm);
+	
+	/* Open a krecord */
 	sprintf(&keyword[0], "%s%d", LU_KEYWORD_LIST, list);
-	b = lu_breader_new(&keyword[0]);
-	if (b == 0)
+	out = kap_kopen(lu_config_keyword, &kr, &keyword[0]);
+	if (out != 0)
 	{
 		my_service_error(h,
 			_("Internal error"),
 			_("Lurkerd failed to access the keyword database"),
-			_("server failure - see log files"));
+			kap_strerror(out));
 		
 		goto my_service_jump_error0;
 	}
 	
-	if (lu_breader_offset(b, &my_service_earlier_than, &tm, &offset) != 0)
+	out = kap_append_find(
+		lu_config_keyword,
+		&kr,
+		&lu_search_find_le,
+		&jump,
+		&off,
+		&ljump);
+	if (out == KAP_NOT_FOUND)
+	{
+		off = 0;
+	}
+	else if (out != 0)
 	{
 		my_service_error(h,
 			_("Internal error"),
-			_("Lurkerd failed to find a jump record"),
-			_("server failure - see log files"));
+			_("Lurkerd failed to jump to a record"),
+			kap_strerror(out));
 		
 		goto my_service_jump_error1;
 	}
 	
 	/* Normalize the offset */
-	count = lu_breader_records(b);
-	
-	if (offset == lu_common_minvalid)
-		offset = 0;
-	else if (offset < count-1)
-		offset++;
-	
-	offset -= (offset % LU_PROTO_INDEX);
+	off -= (off % LU_PROTO_INDEX);
 	
 	if (my_service_buffer_init(h, "text/xml\n", 1, 
 		lu_config_cache_index_ttl, 
-		(offset+LU_PROTO_INDEX >= count)?list:LU_EXPIRY_NO_LIST) != 0)
+		(off+LU_PROTO_INDEX >= kr.records)?list:LU_EXPIRY_NO_LIST) != 0)
 	{
 		goto my_service_jump_error1;
 	}
@@ -2039,15 +2039,15 @@ static int my_service_jump(
 	if (my_service_buffer_write(h, " <url>mindex/")!= 0) goto my_service_jump_error1;
 	if (my_service_write_int   (h, list)           != 0) goto my_service_jump_error1;
 	if (my_service_buffer_write(h, "@")            != 0) goto my_service_jump_error1;
-	if (my_service_write_int   (h, offset)         != 0) goto my_service_jump_error1;
+	if (my_service_write_int   (h, off)            != 0) goto my_service_jump_error1;
 	if (my_service_buffer_write(h, "</url>\n")     != 0) goto my_service_jump_error1;
 	if (my_service_buffer_write(h, "</redirect>\n")!= 0) goto my_service_jump_error1;
 	
-	lu_breader_free(b);
+	kap_kclose(lu_config_keyword, &kr, &keyword[0]);
 	return 0;
 	
 my_service_jump_error1:
-	lu_breader_free(b);
+	kap_kclose(lu_config_keyword, &kr, &keyword[0]);
 	
 my_service_jump_error0:
 	return -1;
@@ -2453,7 +2453,7 @@ static int my_service_search(
 	for (demux = (char*)delim; *demux; demux++)
 		if (*demux == 1) *demux = '/';
 	
-	if (lu_search_start(delim, &detail) != 0)
+	if (lu_search_start(delim, &detail, 0, 2147483647) != 0)
 	{
 		my_service_error(h,
 			_("Search failed"),
