@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.12 2002-05-11 19:24:59 terpstra Exp $
+/*  $Id: breader.c,v 1.13 2002-06-07 10:29:19 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -153,6 +153,11 @@ inline int my_breader_compare(message_id a, message_id b)
 	return 0;
 }
 
+int my_breader_bounded(void* bound, message_id id)
+{
+	return (id <= *(message_id*)bound);
+}
+
 LU_BTREE_DEFINE(
 	breader, 
 	my_breader_ptr, 
@@ -290,36 +295,30 @@ static int my_breader_read(
 }
 
 static int my_breader_find(
-	My_Breader_Record* record,
-	message_id id,
-	message_id* offset)
+	My_Breader_Record*	record,
+	int			(*test)(void* arg, message_id id),
+	void*			arg,
+	message_id*		offset)
 {
 	int		which;
-	int		i;
-	int		dir;
 	my_breader_ptr	ptr;
 	
 	message_id	left_off, right_off, mid_off;
+	int		l, r, m;
 	
-	/* Boundary cases */
-	if (record->count == 0)
-	{
-		*offset = lu_common_minvalid;
-		return 0;
-	}
-	
-	if (id >= record->last_id)
-	{
-		*offset = record->count - 1;
-		return 0;
-	}
+	/* This function implements a three-stage binary-search.
+	 * First, it searches the boundary cache to narrow the end-points.
+	 * Next, it searches disk sectors till it finds one with the end-points
+	 * that we need.
+	 * Finally, it searches the retrieved sector.
+	 */
 	
 	/* These are the crude end-points that we know */
-	/* The id must lie in the range [left_off, right_off) */
-	/* Another invariant is that left_off is a multiple of LU_PULL_AT_ONCE */
-	
 	left_off = 0;
 	right_off = record->count;
+	
+	/* The id must lie in the range [left_off, right_off) or not at all */
+	/* Another invariant is that left_off is a multiple of LU_PULL_AT_ONCE */
 	
 #ifdef DEBUG
 	printf ("%d %d\n", left_off, right_off);
@@ -329,26 +328,27 @@ static int my_breader_find(
 	ptr = record->boundary_root;
 	while (ptr != MY_BREADER_PTR_MAX)
 	{
-		dir = my_breader_compare(id, record->boundary[ptr].key);
 #ifdef DEBUG
 		printf("--> %d %d\n", record->boundary[ptr].key,
 					record->boundary[ptr].index);
 #endif
-		if (dir < 0)
-		{	/* The answer is to the left */
-			right_off = record->boundary[ptr].index;
-			ptr = record->boundary[ptr].left;
-			/* We know that its not >= right, so
-			 * [left, right) is preserved
+		/* We are seeking the largest object which passes */
+		
+		if (test(arg, record->boundary[ptr].key))
+		{	/* This object passed the test, so we know
+			 * the last match is in the range [m, inf).
+			 * Interesect with invariant [l, r) to get [m, r)
 			 */
-		}
-		else
-		{	/* The answer is to or on the right */
 			left_off = record->boundary[ptr].index;
 			ptr = record->boundary[ptr].right;
-			/* We know that it's not < left, so
-			 * [left, right) is preserved
+		}
+		else
+		{	/* This object failed the test, so we know that
+			 * the last match must be before it: (-inf, m).
+			 * Intersect with invariant [l, r) to get [l, m)
 			 */
+			right_off = record->boundary[ptr].index;
+			ptr = record->boundary[ptr].left;
 		}
 	}
 	
@@ -356,65 +356,112 @@ static int my_breader_find(
 	printf("== %d %d\n", left_off, right_off);
 #endif
 	assert (left_off <= right_off);
-	
-	if (left_off == right_off)
-	{	/* no hit for you */
-		*offset = lu_common_minvalid;
-		return 0;
-	}
+	assert (left_off % LU_PULL_AT_ONCE == 0);
 	
 	/* Ok, using the boundary data we now have a range in which it must
 	 * lie. Lets refine this by reading the disk.
 	 */
 	
+	/* Note, even though we pull an entire sector, only testing the first 
+	 * position is helpful. This is for several reasons:
+	 *  Sometimes the test is expensive so the extra check is a loss
+	 *  Most importantly, there is no way to use the data to preserve
+	 *  the invariant that left is boundary aligned:
+	 *   Disk range, [a, b], cases: (note b cannot be aligned)
+	 *     a &  b -> [b, inf)  -> [b, r) --- unaligned!!
+	 *     a & !b -> [a, b)    -> [a, b)
+	 *    !a & !b -> (-inf, a) -> [l, a)
+	 *   Further, the problem is symmetric with a flipped number line to
+	 *   'find the first element with a given property' so this doesn't 
+	 *   help.
+	 *   Before, yaou change this code, REALLY think about it. I thought 
+	 *   about it for hours before I wrote it, and then later found it was 
+	 *   wrong because of the alignment issue. This is the best way. Honest.
+	 */
 	while (right_off - left_off > LU_PULL_AT_ONCE)
 	{
-		/* !!! For now, we use a BST */
+		assert (left_off % LU_PULL_AT_ONCE == 0);
+		
 		mid_off = (left_off + right_off) / 2;
+		mid_off += LU_PULL_AT_ONCE-1;
+		mid_off -= (mid_off % LU_PULL_AT_ONCE);
+		
+		assert (mid_off % LU_PULL_AT_ONCE == 0);
+		assert (mid_off > left_off && mid_off < right_off);
 		
 		my_breader_fetch_sector(record, mid_off);
 		which = my_breader_find_which(record, mid_off);
 		assert (which != -1);
 		
-		if (id < record->cache[which].buffer[0])
-		{	/* This lies to the right */
-			right_off = record->cache[which].offset;
-		}
-		else if (record->cache[which].buffer[LU_PULL_AT_ONCE-1] > id)
-		{	/* This lies to the left */
-			left_off = record->cache[which].offset + LU_PULL_AT_ONCE;
+		assert (record->cache[which].offset == mid_off);
+		
+		/* We are seeking the largest object which passes */
+		if (test(arg, record->cache[which].buffer[0]))
+		{	/* This object passes, so: [m, inf) -> [m, r) */
+			left_off = mid_off;
 		}
 		else
-		{
-			/* It lies in this record */
-			break;
+		{	/* This object fails, so: [-inf, m) -> [l, m) */
+			right_off = mid_off;
 		}
 	}
 	
-	if (right_off - left_off <= LU_PULL_AT_ONCE)
-	{
-		my_breader_fetch_sector(record, left_off);
-		which = my_breader_find_which(record, left_off);
-		assert (which != -1);
+	assert (right_off >= left_off);
+	
+	if (right_off == left_off)
+	{	/* The range is empty -> no match */
+		*offset = lu_common_minvalid;
+		return 0;
 	}
 	
-	/* Ok! The largest id <= id is in this record, find it's index. */
+	/* Invariant was: largest matching element in range [l, r)
+	 *                l is sector aligned
+	 * Loop criterea failed:  r-l < LU_PULL_AT_ONCE
+	 * Test above passed: 0 < r-l
+	 * Thus: Pull [l, l+LU_PULL_AT_ONCE) records and the match is in it
+	 * (if there is a match)
+	 */
 	
-	for (i = 0; i < LU_PULL_AT_ONCE; i++)
-		if (record->cache[which].buffer[i] > id)
-			break;
+	my_breader_fetch_sector(record, left_off);
+	which = my_breader_find_which(record, left_off);
+	assert (which != -1);
+	assert (record->cache[which].offset == left_off);
 	
-	/* i now points at the smallest record > id */
+	/* Begin binary searching the array */
+	l = 0;
+	r = right_off - left_off;
 	
-	if (i == 0)
-	{	/* There is no such record */
-		*offset = lu_common_minvalid;
+	assert (r > 0 && r <= LU_PULL_AT_ONCE);
+	
+	/* Invariant is now: hit is in range [l, r) in buffer */
+	while (r - l > 1)
+	{
+		m = (l+r)/2;
+		
+		if (test(arg, record->cache[which].buffer[m]))
+		{	/* This object passes, so: [m, inf) -> [m, r) */
+			l = m;
+		}
+		else
+		{	/* This object fails, so: [-inf, m) -> [l, m) */
+			r = m;
+		}
+	}
+	
+	/* Ok, the range the answer lies in is now [l, r), however,
+	 * r-l <= 1 thus the answer lies in [l, l+1) = [l, l]
+	 * Test to see that it satisfies the test!
+	 */
+	
+	if (test(arg, record->cache[which].buffer[l]))
+	{	/* Positive match */
+		*offset = left_off + l;
 	}
 	else
-	{
-		*offset = record->cache[which].offset + i - 1;
+	{	/* This is the only record it could have been, and it fails. */
+		*offset = lu_common_minvalid;
 	}
-	
+		
 	return 0;
 }
 
@@ -427,7 +474,7 @@ static void my_breader_purify_record(
 	strncpy(&record->keyword[0], keyword, LU_KEYWORD_LEN);
 	record->keyword[LU_KEYWORD_LEN] = 0;
 	
-	record->boundary_root  = 0;
+	record->boundary_root  = MY_BREADER_PTR_MAX;
 	record->boundary_usage = 0;
 	
 	for (i = 0; i < LU_CACHE_RECORDS; i++)
@@ -571,9 +618,10 @@ Lu_Breader_Handle lu_breader_new(
 }
 
 int lu_breader_offset(
-	Lu_Breader_Handle h,
-	message_id  id,
-	message_id* index)
+	Lu_Breader_Handle	h,
+	int			(*test)(void* arg, message_id id),
+	void*			arg,
+	message_id*		index)
 {
 	My_Breader_Record* record;
 	
@@ -582,7 +630,23 @@ int lu_breader_offset(
 	
 	record = &my_breader_records[h-1];
 	
-	return my_breader_find(record, id, index);
+	return my_breader_find(record, test, arg, index);
+}
+
+int lu_breader_offset_id(
+	Lu_Breader_Handle	h,
+	message_id		id,
+	message_id*		index)
+{
+	My_Breader_Record* record;
+	
+	assert (h <= LU_MAX_HANDLES && h > 0);
+	assert (my_breader_records[h-1].usage > 0);
+	
+	record = &my_breader_records[h-1];
+	
+	/* Find the largest record with the propery <= id */
+	return my_breader_find(record, &my_breader_bounded, &id, index);
 }
 
 message_id lu_breader_records(

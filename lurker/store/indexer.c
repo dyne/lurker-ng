@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.19 2002-05-29 08:09:54 terpstra Exp $
+/*  $Id: indexer.c,v 1.20 2002-06-07 10:29:19 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -506,8 +506,9 @@ void lu_indexer_prep()
 	my_indexer_dyn_off = ((char*)my_indexer_buf) + 
 		LU_INDEXER_MAX_KEYS * sizeof(My_Indexer_Tree) +
 		LU_INDEXER_MAX_DYNAMIC;
+	
 	my_indexer_avl_off  = 0;
-	my_indexer_avl_root = 0;
+	my_indexer_avl_root = MY_INDEXER_MAX;
 }
 
 void lu_indexer_location(

@@ -1,4 +1,4 @@
-/*  $Id: btree.h,v 1.4 2002-02-20 05:00:12 terpstra Exp $
+/*  $Id: btree.h,v 1.5 2002-06-07 10:29:19 terpstra Exp $
  *  
  *  btree.h - Knows how manage a binary search tree
  *  
@@ -39,7 +39,7 @@
 #define LU_BTREE_OK		0
 
 /* The user of this file should call:
- *   LU_BTREE_DEFINE(PREFIX, RECTYPE, INVALID, STRUCT, TABLE, SIZE, COMPARE)
+ *   LU_BTREE_DEFINE(PREFIX, RECTYPE, INVALID, STRUCT, TABLE, COMPARE)
  *
  *   PREFIX  -> an indetifier to prevent symbol conflict
  *   RECTYPE -> the type used to index the table
@@ -263,13 +263,6 @@ static int my_btree_##PREFIX##_ins(RECTYPE* n, RECTYPE recno) \
 \
 static RECTYPE my_btree_##PREFIX##_insert(RECTYPE root, RECTYPE recno) \
 { \
-	if (recno == root) \
-	{ \
-		TABLE[0].left = TABLE[0].right = INVALID; \
-		TABLE[0].skew = LU_BTREE_EQUAL; \
-		return root; \
-	} \
-	\
 	if (my_btree_##PREFIX##_ins(&root, recno) == LU_BTREE_ALREADY_THERE) \
 		return INVALID; \
 	\
