@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 
 #define TOKEN_REG       "([A-Za-z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9]|[a-zA-Z0-9])"
@@ -11,9 +11,9 @@
 #define INDENT_REG 	"([a-zA-Z]?[a-zA-Z]?[a-zA-Z]?[a-zA-Z]?[>:] )"
 
 #define URL_REG    	"(((" PROTO_REG "://" HOST_REG "(" PATH_REG ")?)" \
-                         "|(" HOST_REG "\\." TOKEN_REG PATH_REG ")" \
-                         "|(www\\." HOST_REG "\\." TOKEN_REG "(" PATH_REG ")?)" \
-                    	 ")" \
+                         "|(www\\." HOST_REG "\\." TOKEN_REG ")" \
+                         ")" \
+                         "("    PATH_REG ")?" \
                     	 "(#"   FILE_REG ")?" \
                     	 "(\\?" POST_REG ")?" \
                         ")"
@@ -29,10 +29,10 @@
 
 int main(int argc, const char** argv)
 {
-	if (!strcmp(argv[1], "url"))	printf("%s\n", URL_REG);
-	if (!strcmp(argv[1], "mailto"))	printf("%s\n", EMAIL_REG);
-	if (!strcmp(argv[1], "quote"))	printf("%s\n", QUOTE_REG);
-	if (!strcmp(argv[1], "art"))	printf("%s\n", ASCII_PIC_REG);
+	if (!strcmp(argv[1], "url"))	write(1, URL_REG,       sizeof(URL_REG)-1);
+	if (!strcmp(argv[1], "mailto"))	write(1, EMAIL_REG,     sizeof(EMAIL_REG)-1);
+	if (!strcmp(argv[1], "quote"))	write(1, QUOTE_REG,     sizeof(QUOTE_REG)-1);
+	if (!strcmp(argv[1], "art"))	write(1, ASCII_PIC_REG, sizeof(ASCII_PIC_REG)-1);
 	
 	return 0;
 }
