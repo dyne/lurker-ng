@@ -1,4 +1,4 @@
-/*  $Id: append.c,v 1.8 2002-07-09 22:42:45 terpstra Exp $
+/*  $Id: append.c,v 1.9 2002-07-11 16:13:11 terpstra Exp $
  *  
  *  append.c - Implementation of the append access methods.
  *  
@@ -181,8 +181,9 @@ static off_t allocate_cell(Kap k, int jump)
 	off_t	where;
 	off_t	remain;
 	off_t	eof;
-	char	buf[4096];
-	char	out[sizeof(off_t)];
+	
+	unsigned char	buf[4096];
+	unsigned char	out[sizeof(off_t)];
 	
 	amt = jump_to_length(jump);
 	amt *= k->append->record_size;
@@ -466,8 +467,9 @@ int kap_append_open(Kap k, const char* dir, const char* prefix)
 	char	buf[200];
 	int	out;
 	int	block_device;
-	char	header[LIBKAP_APPEND_HEAD_LEN];
-	char	ptr[sizeof(off_t)];
+	
+	unsigned char	header[LIBKAP_APPEND_HEAD_LEN];
+	unsigned char	ptr[sizeof(off_t)];
 	
 #ifdef HAVE_SYS_STAT_H
 	struct stat sbuf;
@@ -551,7 +553,9 @@ int kap_append_open(Kap k, const char* dir, const char* prefix)
 	
 	if (init)
 	{
-		if (kap_write_full(k->append->fd, LIBKAP_APPEND_HEAD, 
+		if (kap_write_full(
+			k->append->fd, 
+			(const unsigned char*)LIBKAP_APPEND_HEAD, 
 			LIBKAP_APPEND_HEAD_LEN) != 0)
 		{
 			out = KAP_APPEND_CORRUPT;
