@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.20 2002-02-03 05:45:29 terpstra Exp $
+/*  $Id: main.c,v 1.21 2002-02-03 06:05:43 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -27,6 +27,7 @@
 
 #include "common.h"
 #include "io.h"
+#include "message.h"
 
 #include "config.h"
 #include "flatfile.h"
@@ -161,6 +162,7 @@ static void* lu_sched_sync(void* die)
 	if (!die) return 0;
 	
 	my_main_close();
+	my_main_quit();
 	
 	syslog(LOG_NOTICE, "shutting down ...\n");
 	exit(0);

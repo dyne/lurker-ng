@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.1 2002-02-03 05:45:29 terpstra Exp $
+/*  $Id: mbox.c,v 1.2 2002-02-03 06:05:43 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -106,11 +106,12 @@ static void my_mbox_process_mbox(
 	Lu_Config_List* list, 
 	time_t stamp)
 {
-	off_t old, new;
-	struct msg* m;
-	message_id id;
-	char* author_name;
-	char author_email[200];
+	off_t		old, new;
+	struct msg*	m;
+	message_id	id;
+	char*		author_name;
+	char		author_email[200];
+	int		error;
 	
 	if (my_mbox_lock_mbox(mbox->fd, mbox->path) == -1)
 		return;
@@ -159,8 +160,15 @@ static void my_mbox_process_mbox(
 			}
 		}
 		
-		id = lu_summary_import_message(list->id, mbox->id, old, stamp,
-			m->env->subject, author_name, &author_email[0]);
+		id = lu_summary_import_message(
+			list->id, 
+			mbox->id, 
+			old, 
+			stamp,
+			m->env->subject, 
+			author_name, 
+			&author_email[0]);
+		
 		if (id == lu_common_minvalid)
 		{
 			if (lseek(mbox->fd, old, SEEK_SET) != old)
@@ -173,7 +181,26 @@ static void my_mbox_process_mbox(
 			return;
 		}
 		
-		lu_summary_reply_to_resolution(id,
+		error = lu_indexer_import(
+			m, 
+			list->id,
+			mbox->id,
+			stamp);
+		
+		if (error != 0)
+		{
+			if (lseek(mbox->fd, old, SEEK_SET) != old)
+			{
+				syslog(LOG_ERR, "Eep - failed to import message and unable to seek back for retry: %s\n",
+					strerror(errno));
+			}
+			
+			my_mbox_unlock_mbox(mbox->fd, mbox->path);
+			return;
+		}
+		
+		lu_summary_reply_to_resolution(
+			id,
 			m->env->message_id,
 			m->env->in_reply_to);
 		

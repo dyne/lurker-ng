@@ -1,4 +1,4 @@
-/*  $Id: indexer.h,v 1.1 2002-02-03 03:10:53 terpstra Exp $
+/*  $Id: indexer.h,v 1.2 2002-02-03 06:05:43 terpstra Exp $
  *  
  *  indexer.h - Handles indexing a message for keyword searching
  *  
@@ -30,3 +30,12 @@ extern int lu_indexer_sync();
 extern int lu_indexer_close();
 extern int lu_indexer_quit();
 
+/*------------------------------------------------- Indexing algorithm */
+
+/* Call this to push all the keywords related to this file into the index
+ */
+int lu_indexer_import(
+	struct msg*	body, 
+	lu_word		list,
+	lu_word		mbox,
+	time_t		stamp);

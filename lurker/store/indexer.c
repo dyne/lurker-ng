@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.1 2002-02-03 03:10:53 terpstra Exp $
+/*  $Id: indexer.c,v 1.2 2002-02-03 06:05:43 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -27,18 +27,45 @@
 
 #include "common.h"
 #include "io.h"
+#include "message.h"
+#include "prefix.h"
 
 #include "wbuffer.h"
 #include "indexer.h"
 
-#if 0
+#include <ctype.h>
+
+/*------------------------------------------------ Private global vars */
+
+
+/*------------------------------------------------ Private helper methods */
+
+static int my_indexer_strcasecmp(
+	const char* a, 
+	const char* b)
+{
+	while (*a && *b)
+	{
+		int dif = tolower(*a++) - tolower(*b++);
+		if (dif != 0) return dif;
+	}
+	
+	if (*b) return 1;
+	if (*a) return -1;
+	
+	return 0;
+}
+
 /*
  * Determine where to split words, and index the
  * results in the database with lu_push_keyword.
  */
-static void index_keywords(char *buffer, int length)
+static void my_indexer_keywords(
+	char *buffer, 
+	int length)
 {
-	const char *word, *adv;
+	const char* word;
+	const char* adv;
 
 	while (length > 0 && isspace(*buffer))
 	{
@@ -66,7 +93,7 @@ static void index_keywords(char *buffer, int length)
  * such a part is located, we'll index all of the words
  * it contains.
  */
-void index_traverse(struct msg* in, struct mail_bodystruct* body)
+static void my_indexer_traverse(struct msg* in, struct mail_bodystruct* body)
 {
 	struct mail_body_part *p;		/* Filthy struct. */
 	size_t length;
@@ -79,21 +106,21 @@ void index_traverse(struct msg* in, struct mail_bodystruct* body)
 			/*
 			 * This part contains an encapsulated message.
 			 */
-			if (strcasecmp(body->subtype, "rfc822"))
+			if (my_indexer_strcasecmp(body->subtype, "rfc822"))
 				break;
 
-			index_traverse(in, body->nested.msg->body);
+			my_indexer_traverse(in, body->nested.msg->body);
 			break;
 
 		case TYPETEXT:
 			/*
 			 * This is what we want to index -- stop.
 			 */
-			if (strcasecmp(body->subtype, "plain"))
+			if (my_indexer_strcasecmp(body->subtype, "plain"))
 				break;
 
 			buffer = mail_select(in, body, &length, &nfree);
-			index_keywords(buffer, length);
+			my_indexer_keywords(buffer, length);
 			if (nfree)
 				fs_give((void **)&buffer);
 
@@ -105,14 +132,12 @@ void index_traverse(struct msg* in, struct mail_bodystruct* body)
 			 * and hopefully find some plaintext.
 			 */
 			for (p = body->nested.part; p != NULL; p = p->next)
-				index_traverse(in, &p->body);
+				my_indexer_traverse(in, &p->body);
 			break;
 		default:
 			break;
 	}
 }
-
-#endif
 
 /*------------------------------------------------- Public component methods */
 
@@ -137,6 +162,17 @@ int lu_indexer_close()
 }
 
 int lu_indexer_quit()
+{
+	return 0;
+}
+
+/*------------------------------------------------- Indexing algorithm */
+
+int lu_indexer_import(
+	struct msg*	body, 
+	lu_word		list,
+	lu_word		mbox,
+	time_t		stamp)
 {
 	return 0;
 }
