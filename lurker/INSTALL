@@ -22,7 +22,6 @@ Quick start
 		--with-wwwdir=/filesystem/path/to/above
 
   If you need to specify dependency locations these options might help:
-  --with-dbdir            db directory (default: PREFIX/var/lib/lurker)
   --with-stdir            st installation directory (default: none)
   --with-db3dir           db3 installation directory (default: none)
   --with-db3name          db3 library name (default: db-3 or db3)
