@@ -1,4 +1,4 @@
-/*  $Id: keyword.c,v 1.8 2002-01-27 02:40:23 terpstra Exp $
+/*  $Id: keyword.c,v 1.9 2002-01-27 03:57:48 terpstra Exp $
  *  
  *  keyword.c - manages a database for keyword searching
  *  
@@ -592,7 +592,16 @@ static int lu_write_keyword_block(
 				return -1;
 			}
 			
-			memcpy(&buf[0], &new_records, sizeof(message_id));
+			/* Record that this cell is large */
+			if (lu_push_fragment_markers(spot, new_records, records) != 0)
+			{
+				if (lu_free_cell(spot, new_records) != 0)
+					syslog(LOG_ERR, "Permanently lost storage\n");
+				
+				return -1;
+			}
+			
+			memcpy(&buf[0], &records, sizeof(message_id));
 			memset(&buf[sizeof(message_id)], 0xFF, sizeof(message_id));
 			memcpy(&buf[sizeof(message_id)*2], &where, sizeof(off_t));
 			
@@ -617,8 +626,11 @@ static int lu_write_keyword_block(
 		}
 	}
 	
-	ind = where + ((records + 1) * sizeof(off_t)); /* +1 to skip count */
-	if (lu_swrite(lu_keyword_fd, where, buf, count * sizeof(message_id),
+	ind = records + 1; /* +1 to skip count */
+	ind *= sizeof(message_id);
+	ind += where;
+	
+	if (lu_swrite(lu_keyword_fd, ind, buf, count * sizeof(message_id),
 		"writing new message_id records") != count * sizeof(message_id))
 	{
 		return -1;
@@ -829,8 +841,8 @@ Handle lu_open_handle(const char* keyword)
 		where++;
 		
 		if (lu_sread(lu_keyword_fd, scan, 
-			&buf[0], sizeof(message_id)*2,
-			"reading record count") != sizeof(message_id)*2)
+			&buf[0], sizeof(buf),
+			"reading record count") != sizeof(buf))
 		{
 			free(out);
 			return 0;
@@ -849,8 +861,7 @@ Handle lu_open_handle(const char* keyword)
 	out->index[where].after = 0;
 	for (; where > 0; where--)
 	{
-		out->index[where-1].after = 
-			out->index[where].after + out->index[where].records;
+		out->index[where-1].after = out->index[where].records;
 	}
 	
 	/* Don't really care if it fails */
@@ -1346,7 +1357,7 @@ int lu_test_index()
 	int stat;
 	off_t o1, o2, o3;
 	
-	printf("Running test on indexing methods... (must wipe db to succeed)\n");
+	printf("Running test on underlying data methods... (must wipe db to succeed)\n");
 	
 	printf("  lu_cell_type: "); fflush(stdout);
 	assert(lu_cell_type( 0) == 0);
@@ -1423,7 +1434,8 @@ int lu_test_index()
 	assert(o1 == 10);
 	printf("ok\n");
 	
-	return -1;
+	printf("\n");
+	return 0;
 #endif
 }
 
@@ -1432,7 +1444,61 @@ int lu_test_handle()
 #ifndef DEBUG
 	return 0;
 #else
-	return -1;
+	int i, j, stat;
+	message_id buf[1024];
+	Handle h;
+	
+	printf("Running test on indexing and handle methods... \n");
+	
+	printf("  lu_write_keyword_block: "); fflush(stdout);
+	for (i = 0; i < 20; i++) buf[i] = i*i;
+	stat = lu_write_keyword_block("squares", &buf[0], 20); assert(stat == 0);
+	for (i = 0; i < 20; i++) buf[i] = 401 + i;
+	stat = lu_write_keyword_block("squares", &buf[0], 20); assert(stat == 0);
+	stat = lu_write_keyword_block("squares", &buf[0], 0); assert(stat == 0);
+	
+	stat = lu_write_keyword_block("small", &buf[0], 0); assert(stat == 0);
+	buf[0] = 16;
+	stat = lu_write_keyword_block("small", &buf[0], 1); assert(stat == 0);
+	buf[0] = 25;
+	stat = lu_write_keyword_block("small", &buf[0], 1); assert(stat == 0);
+	buf[0] = 26;
+	stat = lu_write_keyword_block("small", &buf[0], 1); assert(stat == 0);
+	buf[0] = 28;
+	stat = lu_write_keyword_block("small", &buf[0], 1); assert(stat == 0);
+	
+	for (i = 0; i < 100; i++)
+	{
+		for (j = 0; j < 1024; j++) buf[j] = i * 1024 + j;
+		stat = lu_write_keyword_block("big", &buf[0], 1024); assert(stat == 0);
+	}
+	
+	printf("ok\n");
+	
+	/*!!! test pop_keyword */
+	
+	printf("  open_handle: "); fflush(stdout);
+	h = lu_open_handle("big2"); assert(h != 0);
+	assert(lu_handle_records(h) == 0);
+	lu_close_handle(h);
+	h = lu_open_handle("small"); assert (h != 0);
+	assert(lu_handle_records(h) == 4);
+	lu_close_handle(h);
+	h = lu_open_handle("big"); assert (h != 0);
+	assert(lu_handle_records(h) == 102400);
+	printf("ok\n");
+	
+	printf("  lu_handle_read: "); fflush(stdout);
+	stat = lu_handle_read(h, 0, &buf[0], 1024); assert(stat == 0);
+	for (i = 0; i < 1024; i++) assert(buf[i] == i);
+	stat = lu_handle_read(h, 100, &buf[0], 1024); assert(stat == 0);
+	for (i = 0; i < 1024; i++) assert(buf[i] == i + 100);
+	stat = lu_handle_read(h, 10240, &buf[0], 512); assert(stat == 0);
+	for (i = 0; i < 512; i++) assert(buf[i] == i + 10240);
+	printf("ok\n");
+	
+	printf("\n");
+	return 0;
 #endif
 }
 
