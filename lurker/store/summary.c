@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.1 2002-02-03 03:13:27 terpstra Exp $
+/*  $Id: summary.c,v 1.2 2002-02-04 04:30:30 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -851,11 +851,18 @@ message_id lu_summary_import_message(
 		}
 	}
 	
-	/* Start the import... What thread to put it in? */
-	if (my_summary_find_thread(list, subject, timestamp,
-		&thread, &thread_id) != 0)
+	if (subject)
 	{
-		goto lu_summary_import_message_error0;
+		/* Start the import... What thread to put it in? */
+		if (my_summary_find_thread(list, subject, timestamp,
+			&thread, &thread_id) != 0)
+		{
+			goto lu_summary_import_message_error0;
+		}
+	}
+	else
+	{
+		thread_id = lu_common_minvalid;
 	}
 	
 	/* Start writing variable length data */
@@ -867,12 +874,24 @@ message_id lu_summary_import_message(
 		goto lu_summary_import_message_error0;
 	}
 	
-	sub_len = strlen(subject) + 1;
-	if (write(my_summary_variable_fd, subject, sub_len) != sub_len)
+	if (subject)
 	{
-		syslog(LOG_ERR, "Could not write subject to end of variable.flat: %s\n",
-			strerror(errno));
-		goto lu_summary_import_message_error1;
+		sub_len = strlen(subject) + 1;
+		if (write(my_summary_variable_fd, subject, sub_len) != sub_len)
+		{
+			syslog(LOG_ERR, "Could not write subject to end of variable.flat: %s\n",
+				strerror(errno));
+			goto lu_summary_import_message_error1;
+		}
+	}
+	else
+	{
+		if (write(my_summary_variable_fd, "", 1) != 1)
+		{
+			syslog(LOG_ERR, "Could not write subject to end of variable.flat: %s\n",
+				strerror(errno));
+			goto lu_summary_import_message_error1;
+		}
 	}
 	
 	aun_len = strlen(author_name) + 1;
