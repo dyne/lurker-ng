@@ -1,4 +1,4 @@
-/*  $Id: View.cpp,v 1.4 2003-04-25 14:05:37 terpstra Exp $
+/*  $Id: View.cpp,v 1.5 2003-04-25 14:55:43 terpstra Exp $
  *  
  *  View.cpp - Snapshot of commit state
  *  
@@ -40,10 +40,8 @@
 namespace ESort
 {
 
-auto_ptr<Merger> View::rawseek(const string& k, bool forward)
+int View::rawseek(Merger* out, const string& k, bool forward)
 {
-	auto_ptr<Merger> out(new Merger(params.unique(), forward));
-	
 	/* The goal is to find the last sector in each file whose first key
 	 * is < k. If we are forward reading, merging from here makes no
 	 * mistakes since the first key >= lies ahead. If we are backward
@@ -67,15 +65,15 @@ auto_ptr<Merger> View::rawseek(const string& k, bool forward)
 			// mid is rounded down -> mid < right
 			mid = (left + right) / 2;
 			s = const_cast<File*>(&*i)->openBlock(mid, true);
-			if (!s.get()) return auto_ptr<Merger>(0);
+			if (!s.get()) return -1;
 			
 			// eof is impossible since mid < right
-			if ((stop = s->advance()) == -1) return auto_ptr<Merger>(0);
+			if ((stop = s->advance()) == -1) return -1;
 			
 			if (s->dup != 0) // first key; no compression
 			{
 				errno = EINVAL;
-				return auto_ptr<Merger>(0);
+				return -1;
 			}
 			
 			if (string(
@@ -89,44 +87,65 @@ auto_ptr<Merger> View::rawseek(const string& k, bool forward)
 		if (forward && mid != left) // s hold mid
 		{
 			s = const_cast<File*>(&*i)->openBlock(left, true);
-			if (!s.get()) return auto_ptr<Merger>(0);
+			if (!s.get()) return -1;
 			
-			// empty File?
+			// empty File is impossible
 			if ((stop = s->advance()) == -1)
 			{
-				if (errno == 0) continue; // eof
-				return auto_ptr<Merger>(0); // fucked?
+				if (errno == 0) errno = EINVAL;
+				return -1;
 			}
 		}
 		else if (!forward)
 		{
 			s = const_cast<File*>(&*i)->openBlock(left, false);
-			if (!s.get()) return auto_ptr<Merger>(0);
+			if (!s.get()) return -1;
 			
-			// empty File?
+			// empty File is impossible
 			if ((stop = s->advance()) == -1)
 			{
-				if (errno == 0) continue;
-				return auto_ptr<Merger>(0); // fucked?
+				if (errno == 0) errno = EINVAL;
+				return -1;
 			}
 		}
 		
 		if (s->dup != 0)
 		{	// must be uncompressed!
 			errno = EINVAL;
-			return auto_ptr<Merger>(0);
+			return -1;
 		}
 		
 		out->merge(s.release());
 	}
 	
-	return out;
+	return 0;
 }
 
-auto_ptr<Walker> View::seek(const string& k, bool forward)
+auto_ptr<Walker> View::seek(const string& k, Direction dir)
 {
-	auto_ptr<Merger> out = rawseek(k, forward);
-	if (!out.get() || out->skiptill(k, forward) == -1)
+	assert (dir == Forward || dir == Backward);
+	
+	auto_ptr<Merger> out(new Merger(params.unique(), dir == Forward));
+	
+	if (rawseek(out.get(), k, dir == Forward) != 0)
+		return auto_ptr<Walker>(new Failer(errno));
+	
+	if (out->skiptill(k, dir == Forward) == -1)
+		return auto_ptr<Walker>(new Failer(errno));
+	
+	return auto_ptr<Walker>(out);
+}
+
+auto_ptr<Walker> View::seek(const string& pfx, const string& k, Direction dir)
+{
+	assert (dir == Forward || dir == Backward);
+	
+	auto_ptr<PrefixMerger> out(new PrefixMerger(params.unique(), dir == Forward));
+	
+	if (rawseek(out.get(), pfx + k, dir == Forward) != 0)
+		return auto_ptr<Walker>(new Failer(errno));
+	
+	if (out->skiptill(pfx, k, dir == Forward) == -1)
 		return auto_ptr<Walker>(new Failer(errno));
 	
 	return auto_ptr<Walker>(out);

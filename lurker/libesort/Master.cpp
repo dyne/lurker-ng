@@ -1,4 +1,4 @@
-/*  $Id: Master.cpp,v 1.3 2003-04-24 23:52:36 terpstra Exp $
+/*  $Id: Master.cpp,v 1.4 2003-04-25 14:55:41 terpstra Exp $
  *  
  *  Master.cpp - Coordinate commit+read interface
  *  
@@ -143,21 +143,45 @@ int Master::insert(const string& k)
 	return 0;
 }
 
-auto_ptr<Walker> Master::seek(const string& k, bool forward)
+auto_ptr<Walker> Master::seek(const string& k, Direction dir)
 {
-	// might not have any results
-	auto_ptr<Merger> out(view.rawseek(k, forward));
-	if (!out.get())
+	assert (dir == Forward || dir == Backward);
+	
+	auto_ptr<Merger> out(new Merger(view.params.unique(), dir == Forward));
+	
+	if (view.rawseek(out.get(), k, dir == Forward) != 0)
 		return auto_ptr<Walker>(new Failer(errno));
 	
-	auto_ptr<Source> s = memory.openMemory(k, forward);
+	auto_ptr<Source> s = memory.openMemory(k, dir == Forward);
 	assert (s.get()); // always works
 	
 	// only possible error is eof
 	if (s->advance() != -1) out->merge(s.release());
 	// else kill it on scope out
 	
-	if (out->skiptill(k, forward) == -1)
+	if (out->skiptill(k, dir == Forward) == -1)
+		return auto_ptr<Walker>(new Failer(errno));
+	
+	return auto_ptr<Walker>(out);
+}
+
+auto_ptr<Walker> Master::seek(const string& pfx, const string& k, Direction dir)
+{
+	assert (dir == Forward || dir == Backward);
+	
+	auto_ptr<PrefixMerger> out(new PrefixMerger(view.params.unique(), dir == Forward));
+	
+	if (view.rawseek(out.get(), pfx + k, dir == Forward) != 0)
+		return auto_ptr<Walker>(new Failer(errno));
+	
+	auto_ptr<Source> s = memory.openMemory(k, dir == Forward);
+	assert (s.get()); // always works
+	
+	// only possible error is eof
+	if (s->advance() != -1) out->merge(s.release());
+	// else kill it on scope out
+	
+	if (out->skiptill(pfx, k, dir == Forward) == -1)
 		return auto_ptr<Walker>(new Failer(errno));
 	
 	return auto_ptr<Walker>(out);

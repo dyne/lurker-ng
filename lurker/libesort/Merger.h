@@ -1,4 +1,4 @@
-/*  $Id: Merger.h,v 1.3 2003-04-24 23:52:36 terpstra Exp $
+/*  $Id: Merger.h,v 1.4 2003-04-25 14:55:43 terpstra Exp $
  *  
  *  Merger.h - Combine segments to obtain a database view
  *  
@@ -85,6 +85,20 @@ class Merger : public Walker
  	 *  0 on success, -1 on error.
  	 */
  	int skiptill(const string& k, bool forward);
+};
+
+class PrefixMerger : public Merger
+{
+ protected:
+ 	long minDup;
+ 	
+ public:
+ 	PrefixMerger(bool unique_, bool forward_)
+ 	 : Merger(unique_, forward_), minDup(-1) { }
+ 	
+ 	int advance(); // overload with the prefix test.
+ 	
+ 	int skiptill(const string& pfx, const string& k, bool forward);
 };
 
 }

@@ -1,4 +1,4 @@
-/*  $Id: test.cpp,v 1.6 2003-04-25 14:05:38 terpstra Exp $
+/*  $Id: test.cpp,v 1.7 2003-04-25 14:55:43 terpstra Exp $
  *  
  *  test.cpp - Write lots of crap and compare with RAM
  *  
@@ -77,7 +77,7 @@ void check_forward(const string& k)
 	multiset<string>::iterator i;
 	int eo;
 	
-	auto_ptr<Walker> walk(db->seek(k, true));
+	auto_ptr<Walker> walk(db->seek(k, Forward));
 	assert (walk.get()); // always succeeds
 	
 	for (eo = walk->advance(), i = ram.lower_bound(k);
@@ -115,7 +115,7 @@ void check_backward(const string& k)
 	multiset<string>::iterator i;
 	int eo;
 	
-	auto_ptr<Walker> walk(db->seek(k, false));
+	auto_ptr<Walker> walk(db->seek(k, Backward));
 	assert (walk.get()); // always succeeds
 	
 	for (eo = walk->advance(), i = ram.lower_bound(k);

@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.5 2003-04-24 23:52:36 terpstra Exp $
+/*  $Id: esort.h,v 1.6 2003-04-25 14:55:43 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -87,6 +87,22 @@ class Parameters
 	unsigned int  keyWidth () const { return keyWidth_;  }
 };
 
+/** The direction in which the Walker walks the database.
+ *  
+ *  A Forward  Query will find the first key >= the request
+ *  A Backward Query will find the last  key <  the request
+ *  
+ *  The Forward  Query moves the iterator so the key increases
+ *  The Backward Query moves the iterator so the key decreases
+ *  
+ *  In this manner Forward + Backward patition the database's keys
+ */
+enum Direction
+{
+	Forward,
+	Backward
+};
+
 /** The Walker class walks the database in sorted order.
  *  As from the chart above, each invokation of advance() pays 0 seeks.
  */
@@ -118,11 +134,20 @@ class Reader
  public:
  	virtual ~Reader();
  	
- 	/** Obtain a walker pointing to the first key >= k.
+ 	/** Obtain a Walker as described in Direction.
  	 *  This costs O(log^2(N)) seeks, so try not to call it too often.
- 	 *  This operation never fails
+ 	 *  
+ 	 *  This operation never fails; you must call advance() before use.
  	 */
- 	virtual auto_ptr<Walker> seek(const string& k, bool forward) = 0;
+ 	virtual auto_ptr<Walker> seek(const string& k, Direction dir) = 0;
+ 	
+ 	/** Obtain a record Walker over only those records which are
+ 	 *  prefixed by 'prefix'. When the last such is passed, eof is
+ 	 *  returned.
+ 	 *  
+ 	 *  This operation never failes; you must call advance() before use.
+ 	 */
+ 	virtual auto_ptr<Walker> seek(const string& prefix, const string& k, Direction dir) = 0;
  	
  	/** Open an existing database for reading.
  	 *  0 is returned and errno set on error.

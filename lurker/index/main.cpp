@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.3 2003-04-23 12:59:52 terpstra Exp $
+/*  $Id: main.cpp,v 1.4 2003-04-25 14:55:41 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -43,8 +43,9 @@
 
 using namespace std;
 
+auto_ptr<ESort::Writer> db;
+
 string         append;
-ESort::Writer* db   = 0;
 List*          list = 0;
 int            mbox = -1;
 off_t          length = 0;
@@ -167,7 +168,7 @@ int index(const DwString& msg, long batch)
 	}
 	
 	append.append(msg.c_str(), msg.length());
-	Index i(msg, db, *list, start, msg.length());
+	Index i(msg, db.get(), *list, start, msg.length());
 	
 	if (i.index(arrival) != 0)
 	{
@@ -244,7 +245,7 @@ int main(int argc, char** argv)
 	list = &i->second;
 	
 	db = ESort::Writer::open(cfg.dbdir + "/db");
-	if (!db)
+	if (!db.get())
 	{
 		perror("opening database");
 		return 1;

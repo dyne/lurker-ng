@@ -1,4 +1,4 @@
-/*  $Id: Merger.cpp,v 1.4 2003-04-25 14:00:35 terpstra Exp $
+/*  $Id: Merger.cpp,v 1.5 2003-04-25 14:55:42 terpstra Exp $
  *  
  *  Merger.cpp - Combine segments to obtain a database view
  *  
@@ -258,6 +258,44 @@ int Merger::skiptill(const string& k, bool forward)
 	}
 	
 	return -1;
+}
+
+int PrefixMerger::advance()
+{
+	if (minDup == -1)
+	{	// already at eof!
+		errno = 0;
+		return -1;
+	}
+	
+	int o = Merger::advance();
+	if (o < minDup && o != -1)
+	{	// hit eof
+		minDup = -1;
+		errno = 0;
+		return -1;
+	}
+	else
+	{
+		return o;
+	}
+}
+
+int PrefixMerger::skiptill(const string& pfx, const string& x, bool forward)
+{
+	// First get in position
+	if (Merger::skiptill(pfx + x, forward) != 0) return -1;
+	
+	// This much must be in common
+	minDup = pfx.length();
+	
+	// Use the fact we already loaded the first key
+	if (key.substr(0, minDup) != pfx)
+	{	// already hit eof
+		minDup = -1;
+	}
+	
+	return 0;
 }
 
 }

@@ -12,6 +12,8 @@ v0.7:
 	Compatability with older g++ 2.95 versions
 	Install cgis to cgi-bin rather than docroot
 	Support backwards reading in esort
+	Fixed a bug with the empty string inserted into the database
+	The database supports prefix partitioning
 	Make search work like mindex
 
 v0.6:
