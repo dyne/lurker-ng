@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.12 2003-05-14 12:24:26 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.13 2003-05-14 12:37:21 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -204,7 +204,6 @@ int DbMan::open(View& view, const string& db)
 		}
 		else
 		{
-			view.params = x;
 			return 0;
 		}
 	}
@@ -264,7 +263,6 @@ int DbMan::open(View& view, const string& db, int mode)
 			}
 			else
 			{
-				view.params = x;
 				return 0;
 			}
 		}
