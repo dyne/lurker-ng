@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.16 2002-01-28 09:17:44 terpstra Exp $
+/*  $Id: main.c,v 1.17 2002-01-28 09:31:52 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -357,12 +357,15 @@ static time_t extract_timestamp(Mbox* mbox, List* list)
 		return 0;
 	}
 	
-	got = read(mbox->fd, &buf[0], sizeof(buf));
+	got = read(mbox->fd, &buf[0], sizeof(buf)-1);
 	if (got <= 0)
 	{	/* hit eof, that's fine */
 		lu_unlock_mbox(mbox->fd, mbox->path);
 		return 0;
 	}
+	
+	/* Null terminate that puppy */
+	buf[got] = 0;
 	
 	s = strstr(&buf[0], "From ");
 	if (s == 0 || (s != &buf[0] && *(s-1) != '\n') ||
