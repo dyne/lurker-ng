@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.5 2002-01-23 07:33:12 terpstra Exp $
+/*  $Id: main.c,v 1.6 2002-01-26 08:52:05 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -28,15 +28,290 @@
 
 #include <sys/un.h>
 #include <sys/socket.h>
-#include <unistd.h>
+
 #include <st.h>
+#include <c-client/mail.h>
+
+#ifdef HAVE_SYSLOG_H
+#include <syslog.h>
+#else
+#define syslog(x, y, ...)
+#define openlog(x, y, z)
+#endif
+
+#if defined(HAVE_FCNTL_H) && defined(HAVE_F_GETLK)
+#define USE_LOCK_FCNTL
+#elif defined(HAVE_LOCKF)
+#define USE_LOCK_LOCKF
+#endif
+
+#if defined(HAVE_FLOCK)
+#define USE_LOCK_FLOCK
+#endif
+
+/* Returns 0 on success.
+ */
+int lu_lock_mbox(int fd, const char* path)
+{
+#ifdef USE_LOCK_FCNTL
+	struct flock lck;
+	
+	memset (&lck, 0, sizeof (struct flock));
+	lck.l_type = F_RDLCK;
+	lck.l_whence = SEEK_CUR;
+	/* leave range as current to eof */
+	
+	if (fcntl(fd, F_SETLK, &lck) == -1)
+		goto lu_lock_mbox_error0;
+#endif
+
+#if defined(USE_LOCK_FLOCK)
+	if (flock(fd, LOCK_SH) == -1)
+		goto lu_lock_mbox_error1;
+#elif defined(USE_LOCK_LOCKF)
+	if (lockf(fd, F_TLOCK, 0) == -1)
+		goto lu_lock_mbox_error1;
+#endif
+	
+	return 0;
+
+lu_lock_mbox_error1:
+#ifdef USE_LOCK_FCNTL
+	lck.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lck);
+#endif
+
+lu_lock_mbox_error0:
+    return -1;
+}
+
+int lu_unlock_mbox(int fd, const char* path)
+{
+#ifdef USE_LOCK_FCNTL
+	struct flock lck;
+	lck.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lck);
+#endif
+
+#if defined(USE_LOCK_FLOCK)
+	flock(fd, LOCK_UN);
+#elif defined(USE_LOCK_LOCKF)
+	lockf(fd, F_ULOCK, 0);
+#endif
+
+	return 0;
+}
+
+static int lu_move_mbox_end(Mbox* mbox, List* list, off_t now)
+{
+	MboxEatKey	key;
+	MboxEatValue	val;
+	
+	DBT	dkey;
+	DBT	dval;
+	
+	int error;
+	
+	off_t offset;
+	
+	memset(&dkey, 0, sizeof(DBT));
+	memset(&dval, 0, sizeof(DBT));
+	
+	dkey.data = &key;
+	dkey.size = sizeof(key);
+	
+	dval.data = &val;
+	dval.size = sizeof(val);
+	
+	key.list = list->id;
+	key.mbox = mbox->id;
+	
+	offset = lseek(mbox->fd, 0, SEEK_CUR);
+	if (offset == -1) return -1;
+	if (lseek(mbox->fd, 0, SEEK_SET) != 0) return -1;
+	if (read(mbox->fd, &val.front[0], sizeof(val.front)) <= 0) return -1;
+	if (lseek(mbox->fd, offset, SEEK_SET) != offset) return -1;
+	
+	val.offset = now;
+	
+	error = lu_mbox_db->put(lu_mbox_db, 0, &dkey, &dval, 0);
+	if (error != 0)
+		return -1;
+	
+	return 0;
+}
+
+static void process_mbox(Mbox* mbox, List* list)
+{
+	off_t old;
+	
+	if (lu_lock_mbox(mbox->fd, mbox->path) == -1)
+		return;
+	
+	/*!!! Actually index the message here */
+	/* Make sure to move the file offset to the end of the message when done */
+	
+	old = lseek(mbox->fd, 0, SEEK_CUR);
+	if (old != -1)
+		lu_move_mbox_end(mbox, list, old);
+	lu_unlock_mbox(mbox->fd, mbox->path);
+}
+
+static time_t convert_date_mbox(char* d)
+{	/* Format: www mmm dd hh:mm:ss yyyy */
+	struct tm t;
+	char mon[4];
+	
+	if (sscanf(d, "%*3s %3s %2d %02d:%02d:%02d %d",
+		&mon[0], &t.tm_mday, &t.tm_hour, &t.tm_min, &t.tm_sec, &t.tm_year)
+		!= 6)
+	{
+		return 0;
+	}
+	
+	t.tm_year -= 1900;
+	
+	if      (!strcmp(&mon[0], "Jan")) t.tm_mon = 0;
+	else if (!strcmp(&mon[0], "Feb")) t.tm_mon = 1;
+	else if (!strcmp(&mon[0], "Mar")) t.tm_mon = 2;
+	else if (!strcmp(&mon[0], "Apr")) t.tm_mon = 3;
+	else if (!strcmp(&mon[0], "May")) t.tm_mon = 4;
+	else if (!strcmp(&mon[0], "Jun")) t.tm_mon = 5;
+	else if (!strcmp(&mon[0], "Jul")) t.tm_mon = 6;
+	else if (!strcmp(&mon[0], "Aug")) t.tm_mon = 7;
+	else if (!strcmp(&mon[0], "Sep")) t.tm_mon = 8;
+	else if (!strcmp(&mon[0], "Oct")) t.tm_mon = 9;
+	else if (!strcmp(&mon[0], "Nov")) t.tm_mon = 10;
+	else if (!strcmp(&mon[0], "Dec")) t.tm_mon = 11;
+	else return 0;
+	
+	return mktime(&t);
+}
+
+static time_t convert_date_field(char* d)
+{
+	MESSAGECACHE elt;
+	
+	if (mail_parse_date(&elt, d) != T)
+		return 0;
+	
+	return mail_longdate(&elt);
+}
+
+static time_t extract_timestamp(Mbox* mbox, List* list)
+{
+	time_t	arrival_timestamp;
+	time_t	client_timestamp;
+	char	buf[4096];	/* hope headers fit in here */
+	char	timestamp[60];
+	char*	s;
+	char*	t1;
+	char*	t2;
+	off_t	old;
+	ssize_t	got;
+	
+	if (lu_lock_mbox(mbox->fd, mbox->path) == -1)
+		return 0;
+	
+	old = lseek(mbox->fd, 0, SEEK_CUR);
+	if (old == -1)
+	{
+		syslog(LOG_ERR, "Unable to read mbox: %s\n", mbox->path);
+		lu_unlock_mbox(mbox->fd, mbox->path);
+		return 0;
+	}
+	
+	got = read(mbox->fd, &buf[0], sizeof(buf));
+	if (got <= 0)
+	{	/* hit eof, that's fine */
+		lu_unlock_mbox(mbox->fd, mbox->path);
+		return 0;
+	}
+	
+	s = strstr(&buf[0], "From ");
+	if (s == 0 || (s != &buf[0] && *(s-1) != '\n') ||
+		sscanf(s, "From %*s %58[^\n]\n", &timestamp[0]) != 1)
+	{	/* There's no From anywhere...? 
+		 * Must be continued mail. Fawk. Well, nothing we can do
+		 * about it now.
+		 */
+		
+		syslog(LOG_ERR, "Discovered more to a message after we had already processed it.\n");
+		old = lseek(mbox->fd, 0, SEEK_CUR);
+		if (old != -1)
+			lu_move_mbox_end(mbox, list, old);
+		lu_unlock_mbox(mbox->fd, mbox->path);
+		return 0;
+	}
+	
+	arrival_timestamp = convert_date_mbox(&timestamp[0]);
+	/* Now, see if we can find a date field too */
+	t1 = strstr(s, "\n\n");
+	t2 = strstr(s, "\r\r");
+	s  = strstr(s, "\nDate: ");
+	
+	/* If we saw 'Date:' before the end of the headers
+	 */
+	client_timestamp = 0;
+	if (s && (!t1 || s < t1) && (!t2 || s < t2))
+	{
+		if (sscanf(s, "\nDate: %58[^\n]\n", &timestamp[0]) == 1)
+		{
+			client_timestamp = convert_date_field(&timestamp[0]);
+		}
+	}
+	
+	lu_unlock_mbox(mbox->fd, mbox->path);
+	return lu_timestamp_heuristic(arrival_timestamp, client_timestamp);
+}
 
 static void* watch_mboxs(void* arg)
 {
+	List*	scan_list;
+	Mbox*	scan_mbox;
+	time_t	lowest_timestamp;
+	time_t	candidate;
+	List*	lowest_list = 0;
+	Mbox*	lowest_mbox = 0;
+	
 	while (1)
 	{
-		printf("."); fflush(stdout);
-		st_sleep(1);
+		lowest_timestamp = 0;
+		
+		for (	scan_list = lu_list; 
+			scan_list != lu_list + lu_lists; 
+			scan_list++)
+		{
+			for (	scan_mbox = scan_list->mbox;
+				scan_mbox != scan_list->mbox + scan_list->mboxs;
+				scan_mbox++)
+			{
+				candidate = extract_timestamp(scan_mbox, scan_list);
+				if (candidate != 0 &&
+					(lowest_timestamp == 0 ||
+					 lowest_timestamp > candidate))
+				{
+					lowest_timestamp = candidate;
+					lowest_list = scan_list;
+					lowest_mbox = scan_mbox;
+				}
+			}
+		}
+		
+		if (lowest_timestamp != 0)
+		{
+			process_mbox(lowest_mbox, lowest_list);
+			
+			/* Don't actually sleep, just reschedual to allow for
+			 * requests to be serviced
+			 */
+			st_sleep(0);
+		}
+		else
+		{
+			/* Delay till we next check for new mail */
+			st_sleep(1);	
+		}
 	}
 	
 	return 0;
@@ -138,6 +413,8 @@ int main(int argc, const char* argv[])
 		return 1;
 	}
 	
+	openlog(STORAGE, LOG_PID, LOG_MAIL);
+	
 	if (detach)
 	{
 		if ((pid = fopen(lu_pidfile, "w")) == 0)
@@ -191,3 +468,20 @@ int main(int argc, const char* argv[])
 	
 	return 0;
 }
+
+/*!!! This should go away as soon as Chris figures out c-client */
+void mm_expunged(MAILSTREAM *stream,unsigned long number) {}
+long mm_diskerror(MAILSTREAM *stream,long errcode,long serious) {}
+void mm_lsub(MAILSTREAM *stream,int delimiter,char *name,long attributes) {}
+void mm_flags(MAILSTREAM *stream,unsigned long number) {}
+void mm_fatal(char *string) {}
+void mm_nocritical(MAILSTREAM *stream) {}
+void mm_notify(MAILSTREAM *stream,char *string,long errflg) {}
+void mm_searched(MAILSTREAM *stream,unsigned long number) {}
+void mm_status(MAILSTREAM *stream,char *mailbox,MAILSTATUS *status) {}
+void mm_login(NETMBX *mb,char *user,char *pwd,long trial) {}
+void mm_list(MAILSTREAM *stream,int delimiter,char *name,long attributes) {}
+void mm_critical(MAILSTREAM *stream) {}
+void mm_exists(MAILSTREAM *stream,unsigned long number) {}
+void mm_log(char *string,long errflg) {}
+void mm_dlog(char *string) {}
