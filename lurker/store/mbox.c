@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.40 2002-07-21 19:26:08 terpstra Exp $
+/*  $Id: mbox.c,v 1.41 2002-07-21 20:36:15 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -697,7 +697,8 @@ static time_t my_mbox_extract_timestamp(
 	}
 	
 	return mbox->next_message = 
-		lu_summary_timestamp_heuristic(arrival_timestamp, client_timestamp);
+		lu_summary_timestamp_heuristic(
+			arrival_timestamp, client_timestamp, mbox->length);
 }
 
 /* We need to avoid excessive locking. Experimentation shows that this is one 

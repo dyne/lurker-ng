@@ -11,7 +11,6 @@ BUGS:
 	Config reloading is broken
 	Writes to an open KRecord are not reflected in read cache
 	We no longer support block device operation for append
-	Detect import new list with bad order
 	We don't check for double append
 	
 	Attachments are never cached because we need to tell the browser

@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.34 2002-07-21 19:26:08 terpstra Exp $
+/*  $Id: summary.c,v 1.35 2002-07-21 20:36:15 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -653,7 +653,8 @@ int lu_summary_write_lists(
  */
 time_t lu_summary_timestamp_heuristic(
 	time_t server, 
-	time_t client)
+	time_t client,
+	off_t  length)
 {
 	time_t out;
 	
@@ -665,6 +666,13 @@ time_t lu_summary_timestamp_heuristic(
 	/* Before one we've already archived? Not possible. */
 	if (out < my_summary_last_time)
 	{
+		if (length == 0)
+		{
+			/* really long error message */
+			syslog(LOG_ERR, 
+				_("CORRUPT dataset: Imported a message from a new mbox which has timestamp earlier than present. This means an mbox was added to the config file after the existing database had passed this timestamp. All timestamps in this mbox will be wrecked."));
+		}
+		
 		out = my_summary_last_time;
 	}
 	

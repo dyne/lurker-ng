@@ -1,4 +1,4 @@
-/*  $Id: summary.h,v 1.10 2002-07-12 12:57:14 terpstra Exp $
+/*  $Id: summary.h,v 1.11 2002-07-21 20:36:15 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -117,7 +117,8 @@ extern int lu_summary_write_lists(
  */
 extern time_t lu_summary_timestamp_heuristic(
 	time_t server, 
-	time_t client);
+	time_t client,
+	off_t  offset);
 
 /*------------------------------------------------- Import message methods */
 
