@@ -41,6 +41,7 @@ AC_DEFINE_DIR(INCDIR,  "${includedir}")
 AC_DEFINE_DIR(VARDIR,  "${localstatedir}")
 AC_DEFINE_DIR(ETCDIR,  "${sysconfdir}")
 AC_DEFINE_DIR(DATADIR, "${datadir}")
+AC_DEFINE_DIR(MANDIR,  "${mandir}")
 
 AC_CONFIG_FILES(Jamrules lurker.conf common/Version.h)
 AC_OUTPUT
