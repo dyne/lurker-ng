@@ -1,4 +1,4 @@
-/*  $Id: Threading.cpp,v 1.8 2003-06-12 20:37:32 terpstra Exp $
+/*  $Id: Threading.cpp,v 1.9 2003-06-23 14:38:43 terpstra Exp $
  *  
  *  Threading.h - Helper which can load a thread tree
  *  
@@ -10,7 +10,7 @@
  *  
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; version 2.1.
+ *    the Free Software Foundation; version 2.
  *    
  *    This program is distributed in the hope that it will be useful,
  *    but WITHOUT ANY WARRANTY; without even the implied warranty of
