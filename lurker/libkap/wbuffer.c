@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.1 2002-07-09 20:15:23 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.2 2002-07-09 20:45:51 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that write combines
  *  
@@ -34,6 +34,7 @@
 #include "avl.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 
@@ -205,13 +206,13 @@ struct Kap_Wbuffer
 };
 
 #ifdef PROFILE
-static message_id		ploads;
-static message_id		phits;
-static message_id		pknowns;
-static message_id		pmisses;
-static message_id		pentries;
-static message_id		pflushes;
-static message_id		pswaps;
+static long		ploads;
+static long		phits;
+static long		pknowns;
+static long		pmisses;
+static long		pentries;
+static long		pflushes;
+static long		pswaps;
 #endif
 
 /* Constants for use by the avl tree - set before each op */
