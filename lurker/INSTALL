@@ -99,6 +99,7 @@ Quick start
 7 Configure your webserver.
   
   You must make certain that .xsl and .xml files have type text/xml.
+  For email reply support .rfc822 must have type message/rfc822.
   You must set the default charset to utf-8 for these files.
   You must make lurker your 404 error handler.
   You must pass the config file and lurker's document root to lurker.cgi 
@@ -132,6 +133,7 @@ Quick start
 
 	AddType text/xml .xsl
 	AddType text/xml .xml
+	AddType message/rfc822 .rfc822
 	AddDefaultCharset UTF-8
 	ErrorDocument 404 /cgi-bin/lurker.cgi?../lurker.conf?../htdocs
 
