@@ -1,4 +1,4 @@
-/*  $Id: summary.h,v 1.8 2002-06-09 22:06:01 terpstra Exp $
+/*  $Id: summary.h,v 1.9 2002-07-11 20:35:07 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -77,27 +77,27 @@ extern int lu_summary_quit (void);
 /** Look-up a message by message-id.
  */
 extern message_id lu_summary_lookup_mid(
-	const char* message_id);
+	const char* mmessage_id);
 
 /** Grab the summary information record for the specified mid
  */
-extern Lu_Summary_Message lu_summary_read_msummary(
-	message_id mid);
+extern int lu_summary_read_msummary(
+	message_id mid, Lu_Summary_Message* m);
 
 /** This writes the variable information out via the given callbacks.
  *  The flat_offset can be found in a message summary record.
  */
 extern int lu_summary_write_variable(
-	int (*write)(void* arg, const char* str),
-	int (*quote)(void* arg, const char* str, size_t len),
-	int (*qurl )(void* arg, const char* str, size_t len),
+	int (*writefn)(void* arg, const char* str),
+	int (*quotefn)(void* arg, const char* str, size_t len),
+	int (*qurlfn )(void* arg, const char* str, size_t len),
 	void* arg,
 	lu_addr flat_offset);
 
 /* This will call a method for each list a message occures in.
  */
 extern int lu_summary_write_lists(
-	int (*write)(void* arg, lu_word list, message_id offset),
+	int (*writefn)(void* arg, lu_word list, message_id offset),
 	void* arg,
 	message_id id);
 

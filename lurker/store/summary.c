@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.23 2002-06-21 18:19:04 terpstra Exp $
+/*  $Id: summary.c,v 1.24 2002-07-11 20:35:08 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -33,9 +33,9 @@
 #include "keyword.h"
 
 #include "config.h"
-#include "breader.h"
 #include "summary.h"
 #include "indexer.h"
+#include "decode.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -52,37 +52,14 @@
  */
 #define LU_THREAD_OVERLAP_TIME	60*60*24*30
 
-/*------------------------------------------------ Private types */
-
-/* The squishy merge db has keys like:
- *  <squishy subject><timestamp>
- * And vals like:
- */
-typedef struct My_Summary_SquishyVal_T
-{
-	message_id	thread;		/* thread head */
-	lu_quad		end_time;	/* ending timestamp */
-} My_Summary_SquishyVal;
-#define LU_THREAD_KEY_MAX (LU_SQUISHY_MAX + sizeof(lu_quad))
-
-/* The key for the offset db is simply the message id.
- */
-
-/* The list of offsets of this message.
- */
-typedef struct My_Summary_Offest_T
-{
-	lu_quad		list;
-	message_id	offset;
-} My_Summary_Offset;
-
 /*------------------------------------------------ Private global vars */
 
 static int my_summary_message_fd  = -1;
 static int my_summary_variable_fd = -1;
-static DB* my_summary_merge_db    = 0;
-static DB* my_summary_mid_db      = 0;
-static DB* my_summary_offset_db   = 0;
+
+static Kap my_summary_mid_db    = 0;
+static Kap my_summary_offset_db = 0;
+static Kap my_summary_merge_db  = 0;
 
 static message_id	my_summary_msg_free;
 static time_t		my_summary_last_time;
@@ -234,17 +211,18 @@ int my_summary_find_thread(
 	time_t		timestamp,
 	message_id*	out)
 {
-	char			thread_key    [LU_THREAD_KEY_MAX];
-	char			thread_key_bak[LU_THREAD_KEY_MAX];
-	int			thread_key_len;
-	My_Summary_SquishyVal	squishy_val;
+	char thread_key[LU_SQUISHY_MAX];
+	int  error;
 	
-	lu_quad		tm;
-	DBC*		cursor;
-	DBT		key;
-	DBT		val;
-	int		error;
-	lu_quad		prior_time;
+	/* Format of records is:
+	 *   4 bytes last   timestamp
+	 *   4 bytes thread head
+	 */
+	unsigned char	record[4+sizeof(message_id)];
+	ssize_t		len;
+	
+	off_t		lasttime;
+	off_t		head;
 	
 	if (!subject || !*subject)
 	{
@@ -253,110 +231,57 @@ int my_summary_find_thread(
 	}
 	
 	/* Get the key for where this thread lies */
-	tm = timestamp;
-	tm = htonl(tm);
-	thread_key_len = 0;
-	thread_key_len += my_summary_squishy_subject(subject, &thread_key[thread_key_len]);
-	memcpy(&thread_key[thread_key_len], &tm, sizeof(lu_quad));
-	thread_key_len += sizeof(lu_quad);
+	my_summary_squishy_subject(subject, &thread_key[0]);
 	
-	memcpy(&thread_key_bak[0], &thread_key[0], thread_key_len);
+	error = kap_btree_read(
+		my_summary_merge_db, 
+		&thread_key[0],
+		&record[0],
+		&len);
 	
-	/* Find the smallest entry >= our thread in the thread btree */
-	error = my_summary_merge_db->cursor(my_summary_merge_db, 0, &cursor, 0);
-	if (error)
+	if (error && error != KAP_NOT_FOUND)
 	{
-		syslog(LOG_ERR, _("Unable to create thread DB cursor: %s\n"),
-			db_strerror(error));
+		syslog(LOG_ERR, _("Unable to read thread information: %s\n"),
+			kap_strerror(error));
 		return -1;
 	}
 	
-	memset(&key, 0, sizeof(DBT));
-	memset(&val, 0, sizeof(DBT));
-	
-	key.ulen = sizeof(thread_key);
-	key.flags = DB_DBT_USERMEM;
-	val.ulen = sizeof(My_Summary_SquishyVal);
-	val.flags = DB_DBT_USERMEM;
-	
-	key.data = &thread_key[0];
-	key.size = thread_key_len;
-	val.data = &squishy_val;
-	
-	error = cursor->c_get(cursor, &key, &val, DB_SET_RANGE);
-	if (error && error != DB_NOTFOUND)
+	/* Decide what to write */
+	if (error == KAP_NOT_FOUND)
 	{
-		syslog(LOG_ERR, _("Unable to find next thread record: %s\n"),
-			db_strerror(error));
-		cursor->c_close(cursor);
-		return -1;
-	}
-	
-	if (error == DB_NOTFOUND)
-		error = cursor->c_get(cursor, &key, &val, DB_LAST);
-	else if (thread_key_len != key.size || 
-	         memcmp(&thread_key[0], &thread_key_bak[0], key.size - sizeof(lu_quad)))
-		error = cursor->c_get(cursor, &key, &val, DB_PREV);
-	
-	if (error && error != DB_NOTFOUND)
-	{
-		syslog(LOG_ERR, _("Unable to find prev thread record: %s\n"),
-			db_strerror(error));
-		cursor->c_close(cursor);
-		return -1;
-	}
-	
-	if (error == DB_NOTFOUND ||
-	    thread_key_len != key.size ||
-	    memcmp(&thread_key[0], &thread_key_bak[0], 
-	           key.size - sizeof(lu_quad)))
-	{	/* There is no prior thread */
-		prior_time = 0;
+		head     = id;
 	}
 	else
 	{
-		memcpy(&prior_time, &thread_key[key.size-sizeof(lu_quad)], 
-			sizeof(lu_quad));
-		prior_time = ntohl(prior_time);
+		kap_decode_offset(&record[0], &lasttime, 4);
 		
-		/* Ok, we now have the data loaded, do a quick consistency check */
-		if (prior_time > squishy_val.end_time || 
-		     timestamp < squishy_val.end_time ||
-		     val.size != sizeof(My_Summary_SquishyVal))
+		/* Reuse thread? */
+		if (lasttime + LU_THREAD_OVERLAP_TIME >= timestamp)
 		{
-			syslog(LOG_ERR, _("Corrupt thread database - prior (%d %d %d)\n"),
-				prior_time, squishy_val.end_time, (int)timestamp);
-			cursor->c_close(cursor);
-			return -1;
+			kap_decode_offset(&record[4], &head, sizeof(message_id));
+		}
+		else
+		{
+			head = id;
 		}
 	}
 	
-	error = cursor->c_close(cursor);
+	lasttime = timestamp;
+	
+	/* Write it out */
+	kap_encode_offset(&record[0], lasttime, 4);
+	kap_encode_offset(&record[4], head,     sizeof(message_id));
+	
+	error = kap_btree_write(
+		my_summary_merge_db, 
+		&thread_key[0],
+		&record[0],
+		8);
+	
 	if (error)
 	{
-		syslog(LOG_ERR, _("Unable to close thread cursor: %s\n"),
-			db_strerror(error));
-		return -1;
-	}
-	
-	/* Now will the new message require a new thread? */
-	if (prior_time == 0 || 
-	    squishy_val.end_time + LU_THREAD_OVERLAP_TIME < timestamp)
-	{
-		memcpy(&thread_key[0], &thread_key_bak[0], thread_key_len);
-		squishy_val.thread = id;
-	}
-	
-	squishy_val.end_time = timestamp;
-	val.size = sizeof(My_Summary_SquishyVal);
-	key.size = thread_key_len;
-	
-	error = my_summary_merge_db->put(
-		my_summary_merge_db, 0, &key, &val, 0);
-	if (error)
-	{
-		syslog(LOG_ERR, _("Unable to write message squishy: %s\n"),
-			db_strerror(error));
+		syslog(LOG_ERR, _("Unable to write thread information: %s\n"),
+			kap_strerror(error));
 		return -1;
 	}
 	
@@ -364,8 +289,7 @@ int my_summary_find_thread(
 	 * old since they will never be needed again later...
 	 */
 	
-	/* Record the thread this is a member of */
-	memcpy(out, &squishy_val.thread, sizeof(message_id));
+	*out = head;
 	return 0;
 }
 
@@ -375,9 +299,15 @@ static int my_summary_reply_link(
 {
 	off_t			soffset = src;
 	off_t			doffset = dest;
-	Lu_Summary_Message	ssum = lu_summary_read_msummary(src);
-	Lu_Summary_Message	dsum = lu_summary_read_msummary(dest);
+	Lu_Summary_Message	ssum;
+	Lu_Summary_Message	dsum;
+	int out;
 	
+	out = lu_summary_read_msummary(src, &ssum);
+	if (out) return out;
+	out = lu_summary_read_msummary(dest, &dsum);
+	if (out) return out;
+	 
 	if (ssum.timestamp == 0 || dsum.timestamp == 0)
 	{
 		return -1;
@@ -416,52 +346,49 @@ static int my_summary_reply_link(
 message_id lu_summary_lookup_mid(
 	const char* mmessage_id)
 {
-	message_id out = lu_common_minvalid;
-	DBT key;
-	DBT val;
+	off_t		out;
+	int		error;
+	unsigned char	buf[sizeof(message_id)];
+	ssize_t		len;
 	
-	memset(&key, 0, sizeof(DBT));
-	memset(&val, 0, sizeof(DBT));
+	error = kap_btree_read(
+		my_summary_mid_db, 
+		mmessage_id,
+		&buf[0],
+		&len);
 	
-	key.data = (void*)mmessage_id;
-	key.size = strlen(mmessage_id);
-	val.data = &out;
-	val.ulen = sizeof(out);
-	val.flags = DB_DBT_USERMEM;
+	if (error || len != sizeof(message_id))
+		return lu_common_minvalid;
 	
-	my_summary_mid_db->get(
-		my_summary_mid_db, 0, &key, &val, 0);
-	
+	kap_decode_offset(&buf[0], &out, sizeof(message_id));
 	return out;
 }
 
-Lu_Summary_Message lu_summary_read_msummary(
-	message_id mid)
+int lu_summary_read_msummary(message_id mid, Lu_Summary_Message* m)
 {
-	Lu_Summary_Message	out;
-	off_t			offset = mid;
+	off_t offset = mid;
 	
 	offset *= sizeof(Lu_Summary_Message);
 	if (lseek(my_summary_message_fd, offset, SEEK_SET) != offset)
 	{
-		memset(&out, 0, sizeof(Lu_Summary_Message));
-		return out;
+		memset(m, 0, sizeof(Lu_Summary_Message));
+		return -1;
 	}
 	
-	if (read(my_summary_message_fd, &out, sizeof(Lu_Summary_Message)) != 
+	if (read(my_summary_message_fd, m, sizeof(Lu_Summary_Message)) != 
 		sizeof(Lu_Summary_Message))
 	{
-		memset(&out, 0, sizeof(Lu_Summary_Message));
-		return out;
+		memset(m, 0, sizeof(Lu_Summary_Message));
+		return -1;
 	}
 	
-	return out;
+	return 0;
 }
 
 int lu_summary_write_variable(
-	int (*write)(void* arg, const char* str),
-	int (*quote)(void* arg, const char* str, size_t len),
-	int (*qurl )(void* arg, const char* str, size_t len),
+	int (*writefn)(void* arg, const char* str),
+	int (*quotefn)(void* arg, const char* str, size_t len),
+	int (*qurlfn )(void* arg, const char* str, size_t len),
 	void* arg,
 	lu_addr flat_offset)
 {
@@ -516,40 +443,40 @@ int lu_summary_write_variable(
 					switch (nulls)
 					{
 					case 0:
-						write(arg, "   <mid>");
+						writefn(arg, "   <mid>");
 						break;
 					case 1:
-						write(arg, "   <subject>");
+						writefn(arg, "   <subject>");
 						break;
 					case 2:
-						write(arg, " name=\"");
+						writefn(arg, " name=\"");
 						break;
 					case 3:
-						write(arg, " address=\"");
+						writefn(arg, " address=\"");
 						break;
 					}
 				}
 				
 				if (nulls == 0)
-					qurl(arg, s, w-s);
+					qurlfn(arg, s, w-s);
 				else
-					quote(arg, s, w - s);
+					quotefn(arg, s, w - s);
 				
 				if (have)
 				{
 					switch (nulls)
 					{
 					case 0:
-						write(arg, "</mid>\n");
+						writefn(arg, "</mid>\n");
 						break;
 					case 1:
-						write(arg, "</subject>\n");
+						writefn(arg, "</subject>\n");
 						break;
 					case 2:
-						write(arg, "\"");
+						writefn(arg, "\"");
 						break;
 					case 3:
-						write(arg, "\"");
+						writefn(arg, "\"");
 						break;
 					}
 				}
@@ -559,7 +486,7 @@ int lu_summary_write_variable(
 				have = 0;
 				
 				if (nulls == 2)
-					write(arg, "   <email");
+					writefn(arg, "   <email");
 			}
 		}
 		
@@ -569,63 +496,81 @@ int lu_summary_write_variable(
 			switch (nulls)
 			{
 			case 0:
-				write(arg, "   <mid>");
+				writefn(arg, "   <mid>");
 				break;
 			case 1:
-				write(arg, "   <subject>");
+				writefn(arg, "   <subject>");
 				break;
 			case 2:
-				write(arg, "name=\"");
+				writefn(arg, "name=\"");
 				break;
 			case 3:
-				write(arg, "address=\"");
+				writefn(arg, "address=\"");
 				break;
 			}
 		}
 		
-		quote(arg, s, w - s);
+		quotefn(arg, s, w - s);
 	}
 	
-	write(arg, "/>\n");
+	writefn(arg, "/>\n");
 	
 	close(my_var_fd);
 	return 0;
 }
 
 int lu_summary_write_lists(
-	int (*write)(void* arg, lu_word list, message_id offset),
+	int (*writefn)(void* arg, lu_word list, message_id offset),
 	void* arg,
 	message_id id)
 {
-	DBT			key;
-	DBT			val;
-	int			error;
+	KRecord	kr;
+	size_t	i;
+	int	error;
+	char	key[20];
 	
-	My_Summary_Offset	offsets[20];
-	int			i;
+	/* Record format: 
+	 *  <4 bytes list>
+	 *  <4 bytes offset>
+	 */
+	unsigned char record[4+sizeof(message_id)];
+	off_t	list;
+	off_t	offset;
 	
-	/* Check to see if we were already loaded */
-	memset(&key, 0, sizeof(DBT));
-	memset(&val, 0, sizeof(DBT));
+	sprintf(&key[0], "%ld", (long)id);
 	
-	key.data = &id;
-	key.size = sizeof(message_id);
-	val.data = &offsets[0];
-	val.size = 0;
-	val.ulen = sizeof(offsets);
-	val.flags = DB_DBT_USERMEM;
-	
-	error = my_summary_offset_db->get(
-		my_summary_offset_db, 0, &key, &val, 0);
-	if (error && error != DB_NOTFOUND)
+	error = kap_kopen(my_summary_offset_db, &kr, &key[0]);
+	if (error)
 	{
-		syslog(LOG_ERR, _("Could not read occurance db: %s\n"),
-			db_strerror(error));
+		syslog(LOG_ERR, _("Could not open KRecord in occurance db: %s\n"),
+			kap_strerror(error));
 		return -1;
 	}
 	
-	for (i = 0; i < val.size/sizeof(My_Summary_Offset); i++)
-		(*write)(arg, offsets[i].list, offsets[i].offset);
+	for (i = 0; i < kr.records; i++)
+	{
+		error = kap_kread(my_summary_offset_db, &kr, &key[0],
+			i, &record[0], 1);
+		if (error)
+		{
+			syslog(LOG_ERR, _("Could access occurance db: %s\n"),
+				kap_strerror(error));
+			return -1;
+		}
+		
+		kap_decode_offset(&record[0], &list,   4);
+		kap_decode_offset(&record[4], &offset, sizeof(message_id));
+		
+		(*writefn)(arg, list, offset);
+	}
+	
+	error = kap_kclose(my_summary_offset_db, &kr, &key[0]);
+	if (error && error != DB_NOTFOUND)
+	{
+		syslog(LOG_ERR, _("Could not close occurance db: %s\n"),
+			kap_strerror(error));
+		return -1;
+	}
 	
 	return 0;
 }
@@ -689,94 +634,66 @@ int lu_summary_import_message(
 	lu_addr		high_bits;
 	size_t		mid_len, sub_len, aun_len, aue_len;
 	
-	message_id		id;
+	off_t			id;
 	Lu_Summary_Message	sum;
 	message_id		thread_id;
 	message_id		loff;
 	
-	DBT			key;
-	DBT			val;
+	ssize_t			len;
 	int			error;
 	
-	My_Summary_Offset	offsets[20];
-	int			i;
+	char			key[20];
+	unsigned char		occurance[4+sizeof(message_id)];
+	unsigned char		idrec[sizeof(message_id)];
 	
 	if (!subject) subject = "";
 	
 	id = my_summary_msg_free;
 	
 	/* Check to see if we were already loaded */
-	memset(&key, 0, sizeof(DBT));
-	memset(&val, 0, sizeof(DBT));
-	
-	key.data = (void*)mmessage_id;
-	key.size = strlen(mmessage_id);
-	val.data = &id;
-	val.size = sizeof(id);
-	
-	error = my_summary_mid_db->put(
-		my_summary_mid_db, 0, &key, &val, DB_NOOVERWRITE);
-	if (error == DB_KEYEXIST)
-	{	/* Already imported this message */
-		val.ulen = sizeof(id);
-		val.flags = DB_DBT_USERMEM;
+	kap_encode_offset(&idrec[0], id, sizeof(message_id));
+	error = kap_btree_write(
+		my_summary_mid_db,
+		mmessage_id,
+		&idrec[0],
+		sizeof(message_id));
 		
-		error = my_summary_mid_db->get(
-			my_summary_mid_db, 0, &key, &val, 0);
+	if (error == KAP_KEY_EXIST)
+	{	/* Already imported this message */
+		error = kap_btree_read(
+			my_summary_mid_db,
+			mmessage_id,
+			&idrec[0],
+			&len);
+		
+		kap_decode_offset(&idrec[0], &id, 4);
 	}
 	if (error)
 	{
 		syslog(LOG_ERR, _("Checking message-id db for duplicate: %s\n"),
-			db_strerror(errno));
+			kap_strerror(errno));
 		goto lu_summary_import_message_error0;
 	}
+	
+	/* Write out location keywords.
+	 */
+	lu_indexer_location(list, mbox, &loff);
 	
 	/* Write out the list occurance info */
-	key.data = &id;
-	key.size = sizeof(message_id);
-	val.data = &offsets[0];
-	val.size = 0;
-	val.ulen = sizeof(offsets);
-	val.flags = DB_DBT_USERMEM;
+	sprintf(&key[0], "%ld", (long)id);
+	kap_encode_offset(&occurance[0], list, 4);
+	kap_encode_offset(&occurance[4], loff, sizeof(message_id));
 	
-	error = my_summary_offset_db->get(
-		my_summary_offset_db, 0, &key, &val, 0);
-	if (error && error != DB_NOTFOUND)
+	error = kap_append(
+		my_summary_offset_db,
+		&key[0],
+		&occurance[0],
+		4+sizeof(message_id));
+	if (error)
 	{
-		syslog(LOG_ERR, _("Could not read occurance db: %s\n"),
-			db_strerror(error));
-		goto lu_summary_import_message_error0;
-	}
-	
-	for (i = 0; i < val.size/sizeof(My_Summary_Offset); i++)
-		if (offsets[i].list == list)
-			break;
-	
-	if (i == sizeof(offsets)/sizeof(My_Summary_Offset))
-	{
-		syslog(LOG_WARNING, _("Ridiculous number of list occurances in message: %s (%d)"),
-			mmessage_id, id);
-	}
-	else if (i == val.size/sizeof(My_Summary_Offset))
-	{
-		/* Write out location keywords -- but only do this if
-		 * the message has not already been pushed.
-		 */
-		lu_indexer_location(list, mbox, &loff);
-		
-		val.size += sizeof(My_Summary_Offset);
-		offsets[i].list   = list;
-		offsets[i].offset = loff;
-		
-		error = my_summary_offset_db->put(
-			my_summary_offset_db, 0, &key, &val, 0);
-		
-		if (error)
-		{
 			syslog(LOG_ERR, _("Could not write occurance db: %s\n"),
 				db_strerror(error));
 			goto lu_summary_import_message_error0;
-		}
 	}
 	
 	if (id < my_summary_msg_free)
@@ -910,67 +827,82 @@ int lu_summary_reply_to_resolution(
 	 * Have we replied to something?  We do a query to see if it exists.
 	 * If it does, we update our reply-to summary informationn.
 	 */
-	 
-	 char			key[LU_KEYWORD_LEN+1];
-	 message_id		buf[1024];
-	 message_id		count, ind, get;
-	 int			i;
-	 Lu_Breader_Handle	h;
-	 
-	 if (*msg_id)
-	 { 	/* Does anything already imported reply to us? */
-	 	snprintf(&key[0], sizeof(key), "%s%s",
-	 		LU_KEYWORD_REPLY_TO,
-	 		msg_id);
-	 	
-	 	h = lu_breader_new(&key[0]);
-	 	if (h != 0)
-	 	{
-	 		count = lu_breader_records(h);
-	 		ind = 0;
-	 		
-	 		while (count)
-	 		{
-	 			get = count;
-	 			if (get > sizeof(buf)/sizeof(message_id))
-	 				get = sizeof(buf)/sizeof(message_id);
-	 			
-	 			if (lu_breader_read(h, ind, get, &buf[0]) != 0)
-	 			{
-	 				lu_breader_free(h);
-	 				return -1;
-	 			}
-	 			
-	 			for (i = 0; i < get; i++)
-	 			{
-	 				if (my_summary_reply_link(buf[i], id) != 0)
-	 				{
-	 					lu_breader_free(h);
-	 					return -1;
-	 				}
-	 			}
-	 			
-	 			ind   += get;
-	 			count -= get;
-	 		}
-	 		
-	 		lu_breader_free(h);
-	 	}
-	 }
-	 
-	 if (*reply_to_msg_id)
-	 {	/* Do we reply to anything? */
-	 	buf[0] = lu_summary_lookup_mid(reply_to_msg_id);
-	 	if (buf[0] != lu_common_minvalid)
-	 	{
- 			if (my_summary_reply_link(id, buf[0]) != 0)
- 			{
- 				return -1;
- 			}
- 		}
-	 }
-	 
-	 return 0;
+	
+	char			key[LU_KEYWORD_LEN+1];
+	message_id		buf[1024];
+	message_id		count, ind, get;
+	int			i, out;
+	KRecord 		kr;
+	
+	if (*msg_id)
+	{ 	/* Does anything already imported reply to us? */
+		snprintf(&key[0], sizeof(key), "%s%s",
+			LU_KEYWORD_REPLY_TO,
+			msg_id);
+		
+		out = kap_kopen(lu_config_keyword, &kr, &key[0]);
+		if (out == 0 && kr.records > 0)
+		{
+			count = kr.records;
+			ind = 0;
+			
+			while (count)
+			{
+				get = count;
+				if (get > sizeof(buf)/sizeof(message_id))
+					get = sizeof(buf)/sizeof(message_id);
+				
+				out = kap_kread(
+					lu_config_keyword, &kr,	&key[0],
+					ind, &buf[0], get);
+				
+				if (out != 0)
+				{
+					syslog(LOG_ERR, _("Failed to read from KRecord for reply-to resolution: %s\n"),
+						kap_strerror(out));
+					kap_kclose(lu_config_keyword, &kr, &key[0]);
+					return -1;
+				}
+				
+				for (i = 0; i < get; i++)
+				{
+					if (my_summary_reply_link(buf[i], id) != 0)
+					{
+						kap_kclose(lu_config_keyword, &kr, &key[0]);
+						return -1;
+					}
+				}
+				
+				ind   += get;
+				count -= get;
+			}
+			
+			out = kap_kclose(lu_config_keyword, &kr, &key[0]);
+			if (out)
+			{
+				syslog(LOG_ERR, _("Failed to close KRecord during reply-to resolution: %s\n"),
+					kap_strerror(out));
+			}
+		}
+		else
+		{
+			if (out == 0) kap_kclose(lu_config_keyword, &kr, &key[0]);
+		}
+	}
+	
+	if (*reply_to_msg_id)
+	{	/* Do we reply to anything? */
+		buf[0] = lu_summary_lookup_mid(reply_to_msg_id);
+		if (buf[0] != lu_common_minvalid)
+		{
+			if (my_summary_reply_link(id, buf[0]) != 0)
+			{
+				return -1;
+			}
+		}
+	}
+	
+	return 0;
 }
 
 /*------------------------------------------------ Public component methods */
@@ -1003,51 +935,53 @@ int lu_summary_open()
 		return -1;
 	}
 	
-	if ((error = db_create(&my_summary_merge_db, lu_config_env, 0)) != 0)
+	if ((error = kap_create(&my_summary_merge_db, KAP_BTREE)) != 0 ||
+	    (error = kap_btree_set_maxkeysize(my_summary_merge_db, LU_SQUISHY_MAX)) != 0 ||
+	    (error = kap_btree_set_leafsize  (my_summary_merge_db, 4+sizeof(message_id))) != 0 ||
+	    (error = kap_btree_set_sectorsize(my_summary_merge_db, 2048)) != 0)
 	{
-		fprintf(stderr, _("Creating a db3 database: %s\n"),
-			db_strerror(error));
+		fprintf(stderr, _("Creating a kap database: %s\n"),
+			kap_strerror(error));
 		return -1;
 	}
 	
-	if ((error = db_create(&my_summary_mid_db, lu_config_env, 0)) != 0)
+	if ((error = kap_create(&my_summary_mid_db, KAP_BTREE)) != 0 ||
+	    (error = kap_btree_set_maxkeysize(my_summary_mid_db, MAX_MESSAGE_ID)) != 0 ||
+	    (error = kap_btree_set_leafsize  (my_summary_mid_db, sizeof(message_id))) != 0 ||
+	    (error = kap_btree_set_sectorsize(my_summary_mid_db, 2048)) != 0)
 	{
-		fprintf(stderr, _("Creating a db3 database: %s\n"),
-			db_strerror(error));
+		fprintf(stderr, _("Creating a kap database: %s\n"),
+			kap_strerror(error));
 		return -1;
 	}
 	
-	if ((error = db_create(&my_summary_offset_db, lu_config_env, 0)) != 0)
+	if ((error = kap_create(&my_summary_offset_db, KAP_SMALL)) != 0 ||
+	    (error = kap_btree_set_maxkeysize (my_summary_offset_db, 12)) != 0 ||
+	    (error = kap_append_set_recordsize(my_summary_offset_db, 4+sizeof(message_id))) != 0)
 	{
-		fprintf(stderr, _("Creating a db3 database: %s\n"),
-			db_strerror(error));
+		fprintf(stderr, _("Creating a kap database: %s\n"),
+			kap_strerror(error));
 		return -1;
 	}
 	
-	if ((error = my_summary_merge_db->open(
-		my_summary_merge_db, "merge.btree", 0,
-		DB_BTREE, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
+	if ((error = kap_open(my_summary_merge_db, ".", "merge")) != 0)
 	{
-		fprintf(stderr, _("Opening db3 database: merge.btree: %s\n"),
-			db_strerror(error));
+		fprintf(stderr, _("Opening kap database: merge.btree: %s\n"),
+			kap_strerror(error));
 		return -1;
 	}
 	
-	if ((error = my_summary_mid_db->open(
-		my_summary_mid_db, "mid.hash", 0,
-		DB_HASH, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
+	if ((error = kap_open(my_summary_mid_db, ".", "mid")) != 0)
 	{
-		fprintf(stderr, _("Opening db3 database: mid.hash: %s\n"),
-			db_strerror(error));
+		fprintf(stderr, _("Opening kap database: mid.btree: %s\n"),
+			kap_strerror(error));
 		return -1;
 	}
 	
-	if ((error = my_summary_offset_db->open(
-		my_summary_offset_db, "offset.hash", 0,
-		DB_HASH, DB_CREATE, LU_S_READ | LU_S_WRITE)) != 0)
+	if ((error = kap_open(my_summary_offset_db, ".", "offset")) != 0)
 	{
-		fprintf(stderr, _("Opening db3 database: offset.hash: %s\n"),
-			db_strerror(error));
+		fprintf(stderr, _("Opening kap database: offset.*: %s\n"),
+			kap_strerror(error));
 		return -1;
 	}
 	
@@ -1068,9 +1002,8 @@ int lu_summary_open()
 	}
 	else
 	{
-		Lu_Summary_Message sum = lu_summary_read_msummary(
-			my_summary_msg_free - 1);
-		if (sum.timestamp == 0)
+		Lu_Summary_Message sum;
+		if (lu_summary_read_msummary(my_summary_msg_free - 1, &sum) != 0)
 		{
 			perror(_("Grabbing last summary block"));
 			return -1;
@@ -1086,25 +1019,22 @@ int lu_summary_sync()
 {
 	int error;
 	
-	if ((error = my_summary_merge_db->sync(
-		my_summary_merge_db, 0)) != 0)
+	if ((error = kap_sync(my_summary_merge_db)) != 0)
 	{
-		syslog(LOG_ERR, _("Syncing db3 database: merge.btree: %s\n"),
-			db_strerror(error));
+		syslog(LOG_ERR, _("Syncing kap database: merge.btree: %s\n"),
+			kap_strerror(error));
 	}
 	
-	if ((error = my_summary_mid_db->sync(
-		my_summary_mid_db, 0)) != 0)
+	if ((error = kap_sync(my_summary_mid_db)) != 0)
 	{
-		syslog(LOG_ERR, _("Syncing db3 database: mid.hash: %s\n"),
-			db_strerror(error));
+		syslog(LOG_ERR, _("Syncing kap database: mid.btree: %s\n"),
+			kap_strerror(error));
 	}
 	
-	if ((error = my_summary_offset_db->sync(
-		my_summary_offset_db, 0)) != 0)
+	if ((error = kap_sync(my_summary_offset_db)) != 0)
 	{
-		syslog(LOG_ERR, _("Syncing db3 database: offset.hash: %s\n"),
-			db_strerror(error));
+		syslog(LOG_ERR, _("Syncing kap database: offset.*: %s\n"),
+			kap_strerror(error));
 	}
 	
 	return 0;
@@ -1115,27 +1045,24 @@ int lu_summary_close()
 	int error;
 	int fail = 0;
 	
-	if ((error = my_summary_merge_db->close(
-		my_summary_merge_db, 0)) != 0)
+	if ((error = kap_close(my_summary_merge_db)) != 0)
 	{
-		syslog(LOG_ERR, _("Closing db3 database: merge.btree: %s\n"),
-			db_strerror(error));
+		syslog(LOG_ERR, _("Closing kap database: merge.btree: %s\n"),
+			kap_strerror(error));
 		fail = -1;
 	}
 	
-	if ((error = my_summary_mid_db->close(
-		my_summary_mid_db, 0)) != 0)
+	if ((error = kap_close(my_summary_mid_db)) != 0)
 	{
-		syslog(LOG_ERR, _("Closing db3 database: mid.hash: %s\n"),
-			db_strerror(error));
+		syslog(LOG_ERR, _("Closing kap database: mid.btree: %s\n"),
+			kap_strerror(error));
 		fail = -1;
 	}
 	
-	if ((error = my_summary_offset_db->close(
-		my_summary_offset_db, 0)) != 0)
+	if ((error = kap_close(my_summary_offset_db)) != 0)
 	{
-		syslog(LOG_ERR, _("Closing db3 database: offset.hash: %s\n"),
-			db_strerror(error));
+		syslog(LOG_ERR, _("Closing db3 database: offset.*: %s\n"),
+			kap_strerror(error));
 		fail = -1;
 	}
 	
