@@ -22,7 +22,7 @@ rm -f db.* db
 
 for l in *; do
   echo Reindexing $l
-  $idx -c $cfg -l $l -v -d -b 5 < $l
+  $idx -c $cfg -l $l -v -b 5 < $l
 done
 
 cd ..

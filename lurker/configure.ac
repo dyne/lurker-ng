@@ -1,4 +1,4 @@
-AC_INIT(lurker, pre-0.7, wesley@terpstra.ca)
+AC_INIT(lurker, 0.7, wesley@terpstra.ca)
 AC_CONFIG_SRCDIR(Jamrules.in)
 AC_PREREQ(2.57)
 
