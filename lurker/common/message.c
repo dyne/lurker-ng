@@ -1,5 +1,5 @@
 /*
- * $Id: message.c,v 1.5 2002-01-28 06:23:41 cbond Exp $
+ * $Id: message.c,v 1.6 2002-01-28 06:30:46 cbond Exp $
  *  
  *  message.c - parse mail.
  *  
@@ -192,5 +192,7 @@ void
 mail_free(struct msg *in)
 {
 	munmap((void *)in->buffer, in->region);
+	mail_free_body(&in->body);
+	mail_free_envelope(&in->env);
 	free(in);
 }
