@@ -1,4 +1,4 @@
-/*  $Id: message.c,v 1.8 2002-02-05 01:59:24 terpstra Exp $
+/*  $Id: message.c,v 1.9 2002-02-10 06:40:55 terpstra Exp $
  *  
  *  message.c - output results from a message/ lookup
  *  
@@ -294,6 +294,7 @@ int lu_message_handler(char* parameter)
 		return -1;
 	}
 	
+	fputs("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n", xml);
 	fputs("<?xml-stylesheet type=\"text/xml\" href=\"render.xslt\"?>\n", xml);
 	fputs("<message>\n", xml);
 	
