@@ -10,12 +10,12 @@ Quick start
 	gettext		-  ftp://ftp.gnu.org/pub/gnu/gettext/
 
  Or, if you run debian:
-  apt-get install libxslt1-dev libc-client2001-dev libst-dev gettext
+  apt-get install xsltproc libc-client2001-dev libst-dev gettext
  
  If you run glibc, then its libiconv and gettext are sufficient.
  
  Often, your distribution will include packages for the development files
- for everything but libst and libxslt1.
+ for everything but libst.
 
 1 ./configure	--with-urldir="/relative-without-http/web/path/to/lurker" \
 		--with-wwwdir=/filesystem/path/to/above
