@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.5 2003-05-03 13:42:18 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.6 2003-05-03 18:12:24 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -45,7 +45,8 @@ static int shared_file_lock(int fd)
 	 struct flock lock;
 	 memset(&lock, 0, sizeof(lock));
 	 lock.l_type = F_RDLCK;
-	 if (fcntl(fd, F_SETLK, &lock) != 0) return -1;
+	 lock.l_whence = SEEK_SET;
+	 if (fcntl(fd, F_SETLKW, &lock) != 0) return -1;
 #endif
 #endif
 	return 0;
@@ -60,7 +61,8 @@ static int exclusive_file_lock(int fd)
 	 struct flock lock;
 	 memset(&lock, 0, sizeof(lock));
 	 lock.l_type = F_WRLCK;
-	 if (fcntl(fd, F_SETLK, &lock) != 0) return -1;
+	 lock.l_whence = SEEK_SET;
+	 if (fcntl(fd, F_SETLKW, &lock) != 0) return -1;
 #endif
 #endif
 	return 0;
@@ -75,7 +77,8 @@ static int unlock_file_lock(int fd)
 	 struct flock lock;
 	 memset(&lock, 0, sizeof(lock));
 	 lock.l_type = F_UNLCK;
-	 if (fcntl(fd, F_SETLK, &lock) != 0) return -1;
+	 lock.l_whence = SEEK_SET;
+	 if (fcntl(fd, F_SETLKW, &lock) != 0) return -1;
 #endif
 #endif
 	return 0;
