@@ -10,6 +10,7 @@
 
 <xsl:import href="splash.xsl"/>
 <xsl:import href="message.xsl"/>
+<xsl:import href="mindex.xsl"/>
 
 <!--- The default is to render to xml and use browser -->
 <xsl:variable name="ext">xml</xsl:variable>
