@@ -96,6 +96,7 @@ www_DATA = .htaccess
 
 
 @PACKAGE@_xslt_LDADD = @RENDER_LIBS@
+@PACKAGE@_search_cgi_LDADD = ../common/libcommon.a
 subdir = render
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/common/system.h
@@ -106,8 +107,7 @@ PROGRAMS = $(www_PROGRAMS)
 
 am_@PACKAGE@_search_cgi_OBJECTS = search.$(OBJEXT)
 @PACKAGE@_search_cgi_OBJECTS = $(am_@PACKAGE@_search_cgi_OBJECTS)
-@PACKAGE@_search_cgi_LDADD = $(LDADD)
-@PACKAGE@_search_cgi_DEPENDENCIES =
+@PACKAGE@_search_cgi_DEPENDENCIES = ../common/libcommon.a
 @PACKAGE@_search_cgi_LDFLAGS =
 am_@PACKAGE@_cgi_OBJECTS = main.$(OBJEXT)
 @PACKAGE@_cgi_OBJECTS = $(am_@PACKAGE@_cgi_OBJECTS)

@@ -17,3 +17,4 @@ www_DATA = .htaccess
 	error.h
 
 @PACKAGE@_xslt_LDADD = @RENDER_LIBS@
+@PACKAGE@_search_cgi_LDADD = ../common/libcommon.a

@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.14 2002-05-29 08:09:54 terpstra Exp $
+/*  $Id: search.c,v 1.15 2002-06-10 12:28:38 terpstra Exp $
  *  
  *  search.c - redirect search postings
  *  
@@ -25,15 +25,13 @@
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
 
-#include "prefix.h"
+#include "keyword.h"
 #include "common.h"
 #include "error.h"
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-static char is_div[256];
 
 const char redirect_error[] = 
 "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
@@ -45,6 +43,47 @@ const char redirect_error[] =
 "<p><hr>\r\n"
 "</body></html>\r\n";
 
+char* eos;
+static int pump_keyword(
+	const char*	keyword,
+	void*		arg)
+{
+	char**       w = arg;
+	const char*  s;
+	const char*  t;
+	char         buf[6];
+	
+	/* Seperator */
+	for (t = "%20"; *w != eos && *t; t++)
+		*(*w)++ = *t;
+	
+	/* Begin formatting it into url goop */
+	for (s = keyword; *w != eos && *s;)
+	{
+		if ((*s >= 48 && *s <= 57) ||
+		    (*s >= 97 && *s <=122) ||
+		    (*s >= 65 && *s <= 90))
+		{
+			*(*w)++ = *s++;
+		}
+		else if (*s == '/')
+		{	/* special case: '/' can't live on FS */
+			for (t = "%01"; *w != eos && *t; t++)
+				*(*w)++ = *t;
+			/* lurkerd knows 01 = / */
+			s++;
+		}
+		else
+		{
+			sprintf(&buf[0], "%%%02X", *s++);
+			for (t = &buf[0]; *w != eos && *t; t++)
+				*(*w)++ = *t;
+		}
+	}
+	
+	return 0;
+}
+
 static void extract_keyword(
 	const char* parameter, 
 	char** w,
@@ -53,17 +92,15 @@ static void extract_keyword(
 	const char* prefix,
 	const char* field)
 {
-	const char* t;
-	char* s;
-	char* o;
-	int i;
-	char buf[6];
+	const char* s;
+	char*       o;
+	int         i;
 	
-	if ((s = strstr(parameter, field)) == 0)
-		return;
+	s = parameter-1;
+	do s = strstr(s+1, field);
+	while (s && s != parameter && *(s-1) != '&');
 	
-	/* make sure it is a parameter */
-	if (s != parameter && *(s-1) != '&')
+	if (s == 0)
 		return;
 	
 	/* skip the field */
@@ -71,7 +108,7 @@ static void extract_keyword(
 	
 	/* pass the = */
 	if (*s != '=') return;
-	if (!*s++) return;
+	s++;
 	
 	/* De-urlify the data */
 	for (o = scratch; *s && *s != '&'; o++)
@@ -98,51 +135,9 @@ static void extract_keyword(
 	}
 	*o = 0;
 	
-	/* Begin formatting it into url goop */
-	for (s = scratch; *w != e && *s && *s != '&';)
-	{
-		/* Skip all the dividers */
-		while (*s && *s != '&' && is_div[(int)*s]) s++;
-		if (!*s || *s == '&') break;
-		
-		/* Seperator */
-		for (t = "%20"; *w != e && *t; t++)
-			*(*w)++ = *t;
-
-		/* Output the prefix */
-		for (t = prefix; *w != e && *t; t++)
-			*(*w)++ = *t;
-		
-		/* Output up to next divider */
-		while (*w != e && !is_div[(int)*s])
-		{
-			/* Don't do high-bit stuff */
-			if (*s >= 127 || *s < 0) { s++; continue; }
-			
-			if ((*s >= 48 && *s <= 57) ||
-			    (*s >= 97 && *s <=122))
-			{
-				*(*w)++ = *s++;
-			}
-			else if (*s >= 65 && *s <= 90)
-			{
-				*(*w)++ = *s++ - 'A' + 'a';
-			}
-			else if (*s == '/')
-			{	/* special case: '/' can't live on FS */
-				for (t = "%01"; *w != e && *t; t++)
-					*(*w)++ = *t;
-				/* lurkerd knows 01 = / */
-				s++;
-			}
-			else
-			{
-				sprintf(&buf[0], "%%%02X", *s++);
-				for (t = &buf[0]; *w != e && *t; t++)
-					*(*w)++ = *t;
-			}
-		}
-	}
+	eos = e;
+	my_keyword_digest_string(scratch, o - scratch, prefix,
+		&pump_keyword, w, 0);
 }
 
 int main(int argc, char** argv)
@@ -154,7 +149,6 @@ int main(int argc, char** argv)
 	char* e;
 	char* s;
 	char* scratch;
-	int   i;
 	
 	if (!uri)
 	{
@@ -186,11 +180,6 @@ int main(int argc, char** argv)
 	
 	/* Ok, uri is now the path relative to which the request goes */
 	
-	/* Bootstrap the conversion table */
-	memset(&is_div[0], 0, sizeof(is_div));
-	for (i = 0; i < 040; i++)	is_div[i] = 1;
-	for (s = WORD_BREAKS; *s; s++)	is_div[(int)*s] = 1;
-	
 	/* Start slapping on parameters */
 	e = &buf[sizeof(buf)];
 	w = &buf[0];
@@ -207,8 +196,8 @@ int main(int argc, char** argv)
 	extract_keyword(qs, &w, e, scratch, LU_KEYWORD_LIST,         "list");
 	
 	/* Find the format */
-	s = qs;
-	do s = strstr(s, "format=");
+	s = qs-1;
+	do s = strstr(s+1, "format=");
 	while (s && s != qs && *(s-1) != '&');
 	if (s)
 	{
@@ -219,7 +208,7 @@ int main(int argc, char** argv)
 	else	s = "xml";
 	
 	printf("Status: 303 Moved Permanently\r\n");
-	printf("Location: %s/search/0%%20%s.%s\r\n", uri, &buf[3], s);
+	printf("Location: %s/search/0%s.%s\r\n", uri, &buf[0], s);
 	printf("Content-type: text/%s\r\n\r\n", s);
 	printf(&redirect_error[0], uri, &buf[3], s);
 	
