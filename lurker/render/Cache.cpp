@@ -1,4 +1,4 @@
-/*  $Id: Cache.cpp,v 1.8 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: Cache.cpp,v 1.9 2003-06-25 11:58:40 terpstra Exp $
  *  
  *  Cache.h - Helper which transforms xml -> html and caches files
  *  
@@ -117,15 +117,22 @@ Cache::Cache(const Config& cfg, const string& command, const string& parameter)
 		exit(1);
 	}
 	
-	cache = fopen(parameter.c_str(), "w+");
-	if (!cache)
+	if (cfg.web_cache)
 	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Creating cache file"), parameter + ":" + strerror(errno),
-			_("Perhaps the user which runs lurker.cgi does not have write"
-			  "permissions to this directory."));
-		exit(1);
+		cache = fopen(parameter.c_str(), "w+");
+		if (!cache)
+		{
+			cout << "Status: 200 OK\r\n";
+			cout <<	"Content-Type: text/html\r\n\r\n";
+			cout << error(_("Creating cache file"), parameter + ":" + strerror(errno),
+				_("Perhaps the user which runs lurker.cgi does not have write"
+				  "permissions to this directory."));
+			exit(1);
+		}
+	}
+	else
+	{
+		cache = stdout;
 	}
 	
 	string::size_type p = parameter.rfind('.');
@@ -136,8 +143,8 @@ Cache::Cache(const Config& cfg, const string& command, const string& parameter)
 	cout << "Status: 200 OK\r\n";
 	if (ext == "html")
 	{
-		char buf[10];
-		sprintf(buf, " >&%d", fileno(cache));
+		char buf[10] = "";
+		if (cache != stdout) sprintf(buf, " >&%d", fileno(cache));
 		string command = cfg.xslt + buf;
 		
 		output = popen(command.c_str(), "w");
@@ -165,6 +172,7 @@ Cache::Cache(const Config& cfg, const string& command, const string& parameter)
 		output = cache;
 	}
 	
+	cout.flush(); // in case of stdout writing next (ick)
 	bug->set_target(output);
 }
 
@@ -175,17 +183,20 @@ Cache::~Cache()
 	if (output != cache)
 		pclose(output);
 	
-	// reset to the start of the cache file
-	fflush(cache);
-	fseek(cache, 0, SEEK_SET);
-	fflush(cache);
-	
-	// Begin streaming to cout
-	char buf[4096];
-	size_t got;
-	
-	while ((got = fread(buf, 1, sizeof(buf), cache)) != 0)
-		cout.write(buf, got);
+	if (cache != stdout)
+	{
+		// reset to the start of the cache file
+		fflush(cache);
+		fseek(cache, 0, SEEK_SET);
+		fflush(cache);
+		
+		// Begin streaming to cout
+		char buf[4096];
+		size_t got;
+		
+		while ((got = fread(buf, 1, sizeof(buf), cache)) != 0)
+			cout.write(buf, got);
+	}
 	
 	// All done!
 }

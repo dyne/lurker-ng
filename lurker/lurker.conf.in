@@ -19,6 +19,9 @@ dbdir = @VARDIR@/lib/@PACKAGE_NAME@
 # Include another file for additional configuration
 # include = another.conf
 
+# Tell lurker to stop generating web cache
+# web_cache = off
+
 # Now comes configuration for the mailing lists lurker is host
 # 
 # Once lurker has been configured to use a list, you must never take it

@@ -1,4 +1,4 @@
-/*  $Id: Config.h,v 1.11 2003-06-04 16:24:07 terpstra Exp $
+/*  $Id: Config.h,v 1.12 2003-06-25 11:58:40 terpstra Exp $
  *  
  *  Config.h - Knows how to load the config file
  *  
@@ -82,6 +82,7 @@ class Config
  	string	admin_name;
  	string	admin_address;
  	string	xslt;
+ 	bool	web_cache;
  	
  	// parameters specific for rendering
  	string	docUrl;

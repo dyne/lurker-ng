@@ -1,4 +1,4 @@
-/*  $Id: params.cpp,v 1.4 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: params.cpp,v 1.5 2003-06-25 11:58:40 terpstra Exp $
  *  
  *  params.cpp - Parse the config file for helper scripts
  *  
@@ -46,6 +46,7 @@ void help(const char* name)
 	cerr << "\t-n               Output only the administrator name\n";
 	cerr << "\t-e               Output only the administrator email address\n";
 	cerr << "\t-x               Output only the xslt processing command\n";
+	cerr << "\t-w               Output only the web_cache state\n";
 	cerr << "\n";
 	cerr << "Output various lurker settings from the config file for use in shell scripts.\n";
 	cerr << "Do not use sed/grep/etc, instead use this as it respects include.\n";
@@ -63,8 +64,9 @@ int main(int argc, char** argv)
 	bool        admin_name    = false;
 	bool        admin_address = false;
 	bool        xslt          = false;
+	bool        web_cache     = false;
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:danex?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:danexw?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -90,6 +92,10 @@ int main(int argc, char** argv)
 		case 'x':
 			++fields;
 			xslt = true;
+			break;
+		case 'w':
+			++fields;
+			web_cache = true;
 			break;
 		default:
 			help(argv[0]);
@@ -121,6 +127,7 @@ int main(int argc, char** argv)
 	if (!fields || admin_name)    cout << cfg.admin_name    << "\n";
 	if (!fields || admin_address) cout << cfg.admin_address << "\n";
 	if (!fields || xslt)          cout << cfg.xslt          << "\n";
+	if (!fields || web_cache)     cout << (cfg.web_cache?"on":"off") << "\n";
 	
 	return 0;
 }

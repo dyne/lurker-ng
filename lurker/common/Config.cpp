@@ -1,4 +1,4 @@
-/*  $Id: Config.cpp,v 1.12 2003-06-23 14:38:41 terpstra Exp $
+/*  $Id: Config.cpp,v 1.13 2003-06-25 11:58:40 terpstra Exp $
  *  
  *  Config.cpp - Knows how to load the config file
  *  
@@ -39,7 +39,8 @@ Config::Config()
    archive("Unconfigured Host"),
    admin_name("Unset admin name"),
    admin_address("Unset admin address"),
-   xslt("no xslt configured")
+   xslt("no xslt configured"),
+   web_cache(true)
 {
 }
 
@@ -259,6 +260,18 @@ int Config::process_command(const string& key, const string& val, const string& 
 	else if (key == "xslt")
 	{
 		xslt = val;
+	}
+	else if (key == "web_cache")
+	{
+		if (val == "off" || val == "false")
+			web_cache = false;
+		else if (val == "on" || val == "true")
+			web_cache = true;
+		else
+		{
+			error << "web_cache must be set to on/off or true/false!" << endl;
+			return -1;
+		}
 	}
 	else if (key == "include")
 	{
