@@ -1,10 +1,10 @@
 /* Copyright: Public domain
  * Produced with reg2c for wesley@terpstra.ca
- * cvs id tag: $Id: art.cpp,v 1.3 2003-06-12 21:16:39 terpstra Exp $
+ * cvs id tag: $Id: art.cpp,v 1.4 2003-06-12 21:30:41 terpstra Exp $
  *
- * Regular expression: 
+ * Regular expression: (
 ((-- (
-[-	-ÿ]+)+)|([	 ][-	-ÿ]+))
+[-	-ÿ]+)+)|([	 ][-	-ÿ]+)))+
  */
 
 const unsigned char* art_scan_pass1(const unsigned char* s, const unsigned char* e)
@@ -96,7 +96,7 @@ art_scan_pass16:
 const unsigned char* art_scan_pass2(const unsigned char* s, const unsigned char* e)
 {
 	const unsigned char* last = 0;
-	goto art_scan_pass24;
+	goto art_scan_pass241;
 	
 art_scan_pass20:
 	return last;
@@ -108,61 +108,63 @@ art_scan_pass21:
 	case 0: 
 		goto art_scan_pass20;
 	case 10: 
-		goto art_scan_pass29;
+		goto art_scan_pass246;
 	default: goto art_scan_pass21;
 	}
-art_scan_pass23:
+art_scan_pass226:
 	last = s;
 	if (s == e) return last;
 	switch (*s++)
 	{
-	case 0: case 10: 
+	case 0: 
 		goto art_scan_pass20;
-	default: goto art_scan_pass23;
+	case 10: 
+		goto art_scan_pass242;
+	default: goto art_scan_pass226;
 	}
-art_scan_pass24:
+art_scan_pass241:
 	if (s == e) return last;
 	switch (*s++)
 	{
 	case 10: 
-		goto art_scan_pass25;
+		goto art_scan_pass242;
 	default: goto art_scan_pass20;
 	}
-art_scan_pass25:
+art_scan_pass242:
 	if (s == e) return last;
 	switch (*s++)
 	{
 	case 45: 
-		goto art_scan_pass26;
+		goto art_scan_pass243;
 	case 9: case 32: 
-		goto art_scan_pass211;
+		goto art_scan_pass251;
 	default: goto art_scan_pass20;
 	}
-art_scan_pass26:
+art_scan_pass243:
 	if (s == e) return last;
 	switch (*s++)
 	{
 	case 45: 
-		goto art_scan_pass27;
+		goto art_scan_pass244;
 	default: goto art_scan_pass20;
 	}
-art_scan_pass27:
+art_scan_pass244:
 	if (s == e) return last;
 	switch (*s++)
 	{
 	case 32: 
-		goto art_scan_pass28;
+		goto art_scan_pass245;
 	default: goto art_scan_pass20;
 	}
-art_scan_pass28:
+art_scan_pass245:
 	if (s == e) return last;
 	switch (*s++)
 	{
 	case 10: 
-		goto art_scan_pass29;
+		goto art_scan_pass246;
 	default: goto art_scan_pass20;
 	}
-art_scan_pass29:
+art_scan_pass246:
 	if (s == e) return last;
 	switch (*s++)
 	{
@@ -170,13 +172,13 @@ art_scan_pass29:
 		goto art_scan_pass20;
 	default: goto art_scan_pass21;
 	}
-art_scan_pass211:
+art_scan_pass251:
 	if (s == e) return last;
 	switch (*s++)
 	{
 	case 0: case 10: 
 		goto art_scan_pass20;
-	default: goto art_scan_pass23;
+	default: goto art_scan_pass226;
 	}
 }
 
