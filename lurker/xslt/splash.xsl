@@ -216,7 +216,7 @@
     </td>
    </tr>
    <tr>
-    <td><xsl:copy-of select="$appearin"/></td>
+    <td><xsl:copy-of select="$appearinlist"/></td>
     <td class="center">
      <select name="list">
       <option value=""><xsl:value-of select="$all-li"/></option>

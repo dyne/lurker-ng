@@ -20,7 +20,7 @@
  <xsl:variable name="cc">CC</xsl:variable>
  <xsl:variable name="irt">In-Reply-To</xsl:variable>
  <xsl:variable name="fus">Follow-Ups</xsl:variable>
- <xsl:variable name="appearin">Appearing in</xsl:variable>
+ <xsl:variable name="appearinmbox">Appearing in</xsl:variable>
  <xsl:variable name="mailbox">the mailbox</xsl:variable>
  <xsl:variable name="mailboxof">of</xsl:variable>
  
@@ -28,6 +28,7 @@
  <xsl:variable name="ofdate">of</xsl:variable>
  <xsl:variable name="datedivide">/</xsl:variable>
 
+ <xsl:variable name="appearinlist">Appearing in</xsl:variable>
  <xsl:variable name="mess">Messages</xsl:variable>
  <xsl:variable name="message">message</xsl:variable>
  <xsl:variable name="threads">New Topics</xsl:variable>

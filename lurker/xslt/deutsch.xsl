@@ -20,14 +20,15 @@
  <xsl:variable name="cc">Kopie</xsl:variable>
  <xsl:variable name="irt">Antwort-Auf</xsl:variable>
  <xsl:variable name="fus">Beantwortet-Von</xsl:variable>
- <xsl:variable name="appearin">Auffindbar</xsl:variable>
+ <xsl:variable name="appearinmbox">Auffindbar im</xsl:variable>
  <xsl:variable name="mailboxof">von</xsl:variable>
- <xsl:variable name="mailbox">im Briefkasten</xsl:variable>
+ <xsl:variable name="mailbox">Briefkasten</xsl:variable>
 
  <xsl:variable name="thedate">den</xsl:variable>
  <xsl:variable name="ofdate"></xsl:variable>
  <xsl:variable name="datedivide"></xsl:variable>
 
+ <xsl:variable name="appearinlist">In Liste</xsl:variable>
  <xsl:variable name="mess">Nachrichten</xsl:variable>
  <xsl:variable name="message">Nachricht</xsl:variable>
  <xsl:variable name="threads">Neues Diskussionsthema</xsl:variable>
@@ -50,7 +51,7 @@
  <xsl:variable name="all-mo">Alle Monate</xsl:variable>
  <xsl:variable name="jan">Januar</xsl:variable>
  <xsl:variable name="feb">Februar</xsl:variable>
- <xsl:variable name="mar">M&auml;rz</xsl:variable>
+ <xsl:variable name="mar">März</xsl:variable>
  <xsl:variable name="apr">April</xsl:variable>
  <xsl:variable name="may">Mai</xsl:variable>
  <xsl:variable name="jun">Juni</xsl:variable>

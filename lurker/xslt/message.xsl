@@ -196,7 +196,7 @@
  </xsl:if>
 
  <xsl:if test="count(list) != 1"><p/></xsl:if>
- <xsl:value-of select="$appearin"/>
+ <xsl:value-of select="$appearinmbox"/>
  <xsl:text> </xsl:text>
  <a href="../mbox/{mid}.txt"><xsl:value-of select="$mailbox"/></a>
  <xsl:text> </xsl:text>
