@@ -25,6 +25,7 @@ v0.7:
 	Give nice error messages for non-existant messages
 	Don't reorder or prune chars from search terms
 	Don't import the empty string
+	Searches for keys with %, /, and + work
 
 v0.6:
 	Jam replaces automake + overkill autoconf madness; hooray!

@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.5 2003-04-25 21:54:43 terpstra Exp $
+/*  $Id: search.cpp,v 1.6 2003-04-28 00:03:27 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -222,9 +222,15 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	for (vector<string>::iterator i = tokens.begin(); i != tokens.end(); ++i)
 	{
-		if ((ok = backwardk.keyword(*i)) != "")
+		string& key = *i;
+		// we need to translate '!' to '/'
+		string::size_type j;
+		for (j = 0; j < key.length(); ++j)
+			if (key[j] == '!') key[j] = '/';
+		
+		if ((ok = backwardk.keyword(key)) != "")
 			break;
-		if ((ok = forwardk.keyword(*i)) != "")
+		if ((ok = forwardk.keyword(key)) != "")
 			break;
 	}
 	
@@ -293,7 +299,10 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
-	Cache cache(cfg, "search", param);
+	Cache cache(cfg, "search", 
+		param.substr(0, o) + 
+		keys + 	// this is transformed so the webserver can eat it
+		param.substr(e, string::npos));
 	
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/render.xsl\"?>\n"

@@ -12,7 +12,6 @@ Unfulfilled requirements:
 	German pot
 
 BUGS:
-	There is a bug with searching for '+': it is a space!
 	Need a better way to clean cache.
 	Timezones suck. Need to localize times to the browser.
 	There is a slight bug in advance() pre-commit post-insert.
