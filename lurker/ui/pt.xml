@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <text
- language="Português"
+ language="Idioma"
  
  thread="Artigo"
  subject="Assunto"
@@ -26,7 +26,7 @@
  group="Groupo"
  all-lists="Qualquer mailing list"
  all-groups="Qualquer grupo de mailing list"
- all-langs="Qualquer língua"
+ all-langs="Qualquer idioma"
  missing-lang=" - em falta no pt.xml"
  offline=" (desligado)"
  deleted-message="mensagem apagada"
