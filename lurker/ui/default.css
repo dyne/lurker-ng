@@ -220,4 +220,4 @@ div.squash {
 .mailto { }  /* "mailto" elements used inside of message's mime contents */
 .url { }     /* "url" elements used inside of message's mime contents */
 .quote { }   /* "quote" elements used inside of message's mime contents */
-.art { }     /* "art" elements used inside of message's mime contents */
+.art { margin: 0em; } /* "art" elements used inside of message's mime contents */
