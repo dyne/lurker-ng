@@ -56,7 +56,7 @@
     <img src="../imgs/bar.png" height="{(number(.)*21 div $maxval)+1}" width="5"/>
    </xsl:for-each>
   </td>
-  <td nowrap="NOWRAP" align="right">
+  <td align="right">
    <xsl:value-of select="sum(day)"/>
   </td>
  </xsl:element>
@@ -85,8 +85,8 @@
      <tr><th colspan="2"><xsl:value-of select="$jump-to-date"/></th></tr>
      <tr>
       <td>
-       <!-- make this the same height as mindex -->
-       <img src="../imgs/a.png" width="1" height="24"/>
+        <!-- make this the same height as mindex -->
+        <img src="../imgs/a.png" width="1" height="24"/>
       </td>
       <td nowrap="NOWRAP" align="center" width="100%">
        <form action="{server/cgi-url}/jump.cgi">
@@ -102,7 +102,7 @@
       </td>
      </tr>
      <tr>
-      <td align="center" colspan="2">
+      <td colspan="2" align="center">
        [ <a href="../mindex/{list/id}@{$last-date}.{$ext}"><xsl:value-of select="$newest-messages"/></a> ]
        [ <a href="../splash/index.{$ext}#{list/group}"><xsl:value-of select="$jump-group"/></a> ]
        <xsl:if test="list/email/@address">
@@ -119,11 +119,15 @@
    
    <div class="body">
     <table class="index">
+     <col width="2*" align="left"/>
+     <col width="1*" align="left"/>
+     <col width="0*" align="right"/>
+     <col width="0*" align="right"/>
      <tr>
-      <th><xsl:value-of width="2*" select="$new-threads"/></th>
-      <th><xsl:value-of width="1*" select="$recent-poster"/></th>
-      <th><xsl:value-of width="0*" select="$activity-chart"/></th>
-      <th><xsl:value-of width="0*" select="$post-count"/></th>
+      <th><xsl:value-of select="$new-threads"/></th>
+      <th><xsl:value-of select="$recent-poster"/></th>
+      <th><xsl:value-of select="$activity-chart"/></th>
+      <th><xsl:value-of select="$post-count"/></th>
      </tr>
      <xsl:apply-templates mode="newthreads" select="row"/>
     </table>
@@ -140,18 +144,28 @@
    
    <div class="footer">
     <table class="navigation">
-     <tr><th colspan="3"><xsl:value-of select="$search-list"/></th></tr>
-     <tr><td width="50%">&#160;</td><td nowrap="NOWRAP">
-      <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">
-       <input type="hidden" name="doc-url" value="{server/doc-url}"/>
-       <input type="hidden" name="format"  value="{$ext}"/>
-       <input type="text"   name="query"   value="ml:{list/id} " class="longtext"/>
-       <input type="submit" name="submit"  value="{$search}!"/><br/>
+     <tr><th colspan="2"><xsl:value-of select="$search-list"/></th></tr>
+     <tr>
+      <td>
+        <!-- make this the same height as mindex -->
+        <img src="../imgs/a.png" width="1" height="24"/>
+      </td>
+      <td nowrap="NOWRAP" align="center">
+       <form action="{server/cgi-url}/keyword.cgi" accept-charset="UTF-8">
+        <input type="hidden" name="doc-url" value="{server/doc-url}"/>
+        <input type="hidden" name="format"  value="{$ext}"/>
+        <input type="text"   name="query"   value="ml:{list/id} " class="longtext"/>
+        <input type="submit" name="submit"  value="{$search}!"/>
+       </form>
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2" align="center">
        <xsl:value-of select="$use-special-word-list"/>
        <b>ml:<xsl:value-of select="list/id"/></b>
        <xsl:value-of select="$to-search-list"/>
-      </form>
-     </td><td width="50%">&#160;</td></tr>
+      </td>
+     </tr>
     </table>
     <xsl:call-template name="lurker-signature"/>
    </div>

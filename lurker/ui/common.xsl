@@ -43,6 +43,10 @@
 <xsl:variable name="post-count" select="'Posts'"/>
 <xsl:variable name="activity-chart" select="'Activity'"/>
 
+<xsl:variable name="search-thread" select="'Search for messages within this thread which contain the following keywords:'"/>
+<xsl:variable name="use-special-word-thread" select="'Use the keyword '"/>
+<xsl:variable name="to-search-thread" select="' to restrict your search to this thread.'"/>
+
 <xsl:variable name="jan">January</xsl:variable>
 <xsl:variable name="feb">February</xsl:variable>
 <xsl:variable name="mar">March</xsl:variable>
