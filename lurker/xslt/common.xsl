@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <xsl:stylesheet 
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xslns:xf="http://www.w3.org/2002/08/xquery-functions"
+    xmlns:xf="http://www.w3.org/2002/08/xquery-functions"
     xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
 
@@ -48,7 +48,6 @@
 <xsl:variable name="uri-input">The@dog-z went/_&#127;_%ab%zu%c</xsl:variable>
 <xsl:variable name="uri-output">The%40dog-z%20went%2F_%7F_%ab%25zu%25c</xsl:variable>
 
-<xsl:variable name="have-escape-uri" select="false()"/>
 <!-- "escape-uri($uri-input, true()) = $uri-output" -->
 
 <!-- According to the RFC, non-ascii chars will be utf-8 encoded and escaped
@@ -106,18 +105,29 @@
 <xsl:template name="my-escape-uri">
  <xsl:param name="str"/>
  <xsl:param name="allow-utf8"/>
- 
- <xsl:choose>
-  <xsl:when test="$have-escape-uri">
-<!--   <xsl:value-of select="escape-uri($str, true())"/> -->
-  </xsl:when>
-  <xsl:otherwise>
-   <xsl:call-template name="do-escape-uri">
-    <xsl:with-param name="str" select="$str"/>
-    <xsl:with-param name="allow-utf8" select="$allow-utf8"/>
-   </xsl:call-template>
-  </xsl:otherwise>
- </xsl:choose>
+
+ <!-- We use xsl:if instead of choose for the function-available to assist
+  compiling xslt implementations -->
+
+ <xsl:if test="function-available('xf:escape-uri')">
+  <xsl:choose>
+   <xsl:when test="xf:escape-uri($uri-input, true()) = $uri-output">
+    <xsl:value-of select="xf:escape-uri($str, true())"/>
+   </xsl:when>
+   <xsl:otherwise>
+    <xsl:call-template name="do-escape-uri">
+     <xsl:with-param name="str" select="$str"/>
+     <xsl:with-param name="allow-utf8" select="$allow-utf8"/>
+    </xsl:call-template>
+   </xsl:otherwise>
+  </xsl:choose>
+ </xsl:if>
+ <xsl:if test="not(function-available('xf:escape-uri'))">
+  <xsl:call-template name="do-escape-uri">
+   <xsl:with-param name="str" select="$str"/>
+   <xsl:with-param name="allow-utf8" select="$allow-utf8"/>
+  </xsl:call-template>
+ </xsl:if>
 </xsl:template>
 
 <!-- Encode email headers with charset wrappers -->
