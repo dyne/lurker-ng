@@ -1,3 +1,6 @@
+v1.0:
+	Froze the 1.* series against all changes other than bug fixes
+
 v0.10:
 	New-Topics and Old-Topics should show the subject
 	Output "Permission denied" instead of "Bad file descriptor"
