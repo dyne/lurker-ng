@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.19 2002-02-12 09:00:59 terpstra Exp $
+/*  $Id: service.c,v 1.20 2002-02-12 09:12:43 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -246,6 +246,35 @@ static int my_service_write_int(
 	char buf[20];
 	sprintf(&buf[0], "%d", id);
 	return my_service_buffer_write(fd, &buf[0]);
+}
+
+static int my_service_write_url(
+	st_netfd_t fd,
+	const char* buf)
+{
+	char hex[8];
+	const char* start;
+
+	for (start = buf; *buf; buf++)
+	{
+		if (!isalnum(*buf))
+		{
+			snprintf(&hex[0], sizeof(hex), "%%%2X", *buf);
+			
+			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+				return -1;
+			if (my_service_write_str(fd, &hex[0]) != 0)
+				return -1;
+			
+			start = buf+1;
+		}
+	}
+	
+	if (my_service_buffer_writel(fd, start, buf - start) != 0)
+		return -1;
+	
+	return 0;
+	
 }
 
 static int my_service_xml_head(
@@ -760,15 +789,17 @@ static int my_service_search(
 	}
 	
 	/* Ok! Now, lets start putting out the data */
-	if (my_service_xml_head(fd)                            != 0) goto my_service_search_error1;
-	if (my_service_buffer_write(fd, "<search>\n <offset>") != 0) goto my_service_search_error1;
-	if (my_service_write_int(fd, offset)                   != 0) goto my_service_search_error1;
-	if (my_service_buffer_write(fd, "</offset>\n <query>") != 0) goto my_service_search_error1;
-	if (my_service_write_str(fd, delim+1)                  != 0) goto my_service_search_error1;
-	if (my_service_buffer_write(fd, "</query>\n <hits>")   != 0) goto my_service_search_error1;
-	if (my_service_write_int(fd, 0)                        != 0) goto my_service_search_error1;
-	if (my_service_buffer_write(fd, "</hits>\n")           != 0) goto my_service_search_error1;
-	if (my_service_server(fd)                              != 0) goto my_service_search_error1;
+	if (my_service_xml_head(fd)                             != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(fd, "<search>\n <offset>")  != 0) goto my_service_search_error1;
+	if (my_service_write_int(fd, offset)                    != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(fd, "</offset>\n <query>")  != 0) goto my_service_search_error1;
+	if (my_service_write_str(fd, delim+1)                   != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(fd, "</query>\n <queryurl>")!= 0) goto my_service_search_error1;
+	if (my_service_write_url(fd, delim+1)                   != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(fd, "</queryurl>\n <hits>") != 0) goto my_service_search_error1;
+	if (my_service_write_int(fd, 0)                         != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(fd, "</hits>\n")            != 0) goto my_service_search_error1;
+	if (my_service_server(fd)                               != 0) goto my_service_search_error1;
 	
 	if (offset != 0)
 	{
