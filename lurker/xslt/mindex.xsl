@@ -105,7 +105,7 @@
   <select name="year">
    <xsl:call-template name="option-range">
     <xsl:with-param name="start">1990</xsl:with-param>
-    <xsl:with-param name="last">2002</xsl:with-param>
+    <xsl:with-param name="last">2004</xsl:with-param>
     <xsl:with-param name="select"><xsl:value-of select="year"/></xsl:with-param>
    </xsl:call-template>
   </select>
