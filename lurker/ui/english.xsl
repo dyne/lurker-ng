@@ -10,7 +10,7 @@
 <xsl:variable name="to" select="'To'"/>
 <xsl:variable name="cc" select="'CC'"/>
 
-<xsl:variable name="tree-context" select="'This message is part of a thread which may be navigated here:'"/>
+<xsl:variable name="tree-context" select="'This message is part of the following thread:'"/>
 <xsl:variable name="full-tree" select="'the complete thread tree sorted by date'"/>
 <xsl:variable name="appears-in" select="'This message was posted to the following mailing lists:'"/>
 <xsl:variable name="list-info" select="'Mailing List Info'"/>
