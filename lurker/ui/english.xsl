@@ -9,6 +9,7 @@
 <xsl:variable name="date" select="'Date'"/>
 <xsl:variable name="to" select="'To'"/>
 <xsl:variable name="cc" select="'CC'"/>
+<xsl:variable name="attachments" select="'Attachments'"/>
 
 <xsl:variable name="tree-context" select="'This message is part of the following thread:'"/>
 <xsl:variable name="full-tree" select="'the complete thread tree sorted by date'"/>
@@ -67,5 +68,6 @@
 <xsl:variable name="unknown-address" select="'Someone'"/>
 <xsl:variable name="posted-at" select="' at '"/>
 <xsl:variable name="admin-by" select="'Administrated by:'"/>
+<xsl:variable name="version" select="'version'"/>
 
 </xsl:stylesheet>

@@ -250,7 +250,7 @@ timezone(<xsl:value-of select="timestamp"/>);//</xsl:comment></script>
   <tr>
    <td class="mini">
     <b><a href="{$lurker-url}">Lurker</a></b>
-    (version <xsl:value-of select="server/version"/>)
+    (<xsl:value-of select="$version"/> <xsl:value-of select="server/version"/>)
    </td>
    <td class="mini" align="right">
     <xsl:value-of select="$admin-by"/>
