@@ -5,6 +5,8 @@ v0.7:
 	Don't include control chars in output xml; drop them
 	Added mejo's manpage for lurker-index
 	Open mode of 0666 instead of 0644; rely on the umask
+	Support override for lurker.cgi location
+	Replace list_host with archive
 
 v0.6:
 	Jam replaces automake + overkill autoconf madness; hooray!

@@ -106,7 +106,8 @@
  <h2>Lurker <xsl:value-of select="$search"/></h2>
 
  <table width="100%"><tr><td width="50%">&#160;</td><td>
- <form action ="../keyword.cgi">
+ <form action="{server/cgi-url}/keyword.cgi">
+  <input type="hidden" name="doc-url" value="{server/doc-url}"/>
   <input type="hidden" name="format" value="{$ext}"/>
   <input type="text" name="query" class="longtext"/>
   <input type="submit" name="submit" value="{$search}!"/>

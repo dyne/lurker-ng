@@ -24,9 +24,10 @@
  </h2>
  
  <div id="smSearch">
-  <form action="../keyword.cgi">
-   <input type="hidden" name="format" value="{$ext}"/>
-   <input type="text"   name="query"  value="{translate(query,',',' ')}" class="longtext"/>
+  <form action="{server/cgi-url}/keyword.cgi">
+   <input type="hidden" name="doc-url" value="{server/doc-url}"/>
+   <input type="hidden" name="format"  value="{$ext}"/>
+   <input type="text"   name="query"   value="{translate(query,',',' ')}" class="longtext"/>
    <xsl:call-template name="date-fields">
     <xsl:with-param name="date" select="$jump-date"/>
    </xsl:call-template>

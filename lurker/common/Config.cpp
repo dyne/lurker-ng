@@ -1,4 +1,4 @@
-/*  $Id: Config.cpp,v 1.2 2003-04-21 18:25:31 terpstra Exp $
+/*  $Id: Config.cpp,v 1.3 2003-04-23 22:57:41 terpstra Exp $
  *  
  *  Config.cpp - Knows how to load the config file
  *  
@@ -217,9 +217,9 @@ int Config::process_command(const string& key, const string& val)
 	{
 		admin_address = val;
 	}
-	else if (key == "list_host")
+	else if (key == "archive")
 	{
-		host = val;
+		archive = val;
 	}
 	else if (key == "xslt")
 	{
@@ -273,12 +273,16 @@ ostream& operator << (ostream& o, const Config& c)
 	//	"%a, %d %b %Y %H:%M:%S GMT", tm);
 	
 	o << "<server>"
-	  << "<version>" << VERSION << "</version>";
+	  << "<version>" << VERSION << "</version>"
+	  << "<doc-url>" << c.docUrl << "</doc-url>"
+	  << "<cgi-url>" << c.cgiUrl << "</cgi-url>"
+	  << "<archive>";
 	
-	if (c.host.length() > 0)
-		o << "<hostname>" << xmlEscape << c.host << "</hostname>";
-	  
-	o  << "<email";
+	if (c.archive.length() > 0)
+		o << xmlEscape << c.archive;
+	else	o << "Some Mailing List Archive";
+	
+	o << "</archive><email";
 	if (c.admin_address.length() > 0)
 		o << " address=\"" << xmlEscape << c.admin_address << "\"";
 	if (c.admin_name.length() > 0)

@@ -1,4 +1,4 @@
-/*  $Id: keyword.cpp,v 1.2 2003-04-21 18:26:20 terpstra Exp $
+/*  $Id: keyword.cpp,v 1.3 2003-04-23 22:57:42 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -71,7 +71,7 @@ int main()
 		args["list"].c_str(), args["list"].length(), 
 		LU_KEYWORD_LIST, &push_key, 0, 0);
 	
-	string url = "search/" + string(buf) + ".00000000@";
+	string url = args["doc-url"] + "/search/" + string(buf) + ".00000000@";
 	set<string>::iterator i;
 	for (i = keys.begin(); i != keys.end(); ++i)
 	{

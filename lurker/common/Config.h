@@ -1,4 +1,4 @@
-/*  $Id: Config.h,v 1.3 2003-04-22 13:22:05 terpstra Exp $
+/*  $Id: Config.h,v 1.4 2003-04-23 22:57:42 terpstra Exp $
  *  
  *  Config.h - Knows how to load the config file
  *  
@@ -48,17 +48,23 @@ struct List
 
 class Config
 {
+ private:
+ 	List* list;
+ 	
  public:
  	typedef map<string, List> Lists;
  	
  	Lists lists;
- 	List* list;
  	 	
  	string	dbdir;
- 	string	host;
+ 	string	archive;
  	string	admin_name;
  	string	admin_address;
  	string	xslt;
+ 	
+ 	// parameters specific for rendering
+ 	string	docUrl;
+ 	string	cgiUrl;
  	
  	stringstream error;
  	

@@ -495,12 +495,12 @@
 <!-- Format server information segments -->
 
 <xsl:template match="server" mode="title">
-  Lurker@<xsl:value-of select="hostname"/> 
+  <xsl:value-of select="archive"/> 
 </xsl:template>
 
 <xsl:template match="server" mode="header">
  <a href="../splash/index.{$ext}">
-  Lurker@<xsl:value-of select="hostname"/>
+  <xsl:value-of select="archive"/>
  </a>
 </xsl:template>
 

@@ -1,4 +1,4 @@
-/*  $Id: parse.cpp,v 1.2 2003-04-21 18:26:21 terpstra Exp $
+/*  $Id: parse.cpp,v 1.3 2003-04-23 22:57:42 terpstra Exp $
  *  
  *  parse.cpp - Deal with CGI ugliness
  *  
@@ -100,38 +100,15 @@ map<string, string> getParams()
 
 int redirectUrl(const string& url)
 {
-	char* u = getenv("REQUEST_URI");
-	string uri = u?u:"";
-	
-	char* n = getenv("SERVER_NAME");
-	char* p = getenv("SERVER_PORT");
-	
-	if (n)
-	{
-		string host = "http://" + string(n);
-		if (p) host += ":" + string(p);
-		uri = host + uri;
-	}
-	
-	// Prune off first '?'
-	string::size_type x = uri.find('?');
-	if (x != string::npos) uri.resize(x);
-	
-	// Prune off last '/'
-	string::size_type y = uri.rfind('/');
-	if (y != string::npos) uri.resize(y);
-	
-	// It is now relative to the request
-	
 	cout << "Status: 303 Moved Permanently\r\n"
-	     << "Location: " << uri << "/" << url << "\r\n"
+	     << "Location: " << url << "\r\n"
 	     << "Content-type: text/html\r\n\r\n"
 	     << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
 	     << "<html><head>\r\n"
 	     << "<title>301 Moved Permanently</title>\r\n"
 	     << "</head><body>\r\n"
 	     << "<h1>Moved Permanently</h1>\r\n"
-	     << "The document has moved <a href=\"" << uri << "/" << url << "\">here</a>.\r\n"
+	     << "The document has moved <a href=\"" << url << "\">here</a>.\r\n"
 	     << "<p><hr>\r\n"
 	     << "</body></html>\r\n";
 	

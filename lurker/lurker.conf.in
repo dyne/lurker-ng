@@ -1,9 +1,8 @@
 # To the user: You will probably want to change the first three options here
 # and add mailing lists at the bottom of the file.
 
-# What name should lurker use when refering to the machine it runs on.
-# This does not need to be correct; it is aesthetic only.
-list_host     = demo-server.org
+# What name should lurker use when refering to the archive?
+archive = Some Mailing List Archive
 
 # This is the administrator information used at the bottom of generated
 # pages. You should probably set it to something useful.

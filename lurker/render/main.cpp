@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.2 2003-04-21 18:26:20 terpstra Exp $
+/*  $Id: main.cpp,v 1.3 2003-04-23 22:57:42 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -27,13 +27,17 @@
 #define _ISOC99_SOURCE
 
 #include <cstdlib>
-#include <iostream>
 #include <cerrno>
+#include <cstring>
+
+#include <iostream>
 #include <string>
 #include <memory>
 #include <vector>
 
 #include "commands.h"
+
+#include <unistd.h>	// chdir
 
 /* #define DEBUG 1 */
 
@@ -106,7 +110,7 @@ void help(const string& about)
 
 int main(int argc, char** argv)
 {
-	string config, request;
+	string config, cdpath, request, host, port, cgipath;
 	const char* tmp;
 	
 #if 0	
@@ -118,9 +122,19 @@ int main(int argc, char** argv)
 	
 	if ((tmp = getenv("QUERY_STRING")) != 0) config  = tmp;
 	if ((tmp = getenv("REQUEST_URI" )) != 0) request = tmp;
+	if ((tmp = getenv("SERVER_NAME" )) != 0) host    = tmp;
+	if ((tmp = getenv("SERVER_PORT" )) != 0) port    = tmp;
+	if ((tmp = getenv("SCRIPT_NAME" )) != 0) cgipath = tmp;
 	
 	if (argc > 1) config  = argv[1];
 	if (argc > 2) request = argv[2];
+	
+	string::size_type csplit;
+	if ((csplit = config.find('?')) != string::npos)
+	{
+		cdpath = config.substr(csplit+1, string::npos);
+		config.resize(csplit);
+	}
 	
 	if (config == "")
 	{
@@ -130,6 +144,16 @@ int main(int argc, char** argv)
 	if (request == "")
 	{
 		help(_("no request set"));
+		return 1;
+	}
+	
+	if (cdpath != "" && chdir(cdpath.c_str()) != 0)
+	{
+		cout << "Status: 200 OK\r\n";
+		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout << error(_("Cannot chdir"), cdpath + ":" + strerror(errno),
+			_("The specified path to the document root could "
+			  "not be entered. Check the argument and permissions."));
 		return 1;
 	}
 	
@@ -158,20 +182,6 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	string::size_type x, y;
-	for (y = x = request.rfind('/'); x != string::npos && x != 0; --x)
-		if (request[x] != '/')
-			break;
-	
-	if (x == 0 || x == string::npos)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Cannot open config file"), "Config::load",
-			cfg.error.str());
-		return 1;
-	}
-	
 	vector<string> tokens;
 	tokenize(request, tokens, "/");
 	if (tokens.size() < 2)
@@ -186,6 +196,16 @@ int main(int argc, char** argv)
 	
 	string param   = tokens[tokens.size()-1];
 	string command = tokens[tokens.size()-2];
+	
+	cfg.cgiUrl = "http://" + host + ":" + port + cgipath;
+	string::size_type psplit;
+	if ((psplit = cfg.cgiUrl.rfind('/')) != string::npos)
+		cfg.cgiUrl.resize(psplit);
+	
+	vector<string>::size_type tok;
+	cfg.docUrl = "http://" + host + ":" + port;
+	for (tok = 0; tok < tokens.size()-2; ++tok)
+		cfg.docUrl += "/" + tokens[tok];
 	
 	// flush all request data in case user made it huge to be an ass
 	tokens.clear();

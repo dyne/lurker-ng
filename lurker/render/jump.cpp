@@ -1,4 +1,4 @@
-/*  $Id: jump.cpp,v 1.2 2003-04-21 18:26:20 terpstra Exp $
+/*  $Id: jump.cpp,v 1.3 2003-04-23 22:57:42 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -49,7 +49,8 @@ int main()
 	strftime(buf, 25, "%Y%m%d.%H%M%S", &tms);
 	
 	return redirectUrl(
-		"mindex/" + 
+		args["doc-url"] +
+		"/mindex/" + 
 		args["list"] + 
 		"@" +
 		buf +

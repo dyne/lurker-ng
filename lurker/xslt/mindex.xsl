@@ -4,9 +4,10 @@
     version="1.0">
 
 <xsl:template name="jump">
- <form action="../jump.cgi">
+ <form action="{server/cgi-url}/jump.cgi">
  [ <b><xsl:value-of select="$jumpto"/></b>
   &#160;&#160;
+  <input type="hidden" name="doc-url" value="{server/doc-url}"/>
   <input type="hidden" name="format" value="{$ext}"/>
   <input type="hidden" name="list" value="{list/id}"/>
 
@@ -65,10 +66,11 @@
 
  <hr/>
 
- <form action="../keyword.cgi" id="smSearch">
-  <input type="hidden" name="format" value="{$ext}"/>
-  <input type="text"   name="query"  value="ml:{list/id} " class="longtext"/>
-  <input type="submit" name="submit" value="{$search}!"/><br/>
+ <form action="{server/cgi-url}/keyword.cgi" id="smSearch">
+  <input type="hidden" name="doc-url" value="{server/doc-url}"/>
+  <input type="hidden" name="format"  value="{$ext}"/>
+  <input type="text"   name="query"   value="ml:{list/id} " class="longtext"/>
+  <input type="submit" name="submit"  value="{$search}!"/><br/>
 
   <xsl:value-of select="$useMl1"/>
   <b>ml:<xsl:value-of select="list/id"/></b>
