@@ -2,18 +2,7 @@ Ideas:
 	errordocument failthrough configable
 
 Unfulfilled requirements:
-	Date goto in mindex
-
-	lurkerctrl
-		show status of lurker
-		stop/start request processing
-		dump cache files
-
 	Better packing of tree
-
-	If we get an HTML only email, we don't do anything smart - just
-	escape all the tags. This is ok, but it would be nice if we stripped
-	them and discarded contents of <head><style>... for instance.
 
 BUGS:
 	We don't check for double append
