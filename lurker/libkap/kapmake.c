@@ -1,4 +1,4 @@
-/*  $Id: kapmake.c,v 1.5 2002-07-09 00:53:54 terpstra Exp $
+/*  $Id: kapmake.c,v 1.6 2002-07-09 09:10:42 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool
  *  
@@ -30,8 +30,6 @@
 #include "../config.h"
 #include "kap.h"
 
-#include <unistd.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>	
 
@@ -48,6 +46,8 @@
 #define _(String) gettext (String)
 #define gettext_noop(String) (String)
 #define N_(String) gettext_noop (String)
+
+#define BLOCK 4096
 
 void help()
 {
@@ -84,8 +84,9 @@ int main(int argc, char * const * argv)
 	const char*	file;
 	char*		key;
 	char*		data;
-	KRecord*	kr;
 	ssize_t		len, klen;
+	size_t		i, amt;
+	char*		buf;
 	
 	ssize_t	sector_size	= 8192;
 	ssize_t	max_key_size	= 100;
@@ -186,13 +187,18 @@ int main(int argc, char * const * argv)
 	{
 		out = kap_append_set_recordsize(k, record_size);
 		if (out != 0) bail(out, "kap_append_set_recordsize");
+		
+		buf = malloc(record_size * BLOCK);
+		if (!buf) bail(ENOMEM, "malloc");
+	}
+	else
+	{
+		buf = 0;
 	}
 	
 	key  = malloc(max_key_size);
 	data = malloc(leaf_size);
 	if (!key || !data) bail(ENOMEM, "malloc");
-	
-	kr = (KRecord*)data;
 	
 	out = kap_open(k, ".", file);
 	if (out != 0) bail(out, "kap_open");
@@ -203,19 +209,37 @@ int main(int argc, char * const * argv)
 			bail(ERANGE, "key_len >= max_key_size");
 		
 		if (fread(key, klen+1, 1, stdin) != 1)
-			bail(errno, "read");
+			bail(errno, "fread");
 		if (key[klen] != ',')
 			bail(EINVAL, _("comma missing"));
 		key[klen] = 0;
 		
-		if (fread(data, len, 1, stdin) != 1)
-			bail(errno, "read");
-		
-		out = kap_btree_write(k, key, data, len);
-		if (out) bail(out, "kap_btree_write");
+		if ((mode & KAP_APPEND) == KAP_APPEND)
+		{
+			for (i = 0; i < len; i += amt)
+			{
+				if (len > i+BLOCK)
+					amt = BLOCK;
+				else
+					amt = len-i;
+				
+				if (fread(buf, record_size, amt, stdin) != amt)
+					bail(errno, "fread");
+				out = kap_append(k, key, buf, amt);
+				if (out) bail(out, "kap_append");
+			}
+		}
+		else
+		{
+			if (fread(data, len, 1, stdin) != 1)
+				bail(errno, "fread");
+			
+			out = kap_btree_write(k, key, data, len);
+			if (out) bail(out, "kap_btree_write");
+		}
 		
 		if (fread(key, 1, 1, stdin) != 1)
-			bail(errno, "read");
+			bail(errno, "fread");
 		if (key[0] != '\n')
 			bail(errno, _("lf missing"));
 	}
