@@ -1,4 +1,4 @@
-/*  $Id: prefix.h,v 1.3 2002-02-10 04:16:48 terpstra Exp $
+/*  $Id: prefix.h,v 1.4 2002-02-10 21:00:18 terpstra Exp $
  *  
  *  prefix.h - What to place in front of keywords we search for
  *  
@@ -44,3 +44,10 @@
 
 /* The longest length a keyword can be */
 #define LU_KEYWORD_LEN		80
+
+/*------------------------------------------------- Public keyword methods */
+
+/* Cleanup the contents of a message id 
+ */
+const char* lu_common_cleanup_id(
+	const char* id);

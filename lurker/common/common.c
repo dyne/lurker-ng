@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.2 2002-02-03 23:40:23 terpstra Exp $
+/*  $Id: common.c,v 1.3 2002-02-10 21:00:18 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -25,7 +25,33 @@
 #define _POSIX_SOURCE
 
 #include "common.h"
+#include "prefix.h"
+
+#include <ctype.h>
 
 /*------------------------------------------------ Public global vars */
 
 message_id lu_common_minvalid = -1;
+
+const char* lu_common_cleanup_id(
+	const char* id)
+{
+	static char buf[80];
+	char* w;
+	char* e;
+	
+	while (isspace(*id)) id++;
+	if (*id == '<') id++;
+	
+	w = &buf[0];
+	e = &buf[sizeof(buf) - 1];
+	
+	while (w != e)
+	{
+		if (isspace(*id) || *id == '>') break;
+		*w++ = *id++;
+	}
+	
+	*w = 0;
+	return &buf[0];
+}
