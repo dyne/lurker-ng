@@ -5,8 +5,8 @@ v0.8:
 	Don't compile network-enabled bits of mimelib
 	Getopt.h is not required and unavailable on some platforms
 	Solaris has no grep -q, use /dev/null
-	Include cstdlib for Solaris (un)setenv
 	Include fcntl for Solaris O_RDONLY
+	Don't use TZ for my_timegm; unsetenv is not in Solaris
 
 v0.7:
 	Made VERSION controlled by one place: configure.ac

@@ -1,4 +1,4 @@
-/*  $Id: MessageId.cpp,v 1.3 2003-05-03 12:16:07 terpstra Exp $
+/*  $Id: MessageId.cpp,v 1.4 2003-05-03 13:21:39 terpstra Exp $
  *  
  *  MessageId.cpp - Helper class for manipulating internal message ids
  *  
@@ -41,20 +41,21 @@ inline int dehex(char x)
 
 time_t my_timegm(struct tm* tm)
 {
-	time_t ret;
-	char* tz;
+	static bool	initd = false;
+	static time_t	delta;
 	
-	tz = getenv("TZ");
-	setenv("TZ", "", 1);
-	tzset();
+	if (!initd)
+	{	// use 'x' to calculate local time zone offset portably
+		time_t x = time(0);
+		time_t y = mktime(gmtime(&x));
+		
+		delta = x - y;
+		initd = true;
+	}
 	
-        ret = mktime(tm);
-        
-        if (tz)	setenv("TZ", tz, 1);
-        else	unsetenv("TZ");
-        tzset();
-        
-        return ret;
+	struct tm hack = *tm;
+	hack.tm_sec += delta;
+	return mktime(&hack);
 }
 
 /** Note; the serialized time is always in UTC!
