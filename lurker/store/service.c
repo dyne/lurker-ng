@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.38 2002-05-04 03:36:09 terpstra Exp $
+/*  $Id: service.c,v 1.39 2002-05-04 05:34:22 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -780,7 +780,6 @@ static int my_service_getmbox(
 	const char* request,
 	const char* ext)
 {
-	char*		eptr;
 	message_id	id;
 	lu_addr		bits;
 	
@@ -806,14 +805,12 @@ static int my_service_getmbox(
 		goto my_service_getmbox_error0;
 	}
 	
-	id = strtoul(request, &eptr, 0);
-	if (eptr == request || (*eptr && !isspace(*eptr)))
-	{	/* There was nothing valid, or it did not end in whitespace
-		 * or a null.
-		 */
+	id = lu_summary_lookup_mid(request);
+	if (id == lu_common_minvalid)
+	{
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received a request for a non-numeric message",
+			"Message does not exist",
+			"Lurkerd received a request for a non-existant message",
 			request);
 		goto my_service_getmbox_error0;
 	}
@@ -897,6 +894,7 @@ static int my_service_attach(
 	message_id	id;
 	int		aid;
 	lu_addr		bits;
+	char*		mid;
 	
 	lu_word		list_id;
 	lu_word		mbox_id;
@@ -925,14 +923,26 @@ static int my_service_attach(
 		goto my_service_attach_error0;
 	}
 	
-	if (sscanf(request, "%d@%d", &id, &aid) != 2)
+	mid = strchr(request, '@');
+	if (!mid || sscanf(request, "%d@", &aid) != 1)
 	{	/* There was nothing valid, or it did not end in whitespace
 		 * or a null.
 		 */
 		my_service_error(h,
 			"Malformed request",
-			"Lurkerd received a request for a non-numeric message",
+			"Lurkerd received a request for a non-numeric attachment",
 			request);
+		goto my_service_attach_error0;
+	}
+	mid++;
+	
+	id = lu_summary_lookup_mid(mid);
+	if (id == lu_common_minvalid)
+	{
+		my_service_error(h,
+			"Message does not exist",
+			"Lurkerd received a request for a non-existant message",
+			mid);
 		goto my_service_attach_error0;
 	}
 	
@@ -1043,7 +1053,6 @@ static int my_service_getmsg(
 	const char* request,
 	const char* ext)
 {
-	char*		eptr;
 	message_id	id;
 	lu_addr		bits;
 	
@@ -1074,14 +1083,12 @@ static int my_service_getmsg(
 		goto my_service_getmsg_error0;
 	}
 	
-	id = strtoul(request, &eptr, 0);
-	if (eptr == request || (*eptr && !isspace(*eptr)))
-	{	/* There was nothing valid, or it did not end in whitespace
-		 * or a null.
-		 */
+	id = lu_summary_lookup_mid(request);
+	if (id == lu_common_minvalid)
+	{
 		my_service_error(h,
-			"Malformed request",
-			"Lurkerd received a request for a non-numeric message",
+			"Message does not exist",
+			"Lurkerd received a request for a non-existant message",
 			request);
 		goto my_service_getmsg_error0;
 	}

@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.13 2002-05-04 04:53:38 terpstra Exp $
+/*  $Id: summary.c,v 1.14 2002-05-04 05:34:22 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -23,7 +23,7 @@
  */
 
 #define _GNU_SOURCE
-// #define DEBUG 1
+/* #define DEBUG 1 */
 
 #include "common.h"
 #include "io.h"
@@ -643,6 +643,28 @@ static int my_summary_reply_link(
 }
 
 /*------------------------------------------------ Public access methods */
+
+message_id lu_summary_lookup_mid(
+	const char* mmessage_id)
+{
+	message_id out = lu_common_minvalid;
+	DBT key;
+	DBT val;
+	
+	memset(&key, 0, sizeof(DBT));
+	memset(&val, 0, sizeof(DBT));
+	
+	key.data = (void*)mmessage_id;
+	key.size = strlen(mmessage_id);
+	val.data = &out;
+	val.ulen = sizeof(out);
+	val.flags = DB_DBT_USERMEM;
+	
+	my_summary_mid_db->get(
+		my_summary_mid_db, 0, &key, &val, 0);
+	
+	return out;
+}
 
 Lu_Summary_Message lu_summary_read_msummary(
 	message_id mid)
@@ -1323,30 +1345,9 @@ int lu_summary_reply_to_resolution(
 	 
 	 if (*reply_to_msg_id)
 	 {	/* Do we reply to anything? */
-	 	snprintf(&key[0], sizeof(key), "%s%s",
-	 		LU_KEYWORD_MESSAGE_ID,
-	 		reply_to_msg_id);
-	 	
-	 	h = lu_breader_new(&key[0]);
-	 	if (h != 0)
-	 	{
-	 		if (lu_breader_records(h) >= 1)
-	 		{	/* We will mark ourselves as only replying
-	 			 * to the first message with a given message
-	 			 * id. -- It DOES happen. *grumble*
-	 			 */
-	 			 
-	 			if (lu_breader_read(h, 0, 1, &buf[0]) != 0)
-	 			{
-	 				lu_breader_free(h);
-	 				return -1;
-	 			}
-	 			
-	 			my_summary_reply_link(id, buf[0]);
-	 		}
-	 		
-	 		lu_breader_free(h);
-	 	}
+	 	buf[0] = lu_summary_lookup_mid(reply_to_msg_id);
+	 	if (buf[0] != lu_common_minvalid)
+ 			my_summary_reply_link(id, buf[0]);
 	 }
 	 
 	 /*!!! If we have the same squishy subject as the target, then

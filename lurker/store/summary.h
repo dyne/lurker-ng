@@ -1,4 +1,4 @@
-/*  $Id: summary.h,v 1.4 2002-05-04 04:39:10 terpstra Exp $
+/*  $Id: summary.h,v 1.5 2002-05-04 05:34:22 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -94,6 +94,11 @@ extern int lu_summary_close(void);
 extern int lu_summary_quit (void);
 
 /*------------------------------------------------- Direct access methods */
+
+/** Look-up a message by message-id.
+ */
+extern message_id lu_summary_lookup_mid(
+	const char* message_id);
 
 /** Grab the summary information record for the specified mid
  */

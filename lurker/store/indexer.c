@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.14 2002-05-03 20:57:34 terpstra Exp $
+/*  $Id: indexer.c,v 1.15 2002-05-04 05:34:22 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -503,7 +503,6 @@ int lu_indexer_import(
 	lu_word		mbox,
 	time_t		stamp,
 	message_id	id,
-	const char*	msg_id,
 	const char*	reply_id)
 {
 	char buf[LU_KEYWORD_LEN+1];
@@ -550,14 +549,6 @@ int lu_indexer_import(
 	my_indexer_push_keyword(&buf[0]);
 	
 	/* Now, push keywords for the message id and reply-to */
-	if (*msg_id)
-	{
-		snprintf(&buf[0], sizeof(buf), "%s%s", 
-			LU_KEYWORD_MESSAGE_ID, 
-			msg_id);
-		my_indexer_push_keyword(&buf[0]);
-	}
-	
 	if (*reply_id)
 	{
 		snprintf(&buf[0], sizeof(buf), "%s%s",

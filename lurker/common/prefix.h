@@ -1,4 +1,4 @@
-/*  $Id: prefix.h,v 1.4 2002-02-10 21:00:18 terpstra Exp $
+/*  $Id: prefix.h,v 1.5 2002-05-04 05:34:22 terpstra Exp $
  *  
  *  prefix.h - What to place in front of keywords we search for
  *  
@@ -36,7 +36,6 @@
 #define LU_KEYWORD_HOUR		"hr:"	/* HouR */
 
 /* lu_reply_to_resolution */
-#define LU_KEYWORD_MESSAGE_ID	"id:"	/* message ID */
 #define LU_KEYWORD_REPLY_TO	"rt:"	/* Reply To id */
 
 /* import processing */
