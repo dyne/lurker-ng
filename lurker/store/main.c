@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.27 2002-05-11 19:24:59 terpstra Exp $
+/*  $Id: main.c,v 1.28 2002-06-04 13:47:14 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -233,9 +233,16 @@ int main(int argc, const char* argv[])
 	
 	sun_addr.sun_family = PF_UNIX;
 	strcpy(&sun_addr.sun_path[0], PACKAGE ".sock");
-	unlink(&sun_addr.sun_path[0]);
 	sun_len = sizeof(sun_addr.sun_family) + strlen(&sun_addr.sun_path[0]) + 1;
 	
+	/* First try connecting to see if lurker is already running */
+	if (connect(sun_fd, (struct sockaddr*)&sun_addr, sun_len) == 0)
+	{
+		fprintf(stderr, "Lurker is already running on this db\n");
+		return 1;
+	}
+	
+	unlink(&sun_addr.sun_path[0]);
 	if (bind(sun_fd, (struct sockaddr*)&sun_addr, sun_len) < 0)
 	{
 		perror("Could not bind abstract domain socket");
