@@ -1,4 +1,4 @@
-SUBDIRS = intl common store xslt render imgs doc po
+SUBDIRS = intl libkap common store xslt render imgs doc po
 
 sysconf_DATA = lurker.conf
 EXTRA_DIST = ABOUT-NLS \
