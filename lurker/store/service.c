@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.22 2002-02-22 01:18:58 terpstra Exp $
+/*  $Id: service.c,v 1.23 2002-02-22 01:56:44 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -41,16 +41,23 @@
 #include <string.h>
 #include <stdlib.h>
 
-/*------------------------------------------------- Private global vars */
+/*------------------------------------------------- Private types */
 
-/* A write buffer for output */
-static char my_service_buffer[4096];
-static int  my_service_used;
+/* We need one of these for each connection - a global will cause much
+ * pain and suffering.
+ */
+typedef struct My_Service_Handle_T
+{
+	char 		buffer[4096];
+	int		used;
+	
+	st_netfd_t	fd;
+}* My_Service_Handle;
 
 /*------------------------------------------------- Private helper methods */
 
 static int my_service_buffer_writel(
-	st_netfd_t fd, 
+	My_Service_Handle h,
 	const char* str,
 	size_t len)
 {
@@ -58,39 +65,39 @@ static int my_service_buffer_writel(
 	
 	while (len)
 	{
-		size_t amt = sizeof(my_service_buffer) - my_service_used;
+		size_t amt = sizeof(h->buffer) - h->used;
 		if (amt > len)
 			amt = len;
 		
-		memcpy(&my_service_buffer[my_service_used], str, amt);
+		memcpy(&h->buffer[h->used], str, amt);
 		
 		str += amt;
 		len -= amt;
-		my_service_used += amt;
+		h->used += amt;
 		
-		if (my_service_used == sizeof(my_service_buffer))
+		if (h->used == sizeof(h->buffer))
 		{
 #ifdef DEBUG
-			write(1, &my_service_buffer[0], sizeof(my_service_buffer));
+			write(1, &h->buffer[0], sizeof(h->buffer));
 #endif
 			
 			/* Tell the caller how big this chunk is */
-			sprintf(&buf[0], "%d\n", sizeof(my_service_buffer));
-			if (st_write(fd, &buf[0], 
+			sprintf(&buf[0], "%d\n", sizeof(h->buffer));
+			if (st_write(h->fd, &buf[0], 
 				strlen(&buf[0]), 5000000) !=
 				strlen(&buf[0]))
 			{
 				return -1;
 			}
 			
-			if (st_write(fd, &my_service_buffer[0],
-				sizeof(my_service_buffer), 5000000) !=
-				sizeof(my_service_buffer))
+			if (st_write(h->fd, &h->buffer[0],
+				sizeof(h->buffer), 5000000) !=
+				sizeof(h->buffer))
 			{
 				return -1;
 			}
 			
-			my_service_used = 0;
+			h->used = 0;
 		}
 	}
 	
@@ -98,57 +105,57 @@ static int my_service_buffer_writel(
 }
 
 static int my_service_buffer_write(
-	st_netfd_t fd, 
-	const char* str)
+	My_Service_Handle	h,
+	const char*		str)
 {
-	return my_service_buffer_writel(fd, str, strlen(str));
+	return my_service_buffer_writel(h, str, strlen(str));
 }
 
 static int my_service_buffer_flush(
-	st_netfd_t fd)
+	My_Service_Handle h)
 {
 	char buf[20];
 	
 #ifdef DEBUG
-	write(1, &my_service_buffer[0], my_service_used);
+	write(1, &h->buffer[0], h->used);
 #endif
 
 	/* Tell the caller how big this chunk is */
-	sprintf(&buf[0], "%d\n", my_service_used);
-	if (st_write(fd, &buf[0],
+	sprintf(&buf[0], "%d\n", h->used);
+	if (st_write(h->fd, &buf[0],
 		strlen(&buf[0]), 5000000) !=
 		strlen(&buf[0]))
 	{
 		return -1;
 	}
 	
-	if (st_write(fd, &my_service_buffer[0], 
-		my_service_used, 5000000) !=
-		my_service_used)
+	if (st_write(h->fd, &h->buffer[0], 
+		h->used, 5000000) !=
+		h->used)
 	{
 		return -1;
 	}
 	
-	if (my_service_used != 0)
+	if (h->used != 0)
 	{	/* Signal end of reply if we haven't already */
 		sprintf(&buf[0], "%d\n", 0);
-		if (st_write(fd, &buf[0], 
+		if (st_write(h->fd, &buf[0], 
 			strlen(&buf[0]), 5000000) !=
 			strlen(&buf[0]))
 		{
 			return -1;
 		}
 		
-		my_service_used = 0;
+		h->used = 0;
 	}
 	
 	return 0;
 }
 
 static int my_service_write_strl(
-	st_netfd_t fd,
-	const char* buf,
-	size_t length)
+	My_Service_Handle	h,
+	const char*		buf,
+	size_t			length)
 {
 	const char* end;
 	const char* start;
@@ -161,57 +168,57 @@ static int my_service_write_strl(
 	end = buf + length;
 	for (start = buf; buf != end; ++buf)
 	{
-switch (*buf) 
+		switch (*buf)
 		{
 		case '\'':
-			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+			if (my_service_buffer_writel(h, start, buf - start) != 0)
 				return -1;
-			if (my_service_buffer_write(fd, "&apos;") != 0)
+			if (my_service_buffer_write(h, "&apos;") != 0)
 				return -1;
 			
 			start = buf+1;
 			break;
 			
 		case '<':
-			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+			if (my_service_buffer_writel(h, start, buf - start) != 0)
 				return -1;
-			if (my_service_buffer_write(fd, "&lt;") != 0)
+			if (my_service_buffer_write(h, "&lt;") != 0)
 				return -1;
 			
 			start = buf+1;
 			break;
 			
 		case '>':
-			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+			if (my_service_buffer_writel(h, start, buf - start) != 0)
 				return -1;
-			if (my_service_buffer_write(fd, "&gt;") != 0)
+			if (my_service_buffer_write(h, "&gt;") != 0)
 				return -1;
 			
 			start = buf+1;
 			break;
 			
 		case '"':
-			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+			if (my_service_buffer_writel(h, start, buf - start) != 0)
 				return -1;
-			if (my_service_buffer_write(fd, "&quot;") != 0)
+			if (my_service_buffer_write(h, "&quot;") != 0)
 				return -1;
 			
 			start = buf+1;
 			break;
 		
 		case '&':
-			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+			if (my_service_buffer_writel(h, start, buf - start) != 0)
 				return -1;
-			if (my_service_buffer_write(fd, "&amp;") != 0)
+			if (my_service_buffer_write(h, "&amp;") != 0)
 				return -1;
 				
 			start = buf+1;
 			break;
 			
 		case '\n':
-			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+			if (my_service_buffer_writel(h, start, buf - start) != 0)
 				return -1;
-			if (my_service_buffer_write(fd, "<br/>\n") != 0)
+			if (my_service_buffer_write(h, "<br/>\n") != 0)
 				return -1;
 			
 			start = buf+1;
@@ -220,7 +227,7 @@ switch (*buf)
 		default:
 			if (iscntrl(*buf) || (*buf & 0x80) != 0)
 			{
-				if (my_service_buffer_writel(fd, start, buf - start) != 0)
+				if (my_service_buffer_writel(h, start, buf - start) != 0)
 					return -1;
 				
 				/*!!! Do some sort of unicode craziness */
@@ -229,31 +236,31 @@ switch (*buf)
 		}
 	}
 	
-	if (my_service_buffer_writel(fd, start, buf - start) != 0)
+	if (my_service_buffer_writel(h, start, buf - start) != 0)
 		return -1;
 	
 	return 0;
 }
 
 static int my_service_write_str(
-	st_netfd_t fd,
-	const char* buf)
+	My_Service_Handle	h,
+	const char*		buf)
 {
-	return my_service_write_strl(fd, buf, strlen(buf));
+	return my_service_write_strl(h, buf, strlen(buf));
 }
 
 static int my_service_write_int(
-	st_netfd_t fd, 
-	message_id id)
+	My_Service_Handle	h, 
+	message_id		id)
 {
 	char buf[20];
 	sprintf(&buf[0], "%d", id);
-	return my_service_buffer_write(fd, &buf[0]);
+	return my_service_buffer_write(h, &buf[0]);
 }
 
 static int my_service_write_url(
-	st_netfd_t fd,
-	const char* buf)
+	My_Service_Handle	h,
+	const char*		buf)
 {
 	char hex[8];
 	const char* start;
@@ -264,16 +271,16 @@ static int my_service_write_url(
 		{
 			snprintf(&hex[0], sizeof(hex), "%%%2X", *buf);
 			
-			if (my_service_buffer_writel(fd, start, buf - start) != 0)
+			if (my_service_buffer_writel(h, start, buf - start) != 0)
 				return -1;
-			if (my_service_write_str(fd, &hex[0]) != 0)
+			if (my_service_write_str(h, &hex[0]) != 0)
 				return -1;
 			
 			start = buf+1;
 		}
 	}
 	
-	if (my_service_buffer_writel(fd, start, buf - start) != 0)
+	if (my_service_buffer_writel(h, start, buf - start) != 0)
 		return -1;
 	
 	return 0;
@@ -281,56 +288,56 @@ static int my_service_write_url(
 }
 
 static int my_service_xml_head(
-	st_netfd_t fd)
+	My_Service_Handle h)
 {
-	return my_service_buffer_write(fd, 
+	return my_service_buffer_write(h, 
 		"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
 		"<?xml-stylesheet type=\"text/xml\" href=\"render.xslt\"?>\n"
 		);
 }
 
 static int my_service_error(
-	st_netfd_t fd,
+	My_Service_Handle h,
 	const char* title,
 	const char* error,
 	const char* detail)
 {
-	if (my_service_xml_head(fd)                              != 0) return -1;
-	if (my_service_buffer_write(fd, "<error>\n <title>")     != 0) return -1;
-	if (my_service_write_str(fd, title)                      != 0) return -1;
-	if (my_service_buffer_write(fd, "</title>\n <message>")  != 0) return -1;
-	if (my_service_write_str(fd, error)                      != 0) return -1;
-	if (my_service_buffer_write(fd, "</message>\n <detail>") != 0) return -1;
-	if (my_service_write_str(fd, detail)                     != 0) return -1;
-	if (my_service_buffer_write(fd, "</detail>\n</error>\n") != 0) return -1;
+	if (my_service_xml_head(h)                              != 0) return -1;
+	if (my_service_buffer_write(h, "<error>\n <title>")     != 0) return -1;
+	if (my_service_write_str(h, title)                      != 0) return -1;
+	if (my_service_buffer_write(h, "</title>\n <message>")  != 0) return -1;
+	if (my_service_write_str(h, error)                      != 0) return -1;
+	if (my_service_buffer_write(h, "</message>\n <detail>") != 0) return -1;
+	if (my_service_write_str(h, detail)                     != 0) return -1;
+	if (my_service_buffer_write(h, "</detail>\n</error>\n") != 0) return -1;
 	
 	return 0;
 }
 
 static int my_service_server(
-	st_netfd_t fd)
+	My_Service_Handle h)
 {
-	if (my_service_buffer_write(fd, " <server>\n  <hostname>")       != 0) return -1;
-	if (my_service_write_str(fd, lu_config_list_host)                != 0) return -1;
-	if (my_service_buffer_write(fd, "</hostname>\n  <email name=\"") != 0) return -1;
-	if (my_service_write_str(fd, lu_config_admin_name)               != 0) return -1;
-	if (my_service_buffer_write(fd, "\" address=\"")                 != 0) return -1;
-	if (my_service_write_str(fd, lu_config_admin_address)            != 0) return -1;
-	if (my_service_buffer_write(fd, "\"/>\n </server>\n")            != 0) return -1;
+	if (my_service_buffer_write(h, " <server>\n  <hostname>")       != 0) return -1;
+	if (my_service_write_str(h, lu_config_list_host)                != 0) return -1;
+	if (my_service_buffer_write(h, "</hostname>\n  <email name=\"") != 0) return -1;
+	if (my_service_write_str(h, lu_config_admin_name)               != 0) return -1;
+	if (my_service_buffer_write(h, "\" address=\"")                 != 0) return -1;
+	if (my_service_write_str(h, lu_config_admin_address)            != 0) return -1;
+	if (my_service_buffer_write(h, "\"/>\n </server>\n")            != 0) return -1;
 	
 	return 0;
 }
 
 static int my_service_addresses(
-	st_netfd_t fd,
+	My_Service_Handle h,
 	ADDRESS* addr, 
 	const char* name)
 {
 	if (!addr) return 0;
 	
-	if (my_service_buffer_write(fd, " <") != 0) return -1;
-	if (my_service_write_str   (fd, name) != 0) return -1;
-	if (my_service_buffer_write(fd, ">" ) != 0) return -1;
+	if (my_service_buffer_write(h, " <") != 0) return -1;
+	if (my_service_write_str   (h, name) != 0) return -1;
+	if (my_service_buffer_write(h, ">" ) != 0) return -1;
 	
 	for (; addr; addr = addr->next)
 	{
@@ -339,30 +346,30 @@ static int my_service_addresses(
 			continue;
 		}
 		
-		if (my_service_buffer_write(fd, "<email") != 0) return -1;
+		if (my_service_buffer_write(h, "<email") != 0) return -1;
 		
 		if (addr->personal)
 		{
-			if (my_service_buffer_write(fd, " name=\""    ) != 0) return -1;
-			if (my_service_write_str   (fd, addr->personal) != 0) return -1;
-			if (my_service_buffer_write(fd, "\""          ) != 0) return -1;
+			if (my_service_buffer_write(h, " name=\""    ) != 0) return -1;
+			if (my_service_write_str   (h, addr->personal) != 0) return -1;
+			if (my_service_buffer_write(h, "\""          ) != 0) return -1;
 		}
 		
 		if (addr->mailbox && addr->host)
 		{
-			if (my_service_buffer_write(fd, " address=\"") != 0) return -1;
-			if (my_service_write_str   (fd, addr->mailbox) != 0) return -1;
-			if (my_service_buffer_write(fd, "@"          ) != 0) return -1;
-			if (my_service_write_str   (fd, addr->host   ) != 0) return -1;
-			if (my_service_buffer_write(fd, "\""         ) != 0) return -1;
+			if (my_service_buffer_write(h, " address=\"") != 0) return -1;
+			if (my_service_write_str   (h, addr->mailbox) != 0) return -1;
+			if (my_service_buffer_write(h, "@"          ) != 0) return -1;
+			if (my_service_write_str   (h, addr->host   ) != 0) return -1;
+			if (my_service_buffer_write(h, "\""         ) != 0) return -1;
 		}
 		
-		if (my_service_buffer_write(fd, "/>") != 0) return -1;
+		if (my_service_buffer_write(h, "/>") != 0) return -1;
 	}
 	
-	if (my_service_buffer_write(fd, "</")  != 0) return -1;
-	if (my_service_write_str   (fd, name)  != 0) return -1;
-	if (my_service_buffer_write(fd, ">\n") != 0) return -1;
+	if (my_service_buffer_write(h, "</")  != 0) return -1;
+	if (my_service_write_str   (h, name)  != 0) return -1;
+	if (my_service_buffer_write(h, ">\n") != 0) return -1;
 	
 	return 0;
 }
@@ -388,16 +395,16 @@ static char* my_service_find_name(
 }
 
 static int my_service_dump(
-	st_netfd_t	fd,
+	My_Service_Handle	h,
 	const char*	buf,
 	size_t		len)
 {
 	/*!!! Search the message for URLs, email address, quotations, etc */
-	return my_service_write_strl(fd, buf, len);
+	return my_service_write_strl(h, buf, len);
 }
 
 static int my_service_traverse(
-	st_netfd_t		fd,
+	My_Service_Handle		h,
 	struct Lu_Mbox_Message* in, 
 	struct mail_bodystruct* body,
 	int			count)
@@ -422,22 +429,22 @@ static int my_service_traverse(
 	
 	name = my_service_find_name(body);
 	
-	if (my_service_buffer_write(fd, "<mime id=\""    ) != 0) return -1;
-	if (my_service_write_int   (fd, count            ) != 0) return -1;
-	if (my_service_buffer_write(fd, "\" type=\""     ) != 0) return -1;
-	if (my_service_buffer_write(fd, names[body->type]) != 0) return -1;
-	if (my_service_buffer_write(fd, "/"              ) != 0) return -1;
-	if (my_service_buffer_write(fd, body->subtype    ) != 0) return -1;
-	if (my_service_buffer_write(fd, "\""             ) != 0) return -1;
+	if (my_service_buffer_write(h, "<mime id=\""    ) != 0) return -1;
+	if (my_service_write_int   (h, count            ) != 0) return -1;
+	if (my_service_buffer_write(h, "\" type=\""     ) != 0) return -1;
+	if (my_service_buffer_write(h, names[body->type]) != 0) return -1;
+	if (my_service_buffer_write(h, "/"              ) != 0) return -1;
+	if (my_service_buffer_write(h, body->subtype    ) != 0) return -1;
+	if (my_service_buffer_write(h, "\""             ) != 0) return -1;
 	
 	if (name)
 	{
-		if (my_service_buffer_write(fd, " name=\"") != 0) return -1;
-		if (my_service_write_str   (fd, name      ) != 0) return -1;
-		if (my_service_buffer_write(fd, "\""      ) != 0) return -1;
+		if (my_service_buffer_write(h, " name=\"") != 0) return -1;
+		if (my_service_write_str   (h, name      ) != 0) return -1;
+		if (my_service_buffer_write(h, "\""      ) != 0) return -1;
 	}
 	
-	if (my_service_buffer_write(fd, ">") != 0) return -1;
+	if (my_service_buffer_write(h, ">") != 0) return -1;
 
 	count++;
 	
@@ -446,7 +453,7 @@ static int my_service_traverse(
 		case TYPEMESSAGE:
 			/* This part contains an encapsulated message.
 			 */
-			count = my_service_traverse(fd, in, 
+			count = my_service_traverse(h, in, 
 				body->nested.msg->body, count);
 				
 			if (count == -1) return -1;
@@ -458,7 +465,7 @@ static int my_service_traverse(
 			 */
 			buffer = lu_mbox_select_body(in, body, &length, &nfree);
 			
-			if (my_service_dump(fd, buffer, length) != 0)
+			if (my_service_dump(h, buffer, length) != 0)
 				return -1;
 			
 			if (nfree)
@@ -473,7 +480,7 @@ static int my_service_traverse(
 			 */
 			for (p = body->nested.part; p != NULL; p = p->next)
 			{
-				count = my_service_traverse(fd, in,
+				count = my_service_traverse(h, in,
 					&p->body, count);
 				if (count == -1) break;
 			}
@@ -484,59 +491,59 @@ static int my_service_traverse(
 			break;
 	}
 	
-	if (my_service_buffer_write(fd, "</mime>\n") != 0) return -1;
+	if (my_service_buffer_write(h, "</mime>\n") != 0) return -1;
 	
 	return count;
 }
 
 static int my_service_list(
-	st_netfd_t fd,
+	My_Service_Handle h,
 	Lu_Config_List* l,
 	message_id msgs)
 {
-	if (my_service_buffer_write(fd, " <list>\n  <id>")       != 0) return -1;
-	if (my_service_write_int(fd, l->id)                      != 0) return -1;
-	if (my_service_buffer_write(fd, "</id>\n")               != 0) return -1;
+	if (my_service_buffer_write(h, " <list>\n  <id>")       != 0) return -1;
+	if (my_service_write_int(h, l->id)                      != 0) return -1;
+	if (my_service_buffer_write(h, "</id>\n")               != 0) return -1;
 	
 	if (msgs != lu_common_minvalid)
 	{
-		if (my_service_buffer_write(fd, "  <messages>")  != 0) return -1;
-		if (my_service_write_int(fd, msgs)               != 0) return -1;
-		if (my_service_buffer_write(fd, "</messages>\n") != 0) return -1;
+		if (my_service_buffer_write(h, "  <messages>")  != 0) return -1;
+		if (my_service_write_int(h, msgs)               != 0) return -1;
+		if (my_service_buffer_write(h, "</messages>\n") != 0) return -1;
 	}
 	
-	if (my_service_buffer_write(fd, "  <email") != 0) return -1;
+	if (my_service_buffer_write(h, "  <email") != 0) return -1;
 	
 	if (l->name)
 	{
-		if (my_service_buffer_write(fd, " name=\"")  != 0) return -1;
-		if (my_service_write_str(fd, l->name)        != 0) return -1;
-		if (my_service_buffer_write(fd, "\"")        != 0) return -1;
+		if (my_service_buffer_write(h, " name=\"")  != 0) return -1;
+		if (my_service_write_str(h, l->name)        != 0) return -1;
+		if (my_service_buffer_write(h, "\"")        != 0) return -1;
 	}
 	
 	if (l->address)
 	{
-		if (my_service_buffer_write(fd, " address=\"") != 0) return -1;
-		if (my_service_write_str(fd, l->address)       != 0) return -1;
-		if (my_service_buffer_write(fd, "\"")          != 0) return -1;
+		if (my_service_buffer_write(h, " address=\"") != 0) return -1;
+		if (my_service_write_str(h, l->address)       != 0) return -1;
+		if (my_service_buffer_write(h, "\"")          != 0) return -1;
 	}
 	
-	if (my_service_buffer_write(fd, "/>\n") != 0) return -1;
+	if (my_service_buffer_write(h, "/>\n") != 0) return -1;
 	
 	if (l->description)
 	{
-		if (my_service_buffer_write(fd, "  <description>")  != 0) return -1;
-		if (my_service_write_str(fd, l->description)        != 0) return -1;
-		if (my_service_buffer_write(fd, "</description>\n") != 0) return -1;
+		if (my_service_buffer_write(h, "  <description>")  != 0) return -1;
+		if (my_service_write_str(h, l->description)        != 0) return -1;
+		if (my_service_buffer_write(h, "</description>\n") != 0) return -1;
 	}
 	
-	if (my_service_buffer_write(fd, " </list>\n") != 0) return -1;
+	if (my_service_buffer_write(h, " </list>\n") != 0) return -1;
 	
 	return 0;
 }
 
 static int my_service_summary(
-	st_netfd_t fd,
+	My_Service_Handle h,
 	message_id id)
 {
 	Lu_Summary_Message	msg;
@@ -546,29 +553,126 @@ static int my_service_summary(
 	
 	tm = msg.timestamp;
 	
-	if (my_service_buffer_write(fd, " <summary>\n  <id>")     != 0) return -1;
-	if (my_service_write_int(fd, id)                          != 0) return -1;
-	if (my_service_buffer_write(fd, "</id>\n  <timestamp>")   != 0) return -1;
-	if (my_service_write_int(fd, msg.timestamp)               != 0) return -1;
-	if (my_service_buffer_write(fd, "</timestamp>\n  <time>") != 0) return -1;
-	if (my_service_write_str(fd, ctime(&tm))                  != 0) return -1;
-	if (my_service_buffer_write(fd, "</time>\n  <thread>")    != 0) return -1;
-	if (my_service_write_int(fd, msg.thread_parent)           != 0) return -1;
-	if (my_service_buffer_write(fd, "</thread>\n")            != 0) return -1;
+	if (my_service_buffer_write(h, " <summary>\n  <id>")     != 0) return -1;
+	if (my_service_write_int(h, id)                          != 0) return -1;
+	if (my_service_buffer_write(h, "</id>\n  <timestamp>")   != 0) return -1;
+	if (my_service_write_int(h, msg.timestamp)               != 0) return -1;
+	if (my_service_buffer_write(h, "</timestamp>\n  <time>") != 0) return -1;
+	if (my_service_write_str(h, ctime(&tm))                  != 0) return -1;
+	if (my_service_buffer_write(h, "</time>\n  <thread>")    != 0) return -1;
+	if (my_service_write_int(h, msg.thread_parent)           != 0) return -1;
+	if (my_service_buffer_write(h, "</thread>\n")            != 0) return -1;
 	
 	if (lu_summary_write_variable(
-		&my_service_buffer_write,
-		&my_service_write_strl,
-		fd,
+		(int(*)(void*, const char*))        &my_service_buffer_write,
+		(int(*)(void*, const char*, size_t))&my_service_write_strl,
+		h,
 		msg.flat_offset) != 0) return -1;
 	
-	if (my_service_buffer_write(fd, " </summary>\n") != 0) return -1;
+	if (my_service_buffer_write(h, " </summary>\n") != 0) return -1;
 	
 	return 0;
 }
 
+static int my_service_getmbox(
+	My_Service_Handle h, 
+	const char* request)
+{
+	char*		eptr;
+	message_id	id;
+	lu_addr		bits;
+	
+	lu_word		list_id;
+	lu_word		mbox_id;
+	off_t		offset;
+	
+	Lu_Summary_Message		msg;
+	struct Lu_Config_Message	cmsg;
+	
+	Lu_Config_List*		list;
+	Lu_Config_Mbox*		mbox;
+	
+	char*		base;
+	size_t		len;
+	
+	id = strtoul(request, &eptr, 0);
+	if (eptr == request || (*eptr && !isspace(*eptr)))
+	{	/* There was nothing valid, or it did not end in whitespace
+		 * or a null.
+		 */
+		my_service_error(h,
+			"Malformed request",
+			"Lurkerd received a request for a non-numeric message",
+			request);
+		goto my_service_getmbox_error0;
+	}
+	
+	msg = lu_summary_read_msummary(id);
+	if (msg.timestamp == 0)
+	{
+		my_service_error(h,
+			"Internal Error",
+			"Lurkerd failed to retrieve the summary for the named message",
+			request);
+		goto my_service_getmbox_error0;
+	}
+	
+	bits = msg.flat_offset;
+	bits >>= (sizeof(lu_addr)*8) - 16;
+	list_id = bits;
+	
+	bits = msg.mbox_offset;
+	bits >>= (sizeof(lu_addr)*8) - 16;
+	mbox_id = bits;
+	
+	bits = 0xFFFFUL;
+	bits <<= (sizeof(lu_addr)*8) - 16;
+	offset = msg.mbox_offset & ~bits;
+	
+	list = lu_config_find_list(list_id);
+	if (!list)
+	{
+		my_service_error(h,
+			"Internal Error",
+			"Lurkerd has a message which refers to a missing mailing list",
+			request);
+		goto my_service_getmbox_error0;
+	}
+	
+	mbox = lu_config_find_mbox(list, mbox_id);
+	if (!mbox)
+	{
+		my_service_error(h,
+			"Internal Error",
+			"Lurkerd has a message which refers to a missing mailbox",
+			request);
+		goto my_service_getmbox_error0;
+	}
+	
+	if (lu_mbox_map_message(mbox, &cmsg, offset) != 0)
+	{
+		my_service_error(h,
+			"Internal Error",
+			"Lurkerd was unable to mmap the message into memory",
+			request);
+		goto my_service_getmbox_error0;
+	}
+	
+	base = cmsg.map.base;
+	base += cmsg.headers - cmsg.map.off;
+	len = cmsg.end - cmsg.headers;
+	
+	my_service_buffer_writel(h, base, len);
+	
+	lu_mbox_destroy_map(&cmsg);
+	return 0;
+
+my_service_getmbox_error0:
+	return -1;
+}
+
 static int my_service_getmsg(
-	st_netfd_t fd, 
+	My_Service_Handle h, 
 	const char* request)
 {
 	const char*	scan;
@@ -594,7 +698,7 @@ static int my_service_getmsg(
 	{	/* There was nothing valid, or it did not end in whitespace
 		 * or a null.
 		 */
-		my_service_error(fd,
+		my_service_error(h,
 			"Malformed request",
 			"Lurkerd received a request for a non-numeric message",
 			request);
@@ -604,7 +708,7 @@ static int my_service_getmsg(
 	msg = lu_summary_read_msummary(id);
 	if (msg.timestamp == 0)
 	{
-		my_service_error(fd,
+		my_service_error(h,
 			"Internal Error",
 			"Lurkerd failed to retrieve the summary for the named message",
 			request);
@@ -626,7 +730,7 @@ static int my_service_getmsg(
 	list = lu_config_find_list(list_id);
 	if (!list)
 	{
-		my_service_error(fd,
+		my_service_error(h,
 			"Internal Error",
 			"Lurkerd has a message which refers to a missing mailing list",
 			request);
@@ -636,7 +740,7 @@ static int my_service_getmsg(
 	mbox = lu_config_find_mbox(list, mbox_id);
 	if (!mbox)
 	{
-		my_service_error(fd,
+		my_service_error(h,
 			"Internal Error",
 			"Lurkerd has a message which refers to a missing mailbox",
 			request);
@@ -645,7 +749,7 @@ static int my_service_getmsg(
 	
 	if (lu_mbox_map_message(mbox, &cmsg, offset) != 0)
 	{
-		my_service_error(fd,
+		my_service_error(h,
 			"Internal Error",
 			"Lurkerd was unable to mmap the message into memory",
 			request);
@@ -654,17 +758,17 @@ static int my_service_getmsg(
 	
 	if (lu_mbox_parse_message(&cmsg, &mmsg) != 0)
 	{
-		my_service_error(fd,
+		my_service_error(h,
 			"Internal Error",
 			"Lurkerd was unable to parse the map'd message",
 			request);
 		goto my_service_getmsg_error1;
 	}
 	
-	if (my_service_xml_head(fd)                       != 0) goto my_service_getmsg_error2;
-	if (my_service_buffer_write(fd, "<message>\n")    != 0) goto my_service_getmsg_error2;
-	if (my_service_server(fd)                         != 0) goto my_service_getmsg_error2;
-	if (my_service_list(fd, list, lu_common_minvalid) != 0) goto my_service_getmsg_error2;
+	if (my_service_xml_head(h)                       != 0) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(h, "<message>\n")    != 0) goto my_service_getmsg_error2;
+	if (my_service_server(h)                         != 0) goto my_service_getmsg_error2;
+	if (my_service_list(h, list, lu_common_minvalid) != 0) goto my_service_getmsg_error2;
 	
 	/* Find the last component of the path */
 	if (mbox->path)
@@ -678,55 +782,55 @@ static int my_service_getmsg(
 			}
 		}
 		
-		if (my_service_buffer_write(fd, " <mbox>")   != 0) goto my_service_getmsg_error2;
-		if (my_service_write_str(fd, last)           != 0) goto my_service_getmsg_error2;
-		if (my_service_buffer_write(fd, "</mbox>\n") != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(h, " <mbox>")   != 0) goto my_service_getmsg_error2;
+		if (my_service_write_str(h, last)           != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(h, "</mbox>\n") != 0) goto my_service_getmsg_error2;
 	}
 	
 	tm = msg.timestamp;
 	
-	if (my_service_buffer_write(fd, " <id>")                 != 0) goto my_service_getmsg_error2;
-	if (my_service_write_int   (fd, id)                      != 0) goto my_service_getmsg_error2;
-	if (my_service_buffer_write(fd, "</id>\n <timestamp>")   != 0) goto my_service_getmsg_error2;
-	if (my_service_write_int   (fd, msg.timestamp)           != 0) goto my_service_getmsg_error2;
-	if (my_service_buffer_write(fd, "</timestamp>\n <time>") != 0) goto my_service_getmsg_error2;
-	if (my_service_write_str   (fd, ctime(&tm))              != 0) goto my_service_getmsg_error2;
-	if (my_service_buffer_write(fd, "</time>\n <thread>")    != 0) goto my_service_getmsg_error2;
-	if (my_service_write_int   (fd, msg.thread_parent)       != 0) goto my_service_getmsg_error2;
-	if (my_service_buffer_write(fd, "</thread>")             != 0) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(h, " <id>")                 != 0) goto my_service_getmsg_error2;
+	if (my_service_write_int   (h, id)                      != 0) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(h, "</id>\n <timestamp>")   != 0) goto my_service_getmsg_error2;
+	if (my_service_write_int   (h, msg.timestamp)           != 0) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(h, "</timestamp>\n <time>") != 0) goto my_service_getmsg_error2;
+	if (my_service_write_str   (h, ctime(&tm))              != 0) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(h, "</time>\n <thread>")    != 0) goto my_service_getmsg_error2;
+	if (my_service_write_int   (h, msg.thread_parent)       != 0) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(h, "</thread>")             != 0) goto my_service_getmsg_error2;
 	
 	if (msg.in_reply_to != lu_common_minvalid)
 	{
-		if (my_service_buffer_write(fd, "<inreplyto>")     != 0) goto my_service_getmsg_error2;
-		if (my_service_write_int   (fd, msg.in_reply_to)   != 0) goto my_service_getmsg_error2;
-		if (my_service_buffer_write(fd, "</inreplyto>\n")  != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(h, "<inreplyto>")     != 0) goto my_service_getmsg_error2;
+		if (my_service_write_int   (h, msg.in_reply_to)   != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(h, "</inreplyto>\n")  != 0) goto my_service_getmsg_error2;
 	}
 	
 	/*!!! list those message that reply to this one */
 	
-	if (my_service_addresses(fd, mmsg.env->from,     "from"    ) != 0) goto my_service_getmsg_error2;
-	if (my_service_addresses(fd, mmsg.env->sender,   "sender"  ) != 0) goto my_service_getmsg_error2;
-	if (my_service_addresses(fd, mmsg.env->reply_to, "reply-to") != 0) goto my_service_getmsg_error2;
-	if (my_service_addresses(fd, mmsg.env->to,       "to"      ) != 0) goto my_service_getmsg_error2;
-	if (my_service_addresses(fd, mmsg.env->cc,       "cc"      ) != 0) goto my_service_getmsg_error2;
-	if (my_service_addresses(fd, mmsg.env->bcc,      "bcc"     ) != 0) goto my_service_getmsg_error2;
+	if (my_service_addresses(h, mmsg.env->from,     "from"    ) != 0) goto my_service_getmsg_error2;
+	if (my_service_addresses(h, mmsg.env->sender,   "sender"  ) != 0) goto my_service_getmsg_error2;
+	if (my_service_addresses(h, mmsg.env->reply_to, "reply-to") != 0) goto my_service_getmsg_error2;
+	if (my_service_addresses(h, mmsg.env->to,       "to"      ) != 0) goto my_service_getmsg_error2;
+	if (my_service_addresses(h, mmsg.env->cc,       "cc"      ) != 0) goto my_service_getmsg_error2;
+	if (my_service_addresses(h, mmsg.env->bcc,      "bcc"     ) != 0) goto my_service_getmsg_error2;
 	
 	if (mmsg.env->message_id)
 	{
-		if (my_service_buffer_write(fd, " <message-id>"     ) != 0) goto my_service_getmsg_error2;
-		if (my_service_write_str   (fd, mmsg.env->message_id) != 0) goto my_service_getmsg_error2;
-		if (my_service_buffer_write(fd, "</message-id>\n"   ) != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(h, " <message-id>"     ) != 0) goto my_service_getmsg_error2;
+		if (my_service_write_str   (h, mmsg.env->message_id) != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(h, "</message-id>\n"   ) != 0) goto my_service_getmsg_error2;
 	}
 	
 	if (mmsg.env->subject)
 	{
-		if (my_service_buffer_write(fd, " <subject>"     ) != 0) goto my_service_getmsg_error2;
-		if (my_service_write_str   (fd, mmsg.env->subject) != 0) goto my_service_getmsg_error2;
-		if (my_service_buffer_write(fd, "</subject>\n"   ) != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(h, " <subject>"     ) != 0) goto my_service_getmsg_error2;
+		if (my_service_write_str   (h, mmsg.env->subject) != 0) goto my_service_getmsg_error2;
+		if (my_service_buffer_write(h, "</subject>\n"   ) != 0) goto my_service_getmsg_error2;
 	}
 	
-	if (my_service_traverse(fd, &mmsg, mmsg.body, 0) == -1) goto my_service_getmsg_error2;
-	if (my_service_buffer_write(fd, "</message>\n")  != 0) goto my_service_getmsg_error2;
+	if (my_service_traverse(h, &mmsg, mmsg.body, 0) == -1) goto my_service_getmsg_error2;
+	if (my_service_buffer_write(h, "</message>\n")  != 0) goto my_service_getmsg_error2;
 	
 	lu_mbox_destroy_message(&mmsg);
 	lu_mbox_destroy_map(&cmsg);
@@ -741,10 +845,10 @@ my_service_getmsg_error0:
 }
 
 static int my_service_mindex(
-	st_netfd_t fd, 
+	My_Service_Handle h, 
 	const char* request)
 {
-	Lu_Breader_Handle	h;
+	Lu_Breader_Handle	b;
 	Lu_Config_List*		l;
 	message_id		offset;
 	int			list;
@@ -755,7 +859,7 @@ static int my_service_mindex(
 	
 	if (sscanf(request, "%d %d", &list, &offset) != 2)
 	{	/* They did something funny. */
-		my_service_error(fd,
+		my_service_error(h,
 			"Malformed request",
 			"Lurkerd received an improperly formatted mindex request",
 			request);
@@ -765,7 +869,7 @@ static int my_service_mindex(
 	
 	if ((offset % LU_PROTO_INDEX) != 0)
 	{	/* Must be a multiple of the index */
-		my_service_error(fd,
+		my_service_error(h,
 			"Malformed request",
 			"Lurkerd received an unaligned mindex request",
 			request);
@@ -776,7 +880,7 @@ static int my_service_mindex(
 	l = lu_config_find_list(list);
 	if (l == 0)
 	{
-		my_service_error(fd,
+		my_service_error(h,
 			"Invalid request",
 			"Lurkerd received a request for a non-existant list",
 			request);
@@ -785,10 +889,10 @@ static int my_service_mindex(
 	}
 	
 	sprintf(&keyword[0], "%s%d", LU_KEYWORD_LIST, list);
-	h = lu_breader_new(&keyword[0]);
-	if (h == 0)
+	b = lu_breader_new(&keyword[0]);
+	if (b == 0)
 	{
-		my_service_error(fd,
+		my_service_error(h,
 			"Internal error",
 			"Lurkerd failed to access the keyword database",
 			"server failure - see log files");
@@ -796,9 +900,9 @@ static int my_service_mindex(
 		goto my_service_mindex_error0;
 	}
 	
-	if (offset >= lu_breader_records(h))
+	if (offset >= lu_breader_records(b))
 	{
-		my_service_error(fd,
+		my_service_error(h,
 			"Invalid request",
 			"Lurkerd received a mindex request past the end of the list",
 			request);
@@ -806,13 +910,13 @@ static int my_service_mindex(
 		goto my_service_mindex_error1;
 	}
 	
-	count = lu_breader_records(h) - offset;
+	count = lu_breader_records(b) - offset;
 	if (count > LU_PROTO_INDEX)
 		count = LU_PROTO_INDEX;
 	
-	if (lu_breader_read(h, offset, count, &ids[0]) != 0)
+	if (lu_breader_read(b, offset, count, &ids[0]) != 0)
 	{
-		my_service_error(fd,
+		my_service_error(h,
 			"Internal error",
 			"Lurkerd failed to retrieve the records from the keyword file",
 			"server failure - see log files");
@@ -820,48 +924,48 @@ static int my_service_mindex(
 		goto my_service_mindex_error1;
 	}
 	
-	if (my_service_xml_head(fd)                            != 0) goto my_service_mindex_error1;
-	if (my_service_buffer_write(fd, "<mindex>\n <offset>") != 0) goto my_service_mindex_error1;
-	if (my_service_write_int(fd, offset)                   != 0) goto my_service_mindex_error1;
-	if (my_service_buffer_write(fd, "</offset>\n")         != 0) goto my_service_mindex_error1;
+	if (my_service_xml_head(h)                            != 0) goto my_service_mindex_error1;
+	if (my_service_buffer_write(h, "<mindex>\n <offset>") != 0) goto my_service_mindex_error1;
+	if (my_service_write_int(h, offset)                   != 0) goto my_service_mindex_error1;
+	if (my_service_buffer_write(h, "</offset>\n")         != 0) goto my_service_mindex_error1;
 	
-	if (offset + count != lu_breader_records(h))
+	if (offset + count != lu_breader_records(b))
 	{
-		if (my_service_buffer_write(fd, " <next>")            != 0) goto my_service_mindex_error1;
-		if (my_service_write_int(fd, offset + LU_PROTO_INDEX) != 0) goto my_service_mindex_error1;
-		if (my_service_buffer_write(fd, "</next>\n")          != 0) goto my_service_mindex_error1;
+		if (my_service_buffer_write(h, " <next>")            != 0) goto my_service_mindex_error1;
+		if (my_service_write_int(h, offset + LU_PROTO_INDEX) != 0) goto my_service_mindex_error1;
+		if (my_service_buffer_write(h, "</next>\n")          != 0) goto my_service_mindex_error1;
 	}
 	
 	if (offset != 0)
 	{
-		if (my_service_buffer_write(fd, " <prev>")            != 0) goto my_service_mindex_error1;
-		if (my_service_write_int(fd, offset - LU_PROTO_INDEX) != 0) goto my_service_mindex_error1;
-		if (my_service_buffer_write(fd, "</prev>\n")          != 0) goto my_service_mindex_error1;
+		if (my_service_buffer_write(h, " <prev>")            != 0) goto my_service_mindex_error1;
+		if (my_service_write_int(h, offset - LU_PROTO_INDEX) != 0) goto my_service_mindex_error1;
+		if (my_service_buffer_write(h, "</prev>\n")          != 0) goto my_service_mindex_error1;
 	}
 	
-	if (my_service_server(fd) != 0) goto my_service_mindex_error1;
+	if (my_service_server(h) != 0) goto my_service_mindex_error1;
 	
-	if (my_service_list(fd, l, lu_breader_records(h)) != 0) goto my_service_mindex_error1;
-	lu_breader_free(h);
+	if (my_service_list(h, l, lu_breader_records(b)) != 0) goto my_service_mindex_error1;
+	lu_breader_free(b);
 	
 	for (i = 0; i < count; i++)
 	{
-		if (my_service_summary(fd, ids[i]) != 0) goto my_service_mindex_error0;
+		if (my_service_summary(h, ids[i]) != 0) goto my_service_mindex_error0;
 	}
 	
-	if (my_service_buffer_write(fd, "</mindex>\n") != 0) goto my_service_mindex_error0;
+	if (my_service_buffer_write(h, "</mindex>\n") != 0) goto my_service_mindex_error0;
 	
 	return 0;
 	
 my_service_mindex_error1:
-	lu_breader_free(h);
+	lu_breader_free(b);
 	
 my_service_mindex_error0:
 	return -1;
 }
 
 static int my_service_search(
-	st_netfd_t fd, 
+	My_Service_Handle h, 
 	const char* request)
 {
 	int		i;
@@ -874,7 +978,7 @@ static int my_service_search(
 	
 	if (delim == 0)
 	{
-		my_service_error(fd,
+		my_service_error(h,
 			"Invalid request",
 			"Lurkerd received a search request with no offset",
 			request);
@@ -884,7 +988,7 @@ static int my_service_search(
 	offset = atol(request);
 	if ((offset % LU_PROTO_INDEX) != 0)
 	{	/* Must be a multiple of the index */
-		my_service_error(fd,
+		my_service_error(h,
 			"Malformed request",
 			"Lurkerd received an unaligned search request",
 			request);
@@ -894,7 +998,7 @@ static int my_service_search(
 	
 	if (offset > 1000)
 	{
-		my_service_error(fd,
+		my_service_error(h,
 			"Malformed request",
 			"Lurkerd received a search request for too large an offset",
 			request);
@@ -903,7 +1007,7 @@ static int my_service_search(
 	
 	if (lu_search_start(delim+1, &detail) != 0)
 	{
-		my_service_error(fd,
+		my_service_error(h,
 			"Search failed",
 			"The lurkerd server rejected this search",
 			detail);
@@ -914,7 +1018,7 @@ static int my_service_search(
 	{
 		if (lu_search_result(&out) != 0)
 		{
-			my_service_error(fd,
+			my_service_error(h,
 				"Internal error",
 				"The lurkerd server failed to search",
 				"lu_search_result failure - see logs");
@@ -923,7 +1027,7 @@ static int my_service_search(
 		
 		if (out == lu_common_minvalid)
 		{
-			my_service_error(fd,
+			my_service_error(h,
 				"Search failed",
 				"The lurkerd server rejected this search",
 				"There are not that many search results");
@@ -932,30 +1036,30 @@ static int my_service_search(
 	}
 	
 	/* Ok! Now, lets start putting out the data */
-	if (my_service_xml_head(fd)                             != 0) goto my_service_search_error1;
-	if (my_service_buffer_write(fd, "<search>\n <offset>")  != 0) goto my_service_search_error1;
-	if (my_service_write_int(fd, offset)                    != 0) goto my_service_search_error1;
-	if (my_service_buffer_write(fd, "</offset>\n <query>")  != 0) goto my_service_search_error1;
-	if (my_service_write_str(fd, delim+1)                   != 0) goto my_service_search_error1;
-	if (my_service_buffer_write(fd, "</query>\n <queryurl>")!= 0) goto my_service_search_error1;
-	if (my_service_write_url(fd, delim+1)                   != 0) goto my_service_search_error1;
-	if (my_service_buffer_write(fd, "</queryurl>\n <hits>") != 0) goto my_service_search_error1;
-	if (my_service_write_int(fd, 0)                         != 0) goto my_service_search_error1;
-	if (my_service_buffer_write(fd, "</hits>\n")            != 0) goto my_service_search_error1;
-	if (my_service_server(fd)                               != 0) goto my_service_search_error1;
+	if (my_service_xml_head(h)                             != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(h, "<search>\n <offset>")  != 0) goto my_service_search_error1;
+	if (my_service_write_int(h, offset)                    != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(h, "</offset>\n <query>")  != 0) goto my_service_search_error1;
+	if (my_service_write_str(h, delim+1)                   != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(h, "</query>\n <queryurl>")!= 0) goto my_service_search_error1;
+	if (my_service_write_url(h, delim+1)                   != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(h, "</queryurl>\n <hits>") != 0) goto my_service_search_error1;
+	if (my_service_write_int(h, 0)                         != 0) goto my_service_search_error1;
+	if (my_service_buffer_write(h, "</hits>\n")            != 0) goto my_service_search_error1;
+	if (my_service_server(h)                               != 0) goto my_service_search_error1;
 	
 	if (offset != 0)
 	{
-		if (my_service_buffer_write(fd, " <prev>")            != 0) goto my_service_search_error1;
-		if (my_service_write_int(fd, offset - LU_PROTO_INDEX) != 0) goto my_service_search_error1;
-		if (my_service_buffer_write(fd, "</prev>\n")          != 0) goto my_service_search_error1;
+		if (my_service_buffer_write(h, " <prev>")            != 0) goto my_service_search_error1;
+		if (my_service_write_int(h, offset - LU_PROTO_INDEX) != 0) goto my_service_search_error1;
+		if (my_service_buffer_write(h, "</prev>\n")          != 0) goto my_service_search_error1;
 	}
 	
 	for (i = 0; i < LU_PROTO_INDEX; i++)
 	{
 		if (lu_search_result(&out) != 0)
 		{
-			my_service_error(fd,
+			my_service_error(h,
 				"Internal error",
 				"The lurkerd server failed to search",
 				"lu_search_result failure - see logs");
@@ -967,7 +1071,7 @@ static int my_service_search(
 			break;
 		}
 		
-		if (my_service_summary(fd, out) != 0) 
+		if (my_service_summary(h, out) != 0) 
 		{
 			goto my_service_search_error1;
 		}
@@ -976,13 +1080,13 @@ static int my_service_search(
 	if (out != lu_common_minvalid && lu_search_result(&out) == 0 &&
 	    out != lu_common_minvalid)
 	{
-		if (my_service_buffer_write(fd, " <next>")            != 0) goto my_service_search_error1;
-		if (my_service_write_int(fd, offset + LU_PROTO_INDEX) != 0) goto my_service_search_error1;
-		if (my_service_buffer_write(fd, "</next>\n")          != 0) goto my_service_search_error1;
+		if (my_service_buffer_write(h, " <next>")            != 0) goto my_service_search_error1;
+		if (my_service_write_int(h, offset + LU_PROTO_INDEX) != 0) goto my_service_search_error1;
+		if (my_service_buffer_write(h, "</next>\n")          != 0) goto my_service_search_error1;
 	}
 	
 	lu_search_end();
-	if (my_service_buffer_write(fd, "</search>\n") != 0) goto my_service_search_error0;
+	if (my_service_buffer_write(h, "</search>\n") != 0) goto my_service_search_error0;
 	
 	return 0;
 
@@ -993,38 +1097,37 @@ my_service_search_error0:
 }
 
 static int my_service_lists(
-	st_netfd_t fd, 
+	My_Service_Handle h, 
 	const char* request)
 {
 	Lu_Config_List*		scan;
 	char			key[40];
 	
-	if (my_service_xml_head(fd)                  != 0) return -1;
-	if (my_service_buffer_write(fd, "<lists>\n") != 0) return -1;
-	if (my_service_server(fd)                    != 0) return -1;
+	if (my_service_xml_head(h)                  != 0) return -1;
+	if (my_service_buffer_write(h, "<lists>\n") != 0) return -1;
+	if (my_service_server(h)                    != 0) return -1;
 
 	for (	scan = lu_config_list; 
 		scan != lu_config_list + lu_config_lists; 
 		scan++)
 	{
 		snprintf(&key[0], sizeof(key), "%s%d", LU_KEYWORD_LIST, scan->id);
-		if (my_service_list(fd, scan, 
+		if (my_service_list(h, scan, 
 			lu_breader_quick_records(&key[0])) != 0)
 		{
 			return -1;
 		}
 	}
 	
-	if (my_service_buffer_write(fd, "</lists>\n") != 0) return -1;
+	if (my_service_buffer_write(h, "</lists>\n") != 0) return -1;
 	
 	return 0;
 }
 
-static int my_service_digest_request(st_netfd_t fd, const char* request)
+static int my_service_digest_request(My_Service_Handle h, const char* request)
 {
 	int out = -1;
-	
-	my_service_used = 0;
+	h->used = 0;
 
 #ifdef DEBUG
 	printf("Request: '%s'\n", request);
@@ -1032,16 +1135,18 @@ static int my_service_digest_request(st_netfd_t fd, const char* request)
 	
 	/* Determine what to do with the request */
 	if (!memcmp(request, LU_PROTO_GETMSG, sizeof(LU_PROTO_GETMSG)-1)) 
-		out = my_service_getmsg(fd, request+sizeof(LU_PROTO_GETMSG)-1);
+		out = my_service_getmsg(h, request+sizeof(LU_PROTO_GETMSG)-1);
+	if (!memcmp(request, LU_PROTO_GETMBOX, sizeof(LU_PROTO_GETMBOX)-1)) 
+		out = my_service_getmbox(h, request+sizeof(LU_PROTO_GETMBOX)-1);
 	if (!memcmp(request, LU_PROTO_MINDEX, sizeof(LU_PROTO_MINDEX)-1)) 
-		out = my_service_mindex(fd, request+sizeof(LU_PROTO_MINDEX)-1);
+		out = my_service_mindex(h, request+sizeof(LU_PROTO_MINDEX)-1);
 	if (!memcmp(request, LU_PROTO_SEARCH, sizeof(LU_PROTO_SEARCH)-1)) 
-		out = my_service_search(fd, request+sizeof(LU_PROTO_SEARCH)-1);
+		out = my_service_search(h, request+sizeof(LU_PROTO_SEARCH)-1);
 	if (!memcmp(request, LU_PROTO_LISTS, sizeof(LU_PROTO_LISTS)-1)) 
-		out = my_service_lists(fd, request+sizeof(LU_PROTO_LISTS)-1);
+		out = my_service_lists(h, request+sizeof(LU_PROTO_LISTS)-1);
 	
 	/* Get rid of any buffering */
-	my_service_buffer_flush(fd);
+	my_service_buffer_flush(h);
 	
 	return out;
 }
@@ -1084,6 +1189,9 @@ extern int lu_service_connection(st_netfd_t fd)
 	int	off;
 	ssize_t	got;
 	
+	struct My_Service_Handle_T h;
+	h.fd = fd;
+	
 	off = 0;
 	
 #ifdef DEBUG
@@ -1110,7 +1218,7 @@ extern int lu_service_connection(st_netfd_t fd)
 			if (*s == LU_PROTO_ENDREQ)
 			{
 				*s = 0;
-				if (my_service_digest_request(fd, f) != 0)
+				if (my_service_digest_request(&h, f) != 0)
 				{	/* Service the requst */
 					return -1;
 				}
