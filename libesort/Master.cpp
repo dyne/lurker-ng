@@ -1,4 +1,4 @@
-/*  $Id: Master.cpp,v 1.3 2003-08-16 18:36:20 terpstra Exp $
+/*  $Id: Master.cpp,v 1.4 2003-08-22 13:10:09 terpstra Exp $
  *  
  *  Master.cpp - Coordinate commit+read interface
  *  
@@ -169,11 +169,27 @@ int Master::commit()
 
 int Master::insert(const string& k)
 {
-	assert (k.length() < view.params.keySize());
+	if (k.length() > view.params.keySize())
+	{
+		errno = EINVAL;
+		return -1;
+	}
 	
 	// always succeeds
 	memory.insert(k);
 	return 0;
+}
+
+int Master::remove_prefix(const string& prefix)
+{
+	assert(0);
+	return -1;
+}
+
+int Master::remove_key(const string& key)
+{
+	assert(0);
+	return -1;
 }
 
 auto_ptr<Walker> Master::seek(const string& k, Direction dir)

@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.9 2003-08-17 16:15:48 terpstra Exp $
+/*  $Id: esort.h,v 1.10 2003-08-22 13:10:10 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -186,9 +186,23 @@ class Writer : public Reader
  public:
  	/** Insert a key into the database.
  	 *  If an error occures, -1 is returned and errno set, else 0.
- 	 *  Be sure the key is smaller than keySize on pain of EINVAL.
+ 	 *  Be sure the key is <= keySize on pain of EINVAL.
  	 */
  	virtual int insert(const string& key) = 0;
+ 	
+ 	/** Erase a key prefix from the database.
+ 	 *  If an error occures, -1 is returned and errno set, else 0.
+ 	 *  All keys of the form 'prefix*' are erased.
+ 	 *  If no such keys exist, this silently succeeds.
+ 	 */
+ 	virtual int remove_prefix(const string& prefix) = 0;
+ 	
+ 	/** Erase a key with exactly this name.
+ 	 *  If an error occures, -1 is returned and errno set, else 0.
+ 	 *  Only one copy is erased in a multiset.
+ 	 *  If the key does not exist, this silently succeeds.
+ 	 */
+ 	virtual int remove_key(const string& key) = 0;
  	
  	/** Commit the changes to the database.
  	 *  On success invalidates all Walkers obtained prior to the call.

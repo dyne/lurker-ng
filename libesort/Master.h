@@ -1,4 +1,4 @@
-/*  $Id: Master.h,v 1.4 2003-08-17 14:39:44 terpstra Exp $
+/*  $Id: Master.h,v 1.5 2003-08-22 13:10:10 terpstra Exp $
  *  
  *  Master.h - Coordinate commit+read interface
  *  
@@ -51,6 +51,8 @@ class Master : public Writer
  	int rollback();
  	int commit();
  	int insert(const string& k);
+ 	int remove_prefix(const string& prefix);
+ 	int remove_key(const string& key);
 
  	auto_ptr<Walker> seek(const string& k, Direction dir);
  	auto_ptr<Walker> seekp(const string& pfx, const string& k, Direction dir);
