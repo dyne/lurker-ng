@@ -1,6 +1,6 @@
 /*
  * Copyright 2002 Chris L. Bond.  All rights reserved.
- * $Id: message.c,v 1.2 2002-01-28 06:05:25 cbond Exp $
+ * $Id: message.c,v 1.3 2002-01-28 06:11:27 cbond Exp $
  */
 
 #include <sys/types.h>
@@ -139,7 +139,7 @@ message_offset(char *buffer, size_t *offset)
 char *
 mail_select(struct msg *in, struct mail_bodystruct *body, size_t *len, int *nfr)
 {
-	char *(*output)(u_char *, u_long, u_long *);
+	char *(*output)(unsigned char *, unsigned long, unsigned long *);
 	char *input;
 
 	switch ((int)body->encoding) {
@@ -157,8 +157,8 @@ mail_select(struct msg *in, struct mail_bodystruct *body, size_t *len, int *nfr)
 	input = in->buffer + in->offset + body->contents.offset;
 	if (output) {
 		nfr[0] = 1;
-		return (output((u_char *)input, body->contents.text.size,
-				(u_long *)len));
+		return (output((unsigned char *)input, body->contents.text.size,
+				(unsigned long *)len));
 	}
 	nfr[0] = 0;
 	len[0] = body->contents.text.size;

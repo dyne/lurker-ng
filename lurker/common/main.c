@@ -1,6 +1,6 @@
 /*
  * Copyright 2002 Chris L. Bond.  All rights reserved.
- * $Id: main.c,v 1.1 2002-01-28 06:03:46 cbond Exp $
+ * $Id: main.c,v 1.2 2002-01-28 06:11:27 cbond Exp $
  */
 
 #include <stdio.h>
@@ -34,8 +34,10 @@ main(int argc, char **argv)
 		struct msg *input;
 
 		input = mail_parse(fd, lseek(fd, 0, SEEK_CUR));
-		if (input)
+		if (input) {
 			index_traverse(input, input->body);
+			mail_free(input);
+		}
 	}
 
 	return (0);
