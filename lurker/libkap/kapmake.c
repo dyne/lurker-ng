@@ -1,4 +1,4 @@
-/*  $Id: kapmake.c,v 1.2 2002-07-04 13:19:32 terpstra Exp $
+/*  $Id: kapmake.c,v 1.3 2002-07-04 18:35:11 terpstra Exp $
  *  
  *  kapmake.c - Implementation of an import tool
  *  
@@ -87,7 +87,7 @@ int main(int argc, char * const * argv)
 	KRecord*	kr;
 	ssize_t		len, klen;
 	
-	ssize_t	sector_size	= 8096;
+	ssize_t	sector_size	= 8192;
 	ssize_t	max_key_size	= 100;
 	short	tree_size	= 3;
 	ssize_t	leaf_size	= 252;
