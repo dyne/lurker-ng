@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.11 2003-06-11 02:00:54 terpstra Exp $
+/*  $Id: PTable.cpp,v 1.12 2003-06-11 23:08:22 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -49,6 +49,7 @@ PTable::PTable(ESort::Reader* reader_, time_t config_, time_t stamp_,
 
 string PTable::loadDir(const string& dir, bool yank)
 {
+	if (verbose) cout << "Loading directory " << dir << endl;
 	DIR* d = opendir(dir.c_str());
 	if (d)
 	{
@@ -88,6 +89,8 @@ string PTable::loadNewIds()
 	string pfx = LU_CACHE;
 	MessageId offid(stamp);
 	
+	if (verbose) cout << "Loading new ids since last run ..." << endl;
+	
 	auto_ptr<ESort::Walker> walker(
 		reader->seek(pfx, offid.raw().substr(0, 4), ESort::Forward));
 	while (walker->advance() != -1)
@@ -98,6 +101,8 @@ string PTable::loadNewIds()
 		MessageId id(walker->key.c_str()+5, 8);
 		newIds.insert(id);
 		summaries[id].changed = true;
+		
+		cout << "New message: " << id.serialize() << endl;
 	}
 	if (errno != 0)
 	{
@@ -109,6 +114,8 @@ string PTable::loadNewIds()
 
 string PTable::loadSummaries()
 {
+	if (verbose) cout << "Loading summary data ..." << endl;
+	
 	int ok;
 	string pfx = LU_SUMMARY;
 	auto_ptr<ESort::Walker> walker(
@@ -186,6 +193,8 @@ string PTable::loadLists()
 	// We load extra messages (over 36) so outliers can be detected.
 	for (Lists::iterator list = lists.begin(); list != lists.end(); ++list)
 	{
+		if (verbose) cout << "Loading list data: " << list->first << endl;
+		
 		string pfx = 
 			string(LU_KEYWORD LU_KEYWORD_LIST)
 			+ list->first
