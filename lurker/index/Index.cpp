@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.28 2004-01-08 22:14:46 terpstra Exp $
+/*  $Id: Index.cpp,v 1.29 2004-08-19 23:52:51 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -460,12 +460,9 @@ int Index::index_control(time_t import)
 		'\0' + 
 		id.raw()) != 0) ok = false;
 	
-	if (writer->insert(
-		LU_KEYWORD 
-		LU_KEYWORD_GROUP +
-		list.group + 
-		'\0' + 
-		id.raw()) != 0) ok = false;
+	/* group searching is now done using 'OR' searches internally.
+	 * - this allows changing the groups of lists w/o reimport.
+	 */
 	
 	MessageId importStamp(import);
 	if (writer->insert(

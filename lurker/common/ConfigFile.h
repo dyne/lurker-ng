@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.3 2004-08-19 14:52:29 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.4 2004-08-19 23:52:51 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -27,6 +27,7 @@
 
 #include <string>
 #include <map>
+#include <set>
 #include <iostream>
 
 #if __GNUC__ == 2
@@ -40,6 +41,7 @@
 
 using std::string;
 using std::map;
+using std::set;
 using std::ostream;
 
 struct List
@@ -64,8 +66,8 @@ class Config
 #endif
  	
  public:
- 	typedef map<string, List>    Lists;
- 	typedef map<string, List*>   Members;
+ 	typedef map<string, List> Lists;
+ 	typedef set<string>       Members;
  	
  	struct GroupData
  	{

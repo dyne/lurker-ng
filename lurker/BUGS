@@ -1,9 +1,6 @@
 ---- Agenda for 1.2:
 
-Add "or" and "not"
-	Make groups use 'or' searching internally (allows regrouping)
-	delete a message? Easy if - keyword support is added
-
+delete a message from a command-line search!
 Maildir support for import
 
 How to know when the archive starts and ends?

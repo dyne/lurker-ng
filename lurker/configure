@@ -3500,7 +3500,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 if test "x$USE_MAINTAINER_MODE" != "xno"; then
-  CXXFLAGS="$CXXFLAGS -Wall -O2 -g"
+  CXXFLAGS="$CXXFLAGS -Wall -O0 -g"
 fi
 
 

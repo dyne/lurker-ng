@@ -1,4 +1,4 @@
-/*  $Id: Keys.h,v 1.10 2003-07-03 15:59:14 terpstra Exp $
+/*  $Id: Keys.h,v 1.11 2004-08-19 23:52:51 terpstra Exp $
  *  
  *  Keys.h - What prefixs various database keys
  *  
@@ -45,6 +45,7 @@ using std::vector;
 
 /* fields indexed early */
 #define LU_KEYWORD_EVERYTHING	"id:any"	/* empty search */
+#define LU_KEYWORD_DELETED	"id:deleted"	/* a deleted message */
 #define LU_KEYWORD_MESSAGE_ID	"id:"		/* Message id */
 #define LU_KEYWORD_REPLY_TO	"rt:"		/* Reply-to */
 #define LU_KEYWORD_THREAD	"th:"		/* THread */

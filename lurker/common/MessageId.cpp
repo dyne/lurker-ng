@@ -1,4 +1,4 @@
-/*  $Id: MessageId.cpp,v 1.7 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: MessageId.cpp,v 1.8 2004-08-19 23:52:51 terpstra Exp $
  *  
  *  MessageId.cpp - Helper class for manipulating internal message ids
  *  
@@ -59,6 +59,7 @@ time_t my_timegm(struct tm* tm)
 
 const unsigned int MessageId::time_len = 15;
 const unsigned int MessageId::full_len = 24;
+const unsigned int MessageId::raw_len = 8;
 
 /** Note; the serialized time is always in UTC!
  *  

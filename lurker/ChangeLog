@@ -10,6 +10,12 @@ v1.2:
 	Added a new config option "raw_email" to disable mbox/ and attach/
 	Added an import option to select a file instead of stdin, '-i'
 	Improved the documentation for lurker-index -m and -b
+	Internal support for not, or, and, everything, and nothing searches
+	Added support for not searching ala google: '-foo', '+' is ignored
+	Searches now internally include a not(deleted) criterea
+	Removed a misguided use of pointers in the ConfigFile class
+	Group searching now uses internal 'or' search of included lists
+	Mailing lists may now be regrouped without reimporting
 
 v1.1:
 	Create mbox and attach directory upon install

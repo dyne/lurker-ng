@@ -1,4 +1,4 @@
-/*  $Id: Search.h,v 1.5 2003-05-06 14:32:34 terpstra Exp $
+/*  $Id: Search.h,v 1.6 2004-08-19 23:52:51 terpstra Exp $
  *  
  *  Search.h - Helper which can intersect keywords
  *  
@@ -30,34 +30,45 @@
 
 using namespace ESort;
 
+class Searcher
+{
+ public:
+ 	MessageId next_id; // not correct till first call of skipto
+ 	
+ 	/* Precoditions:
+ 	 *  has never yet returned EOF.
+ 	 *  later_than > next_id (wrt. the established direction)
+         * Postconditions:
+         *  Returns false on EOF
+         *  Otherwise, next_id >= later_than (wrt. dir.)
+ 	 */
+ 	virtual bool skipto(MessageId later_than) = 0;
+ 	virtual ~Searcher();
+};
+
+struct Criterea
+{
+	Reader* db;
+	MessageId source;
+	Direction dir;
+};
+
+class AndSearcher;
+class Config;
 class Search
 {
  protected:
- 	struct KEntry
- 	{
- 		Walker*			walker;
- 		string::size_type	skip;
- 	};
- 	
-	typedef std::list<KEntry> Entries;
-	
-	Reader*		db;
-	Direction	dir;
-	MessageId	id;
-	
-	bool	eof;
-	Entries	entries;
-	
-	static MessageId top(Entries::iterator i);
-	string Search::advance(Entries::iterator i);
+ 	const Config& cfg;
+ 	Criterea criterea;
+	AndSearcher* root;
+	bool need_any;
 	
  public:
- 	Search(Reader* db_, Direction dir_, const MessageId& id_);
+ 	Search(const Config& cfg_, Reader* db_, Direction dir_, const MessageId& id_);
  	~Search();
  	
- 	string keyword(const string& key);
- 	
- 	string pull(int n, vector<Summary>& o);
+ 	void keyword(const string& s);
+ 	bool pull(int n, vector<Summary>& o);
 };
 
 #endif

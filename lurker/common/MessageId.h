@@ -1,4 +1,4 @@
-/*  $Id: MessageId.h,v 1.5 2004-08-15 10:54:32 terpstra Exp $
+/*  $Id: MessageId.h,v 1.6 2004-08-19 23:52:51 terpstra Exp $
  *  
  *  MessageId.h - Helper class for manipulating internal message ids
  *  
@@ -126,17 +126,30 @@ class MessageId
  	
  	/** Slightly increase the MessageId. There can not exist any
  	  *  messages between the old value and the new.
+ 	  * Returns true if the counter rolled over.
  	  */
- 	void increment()
+ 	bool increment()
  	{
- 		++hash_[3] == 0 &&
- 		++hash_[2] == 0 &&
- 		++hash_[1] == 0 &&
- 		++hash_[0] == 0 &&
- 		++time_[3] == 0 &&
- 		++time_[2] == 0 &&
- 		++time_[1] == 0 &&
- 		++time_[0];
+ 		return	++hash_[3] == 0 &&
+ 			++hash_[2] == 0 &&
+ 			++hash_[1] == 0 &&
+ 			++hash_[0] == 0 &&
+ 			++time_[3] == 0 &&
+ 			++time_[2] == 0 &&
+ 			++time_[1] == 0 &&
+ 			++time_[0] == 0;
+ 	}
+ 	
+ 	bool decrement()
+ 	{
+ 		return	--hash_[3] == 0xFF &&
+ 			--hash_[2] == 0xFF &&
+ 			--hash_[1] == 0xFF &&
+ 			--hash_[0] == 0xFF &&
+ 			--time_[3] == 0xFF &&
+ 			--time_[2] == 0xFF &&
+ 			--time_[1] == 0xFF &&
+ 			--time_[0] == 0xFF;
  	}
  	
  	/** Is the message id the same as another message?
@@ -157,7 +170,16 @@ class MessageId
  	 */
  	bool operator < (const MessageId& o) const
  	{
- 		return raw() < o.raw();
+ 		return	(time_[0] < o.time_[0] || (time_[0] == o.time_[0] &&
+ 			(time_[1] < o.time_[1] || (time_[1] == o.time_[1] &&
+ 			(time_[2] < o.time_[2] || (time_[2] == o.time_[2] &&
+ 			(time_[3] < o.time_[3] || (time_[3] == o.time_[3] &&
+ 			(hash_[0] < o.hash_[0] || (hash_[0] == o.hash_[0] &&
+ 			(hash_[1] < o.hash_[1] || (hash_[1] == o.hash_[1] &&
+ 			(hash_[2] < o.hash_[2] || (hash_[2] == o.hash_[2] &&
+ 			(hash_[3] < o.hash_[3] 
+ 			) )) )) )) )) )) )) ));
+ 		// return raw() < o.raw();
  	}
  	
  	bool operator != (const MessageId& o) const { return !(*this == o); }
@@ -167,6 +189,7 @@ class MessageId
  	
  	static const unsigned int time_len; // 15
  	static const unsigned int full_len; // 24
+ 	static const unsigned int raw_len; // 8
  	
  	static bool is_time(const char* s);
  	static bool is_full(const char* s);

@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.4 2004-08-19 14:52:29 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.5 2004-08-19 23:52:51 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -214,7 +214,8 @@ int Config::process_command(const string& key, const string& val, const string& 
 			return -1;
 		}
 		
-		groups[group].members[val] = list = &lists[val];
+		groups[group].members.insert(val);
+		list = &lists[val];
 		list->mbox = val;
 		list->group = group;
 	}
