@@ -1,4 +1,6 @@
+Why are the dates broken on messages imported from a maildir?
 Why is lurker warning about From lines during my import?
+How do I add support for my language to lurker?
 How do I change the output lanaguge?
 Why are all my dates off by a fixed hour / don't use "From " header?
 Why shouldn't I open the lurker mboxs with a mail reader?
@@ -8,6 +10,22 @@ Why not store all the messages as XML instead of rendering them as it?
 How can I delete a mailing list?
 
 ---
+
+Q: Why are the dates broken on messages imported from a maildir?
+
+A: You probably imported from a maildir which was improperly copied/created.
+   
+   Normal 'cp' will reset the modification time of messages. With the
+   maildir format, the modification time in new/ is the delivery time. 
+   When copying a maildir use 'tar' or 'cp -a' to properly preserve this
+   information.
+   
+   Another problem are mailbox to maildir conversion scripts. Most seem to
+   have been written by people with an incomplete understanding of the
+   maildir and/or mailbox formats. You should never use lurker in
+   combination with a conversion scripts. Lurker has very good mailbox
+   support and should import directly from the original copy.
+   
 
 Q: Why is lurker warning about From lines during my import?
 
@@ -25,10 +43,33 @@ A: Lurker tries to detect corrupt mailboxes. If the quoted text included
    starting with 'From ' as part of the message body without a warning.
 
 
+Q: How do I add support for my language to lurker?
+
+A: First, find out your ISO 639 language code.
+   All the valid ISO 639 language codes are contained in lang.xml.
+   If your language does not have a standardized country code, contact
+   lurker-users and express your intent to translate and ask what to do.
+   
+   Check the entry in lang.xml and confirm that your language's name is
+   spelt correctly in the language you are translating to. Change
+   localized="no" to localized="yes".
+   
+   Copy en.xml to xx.xml were xx is the country code of the new language.
+   Edit xx.xml replacing the quoted ("") english fields with a UTF-8
+   encoding of the same string, but in the new language.
+   
+   Check that the translation works by loading the lurker front-page and
+   exploring all the possible types of lurker web-pages.
+   
+   Send your freshly created file to lurker-users@lists.sourceforge.net
+   so that you will be included in the lurker credits and other people
+   can benefit from your work!
+
+
 Q: How do I change the output lanaguge?
 
-A: In common.xsl change <xsl:import href="english.xsl"/> to
-   <xsl:import href="deutsch.xsl"/> or something else.
+A: This used to be a global setting; hence this FAQ entry.
+   Now the language is selected from the user interface.
 
 
 Q: Why are all my dates off by a fixed hour / don't use "From " header?
