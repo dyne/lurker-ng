@@ -131,7 +131,7 @@
     </td>
     <td>
      <a href="{next/summary/id}.{$ext}#{list/id}">
-      <img src="../imgs/next.png" alt="&lt;-"/>
+      <img src="../imgs/next.png" alt="-&gt;"/>
      </a>
     </td>
    </xsl:when>

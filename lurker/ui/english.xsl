@@ -38,7 +38,7 @@
 <xsl:variable name="subscribe" select="'Visit Subscription Page'"/>
 <xsl:variable name="recent-poster" select="'Latest Poster'"/>
 <xsl:variable name="new-threads" select="'Active Threads'"/>
-<xsl:variable name="post-count" select="'Posts'"/>
+<xsl:variable name="post-count" select="'&#x2211;'"/>
 <xsl:variable name="activity-chart" select="'Activity'"/>
 
 <xsl:variable name="search-thread" select="'Search for messages within this thread which contain the following keywords:'"/>

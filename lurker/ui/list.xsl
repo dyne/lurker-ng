@@ -53,7 +53,7 @@
     </xsl:call-template>
    </xsl:variable>
    <xsl:for-each select="day">
-    <img src="../imgs/bar.png" height="{(number(.)*21 div $maxval)+1}" width="5"/>
+    <img src="../imgs/bar.png" height="{(number(.)*21 div $maxval)+1}" width="5" alt=""/>
    </xsl:for-each>
   </td>
   <td align="right">
