@@ -3,6 +3,7 @@ v0.5:
 	Fixes for things that gcc 3.2 correctly warns about
 	Updated build files to newer automake/autoconf
 	Fixed a redirection bug on older browsers with jump/*
+	Fixed file descriptor hack that broke Solaris
 
 v0.1f:
 	Fixed overlong browser caching of last mindex for a list

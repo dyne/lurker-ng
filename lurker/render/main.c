@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.27 2002-08-16 19:08:12 terpstra Exp $
+/*  $Id: main.c,v 1.28 2003-03-30 14:46:54 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -187,12 +187,14 @@ int main(int argc, char* argv[])
 	char*	w;
 	char*   r;
 	int	i;
-	int	stdoutfd = 1;
 	int	fd;
 	int	got;
 	char	timebuf[100];
 	time_t	now;
 	struct tm* tm;
+	int docache, dopopen;
+	int pipefds[2];
+	int pid;
 	
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -365,51 +367,111 @@ int main(int argc, char* argv[])
 	printf("\r\n");
 	fflush(stdout);
 	
-	/* Redirect stdout to cache file */
-	stdoutfd = dup(1);
-	close(1);
-	dup(fd);
+	/** Now, we have some decisions for the delivery pipeline.
+	 * 
+	 *  --> ? -+--html-> popen -+-> ? -+--cacheable--> cache -+-> output
+	 *          \-xml----------/        \--------------------/
+	 */
+	docache = (cache[0] != '0');
+	dopopen = (!strcmp(type, "text/xml") && strcmp(ext, "xml"));
 	
 	/* If we are not supposed to cache, kill the file now. We will
 	 * still have a handle to it. 
 	 */
-	if (cache[0] == '0')
+	if (!docache)
 	{
 		unlink(&buf[0]);
+		close(fd);
 	}
 	
 	/* If we need xslt conversion, prep it */
-	if (!strcmp(type, "text/xml") && strcmp(ext, "xml"))
-		lu_output = popen(XSLT_ENGINE, "w");
+	if (dopopen)
+	{
+		pipe(&pipefds[0]);
+		if ((pid = fork()) == 0)
+		{
+			close(0);
+			dup(pipefds[0]);
+			
+			close(pipefds[0]);
+			close(pipefds[1]);
+			
+			if (docache)
+			{
+				close(1);
+				dup(fd);
+				close(fd);
+			}
+			
+			execl("/bin/sh", "sh", "-c", XSLT_ENGINE, NULL);
+			
+			/* unreached */
+			return 0;
+		}
+		else
+		{
+			/* point lu_output at the fd, have it close */
+			close(pipefds[0]);
+			lu_output = fdopen(pipefds[1], "w");
+		}
+	}
 	else
-		lu_output = stdout;
+	{
+		if (docache)
+		{
+			/* fdopen the output, leave 'fd' alone */
+			lu_output = fdopen(dup(fd), "w");
+		}
+		else
+		{
+			/* fd == 1, so use stdout to pipeline */
+			lu_output = stdout;
+		}
+	}
 	
+	/* This copies data from the server to lu_output.
+	 */
 	if (lu_forward_data() != 0)
 		return 1;
 	
-	if (!strcmp(type, "text/xml") && strcmp(ext, "xml"))
-		pclose(lu_output);
-	
-	/* Reclaim our stdout */
-	fflush(stdout);
-	close(1);
-	dup(stdoutfd);
-	close(stdoutfd);
-	
-	/* Reseek to the start */
-	if (lseek(fd, 0, SEEK_SET) == -1)
+	if (dopopen)
 	{
-		printf(&basic_error[0], 
-			_("Unable to rewind to start of output"),
-			_("reseek cache file"),
-			strerror(errno));
-		return 1;
+		/* close the pipe */
+		fclose(lu_output);
+		wait(pid);
+	}
+	else
+	{
+		if (docache)
+		{
+			fclose(lu_output);
+		}
+		else
+		{
+			/* don't close stdout! */
+		}
 	}
 	
-	/* Pipe it through */
-	while ((got = read(fd, &buf[0], sizeof(buf))) > 0)
-		write(1, &buf[0], got);
+	if (docache)
+	{
+		/* Need to forward the cache file to stdout */
+		
+		/* Reseek to the start */
+		if (lseek(fd, 0, SEEK_SET) == -1)
+		{
+			printf(&basic_error[0], 
+				_("Unable to rewind to start of output"),
+				_("reseek cache file"),
+				strerror(errno));
+			return 1;
+		}
 	
-	close(fd);
+		/* Pipe it through */
+		while ((got = read(fd, &buf[0], sizeof(buf))) > 0)
+			fwrite(&buf[0], 1, got, stdout);
+		
+		close(fd);
+	}
+	
 	return 0;
 }
