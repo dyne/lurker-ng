@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.26 2002-07-11 20:52:08 terpstra Exp $
+/*  $Id: indexer.c,v 1.27 2002-07-11 23:39:20 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -340,7 +340,8 @@ void lu_indexer_location(
 	/* Push the mailing list keyword. */
 	snprintf(&buf[0], sizeof(buf), "%s%d", 
 		LU_KEYWORD_LIST, list);
-		
+	
+	/*!!! don't blow cache away */
 	error = kap_kopen(lu_config_keyword, &kr, &buf[0]);
 	kap_kclose(lu_config_keyword, &kr, &buf[0]);
 	
