@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.33 2003-03-30 14:13:53 terpstra Exp $
+/*  $Id: indexer.c,v 1.34 2003-04-06 13:00:55 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -170,7 +170,8 @@ static void my_indexer_traverse(
 			/* This part contains an encapsulated message.
 			 */
 			 
-			my_indexer_traverse(in, body->nested.msg->body);
+			if (body->nested.msg)
+				my_indexer_traverse(in, body->nested.msg->body);
 			break;
 
 		case TYPETEXT:

@@ -4,6 +4,7 @@ v0.5:
 	Updated build files to newer automake/autoconf
 	Fixed a redirection bug on older browsers with jump/*
 	Fixed file descriptor hack that broke Solaris
+	Fixed a segv on corrupt embedded rfc822 mime components
 
 v0.1f:
 	Fixed overlong browser caching of last mindex for a list
