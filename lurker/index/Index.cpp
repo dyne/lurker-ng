@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.20 2003-06-11 13:49:54 terpstra Exp $
+/*  $Id: Index.cpp,v 1.21 2003-06-11 14:44:58 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -118,7 +118,7 @@ pair<string, string> pickAddress(DwAddress* a, const char* charset)
 				}
 				
 				// prune any optional quotes
-				if (name.length() > 2 && name[0] == '"')
+				if (name.length() >= 2 && name[0] == '"')
 					name = name.substr(1, name.length()-2);
 				
 				if (addr != "")

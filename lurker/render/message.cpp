@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.12 2003-06-11 14:40:16 terpstra Exp $
+/*  $Id: message.cpp,v 1.13 2003-06-11 14:45:05 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -284,7 +284,7 @@ void message_format_address(ostream& o, DwAddress* a, const string& charset)
 			if (m)
 			{
 				string name = m->FullName().c_str();
-				if (name[0] == '"' && name.length() > 2)
+				if (name[0] == '"' && name.length() >= 2)
 					name = name.substr(1, name.length()-2);
 				if (name == "")
 					name = m->LocalPart().c_str();
