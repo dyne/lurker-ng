@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.73 2002-06-16 08:46:04 terpstra Exp $
+/*  $Id: service.c,v 1.74 2002-06-16 10:36:41 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -1487,16 +1487,6 @@ static int my_service_attach(
 	size_t			len;
 	int			nfree;
 	char			buf[100];
-	
-	if (strcmp(ext, "attach"))
-	{
-		my_service_error(h,
-			_("Malformed request"),
-			_("Lurkerd received an attachment request for non .attach"),
-			ext);
-		
-		goto my_service_attach_error0;
-	}
 	
 	mid = strchr(request, '@');
 	if (!mid || sscanf(request, "%d@", &aid) != 1)
