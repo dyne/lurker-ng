@@ -4,101 +4,33 @@
     xmlns="http://www.w3.org/1999/xhtml"
     version="1.0">
 
+<xsl:template name="msg-snippet">
+ <a href="../message/{summary/mid}.{$ext}">
+  <xsl:if test="@selected">
+   <img
+     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
+     alt="M" border="0" src="../imgs/{local-name(.)}.png" class="selected"/>
+  </xsl:if>
+  <xsl:if test="not(@selected)">
+   <img
+     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
+     alt="m" border="0" src="../imgs/{local-name(.)}.png"/>
+  </xsl:if>
+ </a>
+</xsl:template>
+
 <xsl:template match="a" mode="snippet"><img alt="." src="../imgs/a.png"/></xsl:template>
 <xsl:template match="b" mode="snippet"><img alt="|" src="../imgs/b.png"/></xsl:template>
 <xsl:template match="c" mode="snippet"><img alt="-" src="../imgs/c.png"/></xsl:template>
 <xsl:template match="d" mode="snippet"><img alt="\" src="../imgs/d.png"/></xsl:template>
 <xsl:template match="e" mode="snippet"><img alt="+" src="../imgs/e.png"/></xsl:template>
 
-<xsl:template match="f" mode="snippet">
- <a href="../message/{summary/mid}.{$ext}">
-  <xsl:if test="@selected">
-   <img
-     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
-     alt="M" border="0" src="../imgs/f.png" class="selected"/>
-  </xsl:if>
-  <xsl:if test="not(@selected)">
-   <img
-     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
-     alt="m" border="0" src="../imgs/f.png"/>
-  </xsl:if>
- </a>
-</xsl:template>
-
-<xsl:template match="g" mode="snippet">
- <a href="../message/{summary/mid}.{$ext}">
-  <xsl:if test="@selected">
-   <img
-     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
-     alt="M" border="0" src="../imgs/g.png" class="selected"/>
-  </xsl:if>
-  <xsl:if test="not(@selected)">
-   <img
-     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
-     alt="m" border="0" src="../imgs/g.png"/>
-  </xsl:if>
- </a>
-</xsl:template>
-
-<xsl:template match="h" mode="snippet">
- <a href="../message/{summary/mid}.{$ext}">
-  <xsl:if test="@selected">
-   <img
-     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
-     alt="M" border="0" src="../imgs/h.png" class="selected"/>
-  </xsl:if>
-  <xsl:if test="not(@selected)">
-   <img
-     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
-     alt="m" border="0" src="../imgs/h.png"/>
-  </xsl:if>
- </a>
-</xsl:template>
-
-<xsl:template match="i" mode="snippet">
- <a href="../message/{summary/mid}.{$ext}">
-  <xsl:if test="@selected">
-   <img
-     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
-     alt="M" border="0" src="../imgs/i.png" class="selected"/>
-  </xsl:if>
-  <xsl:if test="not(@selected)">
-   <img
-     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
-     alt="m" border="0" src="../imgs/i.png"/>
-  </xsl:if>
- </a>
-</xsl:template>
-
-<xsl:template match="j" mode="snippet">
- <a href="../message/{summary/mid}.{$ext}">
-  <xsl:if test="@selected">
-   <img
-     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
-     alt="M" border="0" src="../imgs/j.png" class="selected"/>
-  </xsl:if>
-  <xsl:if test="not(@selected)">
-   <img
-     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
-     alt="m" border="0" src="../imgs/j.png"/>
-  </xsl:if>
- </a>
-</xsl:template>
-
-<xsl:template match="k" mode="snippet">
- <a href="../message/{summary/mid}.{$ext}">
-  <xsl:if test="@selected">
-   <img
-     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
-     alt="M" border="0" src="../imgs/k.png" class="selected"/>
-  </xsl:if>
-  <xsl:if test="not(@selected)">
-   <img
-     title="{summary/time}: '{summary/email/@name}' {summary/email/@address}"
-     alt="m" border="0" src="../imgs/k.png"/>
-  </xsl:if>
- </a>
-</xsl:template>
+<xsl:template match="f" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
+<xsl:template match="g" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
+<xsl:template match="h" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
+<xsl:template match="i" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
+<xsl:template match="j" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
+<xsl:template match="k" mode="snippet"><xsl:call-template name="msg-snippet"/></xsl:template>
 
 <xsl:template match="br" mode="snippet"><br/></xsl:template>
 
