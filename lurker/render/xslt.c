@@ -1,4 +1,4 @@
-/*  $Id: xslt.c,v 1.2 2002-05-11 19:24:59 terpstra Exp $
+/*  $Id: xslt.c,v 1.3 2002-06-21 18:19:03 terpstra Exp $
  *  
  *  xslt.c - deal with old browsers
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 #define LIBXSLT_PUBLIC
 

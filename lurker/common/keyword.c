@@ -1,4 +1,4 @@
-/*  $Id: keyword.c,v 1.1 2002-06-10 12:23:14 terpstra Exp $
+/*  $Id: keyword.c,v 1.2 2002-06-21 18:19:03 terpstra Exp $
  *  
  *  prefix.c - Digest a hunk of string into keywords.
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 /* #define DEBUG 1 */
 

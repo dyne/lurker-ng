@@ -1,4 +1,4 @@
-/*  $Id: breader.c,v 1.20 2002-06-20 14:57:59 terpstra Exp $
+/*  $Id: breader.c,v 1.21 2002-06-21 18:19:03 terpstra Exp $
  *  
  *  breader.c - Knows how to use the abstracted read interface for buffered access
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 /* #define DEBUG 1 */
 

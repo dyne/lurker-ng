@@ -1,4 +1,4 @@
-/*  $Id: decode.c,v 1.4 2002-06-14 11:59:08 terpstra Exp $
+/*  $Id: decode.c,v 1.5 2002-06-21 18:19:03 terpstra Exp $
  *  
  *  decode.c - decode definitions and types for all tools
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 #include "common.h"
 #include "decode.h"

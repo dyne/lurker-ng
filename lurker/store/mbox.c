@@ -1,4 +1,4 @@
-/*  $Id: mbox.c,v 1.34 2002-06-17 13:41:35 terpstra Exp $
+/*  $Id: mbox.c,v 1.35 2002-06-21 18:19:03 terpstra Exp $
  *  
  *  mbox.c - Knows how to follow mboxes for appends and import messages
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 /* #define DEBUG 1 */
 /* #define PROFILE 1 */

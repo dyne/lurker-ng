@@ -1,4 +1,4 @@
-/*  $Id: indexer.c,v 1.23 2002-06-17 12:32:37 terpstra Exp $
+/*  $Id: indexer.c,v 1.24 2002-06-21 18:19:03 terpstra Exp $
  *  
  *  indexer.c - Handles indexing a message for keyword searching
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 /* #define DEBUG 1 */
 

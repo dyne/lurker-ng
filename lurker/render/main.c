@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.22 2002-06-21 00:44:58 terpstra Exp $
+/*  $Id: main.c,v 1.23 2002-06-21 18:19:03 terpstra Exp $
  *  
  *  main.c - render missing pages
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 #include "common.h"
 #include "io.h"

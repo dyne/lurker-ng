@@ -1,4 +1,4 @@
-/*  $Id: jump.c,v 1.3 2002-06-16 08:50:56 terpstra Exp $
+/*  $Id: jump.c,v 1.4 2002-06-21 18:19:03 terpstra Exp $
  *  
  *  jump.c - redirect mindex jumps
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 #include "common.h"
 #include "error.h"

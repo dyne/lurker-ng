@@ -1,4 +1,4 @@
-/*  $Id: summary.c,v 1.22 2002-06-14 11:16:59 terpstra Exp $
+/*  $Id: summary.c,v 1.23 2002-06-21 18:19:04 terpstra Exp $
  *  
  *  summary.h - Knows how to manage digested mail information
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 /* #define DEBUG 1 */
 

@@ -1,4 +1,4 @@
-/*  $Id: search.c,v 1.16 2002-06-14 11:16:58 terpstra Exp $
+/*  $Id: search.c,v 1.17 2002-06-21 18:19:03 terpstra Exp $
  *  
  *  search.c - redirect search postings
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 #include "keyword.h"
 #include "common.h"

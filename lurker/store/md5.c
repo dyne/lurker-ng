@@ -22,6 +22,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 #include "common.h"
 #include "md5.h"

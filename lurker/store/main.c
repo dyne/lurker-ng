@@ -1,4 +1,4 @@
-/*  $Id: main.c,v 1.31 2002-06-21 18:11:23 terpstra Exp $
+/*  $Id: main.c,v 1.32 2002-06-21 18:19:03 terpstra Exp $
  *  
  *  main.c - startup the storage daemon
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 /* #define DEBUG 1 */
 

@@ -90,7 +90,7 @@ What were the design goals?
 	
 	At present, only linux is officially supported. However, the code
 	has been tested occasionally on MacOS X and BSD. It requires only
-	the X/Open C interfaces.
+	the X/Open & C99 interfaces.
 	
 	For beta, we will be supporting many more platforms, but until then
 	only the occasional attempt to port it is being made since

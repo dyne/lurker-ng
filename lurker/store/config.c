@@ -1,4 +1,4 @@
-/*  $Id: config.c,v 1.15 2002-06-14 11:16:58 terpstra Exp $
+/*  $Id: config.c,v 1.16 2002-06-21 18:19:03 terpstra Exp $
  *  
  *  config.c - Knows how to load the config file
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 /* #define DEBUG 1 */
 

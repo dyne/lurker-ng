@@ -1,4 +1,4 @@
-/*  $Id: flatfile.c,v 1.12 2002-06-20 23:11:37 terpstra Exp $
+/*  $Id: flatfile.c,v 1.13 2002-06-21 18:19:03 terpstra Exp $
  *  
  *  flatfile.c - Knows how to manage the keyword flatfile database
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 /* #define DEBUG 1 */
 

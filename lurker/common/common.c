@@ -1,4 +1,4 @@
-/*  $Id: common.c,v 1.19 2002-06-10 12:23:14 terpstra Exp $
+/*  $Id: common.c,v 1.20 2002-06-21 18:19:03 terpstra Exp $
  *  
  *  common.c - common definitions and types for all tools
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _BSD_SOURCE
+#define _ISOC99_SOURCE
 
 #include "common.h"
 
