@@ -1,4 +1,4 @@
-/*  $Id: wbuffer.c,v 1.7 2002-06-23 11:47:08 terpstra Exp $
+/*  $Id: wbuffer.c,v 1.8 2002-06-24 11:50:44 terpstra Exp $
  *  
  *  wbuffer.c - Implements a buffering system that delays appends to the flatfile
  *  
@@ -38,6 +38,8 @@
 #include "btree.h"
 
 #include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 #include <math.h>
 #include <st.h>
 
@@ -182,6 +184,12 @@ typedef struct My_WBuffer_Keyword_T
 	my_wbuffer_sptr	slot;
 } My_WBuffer_Keyword;
 
+typedef struct My_WBuffer_Digest_T
+{
+	char		key[LU_KEYWORD_LEN+1];
+	message_id	hits;
+} My_WBuffer_Digest;
+
 /*------------------------------------------------- Private variables */
 
 static message_id*		my_wbuffer_acache;
@@ -308,6 +316,7 @@ static int my_relocate(my_wbuffer_kptr key)
 	my_wbuffer_sptr l, r, m;
 	my_wbuffer_kptr kscan;
 	message_id	hits;
+	int		swaps;
 	
 	/* We must not just swap with our eventual position because
 	 * this would put the fellow we replace in a (possibly) undeserved
@@ -318,11 +327,13 @@ static int my_relocate(my_wbuffer_kptr key)
 	 * this is a really common keyword we just haven't seen yet. But, these
 	 * are rare---and we probably see them first.
 	 */
+	swaps = 0;
 	while ((slot = my_wbuffer_kcache[key].slot) != 0 &&
 	       (hits = my_wbuffer_kcache[my_wbuffer_scache[slot-1].keyword].hits)
 	        < my_wbuffer_kcache[key].hits)
 	{	/* We deserve a bigger slot */
 		
+		swaps++;
 		/* Find the most common record which has hits equal to hits.
 		 * We maintain an interval [ l, r ) of candidates
 		 */
@@ -351,7 +362,139 @@ static int my_relocate(my_wbuffer_kptr key)
 		my_swap_slot(kscan, key);
 	}
 	
+	if (swaps > 1)
+	{
+		syslog(LOG_WARNING, 
+			_("Had to swap %d times to find correct position. wbuffer.hist was probably corrupt; no big deal."),
+			swaps);
+	}
+	
 	return 0;
+}
+
+static message_id my_grab_entry(const char* key)
+{
+	my_wbuffer_sptr	slot;
+	my_wbuffer_kptr	scan;
+	my_wbuffer_kptr	tmp;
+	
+#ifdef PROFILE
+#ifdef DEBUG
+	printf("l"); fflush(stdout);
+#endif
+	ploads++;
+#endif
+	slot = scan = my_wbuffer_kcache_fill++;
+	assert(slot != MY_WBUFFER_KMAX);
+	
+	strcpy(my_wbuffer_kcache[scan].key, key);
+	my_wbuffer_kcache[scan].hits = 0; /* Filled in below */
+	my_wbuffer_kcache[scan].slot = slot;
+	
+	my_wbuffer_scache[slot].offset  = 0;
+	my_wbuffer_scache[slot].size    = 0;
+	my_wbuffer_scache[slot].fill    = 0;
+	my_wbuffer_scache[slot].keyword = scan;
+	
+	tmp = my_btree_wbuffer_insert(my_wbuffer_kroot, scan);
+	assert (tmp != MY_WBUFFER_KMAX);
+	my_wbuffer_kroot = tmp;
+	
+	return slot;
+}
+
+static int my_count_hit(my_wbuffer_kptr scan, message_id id)
+{
+	int		out;
+	my_wbuffer_aptr	pos;
+	my_wbuffer_sptr	slot;
+	message_id	hits;
+	
+	slot = my_wbuffer_kcache[scan].slot;
+	
+	if (my_wbuffer_scache[slot].size)
+	{
+#ifdef PROFILE
+#ifdef DEBUG
+		printf("h"); fflush(stdout);
+#endif
+		phits++;
+#endif
+		/* This keyword has a buffer */
+		pos = my_wbuffer_scache[slot].offset +
+		      my_wbuffer_scache[slot].fill++;
+		
+		my_wbuffer_acache[pos] = id;
+		my_wbuffer_kcache[scan].hits++;
+		
+		if (my_wbuffer_scache[slot].fill ==
+		    my_wbuffer_scache[slot].size)
+		{
+			out = my_flush_buffer(scan);
+		}
+		else
+		{
+			out = 0;
+		}
+	}
+	else
+	{
+#ifdef PROFILE
+#ifdef DEBUG
+		printf("k"); fflush(stdout);
+#endif
+		pknowns++;
+#endif
+		hits = lu_flatfile_write_keyword_block(
+			my_wbuffer_kcache[scan].key, &id, 1);
+			
+		if (hits == lu_common_minvalid)
+		{
+			out = -1;
+		}
+		else
+		{	/* Record the hits we are tracking */
+			assert (hits > my_wbuffer_kcache[scan].hits);
+			my_wbuffer_kcache[scan].hits = hits;
+			out = 0;
+		}
+	}
+	
+	my_relocate(scan);	/* This can only grow the buffer */
+	
+	return out;
+}
+
+void my_promote_key(const char* key, message_id hits)
+{
+	my_wbuffer_kptr	tmp;
+	my_wbuffer_sptr	slot = my_wbuffer_kcache_fill-1;
+	my_wbuffer_kptr	scan = my_wbuffer_scache[slot].keyword;
+	
+	if (hits > my_wbuffer_kcache[scan].hits)
+	{	/* Promote this record to cache */
+#ifdef PROFILE
+#ifdef DEBUG
+		printf("e"); fflush(stdout);
+#endif
+		pentries++;
+#endif
+		
+		my_flush_buffer(scan);
+		
+		tmp = my_btree_wbuffer_remove(my_wbuffer_kroot, scan);
+		assert (tmp != MY_WBUFFER_KMAX);
+		my_wbuffer_kroot = tmp;
+		
+		strcpy(my_wbuffer_kcache[scan].key, key);
+		my_wbuffer_kcache[scan].hits = hits;
+		
+		tmp = my_btree_wbuffer_insert(my_wbuffer_kroot, scan);
+		assert (tmp != MY_WBUFFER_KMAX);
+		my_wbuffer_kroot = tmp;
+		
+		my_relocate(scan);
+	}
 }
 
 /* Calculate who gets storage and how much. See top of file for proof.
@@ -362,6 +505,10 @@ static int my_relocate(my_wbuffer_kptr key)
 static void my_calc_storage(int yield)
 {
 	double accum, val;
+	
+	/*!!!!! This doesn't actually HAVE to flush things...
+	 * I could make it be smarter
+	 */
 	
 	my_wbuffer_aptr off;
 	my_wbuffer_aptr size;
@@ -487,6 +634,20 @@ int lu_wbuffer_init()
  
 int lu_wbuffer_open()
 {
+	My_WBuffer_Digest	digest;
+	my_wbuffer_kptr		key;
+	
+	int fd = open("wbuffer.hist", O_BINARY | O_RDONLY);
+	if (fd == -1) return 0;
+	
+	while (read(fd, &digest, sizeof(digest)) == sizeof(digest))
+	{
+		key = my_grab_entry(digest.key);
+		my_wbuffer_kcache[key].hits = digest.hits;
+	}
+	
+	close(fd);
+	
 	return 0;
 }
 
@@ -498,16 +659,47 @@ int lu_wbuffer_sync()
 
 int lu_wbuffer_close()
 {
+	my_wbuffer_sptr		scan;
+	my_wbuffer_kptr		key;
+	My_WBuffer_Digest	digest;
+
+	int fd = open("wbuffer.hist", 
+		O_BINARY | O_WRONLY | O_TRUNC | O_CREAT, LU_S_WRITE | LU_S_READ);
+	if (fd == -1)
+	{
+		syslog(LOG_WARNING, _("Failed to record cache offsets: %s -- initial import next time will be slow"),
+			strerror(errno));
+		return 0;
+	}
+	
+	for (scan = 0; scan < my_wbuffer_kcache_fill; scan++)
+	{
+		key = my_wbuffer_scache[scan].keyword;
+		
+		memset(&digest.key[0], 0, sizeof(digest.key));
+		strcpy(&digest.key[0], my_wbuffer_kcache[key].key);
+		digest.hits = my_wbuffer_kcache[key].hits;
+		
+		if (write(fd, &digest, sizeof(digest)) != sizeof(digest))
+		{
+			syslog(LOG_WARNING, _("Failed to record cache offsets: %s -- initial import next time will be slow"),
+				strerror(errno));
+			break;
+		}
+	}
+	
+	my_calc_storage(0);
+	close(fd);
+	
 #ifdef PROFILE
-	my_wbuffer_sptr scan;
 	for (scan = my_wbuffer_kcache_fill-1; scan != MY_WBUFFER_KMAX; scan--)
 	{
-		my_wbuffer_kptr kw = my_wbuffer_scache[scan].keyword;
+		key = my_wbuffer_scache[scan].keyword;
 		
 		printf("%9d:%9d - '%s'\n", 
 			my_wbuffer_scache[scan].size,
-			my_wbuffer_kcache[kw].hits,
-			my_wbuffer_kcache[kw].key);
+			my_wbuffer_kcache[key].hits,
+			my_wbuffer_kcache[key].key);
 	}
 	
 	printf("WBuffer Loads:   %d\n", ploads);
@@ -542,10 +734,7 @@ int lu_wbuffer_append(
 	int		out;
 	int		dir;
 	message_id	hits;
-	my_wbuffer_aptr	pos;
-	my_wbuffer_sptr	slot;
 	my_wbuffer_kptr	scan;
-	my_wbuffer_kptr	tmp;
 	
 	/* Try to find the record in cache already */
 	scan = my_wbuffer_kroot;
@@ -563,82 +752,13 @@ int lu_wbuffer_append(
 	 */
 	if (scan == MY_WBUFFER_KMAX && my_wbuffer_kcache_fill != MY_KEYWORD_CACHE)
 	{
-#ifdef PROFILE
-#ifdef DEBUG
-		printf("l"); fflush(stdout);
-#endif
-		ploads++;
-#endif
-		slot = scan = my_wbuffer_kcache_fill++;
-		
-		strcpy(my_wbuffer_kcache[scan].key, keyword);
-		my_wbuffer_kcache[scan].hits = 0; /* Filled in below */
-		my_wbuffer_kcache[scan].slot = slot;
-		
-		my_wbuffer_scache[slot].offset  = 0;
-		my_wbuffer_scache[slot].size    = 0;
-		my_wbuffer_scache[slot].fill    = 0;
-		my_wbuffer_scache[slot].keyword = scan;
-		
-		tmp = my_btree_wbuffer_insert(my_wbuffer_kroot, scan);
-		assert (tmp != MY_WBUFFER_KMAX);
-		my_wbuffer_kroot = tmp;
+		scan = my_grab_entry(keyword);
 	}
 	
 	/* Are we dealing with a tracked keyword? */
 	if (scan != MY_WBUFFER_KMAX)
 	{
-		slot = my_wbuffer_kcache[scan].slot;
-		
-		if (my_wbuffer_scache[slot].size)
-		{
-#ifdef PROFILE
-#ifdef DEBUG
-			printf("h"); fflush(stdout);
-#endif
-			phits++;
-#endif
-			/* This keyword has a buffer */
-			pos = my_wbuffer_scache[slot].offset +
-			      my_wbuffer_scache[slot].fill++;
-			
-			my_wbuffer_acache[pos] = msg;
-			my_wbuffer_kcache[scan].hits++;
-			
-			if (my_wbuffer_scache[slot].fill ==
-			    my_wbuffer_scache[slot].size)
-			{
-				out = my_flush_buffer(scan);
-			}
-			else
-			{
-				out = 0;
-			}
-		}
-		else
-		{
-#ifdef PROFILE
-#ifdef DEBUG
-			printf("k"); fflush(stdout);
-#endif
-			pknowns++;
-#endif
-			hits = lu_flatfile_write_keyword_block(
-				keyword, &msg, 1);
-			
-			if (hits == lu_common_minvalid)
-			{
-				out = -1;
-			}
-			else
-			{	/* Record the hits we are tracking */
-				assert (hits > my_wbuffer_kcache[scan].hits);
-				my_wbuffer_kcache[scan].hits = hits;
-				out = 0;
-			}
-		}
-		
-		my_relocate(scan);	/* This can only grow the buffer */
+		out = my_count_hit(scan, msg);
 	}
 	else
 	{
@@ -652,33 +772,7 @@ int lu_wbuffer_append(
 			keyword, &msg, 1);
 		out = (hits == lu_common_minvalid);
 		
-		slot = my_wbuffer_kcache_fill-1;
-		scan = my_wbuffer_scache[slot].keyword;
-		
-		if (out == 0 && hits > my_wbuffer_kcache[scan].hits)
-		{	/* Promote this record to cache */
-#ifdef PROFILE
-#ifdef DEBUG
-			printf("e"); fflush(stdout);
-#endif
-			pentries++;
-#endif
-			
-			my_flush_buffer(scan);
-			
-			tmp = my_btree_wbuffer_remove(my_wbuffer_kroot, scan);
-			assert (tmp != MY_WBUFFER_KMAX);
-			my_wbuffer_kroot = tmp;
-			
-			strcpy(my_wbuffer_kcache[scan].key, keyword);
-			my_wbuffer_kcache[scan].hits = hits;
-			
-			tmp = my_btree_wbuffer_insert(my_wbuffer_kroot, scan);
-			assert (tmp != MY_WBUFFER_KMAX);
-			my_wbuffer_kroot = tmp;
-			
-			my_relocate(scan);
-		}
+		if (out == 0) my_promote_key(keyword, hits);
 	}
 	
 	my_wbuffer_count_down++;
