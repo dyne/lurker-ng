@@ -5,15 +5,14 @@ Ideas:
 	Deleted message keyword?
 
 Unfulfilled requirements:
-	Message count estimates
 	New topics
+	Message count estimates
 	Boolean "or" in search
 	Phrase searching
 	Better packing of tree
 	German pot
 
 BUGS:
-	Need a better way to clean cache.
 	Timezones suck. Need to localize times to the browser.
 	There is a slight bug in advance() pre-commit post-insert.
 		(you don't always see fresh keys if partially past it)
