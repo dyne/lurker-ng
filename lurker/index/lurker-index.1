@@ -80,12 +80,12 @@ messages it will be interpretted as a single message with an
 invalid date. The larger this parameter, the more CPU power lurker 
 needs during import, but the less disk seeks. 
 .IP "\fB-m\fP" 10 
-Import a single message. In this mode lurker will not 
-interpret 'From ' lines as message delimiters. This helps for when 
-lurker is being fed email directly from the MTA which sometimes 
-does not escape these lines. However, if possible, make your MTA 
-always escape these lines so the generated mbox is valid.  Use 
-this option when fed a single message from an MTA. 
+Import a single message. In this mode lurker will never 
+interpret 'From ' lines as message delimiters. When being fed 
+newly delivered mail, this is the preferred mode of operation.  
+Try to turn off the 'From ' escaping of your MTA when using  
+this mode as lurker does it's own escaping which is generally 
+smarter. 
 .IP "\fB-v\fP" 10 
 Verbose operation. Lurker will output statistics about import 
 speed to assist you in tweaking options for best throughput on 
@@ -146,4 +146,4 @@ Before reporting a bug, please confirm that the bug you found is
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
 <lurker-users@lists.sourceforge.net>. 
-...\" created by instant / docbook-to-man, Mon 23 Jun 2003, 17:52 
+...\" created by instant / docbook-to-man, Thu 26 Jun 2003, 22:50 

@@ -1,3 +1,4 @@
+Why is lurker warning about From lines during my import?
 Why are all my dates off by a fixed hour / don't use "From " header?
 Why shouldn't I open the lurker mboxs with a mail reader?
 Why do I get "opening database: Operation not supported" on MacOS?
@@ -6,6 +7,22 @@ Why not store all the messages as XML instead of rendering them as it?
 How can I delete a mailing list?
 
 ---
+
+Q: Why is lurker warning about From lines during my import?
+
+A: Lurker tries to detect corrupt mailboxes. If the quoted text included
+   in the warning was not the start of a new message, then lurker just
+   fixed your mailbox for you.
+   
+   On the other hand, if the quoted text was a message boundary, you have
+   a badly corrupted mailbox. You will have to repair this mailbox somehow.
+   What lurker choose to do in this case was combine those two messages into
+   a single message which was not correct. You should fix the mailbox, purge
+   your database, and reimport. Do not import corrupted mailboxes!
+   
+   Be aware that when importing with '-m' lurker will always treat lines
+   starting with 'From ' as part of the message body without a warning.
+
 
 Q: Why are all my dates off by a fixed hour / don't use "From " header?
 

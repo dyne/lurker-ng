@@ -103,12 +103,12 @@ lurker-index.1: lurker-index.sgml
       <varlistentry>
         <term><option>-m</option></term>
         <listitem>
-          <para>Import a single message. In this mode lurker will not
-          interpret 'From ' lines as message delimiters. This helps for when
-          lurker is being fed email directly from the MTA which sometimes
-          does not escape these lines. However, if possible, make your MTA
-          always escape these lines so the generated mbox is valid.  Use
-          this option when fed a single message from an MTA.</para>
+          <para>Import a single message. In this mode lurker will never
+          interpret 'From ' lines as message delimiters. When being fed
+          newly delivered mail, this is the preferred mode of operation. 
+          Try to turn off the 'From ' escaping of your MTA when using 
+          this mode as lurker does it's own escaping which is generally
+          smarter.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
