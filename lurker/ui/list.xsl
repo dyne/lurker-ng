@@ -36,6 +36,15 @@
    <xsl:value-of select="$ext"/>
    <xsl:text>';</xsl:text>
   </xsl:attribute>
+  <xsl:attribute name="onDblClick">
+   <xsl:text>self.location='</xsl:text>
+   <xsl:value-of select="../server/doc-url"/>
+   <xsl:text>/message/</xsl:text>
+   <xsl:value-of select="summary/id"/>
+   <xsl:text>.</xsl:text>
+   <xsl:value-of select="$ext"/>
+   <xsl:text>';</xsl:text>
+  </xsl:attribute>
   <xsl:attribute name="onMouseOver">rollIn(this);</xsl:attribute>
   <xsl:attribute name="onMouseOut">rollOut(this);</xsl:attribute>
   <xsl:attribute name="class">
