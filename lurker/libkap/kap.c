@@ -1,4 +1,4 @@
-/*  $Id: kap.c,v 1.2 2002-07-04 19:24:11 terpstra Exp $
+/*  $Id: kap.c,v 1.3 2002-07-08 18:03:50 terpstra Exp $
  *  
  *  kap.c - Implementation of the non-layer methods.
  *  
@@ -372,6 +372,7 @@ static int append_back(void* arg, const char* key, unsigned char* record, ssize_
 	
 	if (kap_append_keyspace(&kr) != sz)
 	{
+		sz = kap_append_keyspace(&kr);
 		memcpy(record, &kr, sz);
 		*len = sz;
 		return 1;
