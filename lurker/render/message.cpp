@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.9 2003-06-10 23:32:18 terpstra Exp $
+/*  $Id: message.cpp,v 1.10 2003-06-11 14:24:54 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -39,6 +39,7 @@
 #include <mimelib/body.h>
 #include <mimelib/bodypart.h>
 #include <mimelib/utility.h>
+#include <mimelib/disptype.h>
 #include <mimelib/param.h>
 
 #include <CharsetEscape.h>
@@ -222,6 +223,13 @@ void message_build(ostream& o, DwEntity& e, long& x)
 		DwMediaType& mt = e.Headers().ContentType();
 		type = (mt.TypeStr() + "/" + mt.SubtypeStr()).c_str();
 		name = mt.Name().c_str();
+	}
+	
+	if (e.Headers().HasContentDisposition())
+	{
+		DwDispositionType& dt = e.Headers().ContentDisposition();
+		if (dt.Filename() != "")
+			name = dt.Filename().c_str();
 	}
 	
 	o << "<mime id=\"" << x << "\" type=\"" << type << "\"";
