@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.4 2003-04-25 14:55:41 terpstra Exp $
+/*  $Id: main.cpp,v 1.5 2003-04-25 20:08:50 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -296,7 +296,7 @@ int main(int argc, char** argv)
 			++messages;
 			was = 0; 
 			
-			if (verbose && messages % 10000 == 0)
+			if (verbose && messages % 1000 == 0)
 				status(did, messages, start);
 		}
 		
