@@ -2,7 +2,9 @@ v1.0:
 	Copied libesort from lurker
 	Added rollback method for completeness
 	Added FORWARD/BACKWARD to match conventional C++
-	Renamed seek() with prefix to seekp() other languages
+	Renamed seek() with prefix to seekp() for cross-language consistency
 	Standardized FORWARD=1, BACKWARD=2
-	Added C bindings -- header + library (esortc)
-	Added Perl bindings (use KW)
+	Scrapped the concept of versioned databases
+	Added C bindings -- header + library
+	Added Perl bindings
+	Added Python bindings

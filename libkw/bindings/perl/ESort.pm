@@ -36,12 +36,12 @@ ESort - Perl extension online external sort
 
   use ESort;
   
-  $db = ESort::Writer::opendb("fred");
+  $db = ESort::Writer("fred");
   $db->insert("turnips");
   $db->insert("jump");
   $db->commit();
   
-  $db = ESort::Reader::opendb("fred");
+  $db = ESort::Reader("fred");
   $w = $db->seek("", $ESort::FORWARD);
   while ($w->advance() >= 0)
   {
@@ -81,8 +81,8 @@ An additional advantage is that ESort readers get snap-shots.
 
 =head2 EXPORT
 
-The API has two entry points ESort::Reader::opendb and ESort::Writer::opendb.
-These both support $db->seek(key, dir) and $db->seekp(prefix, kex, dir).
+The API has two entry points ESort::Reader and ESort::Writer.
+These objects both support $db->seek(key, dir) and $db->seekp(prefix, kex, dir).
 A seek returns a Walker which supports $w->key() and $w->advance().
 $w->advance() returns the bytes in common with the last key or -1 on EOF.
 The writer supports insert(key), commit(), rollback().

@@ -1,4 +1,4 @@
-/*  $Id: esortc.cpp,v 1.3 2003-08-16 18:36:20 terpstra Exp $
+/*  $Id: esortc.cpp,v 1.4 2003-08-17 11:38:26 terpstra Exp $
  *  
  *  esortc.cpp - C binding for the ESort API
  *  
@@ -60,10 +60,10 @@ Reader esort_reader_opendb(const char* database)
 	return rr.release(); // can't do memory management in C
 }
 
-Reader esort_reader_opendb_extended(const char* database, int synced, int unique, unsigned int version, unsigned long blockSize, unsigned long keySize)
+Reader esort_reader_opendb_extended(const char* database, int synced, int unique, unsigned long blockSize, unsigned long keySize)
 {
 	std::auto_ptr<ESort::Reader> rr(ESort::Reader::opendb(database,
-		ESort::Parameters(synced, unique, version, blockSize, keySize)));
+		ESort::Parameters(synced, unique, blockSize, keySize)));
 	return rr.release(); // can't do memory management in C
 }
 
@@ -80,10 +80,10 @@ Writer esort_writer_opendb(const char* database)
 	return rw.release(); // can't do memory management in C
 }
 
-Writer esort_writer_opendb_extended(const char* database, int mode, int synced, int unique, unsigned int version, unsigned long blockSize, unsigned long keySize)
+Writer esort_writer_opendb_extended(const char* database, int synced, int unique, unsigned long blockSize, unsigned long keySize, int mode)
 {
 	std::auto_ptr<ESort::Writer> rw(ESort::Writer::opendb(database,
-		ESort::Parameters(synced, unique, version, blockSize, keySize), mode));
+		ESort::Parameters(synced, unique, blockSize, keySize), mode));
 	return rw.release(); // can't do memory management in C
 }
 

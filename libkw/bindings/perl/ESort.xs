@@ -12,22 +12,20 @@ typedef ESort::string	ESort_String;
 typedef int		error_int;
 
 
-MODULE = ESort	PACKAGE = ESort::Writer
+MODULE = ESort	PACKAGE = ESort
 
 ESort_Writer*
-opendb(ESort_String db)
+Writer(ESort_String db, int synced=1, int unique=1, unsigned long blockSize=8192, unsigned long keySize=255, int mode=0666)
 	CODE:
-		RETVAL = ESort_Writer::opendb(db).release();
+		RETVAL = ESort_Writer::opendb(db, ESort::Parameters(synced, unique, blockSize, keySize), mode).release();
 	OUTPUT:
 		RETVAL
 
 
-MODULE = ESort	PACKAGE = ESort::Reader
-
 ESort_Reader*
-opendb(ESort_String db)
+Reader(ESort_String db, int synced=1, int unique=1, unsigned long blockSize=8192, unsigned long keySize=255)
 	CODE:
-		RETVAL = ESort_Reader::opendb(db).release();
+		RETVAL = ESort_Reader::opendb(db, ESort::Parameters(synced, unique, blockSize, keySize)).release();
 	OUTPUT:
 		RETVAL
 

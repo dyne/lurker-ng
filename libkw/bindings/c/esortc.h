@@ -1,4 +1,4 @@
-/*  $Id: esortc.h,v 1.3 2003-08-16 18:36:20 terpstra Exp $
+/*  $Id: esortc.h,v 1.4 2003-08-17 11:38:26 terpstra Exp $
  *  
  *  esortc.h - Public interface to libesort for C
  *  
@@ -33,6 +33,15 @@
 #define ESORT_FORWARD	1
 #define ESORT_BACKWARD	2
 
+/* These are the defaults used by opendb() */
+#define ESORT_DEFAULT_SYNCED			1
+#define ESORT_DEFAULT_UNIQUE			1
+#define ESORT_READER_DEFAULT_BLOCK_SIZE		8
+#define ESORT_READER_DEFAULT_KEY_SIZE		1
+#define ESORT_WRITER_DEFAULT_BLOCK_SIZE		8192
+#define ESORT_WRITER_DEFAULT_KEY_SIZE		255
+#define ESORT_WRITER_DEFAULT_MODE		0666
+
 /* Opaque datatypes */
 typedef void* Walker;
 typedef void* Reader;
@@ -55,11 +64,11 @@ void		esort_walker_destroy(Walker);
 
 /* Methods for opening/closing a reader/writer, 0 = error + errno */
 Reader	esort_reader_opendb(const char* database);
-Reader	esort_reader_opendb_extended(const char* database, int synced, int unique, unsigned int version, unsigned long blockSize, unsigned long keySize);
+Reader	esort_reader_opendb_extended(const char* database, int synced, int unique, unsigned long blockSize, unsigned long keySize);
 void	esort_reader_destroy(Reader);
 
 Writer	esort_writer_opendb(const char* database);
-Writer	esort_writer_opendb_extended(const char* database, int mode, int synced, int unique, unsigned int version, unsigned long blockSize, unsigned long keySize);
+Writer	esort_writer_opendb_extended(const char* database, int synced, int unique, unsigned long blockSize, unsigned long keySize, int mode);
 void	esort_writer_destroy(Writer);
 
 /* Methods for reading a Reader or Writer */
