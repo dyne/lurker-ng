@@ -1,4 +1,4 @@
-/*  $Id: Parameters.cpp,v 1.4 2003-05-07 15:43:13 terpstra Exp $
+/*  $Id: Parameters.cpp,v 1.5 2003-05-07 16:01:13 terpstra Exp $
  *  
  *  Parameters.cpp - Control how the database is stored
  *  
@@ -33,11 +33,11 @@ namespace ESort
 {
 
 Parameters::Parameters(
+	bool          synced,
+	bool          unique,
 	unsigned int  version, 
 	unsigned long blockSize, 
-	unsigned long keySize, 
-	bool          unique,
-	bool          synced)
+	unsigned long keySize)
  : version_(version), blockSize_(blockSize), keySize_(keySize), unique_(unique), synced_(synced)
 {
 	assert (keySize_ > 0);

@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.7 2003-05-07 15:43:12 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.8 2003-05-07 16:01:13 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -185,7 +185,8 @@ int DbMan::open(View& view, const string& db)
 	int ok = lock_snapshot_ro();
 	if (ok != 0) return ok;
 	
-	if (snapshot(view, view.params) != 0)
+	Parameters x = Parameters::minimize(view.params);
+	if (snapshot(view, x) != 0)
 	{
 		int o = errno;
 		unlock_snapshot_ro();
@@ -195,7 +196,16 @@ int DbMan::open(View& view, const string& db)
 	else
 	{
 		unlock_snapshot_ro();
-		return 0;
+		if (!x.isWider(view.params))
+		{
+			errno = EINVAL;
+			return -1;
+		}
+		else
+		{
+			view.params = x;
+			return 0;
+		}
 	}
 }
 
@@ -234,7 +244,7 @@ int DbMan::open(View& view, const string& db, int mode)
 	}
 	else
 	{	// not empty
-		Parameters x(1,8,1);
+		Parameters x = Parameters::minimize(view.params);
 		if (snapshot(view, x) != 0)
 		{
 			int o = errno;

@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.7 2003-05-07 15:43:13 terpstra Exp $
+/*  $Id: esort.h,v 1.8 2003-05-07 16:01:13 terpstra Exp $
  *  
  *  esort.h - Public interface to libesort
  *  
@@ -74,11 +74,11 @@ class Parameters
  public:
  	// keySize & blockSize are the number of bytes maximum
 	Parameters(
+		bool          synced    = true,
+		bool          unique    = true,
 		unsigned int  version   = 1, 
 		unsigned long blockSize = 8192, 
-		unsigned long keySize   = 255, 
-		bool          unique    = true,
-		bool          synced    = true);
+		unsigned long keySize   = 255);
 	
 	bool isWider(const Parameters& o);
 	
@@ -88,6 +88,11 @@ class Parameters
 	bool          unique   () const { return unique_;    }
 	bool          synced   () const { return synced_;    }
 	unsigned int  keyWidth () const { return keyWidth_;  }
+	
+	static Parameters minimize(const Parameters& x)
+	{
+		return Parameters(x.synced(), x.unique(), 1, 8, 1);
+	}
 };
 
 /** The direction in which the Walker walks the database.
@@ -155,7 +160,9 @@ class Reader
  	/** Open an existing database for reading.
  	 *  0 is returned and errno set on error.
  	 */
- 	static auto_ptr<Reader> open(const string& db);
+ 	static auto_ptr<Reader> open(
+ 		const string& db, 
+ 		const Parameters& p = Parameters::minimize(Parameters()));
 };
 
 /** The Writer object allows you to insert keys.
