@@ -1,4 +1,4 @@
-/*  $Id: service.c,v 1.31 2002-02-25 08:05:32 terpstra Exp $
+/*  $Id: service.c,v 1.32 2002-02-25 08:24:58 terpstra Exp $
  *  
  *  service.c - Knows how to deal with request from the cgi
  *  
@@ -231,6 +231,17 @@ static int my_service_write_strl(
 			
 			start = buf+1;
 			break;
+		
+		default:
+			/* Simply drop control characters: we are outputing
+			 * utf-8; they shouldn't be there.
+			 */
+			if (*buf < 32)
+			{
+				if (my_service_buffer_writel(h, start, buf - start) != 0)
+					return -1;
+				start = buf+1;
+			}
 		}
 	}
 	
