@@ -19,6 +19,8 @@ if test "x$USE_MAINTAINER_MODE" != "xno"; then
   CXXFLAGS="$CXXFLAGS -Wall -O0 -g"
 fi
 
+AC_CHECK_FUNCS([timegm unsetenv setenv])
+
 AC_SEARCH_HEADER_DIRS(
   [iconv.h],
   [/usr/local/include],,

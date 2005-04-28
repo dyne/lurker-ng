@@ -1,4 +1,4 @@
-/*  $Id: MessageId.cpp,v 1.8 2004-08-19 23:52:51 terpstra Exp $
+/*  $Id: MessageId.cpp,v 1.9 2005-04-28 22:43:39 terpstra Exp $
  *  
  *  MessageId.cpp - Helper class for manipulating internal message ids
  *  
@@ -26,6 +26,7 @@
 #define _FILE_OFFSET_BITS 64
 
 #include "MessageId.h"
+#include "config.h"
 
 #include <cstring>
 #include <cstdio>
@@ -38,24 +39,30 @@ inline int dehex(char x)
 	return x - '0';
 }
 
+#ifndef HAVE_TIMEGM
+#if defined(HAVE_SETENV) && defined(HAVE_UNSETENV)
 time_t my_timegm(struct tm* tm)
 {
-	static bool	initd = false;
-	static time_t	delta;
+	time_t ret;
+	char* tz;
 	
-	if (!initd)
-	{	// use 'x' to calculate local time zone offset portably
-		time_t x = time(0);
-		time_t y = mktime(gmtime(&x));
-		
-		delta = x - y;
-		initd = true;
-	}
+	tz = getenv("TZ");
+	setenv("TZ", "", 1);
+	tzset();
 	
-	struct tm hack = *tm;
-	hack.tm_sec += delta;
-	return mktime(&hack);
+	ret = mktime(tm);
+	
+	if (tz)
+		setenv("TZ", tz, 1);
+	else	unsetenv("TZ");
+	tzset();
+	
+	return ret;
 }
+#else
+#error cannot emulate timegm
+#endif
+#endif
 
 const unsigned int MessageId::time_len = 15;
 const unsigned int MessageId::full_len = 24;
@@ -91,7 +98,11 @@ MessageId::MessageId(const char* str)
 		t.tm_sec =	(str[13] - '0') * 10 +
 				(str[14] - '0');
 		
+#ifdef HAVE_TIMEGM
+		time_t tm = timegm(&t);
+#else
 		time_t tm = my_timegm(&t);
+#endif
 		
 		time_[3] = (tm & 0xFF); tm >>= 8;
 		time_[2] = (tm & 0xFF); tm >>= 8;
