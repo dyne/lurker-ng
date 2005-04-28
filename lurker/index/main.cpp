@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.42 2004-08-25 21:39:46 terpstra Exp $
+/*  $Id: main.cpp,v 1.43 2005-04-28 22:57:35 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -48,6 +48,18 @@
 #include <zlib.h>
 
 #include "Index.h"
+
+#include "config.h"
+#ifdef HAVE_SYSEXITS_H
+#include <sysexits.h>
+#define LEX_USAGE	EX_USAGE
+#define LEX_IOERR	EX_IOERR
+#define LEX_DATAERR	EX_DATAERR
+#else
+#define LEX_USAGE	1
+#define LEX_IOERR	2
+#define LEX_DATAERR	3
+#endif
 
 // Our friendly neighbourhood date parser (getdate.y / getdate.cpp)
 time_t get_date (const char *p, const time_t *now);
@@ -573,35 +585,35 @@ int main(int argc, char** argv)
 			break;
 		default:
 			help(argv[0]);
-			return 1;
+			return LEX_USAGE;
 		}
 	}
 	
 	if (!config || !listn || batch == 0 || optind < argc)
 	{
 		help(argv[0]);
-		return 1;
+		return LEX_USAGE;
 	}
 	
 	Config cfg;
 	if (cfg.load(config) != 0)
 	{
 		cerr << cfg.getError() << flush;
-		return 1;
+		return LEX_DATAERR;
 	}
 	
 	Config::Lists::iterator i = cfg.lists.find(listn);
 	if (i == cfg.lists.end())
 	{
 		cerr << "No such list '" << listn << "' defined; cannot import to it." << endl;
-		return 1;
+		return LEX_DATAERR;
 	}
 	list = &i->second;
 	
 	if (list->offline)
 	{
 		cerr << "The list '" << listn << "' is marked as offline; cannot import to it." << endl;
-		return 1;
+		return LEX_DATAERR;
 	}
 	
 	ESort::Parameters params(synced);
@@ -613,7 +625,7 @@ int main(int argc, char** argv)
 	if (!db.get())
 	{
 		perror("opening database");
-		return 1;
+		return LEX_IOERR;
 	}
 	
 	string mboxf = cfg.dbdir + "/" + listn;
@@ -621,7 +633,7 @@ int main(int argc, char** argv)
 	if (mbox == -1)
 	{
 		perror(mboxf.c_str());
-		return 1;
+		return LEX_IOERR;
 	}
 	length = lseek(mbox, 0, SEEK_END);
 	
@@ -637,7 +649,7 @@ int main(int argc, char** argv)
 			if (maildir(d, 
 				string(input) + "/new",
 				string(input) + "/cur") != 0)
-				return 1;
+				return LEX_IOERR;
 			closedir(d);
 		}
 		else
@@ -647,19 +659,19 @@ int main(int argc, char** argv)
 			{
 				perror(input);
 				cerr << "Opening input file failed!" << endl;
-				return 1;
+				return LEX_IOERR;
 			}
 			if (process_mail(f, 0) != 0)
-				return 1;
+				return LEX_IOERR;
 			fclose(f);
 		}
 	}
 	else
 	{
-		if (process_mail(stdin, 0) != 0) return 1;
+		if (process_mail(stdin, 0) != 0) return LEX_IOERR;
 	}
 	
-	if (commit() != 0) return 1;
+	if (commit() != 0) return LEX_IOERR;
 	if (verbose) status();
 	
 	return 0;

@@ -20,6 +20,7 @@ if test "x$USE_MAINTAINER_MODE" != "xno"; then
 fi
 
 AC_CHECK_FUNCS([timegm unsetenv setenv])
+AC_CHECK_HEADERS([sysexits.h])
 
 AC_SEARCH_HEADER_DIRS(
   [iconv.h],
