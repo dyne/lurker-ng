@@ -3,6 +3,7 @@ v1.3:
 	Included French localization
 	Fixed an (unexploitable) stack-overflow from very repeated keywords
 	Changed date widths to 170 for MSIE under Windows 2000.
+	Decoding of international headers no longer injects incorrect spaces
 
 v1.2:
 	Fixed a bug where 'From "john doe"@foo.com Mon Jan 1 10:11:11' was not

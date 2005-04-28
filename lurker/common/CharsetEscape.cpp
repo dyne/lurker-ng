@@ -1,4 +1,4 @@
-/*  $Id: CharsetEscape.cpp,v 1.11 2003-06-23 15:28:10 terpstra Exp $
+/*  $Id: CharsetEscape.cpp,v 1.12 2005-04-28 22:26:08 terpstra Exp $
  *  
  *  CharsetEscape.cpp - A stream manipulator-like thing for charset conversion
  *  
@@ -166,25 +166,32 @@ string decode_header(
 #endif
 	
 	CharsetEscape code(default_coding);
+	bool sawCodeWord = false;
 	
-	string::size_type b = 0, c, e, s;
+	string::size_type b = 0, c, e, s, n;
 	while ((c = str.find("=?", b)) != string::npos)
 	{
-		code.write(out, str.c_str() + b, c - b);
-		
 		if ((e = str.find('?',  c+2)) != string::npos &&
 		    (s = str.find('?',  e+1)) != string::npos &&
 		    s == e + 2 &&
-		    (b = str.find("?=", s+1)) != string::npos &&
+		    (n = str.find("?=", s+1)) != string::npos &&
 		    str.find_first_of(" \t", c) > b)
 		{	// valid escape
+			if (!sawCodeWord || // guaranteed not npos: (c has = )
+			    str.find_first_not_of(" \r\n\t", b) < c)
+			{
+				code.write(out, str.c_str() + b, c - b);
+			}
+			
+			sawCodeWord = true;
+			
 			c += 2;
 			string charset(str, c, e - c);
 			char encoding = str[e+1];
 			s += 1;
-			DwString in(str.c_str() + s, b-s);
+			DwString in(str.c_str() + s, n-s);
 			DwString decode;
-			b += 2;
+			b = n+2;
 			
 			if (encoding == 'Q' || encoding == 'q')
 			{
@@ -198,9 +205,13 @@ string decode_header(
 				
 				DwDecodeQuotedPrintable(in, decode);
 			}
-			if (encoding == 'B' || encoding == 'b')
+			else if (encoding == 'B' || encoding == 'b')
 			{
 				DwDecodeBase64(in, decode);
+			}
+			else
+			{
+				decode = "<--corrupt-->";
 			}
 			
 			CharsetEscape subcode(charset.c_str());
@@ -208,8 +219,10 @@ string decode_header(
 		}
 		else
 		{	// not valid escape
-			code.write(out, "=?", 2);
+			code.write(out, str.c_str() + b, c+2 - b);
 			b = c+2;
+			
+			sawCodeWord = false;
 		}
 	}
 	
