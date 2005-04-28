@@ -6,6 +6,7 @@ v1.3:
 	Decoding of international headers no longer injects incorrect spaces
 	Message-id now don't break in some timezones during daylight savings
 	Use sysexits.h if available for mailer compatible return codes
+	Increased maximum lengths of some config-file fields
 
 v1.2:
 	Fixed a bug where 'From "john doe"@foo.com Mon Jan 1 10:11:11' was not

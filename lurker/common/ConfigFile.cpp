@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.13 2004-10-09 14:48:18 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.14 2005-04-28 23:00:51 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -502,7 +502,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	
 	if (key == "group")
 	{
-		len = 32;
+		len = 128;
 		if (!isSimple(val) || val.length() == 0)
 		{
 			error << "Group id '" << val << "' is not a simple lowercase string!" << endl;
@@ -519,12 +519,12 @@ int Config::process_command(const string& keys, const string& val, const string&
 	}
 	else if (key == "heading")
 	{
-		len = 60;
+		len = 180;
 		groups[group].heading.translate(lc, val);
 	}
 	else if (key == "list")
 	{
-		len = 32;
+		len = 128;
 		if (!isSimple(val) || val.length() == 0)
 		{
 			error << "List id '" << val << "' is not a simple lowercase string!" << endl;
@@ -553,7 +553,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	}
 	else if (key == "title")
 	{
-		len = 40;
+		len = 180;
 		
 		if (!list)
 		{
