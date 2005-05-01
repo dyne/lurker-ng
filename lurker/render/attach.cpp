@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.10 2004-08-19 14:52:29 terpstra Exp $
+/*  $Id: attach.cpp,v 1.11 2005-05-01 15:03:59 terpstra Exp $
  *  
  *  attach.cpp - Handle a attach/ command
  *  
@@ -156,8 +156,14 @@ int handle_attach(const Config& cfg, ESort::Reader* db, const string& param)
 			e.Headers().ContentType().AsString().c_str());
 	}
 	else	cout <<	"text/plain";
+	cout << "\r\n";
 	
-	cout << "\r\n\r\n";
+	if (e.Headers().HasContentDisposition())
+		cout << "Content-Disposition: " 
+		     << unfold_header(e.Headers().ContentDisposition().AsString().c_str())
+		     << "\r\n";
+	
+	cout << "\r\n";
 	
 	DwString out;
 	// if (e.hasHeaders() && 
