@@ -8,6 +8,8 @@ v1.3:
 	Use sysexits.h if available for mailer compatible return codes
 	Increased maximum lengths of some config-file fields
 	Suggest attachment filenames via Content-Disposition
+	Due to popular demand, reversed the direction of thread arrows
+	Fixed transparency of the house icon under IE
 
 v1.2:
 	Fixed a bug where 'From "john doe"@foo.com Mon Jan 1 10:11:11' was not
