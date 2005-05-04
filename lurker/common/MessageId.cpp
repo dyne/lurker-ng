@@ -1,4 +1,4 @@
-/*  $Id: MessageId.cpp,v 1.9 2005-04-28 22:43:39 terpstra Exp $
+/*  $Id: MessageId.cpp,v 1.10 2005-05-04 22:51:48 terpstra Exp $
  *  
  *  MessageId.cpp - Helper class for manipulating internal message ids
  *  
@@ -24,6 +24,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
+#define _GNU_SOURCE
 
 #include "MessageId.h"
 #include "config.h"
