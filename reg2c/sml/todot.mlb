@@ -2,5 +2,5 @@ local
   $(SML_LIB)/basis/basis.mlb
   automata.mlb
 in
-  test.sml
+  todot.sml
 end

@@ -7,4 +7,4 @@ open E
 
 val exp = (RE.toExpression o RE.fromString o hd o CommandLine.arguments) ()
 val s = toDFA exp
-val () = print (DFA.toDot ("myfoo", s))
+val () = print (DFA.toDot ("dotfile", s))
