@@ -1,17 +1,35 @@
-fun goodness x =
-  if x = 0 then 100 else (* avoid null at nearly all costs *)
-  if x <= 31 then 25 else (* avoid control characters *)
-  if x = 32 then 3 else (* better than punctuation, worse than numbers *)
-  if x >=  33 andalso x <=  47 then 4 else (* punctuation *)
-  if x >=  48 andalso x <=  57 then 2 else (* numbers *)
-  if x >=  58 andalso x <=  64 then 4 else (* punctuation *)
-  if x >=  65 andalso x <=  90 then 1 else (* capital letters *)
-  if x >=  91 andalso x <=  96 then 4 else (* punctuation *)
-  if x >=  97 andalso x <= 122 then 1 else (* small letters *)
-  if x >= 123 andalso x <= 126 then 4 else (* punctuation *)
-  12 (* high ascii values, not quite as bad as control chars *)
+fun overlap (NONE, NONE, x, y) = true
+  | overlap (SOME l, NONE, x, y) = l < y
+  | overlap (NONE, SOME r, x, y) = x < r
+  | overlap (SOME l, SOME r, x, y) = x < r andalso l < y
 
-val edgeLength = goodness o Char.ord
+(* assumes overlap *)
+fun pick (NONE, NONE, x, y) = x
+  | pick (SOME l, NONE, x, y) = y - 1 (* l < y *)
+  | pick (NONE, SOME r, x, y) = x (* x < r *)
+  | pick (SOME l, SOME r, x, y) = if l < x then x else l
+
+fun edgeLength (l, r) =
+  let
+    val asciiweights = [
+      ( 65,  91,   1), (* uppercase chars are perfect *)
+      ( 97,  123,  1), (* lowercase chars are perfect *)
+      ( 48,  58,   2), (* digits are nice *)
+      ( 32,  33,   3), (* space is better than punctuation *)
+      ( 58,  65,   4), (* :;<=>?@ not pretty, but ok *)
+      ( 91,  97,   4), (* [\]^_` not pretty, but ok *)
+      (123,  127,  4), (* {|}~ not pretty, but ok *)
+      ( 33,  48,   4), (* !"#$%&'()*+-,-./ are not pretty, but acceptable *)
+      (127,  256, 12), (* anything bigger is not nicely printable *)
+      (  1,  32,  25), (* control chars are bad too *)
+      (  0,   1, 200)] (* try really hard to avoid nulls *)
+    
+    val (li, ri) = (Option.map Char.ord l, Option.map Char.ord r)
+    fun match (x, y, _) = overlap (li, ri, x, y)
+  in
+    case valOf (List.find match asciiweights) of (x, y, w) =>
+      (w, Char.chr (pick (li, ri, x, y)))
+  end
 
 structure A = Automata(Alphabet)
 structure RE = A.RegularExpression
@@ -21,7 +39,7 @@ structure DFA = A.Deterministic
 fun examine (a, b) =
   let
     val convert = E.toDFA o RE.toExpression o RE.fromString
-    val find = DFA.shortestMatch edgeLength
+    val find = Option.map String.implode o DFA.shortestMatch edgeLength
     val join = find o DFA.optimize o DFA.intersect
     val (pa, pb) = (convert a, convert b)
     val (na, nb) = (DFA.complement pa, DFA.complement pb)

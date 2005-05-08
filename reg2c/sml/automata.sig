@@ -29,7 +29,8 @@ signature AUTOMATA =
         val intersect: (t * t) -> t
         
         (* The passed function is the 'cost' of a character in length *)
-        val shortestMatch: (char -> int) -> t -> string option
+        val shortestMatch: (char option * char option -> int * char) -> t 
+            -> char list option
         
         val toDot: (String.string * t) -> String.string
         val toSML: (String.string * t) -> String.string

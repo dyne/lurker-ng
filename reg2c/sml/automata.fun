@@ -185,7 +185,51 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
         fun intersect (a, b) = crossproduct (a, b, fn (a, b) => a andalso b)
         
         (* Find the lowest weight string which matches the expression *)
-        fun shortestMatch w a = NONE
+        fun shortestMatch edgeweight a = 
+          let
+            val n = Vector.length a
+            val parent  = Array.tabulate (n, fn _ => (0, chr 0))
+            val weight  = Array.tabulate (n, fn _ => 1999999999)
+            val visited = Array.tabulate (n, fn _ => false)
+            val () = Array.update(weight, 0, 0) (* start at empty string *)
+            
+            val nextNode = Array.foldli 
+              (fn (i, w, (bi, bw)) => 
+                if not (Array.sub (visited, i)) andalso Int.< (w, bw)
+                then (i, w) else (bi, bw)) 
+              (~1, 1999999999)
+            
+            fun relaxEdges (i, vw) = ZTree.fold
+              (fn (l, j, r, ()) => case edgeweight (l, r) of (ew, c) =>
+                if vw + ew >= Array.sub (weight, j) then () else (
+                  Array.update (weight, j, vw + ew);
+                  Array.update (parent, j, (i, c))))
+              ()
+              (case Vector.sub (a, i) of (_, t) => t)
+            
+            val working = ref true
+            val () = while (!working) do
+              let
+                val (i, w) = nextNode weight
+              in
+                if i = ~1 then working := false else
+                  relaxEdges (i, w)
+              end
+            
+            val shortestAccept = Array.foldli
+              (fn (i, w, (bi, bw)) =>
+                if #1 (Vector.sub (a, i)) andalso Int.< (w, bw)
+                then (i, w) else (bi, bw))
+              (~1, 1999999999) weight
+            
+            fun followTrail (0, tail) = tail
+              | followTrail (i, tail) = 
+                  case Array.sub (parent, i) of (p, c) => 
+                    followTrail (p, c :: tail)
+          in
+            if  #1 shortestAccept = ~1 then NONE else
+            SOME (List.rev (followTrail (#1 shortestAccept, [])))
+          end
         
         fun dotEdge (i, (_, t), tail) = 
           let
