@@ -184,15 +184,21 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
         fun union (a, b) = crossproduct (a, b, fn (a, b) => a orelse b)
         fun intersect (a, b) = crossproduct (a, b, fn (a, b) => a andalso b)
         
+        (* Find the lowest weight string which matches the expression *)
+        fun shortestMatch w a = NONE
+        
         fun dotEdge (i, (_, t), tail) = 
           let
-            fun fmt NONE = ""
-              |	fmt (SOME x) = 
-                  (String.toCString o Char.toString o Char.chr o ord) x
+            val toString = String.toCString o Char.toString o Char.chr o ord
+            fun pred NONE = NONE | pred (SOME x) = SOME (chr (ord x - 1))
+            fun fmt NONE = "" | fmt (SOME x) = toString x
+            fun fmtp (SOME x, SOME y) =
+                  if x = y then toString x else toString x ^ "-" ^ toString y
+              |	fmtp (x, y) = fmt x ^ "-" ^ fmt y
             fun append (l, v, r, tree) = 
               case BTree.get tree v of
-                  NONE => BTree.insert tree (v, [fmt l ^ "-" ^ fmt r])
-                | SOME x => BTree.insert tree (v, fmt l ^ "-" ^ fmt r :: x)
+                  NONE => BTree.insert tree (v, [fmtp (l, pred r)])
+                | SOME x => BTree.insert tree (v, fmtp (l, pred r) :: x)
             val edges = BTree.map (String.concatWith ",")
               (ZTree.foldr append BTree.empty t)
             fun print (j, l, tail) = 
