@@ -212,8 +212,9 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
               let
                 val (i, w) = nextNode weight
               in
-                if i = ~1 then working := false else
-                  relaxEdges (i, w)
+                if i = ~1 then working := false else (
+                  Array.update (visited, i, true);
+                  relaxEdges (i, w))
               end
             
             val shortestAccept = Array.foldli
@@ -228,7 +229,7 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
                     followTrail (p, c :: tail)
           in
             if  #1 shortestAccept = ~1 then NONE else
-            SOME (List.rev (followTrail (#1 shortestAccept, [])))
+            SOME (followTrail (#1 shortestAccept, []))
           end
         
         fun dotEdge (i, (_, t), tail) = 

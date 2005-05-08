@@ -69,7 +69,7 @@ fun examine (a, b) =
         (_, NONE, NONE, _) => "A is identical to B"
       | (NONE, _, _, NONE) => "A is the complement of B"
       | (_, NONE, _, _) => "A is a subset of B"
-      | (_, _, NONE, _) => "B is a superset of A"
+      | (_, _, NONE, _) => "A is a superset of B"
       | (NONE, _, _, _) => "A is disjoint from B"
       | _ => "A overlaps B"
   in
