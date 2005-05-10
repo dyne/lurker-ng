@@ -3,6 +3,8 @@ signature AUTOMATA =
     eqtype char
     eqtype string
     
+    structure ZTree : ZTREE
+    
     structure Deterministic :
       sig
         eqtype state
@@ -17,7 +19,7 @@ signature AUTOMATA =
         
         val any: t
         val empty: t
-        val char: char -> t
+        val char: bool ZTree.t -> t
         
         (* minimizes states and puts in canonical order *)
         val optimize: t -> t
@@ -61,10 +63,10 @@ signature AUTOMATA =
     structure Expression :
       sig
         datatype t = 
-          Empty | Any | Char of char | Not of t | Star of t | 
+          Empty | Any | Char of bool ZTree.t | Not of t | Star of t | 
           Concat of t * t | Union of t * t | Intersect of t * t
         
-        val toString: t -> String.string
+        (* val toString: t -> String.string *)
         val toDFA: t -> Deterministic.t
       end
     

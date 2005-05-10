@@ -24,6 +24,7 @@ structure Alphabet =
 
 functor Automata(Alphabet : ALPHABET) : AUTOMATA 
   where type char   = Alphabet.char
+  and   type ZTree.key = Alphabet.char
   and   type string = Alphabet.string =
   struct
     structure AlphaOrder = 
@@ -81,8 +82,8 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
           (false,  ZTree.uniform 1),
           (true, ZTree.uniform 2),
           (false, ZTree.uniform 2) ]
-        fun char c = Vector.fromList [
-          (false, ZTree.range (2, c, chr (ord c + 1), 1)),
+        fun char t = Vector.fromList [
+          (false, ZTree.map (fn true => 1 | false => 2) t),
           (true, ZTree.uniform 2),
           (false, ZTree.uniform 2) ]
         
@@ -462,7 +463,7 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
     structure Expression =
       struct
         datatype t = 
-          Empty | Any | Char of char | Not of t | Star of t |
+          Empty | Any | Char of bool ZTree.t | Not of t | Star of t |
           Concat of t * t | Union of t * t | Intersect of t * t
         
         structure DFA = Deterministic
@@ -470,7 +471,7 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
         
         fun toDFA Empty = DFA.empty
           | toDFA Any = DFA.any
-          | toDFA (Char c) = DFA.char c
+          | toDFA (Char t) = DFA.char t
           | toDFA (Not e) = DFA.complement (toDFA e)
           | toDFA (Star e) = 
               (DFA.optimize o NFA.toDFA o NFA.power o NFA.fromDFA o toDFA) e
@@ -482,6 +483,7 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
           | toDFA (Intersect (e1, e2)) =
               (DFA.optimize o DFA.intersect) (toDFA e1, toDFA e2)
         
+(*
         fun toString Empty = ""
           | toString Any = "."
           | toString (Char c) = Char.toString (Char.chr (ord c))
@@ -490,6 +492,7 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
           | toString (Concat (e1, e2)) = toString e1 ^ toString e2
           | toString (Union (e1, e2)) = "(" ^ toString e1 ^ ")+(" ^ toString e2 ^ ")"
           | toString (Intersect (e1, e2)) = "(" ^ toString e1 ^ ")-(" ^ toString e2 ^ ")"
+*)
       end
     
     structure RegularExpression =
@@ -533,16 +536,15 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
           | cvtBound (e, 0, SOME j) = E.Union (E.Empty, cvtBound (e, 1, SOME j))
           | cvtBound (e, i, SOME j) =  E.Concat (e, cvtBound (e, i-1, SOME (j-1)))
           
-        fun cvtRange (l, h) =
-          if l = h then E.Char (chr (Char.ord l)) else
-          E.Union (E.Char (chr (Char.ord l)), cvtRange (Char.chr (Char.ord l + 1), h))
-          
-        fun cvtBracket (Elt c) = E.Char (chr (Char.ord c))
-          | cvtBracket (Not b) = E.Not (cvtBracket b)
-          | cvtBracket (Alt (b, End)) = cvtBracket b
-          | cvtBracket (Alt (b1, b2)) = E.Union (cvtBracket b1, cvtBracket b2)
-          | cvtBracket (Range (l, h)) = cvtRange (l, h)
-          | cvtBracket End = E.Empty
+        fun cvtBracket (Elt c) = cvtBracket (Range (c, c))
+          | cvtBracket (Not b) = ZTree.map not (cvtBracket b)
+          | cvtBracket End = ZTree.uniform false
+          | cvtBracket (Range (l, h)) = 
+              ZTree.range (false, chr (Char.ord l), chr (Char.ord h + 1), true)
+          | cvtBracket (Alt (b1, b2)) = 
+              (ZTree.fromFront o ZTree.uniq (op =) o 
+               ZTree.merge (fn (x,y) => x orelse y))
+              (ZTree.front (cvtBracket b1), ZTree.front (cvtBracket b2))
         
         fun exp (Union (e1, e2)) = E.Union (exp e1, exp e2)
           | exp (Concat (e1, e2)) = E.Concat (exp e1, exp e2)
@@ -550,9 +552,9 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
           | exp (Plus e) = let val e = exp e in E.Concat (e, E.Star e) end
           | exp (Option e) = E.Union (E.Empty, exp e)
           | exp (Paran e) = exp e
-          | exp (Char c) = E.Char (chr (Char.ord c))
+          | exp (Char c) = E.Char (cvtBracket (Elt c))
           | exp (Bound (e, l, r)) = cvtBound (exp e, l, r)
-          | exp (Bracket b) = cvtBracket b
+          | exp (Bracket b) = E.Char (cvtBracket b)
           | exp Any = E.Any
           | exp Empty = E.Empty
         val toExpression = exp
