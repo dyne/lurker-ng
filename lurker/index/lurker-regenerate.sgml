@@ -55,7 +55,7 @@ lurker-regenerate.1: lurker-regenerate.sgml
   </refnamediv>
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>&dhpackage; &lt;lurker\-regenerate&gt; &lt;config file&gt;</command>
+      <command>&dhpackage; &lt;lurker\-index&gt; &lt;config file&gt;</command>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
