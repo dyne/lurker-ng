@@ -5,6 +5,9 @@ Access two databases at once
 Admin interface for deleting messages?
 Search by message 'id:' doesn't work due to case sensitivity
 
+Need a way to jump to threads other than just the newest
+--- perhaps include list histogram at bottom of thread page?
+
 -------------------------------------------------------------
 
 Ideas:
