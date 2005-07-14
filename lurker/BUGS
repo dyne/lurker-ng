@@ -1,5 +1,7 @@
 ---- Agenda for 1.3:
 
+Bring back reply link
+Increase [] limit for subjet pruning
 Reimport restores deleted messages... (fix)
 Access two databases at once
 Admin interface for deleting messages?
