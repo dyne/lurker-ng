@@ -1,5 +1,9 @@
 ---- Agenda for 1.3:
 
+Fix build for mimelib on MacOS
+Fix building on FreeBSD (XOPEN problem)
+Add support for using list-id from messages instead of '-l'
+
 Bring back reply link
 Increase [] limit for subjet pruning
 Reimport restores deleted messages... (fix)
