@@ -1,3 +1,7 @@
+v1.4:
+	Fixed lurker-regenerate to handle commented lines
+	Disabled X/Open compliance defines for Mac OS X
+
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE
 	Included French localization

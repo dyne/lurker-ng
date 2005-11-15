@@ -1,4 +1,4 @@
-/*  $Id: MessageId.cpp,v 1.10 2005-05-04 22:51:48 terpstra Exp $
+/*  $Id: MessageId.cpp,v 1.11 2005-11-15 16:19:46 terpstra Exp $
  *  
  *  MessageId.cpp - Helper class for manipulating internal message ids
  *  
@@ -22,7 +22,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
+//#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 #define _GNU_SOURCE
 

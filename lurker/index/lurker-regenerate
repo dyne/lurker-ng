@@ -11,7 +11,7 @@ idx=`which $idx`
 if echo "$idx" | grep -q '^\.'; then idx="$PWD/$idx"; fi
 if echo "$cfg" | grep -q '^[^/~]'; then cfg="$PWD/$cfg"; fi
 
-dbdir=`grep "[ 	]*dbdir" $cfg | cut -d= -f2`
+dbdir=`grep "^[ 	]*dbdir" $cfg | cut -d= -f2`
 dbdir=`echo $dbdir`
 
 cd $dbdir

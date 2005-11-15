@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.20 2003-07-01 13:48:31 terpstra Exp $
+/*  $Id: DbMan.cpp,v 1.21 2005-11-15 16:19:46 terpstra Exp $
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  
@@ -22,7 +22,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
+//#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 
 // #define DEBUG 1
