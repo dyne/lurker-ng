@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.14 2005-04-28 23:00:51 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.15 2005-11-29 15:17:38 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -33,6 +33,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <time.h>
 
 using namespace std;
 
