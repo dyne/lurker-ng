@@ -165,7 +165,7 @@ dbdir = @vardir@
 # The id of a group must be a string containing only a-z 0-9 and -_.
 # 
 # Each mailing list must also have an id for urls and searching.
-# These identifiers must be shorter than 32 bytes and simple like group ids.
+# These identifiers must be shorter than 128 bytes and simple like group ids.
 # Mailing lists may have a title, address, link, and description.
 #
 # This is best explained by an example
