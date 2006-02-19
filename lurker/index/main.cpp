@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.43 2005-04-28 22:57:35 terpstra Exp $
+/*  $Id: main.cpp,v 1.44 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 
 #include <mimelib/headers.h>

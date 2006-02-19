@@ -1,4 +1,4 @@
-/*  $Id: View.cpp,v 1.14 2003-07-01 14:05:52 terpstra Exp $
+/*  $Id: View.cpp,v 1.15 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  View.cpp - Snapshot of commit state
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 
 #include "io.h"

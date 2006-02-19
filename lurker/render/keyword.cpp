@@ -1,4 +1,4 @@
-/*  $Id: keyword.cpp,v 1.14 2004-08-20 14:09:20 terpstra Exp $
+/*  $Id: keyword.cpp,v 1.15 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 
 #include <Keys.h>

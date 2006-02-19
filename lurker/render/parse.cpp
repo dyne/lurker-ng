@@ -1,4 +1,4 @@
-/*  $Id: parse.cpp,v 1.5 2003-06-23 14:38:43 terpstra Exp $
+/*  $Id: parse.cpp,v 1.6 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  parse.cpp - Deal with CGI ugliness
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 
 #include <iostream>

@@ -1,6 +1,7 @@
 v1.4:
-	Fixed lurker-regenerate to handle commented lines
-	Disabled X/Open compliance defines for Mac OS X
+	Remove XOPEN_SOURCE / GNU_SOURCE defines for broken systems (MacOS X)
+	Minor documentation fix in lurker.conf about list id limit (128)
+	Include a fix for Solaris my_timegm from Moritz Eysholdt
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE

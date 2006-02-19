@@ -1,4 +1,4 @@
-/*  $Id: Source.cpp,v 1.4 2003-06-23 14:38:42 terpstra Exp $
+/*  $Id: Source.cpp,v 1.5 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  Source.cpp - Common segment interface
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
   
 #include "Source.h"

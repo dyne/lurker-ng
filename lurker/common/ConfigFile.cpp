@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.15 2005-11-29 15:17:38 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.16 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 
 #include "ConfigFile.h"

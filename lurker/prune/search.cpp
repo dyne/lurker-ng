@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.6 2004-08-19 14:52:29 terpstra Exp $
+/*  $Id: search.cpp,v 1.7 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  mbox.cpp - Cleanup after an mbox/ command
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 
 #include "PTable.h"

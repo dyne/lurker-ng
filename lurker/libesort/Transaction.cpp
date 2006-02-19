@@ -1,4 +1,4 @@
-/*  $Id: Transaction.cpp,v 1.9 2005-11-15 16:19:46 terpstra Exp $
+/*  $Id: Transaction.cpp,v 1.10 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  Transaction.cpp - Write buffer for a commit
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-//#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
   
 #include "io.h"

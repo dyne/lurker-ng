@@ -1,4 +1,4 @@
-/*  $Id: Search.cpp,v 1.5 2004-08-27 17:53:44 terpstra Exp $
+/*  $Id: Search.cpp,v 1.6 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  Search.cpp - Execute a keyword search
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 
 #include <list>

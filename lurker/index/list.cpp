@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.8 2004-08-27 15:04:05 terpstra Exp $
+/*  $Id: list.cpp,v 1.9 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  list.cpp - Parse the config file for helper scripts
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 
 #include <ConfigFile.h>

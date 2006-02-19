@@ -1,4 +1,4 @@
-/*  $Id: splash.cpp,v 1.11 2004-08-27 15:04:05 terpstra Exp $
+/*  $Id: splash.cpp,v 1.12 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  splash.cpp - Handle a splash/ command
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 
 #include "commands.h"

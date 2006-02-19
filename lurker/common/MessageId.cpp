@@ -1,4 +1,4 @@
-/*  $Id: MessageId.cpp,v 1.11 2005-11-15 16:19:46 terpstra Exp $
+/*  $Id: MessageId.cpp,v 1.12 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  MessageId.cpp - Helper class for manipulating internal message ids
  *  
@@ -22,9 +22,7 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-//#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
-#define _GNU_SOURCE
 
 #include "MessageId.h"
 #include "config.h"
@@ -41,28 +39,36 @@ inline int dehex(char x)
 }
 
 #ifndef HAVE_TIMEGM
-#if defined(HAVE_SETENV) && defined(HAVE_UNSETENV)
-time_t my_timegm(struct tm* tm)
+// Contributed by: Moritz.Eysholdt@mail.uni-oldenburg.de
+static time_t my_timegm (struct tm *t)
 {
-	time_t ret;
-	char* tz;
+	time_t tl, tb;
+	struct tm *tg;
 	
-	tz = getenv("TZ");
-	setenv("TZ", "", 1);
-	tzset();
+	tl = mktime(t);
+	if (tl == -1)
+	{
+		t->tm_hour--;
+		tl = mktime (t);
+		if (tl == -1)
+			return -1; /* can't deal with output from strptime */
+		tl += 3600;
+	}
 	
-	ret = mktime(tm);
+	tg = gmtime (&tl);
+	tg->tm_isdst = 0;
+	tb = mktime (tg);
+	if (tb == -1)
+	{
+		tg->tm_hour--;
+		tb = mktime (tg);
+		if (tb == -1)
+			return -1; /* can't deal with output from gmtime */
+		tb += 3600;
+	}
 	
-	if (tz)
-		setenv("TZ", tz, 1);
-	else	unsetenv("TZ");
-	tzset();
-	
-	return ret;
+	return (tl - (tb - tl));
 }
-#else
-#error cannot emulate timegm
-#endif
 #endif
 
 const unsigned int MessageId::time_len = 15;

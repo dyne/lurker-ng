@@ -1,4 +1,4 @@
-/*  $Id: Merger.cpp,v 1.13 2004-10-20 23:53:59 terpstra Exp $
+/*  $Id: Merger.cpp,v 1.14 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  Merger.cpp - Combine segments to obtain a database view
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
   
 #include "io.h"

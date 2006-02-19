@@ -1,4 +1,11 @@
----- Agenda for 1.3:
+---- Agenda for 1.4:
+	bring back the reply-to link + icon
+	multiple front-ends (use mbox from summary data to hide lists)
+	fix lurker-regenerate for deleted email
+	somehow allow deleting messages from web
+	fix case-sensitive id: searches
+
+--- old stuff?
 
 Fix build for mimelib on MacOS
 Fix building on FreeBSD (XOPEN problem)
@@ -6,10 +13,6 @@ Add support for using list-id from messages instead of '-l'
 
 Bring back reply link
 Increase [] limit for subjet pruning
-Reimport restores deleted messages... (fix)
-Access two databases at once
-Admin interface for deleting messages?
-Search by message 'id:' doesn't work due to case sensitivity
 
 Need a way to jump to threads other than just the newest
 --- perhaps include list histogram at bottom of thread page?

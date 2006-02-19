@@ -1,4 +1,4 @@
-/*  $Id: bounce.cpp,v 1.1 2004-08-20 14:09:20 terpstra Exp $
+/*  $Id: bounce.cpp,v 1.2 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  bounce.cpp - Bounce to the specified url
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
 
 #include "parse.h"

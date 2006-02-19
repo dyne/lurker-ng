@@ -1,4 +1,4 @@
-/*  $Id: test.cpp,v 1.11 2003-07-01 14:05:52 terpstra Exp $
+/*  $Id: test.cpp,v 1.12 2006-02-19 01:17:22 terpstra Exp $
  *  
  *  test.cpp - Write lots of crap and compare with RAM
  *  
@@ -22,7 +22,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _XOPEN_SOURCE 500
 #define _FILE_OFFSET_BITS 64
   
 #include "esort.h"
