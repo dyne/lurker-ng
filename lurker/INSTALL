@@ -34,7 +34,7 @@ Quick start
   
   To control the environment, variants of these flags may help:
   LDFLAGS="-L/sw/lib"
-  CPPFLAGS="-I/sw/include -DDW_UNIX"
+  CPPFLAGS="-I/sw/include"
   
 2 make
 

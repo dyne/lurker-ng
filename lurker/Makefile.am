@@ -1,5 +1,8 @@
 SUBDIRS = . libesort common index prune render ui imgs
 
+# Work around mimelib bug on MacOS X
+AM_CPPFLAGS = -DDW_UNIX
+
 EXTRA_DIST = FAQ
 
 if LOCAL_MIMELIB
