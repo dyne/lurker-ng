@@ -5,18 +5,6 @@
 	somehow allow deleting messages from web
 	fix case-sensitive id: searches
 
---- old stuff?
-
-Fix build for mimelib on MacOS
-Fix building on FreeBSD (XOPEN problem)
-Add support for using list-id from messages instead of '-l'
-
-Bring back reply link
-Increase [] limit for subjet pruning
-
-Need a way to jump to threads other than just the newest
---- perhaps include list histogram at bottom of thread page?
-
 -------------------------------------------------------------
 
 Ideas:
@@ -28,7 +16,9 @@ Ideas:
 	Phrase searching
 	Hover over tree pops up some of the subtree
 	Multi-level btree style files (faster search, slower import)
-	Re-add optional lurkerd to watch mboxs
+
+Need a way to jump to threads other than just the newest
+--- perhaps include list histogram at bottom of thread page?
 
 Set timestamp to config file + all used messages: hard
 	- would need to also fix language, timestamp, etc ...

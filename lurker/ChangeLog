@@ -1,8 +1,9 @@
-v1.4:
-	Remove XOPEN_SOURCE / GNU_SOURCE defines for broken systems (MacOS X)
+v2.0:
+	Zap XOPEN_SOURCE/GNU_SOURCE defines for broken systems (osx, freebsd)
 	Minor documentation fix in lurker.conf about list id limit (128)
 	Include a fix for Solaris my_timegm from Moritz Eysholdt
 	Add mimelib workaround for MacOS X
+	Extend the trimming of []s in subjects to 40 (for japanese lists)
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE

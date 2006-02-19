@@ -1,4 +1,4 @@
-/*  $Id: Thread.cpp,v 1.8 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: Thread.cpp,v 1.9 2006-02-19 01:46:06 terpstra Exp $
  *  
  *  Thread.h - Helper class for calculating threading
  *  
@@ -104,7 +104,7 @@ const char* skipSubjectStart(const char* subject)
 			{
 				state = 1;
 			}
-			else if (s - r > 16)
+			else if (s - r > 40)
 			{
 				break;
 			}
