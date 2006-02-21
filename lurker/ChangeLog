@@ -11,8 +11,8 @@ v2.0:
 	ui/ files are now installed to ui
 	New automake 1.9.6, autoconf 2.59
 	Removed old '-b' option; '-m' remains to import a single message
-	Add configure option to control web directory
-	Every list MUST be contained in a group
+	Add configure option to control web directories
+	Every list must now be contained in a group
 	Added frontend support to the config file
 	Prune no longer needs/supports the '-d' option
 	Lurker-search will automatically run lurker-prune after changes

@@ -197,10 +197,12 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 SUBDIRS = libesort common index prune render ui imgs .
+EXTRA_DIST = FAQ
 
 # Work around mimelib bug on MacOS X
 AM_CPPFLAGS = -DDW_UNIX
-EXTRA_DIST = FAQ
+
+# Support building mimelib ourselves
 @LOCAL_MIMELIB_TRUE@noinst_LIBRARIES = mimelib/libmimelib.a
 @LOCAL_MIMELIB_TRUE@nodist_mimelib_libmimelib_a_SOURCES = \
 @LOCAL_MIMELIB_TRUE@	mimelib/address.cpp mimelib/addrlist.cpp mimelib/attach.cpp \
@@ -1147,7 +1149,8 @@ uninstall-info: uninstall-info-recursive
 	uninstall uninstall-am uninstall-info-am
 
 
-install-data-local::
+install-data-local:
+	$(mkinstalldirs) $(DESTDIR)$(default_config_dir)
 	@echo
 	@echo "*** PLEASE READ ***"
 	@echo

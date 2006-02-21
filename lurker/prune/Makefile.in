@@ -169,13 +169,13 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 EXTRA_DIST = lurker-prune.sgml
+dist_man_MANS = lurker-prune.1
 AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/libesort
 LDADD = ../common/libcommon.a ../libesort/libesort.a
 lurker_prune_SOURCES = \
 	prune.cpp PTable.cpp attach.cpp list.cpp mbox.cpp message.cpp \
 	mindex.cpp search.cpp splash.cpp thread.cpp PTable.h
 
-dist_man_MANS = lurker-prune.1
 all: all-am
 
 .SUFFIXES:

@@ -184,10 +184,13 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-EXTRA_DIST = lurker-drop-rlimit.cpp lurker-regenerate \
-             lurker-index.sgml lurker-list.sgml \
-             lurker-params.sgml lurker-search.sgml \
-             lurker-regenerate.sgml
+bin_SCRIPT = lurker-regenerate
+dist_man_MANS = lurker-index.1 lurker-list.1 lurker-params.1 \
+		lurker-search.1 lurker-regenerate.1
+
+EXTRA_DIST = lurker-drop-rlimit.cpp \
+             lurker-index.sgml lurker-list.sgml lurker-params.sgml \
+             lurker-search.sgml lurker-regenerate.sgml
 
 AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/libesort
 LDADD = ../common/libcommon.a ../libesort/libesort.a
@@ -195,9 +198,6 @@ lurker_index_SOURCES = Index.cpp main.cpp getdate.cpp Index.h getdate.h
 lurker_list_SOURCES = list.cpp
 lurker_params_SOURCES = params.cpp
 lurker_search_SOURCES = search.cpp
-dist_man_MANS = lurker-index.1 lurker-list.1 lurker-params.1 \
-		lurker-search.1 lurker-regenerate.1
-
 all: all-am
 
 .SUFFIXES:
@@ -493,7 +493,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-info-am uninstall-man
+uninstall-am: uninstall-binPROGRAMS uninstall-info-am uninstall-local \
+	uninstall-man
 
 uninstall-man: uninstall-man1
 
@@ -507,13 +508,18 @@ uninstall-man: uninstall-man1
 	installdirs maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
 	ps ps-am tags uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-info-am uninstall-man uninstall-man1
+	uninstall-info-am uninstall-local uninstall-man uninstall-man1
 
 
+# Install an empty database
 install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)
-	touch $(DESTDIR)$(localstatedir)/lib/$(PACAKGE)/db
+	$(mkinstalldirs) $(DESTDIR)$(htmldir)
+	touch $(DESTDIR)$(htmldir)/db
 
+uninstall-local:
+	rm -f $(DESTDIR)$(htmldir)/db
+
+# Generate man pages if in maintainer mode
 @MAINTAINER_MODE_TRUE@lurker-index.1: lurker-index.sgml
 @MAINTAINER_MODE_TRUE@	docbook-to-man $< > $@
 @MAINTAINER_MODE_TRUE@lurker-list.1: lurker-list.sgml

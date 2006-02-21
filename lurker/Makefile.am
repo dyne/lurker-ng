@@ -1,12 +1,11 @@
 SUBDIRS = libesort common index prune render ui imgs .
+EXTRA_DIST = FAQ
 
 # Work around mimelib bug on MacOS X
 AM_CPPFLAGS = -DDW_UNIX
 
-EXTRA_DIST = FAQ
-
+# Support building mimelib ourselves
 if LOCAL_MIMELIB
-
 noinst_LIBRARIES = mimelib/libmimelib.a
 nodist_mimelib_libmimelib_a_SOURCES = \
 	mimelib/address.cpp mimelib/addrlist.cpp mimelib/attach.cpp \
@@ -20,10 +19,10 @@ nodist_mimelib_libmimelib_a_SOURCES = \
 	mimelib/mediatyp.cpp mimelib/message.cpp mimelib/msgcmp.cpp \
 	mimelib/msgid.cpp mimelib/multipar.cpp mimelib/param.cpp \
 	mimelib/text.cpp mimelib/token.cpp mimelib/uuencode.cpp
-
 endif
 
-install-data-local::
+install-data-local:
+	$(mkinstalldirs) $(DESTDIR)$(default_config_dir)
 	@echo
 	@echo "*** PLEASE READ ***"
 	@echo
