@@ -1,5 +1,5 @@
 # Lurker configuration file (lurker.conf).
-# Install as @etcdir@/lurker.conf on your system.
+# Install as @DEFAULT_CONFIG_FILE@ on your system.
 
 #############################################################################
 # Global configuration
@@ -89,7 +89,7 @@ xslt = xsltproc --nonet -
 # Do not mess with the files in this directory on pain of death.
 # Before taking a backup, make sure your MTA has a frozen mail queue.
 
-dbdir = @vardir@
+dbdir = @LOCALSTATEDIR@/lib/@PACKAGE@
 
 # Include another file for additional configuration.
 # 

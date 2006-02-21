@@ -17,7 +17,7 @@ dist_man_MANS = lurker-index.1 lurker-list.1 lurker-params.1 \
 		lurker-search.1 lurker-regenerate.1
 
 install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(vardir)
+	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)
 
 if MAINTAINER_MODE
 lurker-index.1: lurker-index.sgml

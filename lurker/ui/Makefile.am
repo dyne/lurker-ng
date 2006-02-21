@@ -1,7 +1,7 @@
-fmtdir = ${wwwdir}/fmt
+uidir = ${wwwdir}/ui
 htmldir = ${wwwdir}
 
-dist_fmt_DATA = \
+dist_ui_DATA = \
 	default.css common.js lang.xsl common.xsl list.xsl message.xsl \
 	mindex.xsl search.xsl splash.xsl thread.xsl lang.xml \
 	ca.xml da.xml de.xml el.xml en.xml es.xml fi.xml fr.xml hu.xml \

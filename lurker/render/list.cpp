@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.12 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: list.cpp,v 1.13 2006-02-21 12:49:36 terpstra Exp $
  *  
  *  list.cpp - Handle a list/ command
  *  
@@ -182,7 +182,7 @@ int handle_list(const Config& cfg, ESort::Reader* db, const string& param)
 	Cache cache(cfg, "list", param, req.ext);
 	
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../fmt/list.xsl\"?>\n"
+		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../ui/list.xsl\"?>\n"
 		<< "<list xml:lang=\"" << req.language << "\">\n"
 		<< " " << cfg(req.language) << "\n"
 		<< " " << list(req.language) << "\n";

@@ -55,9 +55,9 @@
  
  <html lang="{$lang}">
   <head>
-   <link rel="stylesheet" href="../fmt/default.css" type="text/css"/>
+   <link rel="stylesheet" href="../ui/default.css" type="text/css"/>
    <title><xsl:value-of select="$search-heading"/><xsl:value-of select="translate(query,',',' ')"/></title>
-   <script type="text/javascript" src="../fmt/common.js"/>
+   <script type="text/javascript" src="../ui/common.js"/>
   </head>
   <body>
    <div class="header">

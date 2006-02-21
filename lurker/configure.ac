@@ -1,7 +1,7 @@
 AC_INIT(lurker.conf.in)
 AC_CONFIG_AUX_DIR(tools)
 AC_PREREQ(2.57)
-AM_INIT_AUTOMAKE(lurker, 1.3)
+AM_INIT_AUTOMAKE(lurker, 2.0)
 
 AC_SUBST(VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -79,19 +79,24 @@ else
 fi
 
 wwwdir="${localstatedir}/www/${PACKAGE}"
+AC_SUBST(wwwdir)
 
 prefix_backup="$prefix"
-exec_prefix_backup="$exec_prefix"
 if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
-if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
-vardir=`eval echo ${localstatedir}/lib/${PACKAGE}`
 etcdir=`eval echo ${sysconfdir}`
+vardir=`eval echo ${localstatedir}`
 prefix="$prefix_backup"
-exec_prefix="$exec_prefix_backup"
 
-AC_SUBST(wwwdir)
-AC_SUBST(vardir)
-AC_SUBST(etcdir)
+AC_ARG_WITH([default-config-file], 
+            AC_HELP_STRING([--with-default-config-file=FILE],
+                           [Where the lurker looks for a configuration file [default=SYSCONFDIR/lurker.conf]]), 
+            DEFAULT_CONFIG_FILE="$withval", 
+            DEFAULT_CONFIG_FILE="$etcdir/lurker.conf") 
+
+LOCALSTATEDIR="$vardir"
+AC_SUBST(LOCALSTATEDIR)
+AC_SUBST(DEFAULT_CONFIG_FILE) 
+AC_DEFINE_UNQUOTED(CONFIG_FILE, ["$DEFAULT_CONFIG_FILE"], [The default config file location])
 
 AC_CONFIG_FILES([
 	Makefile libesort/Makefile common/Makefile index/Makefile

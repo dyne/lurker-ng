@@ -7,6 +7,9 @@ v2.0:
 	Removed the 'regroupable' option, this is now manditory off
 	Language is now a manditory field for mailing lists
 	A single mailing list may now host multiple written languages
+	All tools now have a default config file location
+	ui/ files are now installed to ui
+	New automake 1.9.6, autoconf 2.59
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE
