@@ -1,4 +1,4 @@
-/*  $Id: Search.h,v 1.1 2004-08-24 16:11:33 terpstra Exp $
+/*  $Id: Search.h,v 1.2 2006-02-21 20:40:33 terpstra Exp $
  *  
  *  Search.h - Helper which can intersect keywords
  *  
@@ -50,7 +50,7 @@ class Search
 	bool need_any;
 	
  public:
- 	Search(const Config& cfg_, Reader* db_, Direction dir_, const MessageId& id_ = MessageId());
+ 	Search(const Config& cfg_, Reader* db_, Direction dir_, const MessageId& id_ = MessageId(), bool skipdel = true);
  	~Search();
  	
  	void keyword(const string& s);

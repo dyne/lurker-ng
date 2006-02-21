@@ -1,4 +1,4 @@
-/*  $Id: Search.cpp,v 1.7 2006-02-21 11:38:15 terpstra Exp $
+/*  $Id: Search.cpp,v 1.8 2006-02-21 20:40:33 terpstra Exp $
  *  
  *  Search.cpp - Execute a keyword search
  *  
@@ -331,7 +331,7 @@ bool WordSearcher::skipto(MessageId later_than)
 	return true;
 }
 
-Search::Search(const Config& cfg_, ESort::Reader* db, Direction dir, const MessageId& source)
+Search::Search(const Config& cfg_, ESort::Reader* db, Direction dir, const MessageId& source, bool skipdel)
  : cfg(cfg_)
 {
 	criterea.db  = db;
@@ -342,7 +342,7 @@ Search::Search(const Config& cfg_, ESort::Reader* db, Direction dir, const Messa
 	need_any = true; // until we see a search term without a '-' we need it
 	
 	// do not include deleted messages
-	keyword(string("-") + LU_KEYWORD_DELETED);
+	if (skipdel) keyword(string("-") + LU_KEYWORD_DELETED);
 }
 
 Search::~Search()

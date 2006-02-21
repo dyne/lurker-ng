@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.20 2006-02-21 18:37:29 terpstra Exp $
+/*  $Id: search.cpp,v 1.21 2006-02-21 20:40:33 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -85,6 +85,42 @@ string decipherHalf(const string& str)
 	return out;
 }
 
+int pull_allowed(const Config& cfg, ESort::Reader* db, vector<Summary>& v, Search& s)
+{
+	string ok;
+	vector<Summary>::size_type i;
+	
+	while (v.size() < 35)
+	{
+		i = v.size();
+		if (!s.pull(1, v))
+		{
+			cout << "Status: 200 OK\r\n";
+			cout <<	"Content-Type: text/html\r\n\r\n";
+			cout << error(_("Database search seek failure"), strerror(errno),
+				_("Something internal to the database failed. "
+				  "Please contact the lurker user mailing list for "
+				  "furth assistence."));
+			return 1;
+		}
+		if (i == v.size()) break; // no more data
+		if ((ok = v[i].load(db, cfg)) != "")
+		{
+			cout << "Status: 200 OK\r\n";
+			cout <<	"Content-Type: text/html\r\n\r\n";
+			cout << error(_("Database search pull failure"), ok,
+				_("Something internal to the database failed. "
+				  "Please contact the lurker user mailing list for "
+				  "further assistence."));
+			return 1;
+		}
+		
+		// trim forbidden fruit
+		if (!v[i].allowed() || v[i].deleted()) v.resize(i);
+	}
+	return 0;
+}
+
 int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 {
 	Request req = parse_request(param);
@@ -113,8 +149,8 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	vector<Summary> forward, backward, queue;
 	
-	Search backwardk(cfg, db, Backward, id);
-	Search forwardk (cfg, db, Forward,  id);
+	Search backwardk(cfg, db, Backward, id, false);
+	Search forwardk (cfg, db, Forward,  id, false);
 	
 	for (vector<string>::iterator i = tokens.begin(); i != tokens.end(); ++i)
 	{
@@ -124,16 +160,8 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 		forwardk.keyword(key);
 	}
 	
-	if (!forwardk.pull(35, forward) || !backwardk.pull(35, backward))
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database search seek failure"), strerror(errno),
-			_("Something internal to the database failed. "
-			  "Please contact the lurker user mailing list for "
-			  "furth assistence."));
-		return 1;
-	}
+	if (pull_allowed(cfg, db, forward,  forwardk)  != 0) return 1;
+	if (pull_allowed(cfg, db, backward, backwardk) != 0) return 1;
 	
 	vector<Summary>::size_type left, right, i;
 	if (forward.size() + backward.size() < 20)
@@ -161,22 +189,6 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	for (i = left; i > 0; --i)  queue.push_back(backward[i-1]);
 	for (i = 0; i < right; ++i) queue.push_back(forward[i]);
-	
-	string ok;
-	for (i = 0; i < queue.size(); ++i)
-		if ((ok = queue[i].load(db, cfg)) != "")
-			break;
-	
-	if (ok != "")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database search pull failure"), ok,
-			_("Something internal to the database failed. "
-			  "Please contact the lurker user mailing list for "
-			  "further assistence."));
-		return 1;
-	}
 	
 	Cache cache(cfg, "search", 
 		param.substr(0, o) + 
