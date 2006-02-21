@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.9 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: list.cpp,v 1.10 2006-02-21 11:52:11 terpstra Exp $
  *  
  *  list.cpp - Parse the config file for helper scripts
  *  
@@ -173,7 +173,16 @@ int main(int argc, char** argv)
 		if (!fields || address) cout << o->address         << "\n";
 		if (!fields || link)    cout << o->link(lc)        << "\n";
 		if (!fields || desc)    cout << o->description(lc) << "\n";
-		if (!fields || language)cout << o->language        << "\n";
+		if (!fields || language)
+		{
+			set<string>::const_iterator i, e;
+			for (i = o->languages.begin(), e = o->languages.end(); i != e; ++i)
+			{
+				cout << *i;
+				if (i == e)	cout << "\n";
+				else		cout << ",";
+			}
+		}
 		if (!fields || offline) cout << (o->offline?"true\n":"false\n");
 	}
 	

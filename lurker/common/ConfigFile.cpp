@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.17 2006-02-21 11:38:15 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.18 2006-02-21 11:52:11 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -541,7 +541,6 @@ int Config::process_command(const string& keys, const string& val, const string&
 			list = &lists[val];
 			list->mbox = val;
 			list->group = group;
-			list->language = "en";
 			list->offline = false;
 		}
 		else
