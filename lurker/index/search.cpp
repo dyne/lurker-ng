@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.8 2006-02-21 16:11:45 terpstra Exp $
+/*  $Id: search.cpp,v 1.9 2006-02-21 19:45:45 terpstra Exp $
  *  
  *  search.cpp - Search for messages in lurker database (optionally delete)
  *  
@@ -251,10 +251,13 @@ int main(int argc, char** argv)
 		{
 			cerr << "\n";
 			cerr << "Database modified -- cache is now invalid.\n";
-			cerr << "Running: " << prune << " -c " << config << " -p\n";
+			cerr << "Running: " << prune << " -c " << config << " -p -v\n";
+			execlp(prune.c_str(), prune.c_str(), "-c", config, "-p", "-v", NULL);
 		}
-		
-		execlp(prune.c_str(), prune.c_str(), "-c", config, "-p", NULL);
+		else
+		{
+			execlp(prune.c_str(), prune.c_str(), "-c", config, "-p", NULL);
+		}
 	}
 	
 	return 0;

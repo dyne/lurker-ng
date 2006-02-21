@@ -1,4 +1,4 @@
-/*  $Id: splash.cpp,v 1.14 2006-02-21 18:37:29 terpstra Exp $
+/*  $Id: splash.cpp,v 1.15 2006-02-21 19:45:46 terpstra Exp $
  *  
  *  splash.cpp - Handle a splash/ command
  *  
@@ -64,7 +64,8 @@ int handle_splash(const Config& cfg, ESort::Reader* db, const string& param)
 		for (member = group->second.members.begin(); member != group->second.members.end(); ++member)
 		{
 			Config::Lists::const_iterator i = cfg.lists.find(*member);
-			if (i == cfg.lists.end()) continue;
+			if (i == cfg.lists.end()) continue; // impossible!
+			if (!i->second.allowed) continue;
 			cache.o << "  " << i->second(req.language) << "\n";
 		}
 		

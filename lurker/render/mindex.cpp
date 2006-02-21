@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.17 2006-02-21 18:37:29 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.18 2006-02-21 19:45:46 terpstra Exp $
  *  
  *  mindex.cpp - Handle a mindex/ command
  *  
@@ -63,7 +63,10 @@ int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 	MessageId id(req.options.c_str()+o+1);
 	string listn(req.options, 0, o);
 	
-	if (cfg.lists.find(listn) == cfg.lists.end())
+	const Config::Lists::const_iterator li = cfg.lists.find(listn);
+	
+	// Identical error message if it's missing or not allowed (security)
+	if (li == cfg.lists.end() || !li->second.allowed)
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
@@ -74,7 +77,7 @@ int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
-	const List& list = cfg.lists.find(listn)->second;
+	const List& list = li->second;
 	
 	// Right! Everything the user did is ok.
 	

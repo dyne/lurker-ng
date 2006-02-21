@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.19 2006-02-21 18:37:29 terpstra Exp $
+/*  $Id: main.cpp,v 1.20 2006-02-21 19:45:46 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -235,6 +235,8 @@ int main(int argc, char** argv)
 			  "lurker config file."));
 		return 1;
 	}
+	
+	cfg.set_permissions(cfg.frontends[frontend]);
 	
 	if (chdir(frontend.c_str()) != 0)
 	{

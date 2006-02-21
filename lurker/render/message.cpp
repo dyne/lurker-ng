@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.42 2006-02-21 18:37:29 terpstra Exp $
+/*  $Id: message.cpp,v 1.43 2006-02-21 19:45:46 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -692,7 +692,8 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 	string ok;
 	
 	Summary source(id);
-	if ((ok = source.load(db, cfg)) != "")
+	// Identical error if missing or forbidden (security)
+	if ((ok = source.load(db, cfg)) != "" || !source.allowed())
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
@@ -701,10 +702,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
-	// No keywords means implicitly search for everything
-	vector<Summary> dead;
-	Search e(cfg, db, Forward, id);
-	if (!e.pull(1, dead) || dead.empty() || dead[0].id() != id)
+	if (source.deleted())
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
@@ -843,7 +841,8 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 	for (mbox = source.mboxs().begin(); mbox != source.mboxs().end(); ++mbox)
 	{
 		Config::Lists::const_iterator j = cfg.lists.find(*mbox);
-		if (j == cfg.lists.end()) continue;
+		if (j == cfg.lists.end()) continue; // impossible!
+		if (!j->second.allowed) continue;
 		
 		boxes.push_back(MBox(j->second));
 		if ((ok = boxes.back().load(db, id, cfg)) != "") break;

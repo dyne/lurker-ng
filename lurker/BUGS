@@ -1,8 +1,8 @@
 ---- Agenda for 1.4:
 	bring back the reply-to link + icon
-	multiple front-ends (use mbox from summary data to hide lists)
 	fix lurker-regenerate for deleted email
 	somehow allow deleting messages from web
+	figure out a way to eliminate '.en' from xml version (language-free)
 
 -------------------------------------------------------------
 

@@ -1,4 +1,4 @@
-/*  $Id: Summary.h,v 1.2 2004-08-24 21:52:39 terpstra Exp $
+/*  $Id: Summary.h,v 1.3 2006-02-21 19:45:45 terpstra Exp $
  *  
  *  Summary.h - Helper which can load a message given MessageId
  *  
@@ -45,6 +45,7 @@ class Summary
  protected:
  	MessageId	id_;
  	bool		deleted_;
+ 	bool		allowed_;
  	string		author_email_;
  	string		author_name_;
  	string		subject_;
@@ -56,11 +57,12 @@ class Summary
  
  public:
  	Summary() { }
- 	Summary(const MessageId& id) : id_(id), deleted_(false) { }
+ 	Summary(const MessageId& id) : id_(id), deleted_(false), allowed_(true) { }
  	
  	string load(Reader* r, const Config& cfg); // "" is success
  	bool loaded()  const { return mbox_ != ""; }
  	bool deleted() const { return deleted_; }
+ 	bool allowed() const { return allowed_; }
  	
  	const MessageId& id() const { return id_; }
  	

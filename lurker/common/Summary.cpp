@@ -1,4 +1,4 @@
-/*  $Id: Summary.cpp,v 1.3 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: Summary.cpp,v 1.4 2006-02-21 19:45:45 terpstra Exp $
  *  
  *  Summary.cpp - Helper which can load a message given MessageId
  *  
@@ -45,6 +45,9 @@ string Summary::load(Reader* r, const Config& cfg)
 {
 	// Use the prefix limited search
 	auto_ptr<Walker> w(r->seek(LU_SUMMARY + id_.raw(), "", Forward));
+	Config::Lists::const_iterator li;
+	
+	allowed_ = false;
 	
 	// This will only walk records matching this id
 	int ok;
@@ -110,6 +113,10 @@ string Summary::load(Reader* r, const Config& cfg)
 			}
 			
 			mboxs_.insert(mbox_);
+			li = cfg.lists.find(mbox_);
+			if (li == cfg.lists.end()) return "referenced list is missing: " + mbox_;
+			if (li->second.allowed) allowed_ = true;
+			
 			break;
 		
 		default:
@@ -181,18 +188,22 @@ ostream& operator << (ostream& o, const Summary& s)
 	  << "<id>" << s.id().serialize() << "</id>"
 	  << "<timestamp>" << s.id().timestamp() << "</timestamp>";
 	
-	if (s.deleted())
+	if (s.deleted() || !s.allowed())
+	{
 		o << "<deleted/>";
+	}
+	else
+	{
+		if (s.subject().length() > 0)
+			o << "<subject>" << xmlEscape << s.subject() << "</subject>";
 	
-	if (s.subject().length() > 0)
-		o << "<subject>" << xmlEscape << s.subject() << "</subject>";
-	
-	o  << "<email";
-	if (s.author_email().length() > 0)
-		o << " address=\"" << xmlEscape << s.author_email() << "\"";
-	if (s.author_name().length() > 0)
-		o << " name=\"" << xmlEscape << s.author_name() << "\"";
-	o << "/></summary>";
+		o  << "<email";
+		if (s.author_email().length() > 0)
+			o << " address=\"" << xmlEscape << s.author_email() << "\"";
+		if (s.author_name().length() > 0)
+			o << " name=\"" << xmlEscape << s.author_name() << "\"";
+		o << "/></summary>";
+	}
 	
 	return o;
 }

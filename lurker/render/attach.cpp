@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.12 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: attach.cpp,v 1.13 2006-02-21 19:45:46 terpstra Exp $
  *  
  *  attach.cpp - Handle a attach/ command
  *  
@@ -121,12 +121,22 @@ int handle_attach(const Config& cfg, ESort::Reader* db, const string& param)
 	string ok;
 	
 	Summary source(id);
-	if ((ok = source.load(db, cfg)) != "")
+	// Identical error if missing or not allowed
+	if ((ok = source.load(db, cfg)) != "" || !source.allowed())
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
 		cout << error(_("Database attach source pull failure"), ok,
 			_("The specified message does not exist."));
+		return 1;
+	}
+	
+	if (source.deleted())
+	{
+		cout << "Status: 200 OK\r\n";
+		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout << error(_("Database attach source pull failure"), "not found",
+			_("The specified message has been deleted."));
 		return 1;
 	}
 	

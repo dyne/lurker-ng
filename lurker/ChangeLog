@@ -22,6 +22,7 @@ v2.0:
 	 - config-file is optional
 	Include an apache.conf which should work with the given settings
 	Restored rudimentary xml support (firefox supports it finally)
+	Messages from unavailable lists appear to completely not exist
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE

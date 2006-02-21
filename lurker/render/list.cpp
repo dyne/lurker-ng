@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.14 2006-02-21 18:37:29 terpstra Exp $
+/*  $Id: list.cpp,v 1.15 2006-02-21 19:45:46 terpstra Exp $
  *  
  *  list.cpp - Handle a list/ command
  *  
@@ -122,7 +122,10 @@ int handle_list(const Config& cfg, ESort::Reader* db, const string& param)
 	Request req = parse_request(param);
 	cfg.options = req.options;
 	
-	if (cfg.lists.find(req.options) == cfg.lists.end())
+	const Config::Lists::const_iterator li = cfg.lists.find(req.options);
+	
+	// Identical error message if it's missing or not allowed (security)
+	if (li == cfg.lists.end() || !li->second.allowed)
 	{
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
@@ -133,7 +136,7 @@ int handle_list(const Config& cfg, ESort::Reader* db, const string& param)
 		return 1;
 	}
 	
-	const List& list = cfg.lists.find(req.options)->second;
+	const List& list = li->second;
 	
 	// Right! Everything the user did is ok.
 	
