@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.19 2006-02-21 15:46:21 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.20 2006-02-21 16:28:38 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -455,6 +455,42 @@ int Config::load(const string& file, bool toplevel)
 	
 	if (key != "" && process_command(key, val, dir) != 0) ok = false;
 	
+	if (toplevel)
+	{
+		// do some consistency checks
+		
+		// language field is required
+		Lists::const_iterator i, e;
+		for (i = lists.begin(), e = lists.end(); i != e; ++i)
+		{
+			if (i->second.languages.empty()) 
+			{
+				error << "List '" << i->first << "' has no language!" << endl;
+				return -1;
+			}
+		}
+		
+		// cache directories may not be prefixes
+		Frontends::const_iterator fi, fn, fe;
+		fe = frontends.end();
+		fi = frontends.begin();
+		
+		fn = fi;
+		if (fi != fe) while (1)
+		{
+			++fn;
+			if (fn == fe) break;
+			
+			if (fi->first == fn->first.substr(0, fi->first.length()))
+			{
+				cerr << "Frontend '" << fi->first << "' is a prefix of '" << fn->first << "', which is forbidden!" << endl;
+				return -1;
+			}
+			
+			fi = fn;
+		}
+	}
+	
 	if (!ok) return -1;
 	return 0;
 }
@@ -885,16 +921,6 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		error << "Value '" << val << "' is too long for directive '" << key << "'!" << endl;
 		return -1;
-	}
-	
-	Lists::const_iterator i, e;
-	for (i = lists.begin(), e = lists.end(); i != e; ++i)
-	{
-		if (i->second.languages.empty()) 
-		{
-			error << "List '" << i->first << "' has no language!" << endl;
-			return -1;
-		}
 	}
 	
 	return 0;
