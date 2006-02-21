@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.44 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: main.cpp,v 1.45 2006-02-21 13:28:54 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -76,7 +76,8 @@ time_t start;
 long messagecount = 0;
 off_t processedbytes = 0;
 
-long batch = 0;
+const long batch = 10;
+bool ismbox = true;
 bool verbose = false;
 bool dropdup = false;
 bool synced = true;
@@ -87,22 +88,20 @@ void help(const char* name)
 {
 	cerr << "Lurker-index (v" << VERSION << ") imports messages into the archive.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> -l <list> (-m | -b <count>)\n";
-	cerr << "                                     [-i <mbox/maildir> -v -d -n -u -f]\n";
+	cerr << "Usage: " << name << " -l <list> [-c <config-file>]\n";
+	cerr << "                                     [-m -i <mbox/maildir> -v -d -n -u -f]\n";
 	cerr << "\n";
-	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-l <list>        Import messages to the named list\n";
-	cerr << "\t-b <count>       Import a batch of messages; flush every count messages\n";
+	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
+	cerr << "\t-m               Input is a single message (not a mailbox)\n";
 	cerr << "\t-i <mbox/mdir>   Read input from mbox or maildir instead of std input\n";
-	cerr << "\t-m               Import a single message\n";
 	cerr << "\t-v               Verbose operation\n";
 	cerr << "\t-d               Drop duplicates per list\n";
 	cerr << "\t-n               Don't compress messages\n";
 	cerr << "\t-u               Trust the user Date header more than arrival time\n";
 	cerr << "\t-f               Fast import (but vulnerable to power-failure)\n";
 	cerr << "\n";
-	cerr << "Index messages from standard input and store them in the lurker database.\n";
-	cerr << "Either import a single message, or import a batch of messages in mbox format.\n";
+	cerr << "Index messages and store them in the lurker database.\n";
 	cerr << "\n";
 }
 
@@ -467,10 +466,9 @@ int process_mail(FILE* file, time_t arrival)
 		
 		string::size_type eos;
 		/* Look for message boundaries only if:
-		 *  We are importing a batch of messsages
-		 *  We are NOT importing a file from a maildir
+		 *  We are importing from an mbox (not single, not maildir)
 		 */
-		while (batch != -1 && arrival == 0 &&
+		while (ismbox && 
 		       (eos = find_message_boundary(buf, was)) != string::npos)
 		{
 			DwString msg(buf.c_str(), eos);
@@ -489,10 +487,9 @@ int process_mail(FILE* file, time_t arrival)
 		if (got == 0)
 		{
 			/* Don't index the empty string!
-			 * If single maildir file or raw delivery or message.
+			 * If not an mbox, or has leading mbox text
 			 */
-			if (buf.length() && 
-			    (batch == -1 || arrival != 0 || buf[0] == 'F'))
+			if (buf.length() && (!ismbox || buf[0] == 'F'))
 			{
 				DwString msg(buf.c_str(), buf.length());
 				buf = "";
@@ -542,13 +539,14 @@ int main(int argc, char** argv)
 {
 	int c;
 	
-	const char* config  = 0;
+	const char* config  = DEFAULT_CONFIG_FILE;
 	const char* listn   = 0;
 	const char* input   = 0;
+	bool single = false;
 	
 	srandom(time(0));
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:l:b:i:mvndfu?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:l:i:mvndfu?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -558,14 +556,11 @@ int main(int argc, char** argv)
 		case 'l':
 			listn = optarg;
 			break;
-		case 'b':
-			batch = atol(optarg);
-			break;
 		case 'i':
 			input = optarg;
 			break;
 		case 'm':
-			batch = -1;
+			single = true;
 			break;
 		case 'v':
 			verbose = true;
@@ -588,7 +583,7 @@ int main(int argc, char** argv)
 		}
 	}
 	
-	if (!config || !listn || batch == 0 || optind < argc)
+	if (!listn || optind < argc)
 	{
 		help(argv[0]);
 		return LEX_USAGE;
@@ -645,6 +640,7 @@ int main(int argc, char** argv)
 		DIR* d = opendir((string(input) + "/new").c_str());
 		if (d)
 		{
+			ismbox = false; /* maildirs don't have mboxes */
 			if (maildir(d, 
 				string(input) + "/new",
 				string(input) + "/cur") != 0)
@@ -653,6 +649,7 @@ int main(int argc, char** argv)
 		}
 		else
 		{
+			ismbox = !single;
 			FILE* f = fopen(input, "rb");
 			if (!f)
 			{
@@ -667,6 +664,7 @@ int main(int argc, char** argv)
 	}
 	else
 	{
+		ismbox = !single;
 		if (process_mail(stdin, 0) != 0) return LEX_IOERR;
 	}
 	

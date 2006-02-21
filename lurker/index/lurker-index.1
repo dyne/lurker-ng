@@ -1,97 +1,40 @@
-.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-index.1,v 1.10 2004-08-25 21:40:10 terpstra Exp $
-.\"
-.\"	transcript compatibility for postscript use.
-.\"
-.\"	synopsis:  .P! <file.ps>
-.\"
-.de P!
-.fl
-\!!1 setgray
-.fl
-\\&.\"
-.fl
-\!!0 setgray
-.fl			\" force out current output buffer
-\!!save /psv exch def currentpoint translate 0 0 moveto
-\!!/showpage{}def
-.fl			\" prolog
-.sy sed -e 's/^/!/' \\$1\" bring in postscript file
-\!!psv restore
-.
-.de pF
-.ie     \\*(f1 .ds f1 \\n(.f
-.el .ie \\*(f2 .ds f2 \\n(.f
-.el .ie \\*(f3 .ds f3 \\n(.f
-.el .ie \\*(f4 .ds f4 \\n(.f
-.el .tm ? font overflow
-.ft \\$1
-..
-.de fP
-.ie     !\\*(f4 \{\
-.	ft \\*(f4
-.	ds f4\"
-'	br \}
-.el .ie !\\*(f3 \{\
-.	ft \\*(f3
-.	ds f3\"
-'	br \}
-.el .ie !\\*(f2 \{\
-.	ft \\*(f2
-.	ds f2\"
-'	br \}
-.el .ie !\\*(f1 \{\
-.	ft \\*(f1
-.	ds f1\"
-'	br \}
-.el .tm ? font underflow
-..
-.ds f1\"
-.ds f2\"
-.ds f3\"
-.ds f4\"
-'\" t 
-.ta 8n 16n 24n 32n 40n 48n 56n 64n 72n  
 .TH "LURKER\-INDEX" "1" 
 .SH "NAME" 
 lurker\-index \(em imports messages into the archive 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker\-index\fR [\-c <config-file>]  [\-l <list>]  [\-i <mbox/maildir>]  [\-v \-d \-n \-u \-f]  [\-m | \-b <count>]  
+\fBlurker\-index\fR [\-c <config-file>]  [\-l <list>]  [\-i <mbox/maildir>]  [\-v \-d \-n \-u \-f]  [\-m]  
 .SH "DESCRIPTION" 
 .PP 
 \fBlurker\-index\fR indexes messages from 
 standard input and stores them in the lurker database. 
 It imports either a single message, or a batch of messages 
 in mbox format.  
+.PP 
+It is important to note that lurker messages  
+in order and may miss new messages 
+delivered during the import. For this reason, you should setup lurker  
+to receive new mail before importing old mail. Only 
+use lurker\-index on inactive mail folders! 
+.PP 
+By default, lurker\-index reads from standard input in mbox 
+format, delimited by 'From <addr> <date>' lines.  
+Be aware that if the mbox is not delimited correctly between 
+messages it will be interpretted as a single message with an 
+invalid date. To read other sources, see the '\-i' option. 
+If input is a single email, use '\-m'. 
 .SH "OPTIONS" 
 .IP "\fB\-c config-file\fP" 10 
 Use this config file for lurker settings. 
 .IP "\fB\-l listid\fP" 10 
 Import messages to the named mailing list. This should match 
 the value in the lurker.conf after the 'list = ' entry. 
-.IP "\fB\-b count\fP" 10 
-Import a batch of messages; flush every count messages. A 
-good value for count is 5. The larger this parameter, the more CPU 
-power lurker needs during import, but the less disk seeks. 
-.IP "" 10 
-It is important to note that lurker reads files from a 
-maildirs and mailboxes in order and may miss new messages 
-delivered during the import. For this reason, setting up lurker to 
-be invoked properly when new mail is delivered is essential. Only 
-use lurker\-index with '\-b' when importing from non-active mail 
-folders. 
-.IP "" 10 
-By default, lurker\-index reads from standard input in mbox 
-format, delimited by 'From <addr> <date>' lines.  
-Be aware that if the mbox is not delimited correctly between 
-messages it will be interpretted as a single message with an 
-invalid date. To read other sources, see the '\-i' option. 
 .IP "\fB\-m\fP" 10 
 Import a single message. In this mode lurker will never 
 interpret 'From ' lines as message delimiters. When being fed 
 newly delivered mail, this is the preferred mode of operation.  
 Try to turn off the 'From ' escaping of your MTA when using  
-this mode as lurker does it's own escaping which is generally 
+this mode, as lurker does it's own escaping which is generally 
 smarter. 
 .IP "" 10 
 This option should be used when lurker\-index is invoked by 
@@ -169,7 +112,7 @@ GNU General Public License for more details.
 .PP 
 You should have received a copy of the GNU General Public License 
 along with this program; if not, write to the Free Software 
-Foundation, Inc., 59 Temple Place - Suite 330, 
+Foundation, Inc., 59 Temple Place \- Suite 330, 
 Boston, MA 02111-1307, USA. 
  
 .SH "BUGS" 
@@ -178,4 +121,4 @@ Before reporting a bug, please confirm that the bug you found is
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
 <lurker\-users@lists.sourceforge.net>. 
-.\" created by instant / docbook-to-man, Wed 25 Aug 2004, 23:39 
+.\" created by instant / docbook-to-man, Tue 21 Feb 2006, 14:25 

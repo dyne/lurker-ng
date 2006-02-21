@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.15 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: main.cpp,v 1.16 2006-02-21 13:28:54 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -175,14 +175,13 @@ int main(int argc, char** argv)
 	if ((tmp = getenv("SCRIPT_NAME" )) != 0) cgipath = tmp;
 	if ((tmp = getenv("HTTPS"       )) != 0) https   = tmp;
 	
-	if (argc > 1) config  = argv[1];
-	if (argc > 2) request = argv[2];
+	if (argc > 1) request = argv[1];
+	if (argc > 2) config  = argv[2];
 	
 	string::size_type csplit;
 	if ((csplit = config.find('?')) != string::npos)
 	{
 		cdpath = config.substr(csplit+1, string::npos);
-		
 		
 		if (csplit != 0 && config[csplit-1] == '\\')
 			config.resize(csplit-1);
@@ -191,7 +190,7 @@ int main(int argc, char** argv)
 	
 	if (config == "")
 	{
-		help(_("no config file set"));
+		config = DEFAULT_CONFIG_FILE;
 		return 1;
 	}
 	if (request == "")

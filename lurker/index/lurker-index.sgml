@@ -61,7 +61,7 @@ lurker-index.1: lurker-index.sgml
       <arg>\-l &lt;list&gt;</arg>
       <arg>\-i &lt;mbox/maildir&gt;</arg>
       <arg>\-v \-d \-n \-u \-f</arg>
-      <arg>\-m | \-b &lt;count&gt;</arg>
+      <arg>\-m</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -72,6 +72,18 @@ lurker-index.1: lurker-index.sgml
       It imports either a single message, or a batch of messages
       in mbox format. </para>
 
+    <para>It is important to note that lurker messages 
+      in order and may miss new messages
+      delivered during the import. For this reason, you should setup lurker 
+      to receive new mail before importing old mail. Only
+      use lurker\-index on inactive mail folders!</para>
+
+    <para>By default, lurker\-index reads from standard input in mbox
+      format, delimited by 'From &lt;addr&gt; &lt;date&gt;' lines. 
+      Be aware that if the mbox is not delimited correctly between
+      messages it will be interpretted as a single message with an
+      invalid date. To read other sources, see the '\-i' option.
+      If input is a single email, use '\-m'.</para>
   </refsect1>
   <refsect1>
     <title>OPTIONS</title>
@@ -90,34 +102,13 @@ lurker-index.1: lurker-index.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>\-b count</option></term>
-        <listitem>
-          <para>Import a batch of messages; flush every count messages. A
-          good value for count is 5. The larger this parameter, the more CPU
-          power lurker needs during import, but the less disk seeks.</para>
-
-          <para>It is important to note that lurker reads files from a
-          maildirs and mailboxes in order and may miss new messages
-          delivered during the import. For this reason, setting up lurker to
-          be invoked properly when new mail is delivered is essential. Only
-          use lurker\-index with '\-b' when importing from non-active mail
-          folders.</para>
-
-          <para>By default, lurker\-index reads from standard input in mbox
-          format, delimited by 'From &lt;addr&gt; &lt;date&gt;' lines. 
-          Be aware that if the mbox is not delimited correctly between
-          messages it will be interpretted as a single message with an
-          invalid date. To read other sources, see the '\-i' option.</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
         <term><option>\-m</option></term>
         <listitem>
           <para>Import a single message. In this mode lurker will never
           interpret 'From ' lines as message delimiters. When being fed
           newly delivered mail, this is the preferred mode of operation. 
           Try to turn off the 'From ' escaping of your MTA when using 
-          this mode as lurker does it's own escaping which is generally
+          this mode, as lurker does it's own escaping which is generally
           smarter.</para>
 
           <para>This option should be used when lurker\-index is invoked by

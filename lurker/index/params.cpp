@@ -1,4 +1,4 @@
-/*  $Id: params.cpp,v 1.13 2006-02-21 11:38:15 terpstra Exp $
+/*  $Id: params.cpp,v 1.14 2006-02-21 13:28:54 terpstra Exp $
  *  
  *  params.cpp - Parse the config file for helper scripts
  *  
@@ -37,7 +37,7 @@ void help(const char* name)
 {
 	cerr << "Lurker-params (v" << VERSION << ") parses params from the config file.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> -f <locale>\n";
+	cerr << "Usage: " << name << " [-c <config-file>] [-f <locale>]\n";
 	cerr << "                         [-d -a -n -e -x -m -i -w -h -r -g]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 {
 	int c;
 	
-	const char* config        = 0;
+	const char* config        = DEFAULT_CONFIG_FILE;
 	int         fields        = 0;
 	bool        dbdir         = false;
 	bool        archive       = false;
@@ -132,7 +132,7 @@ int main(int argc, char** argv)
 		}
 	}
 	
-	if (!config || optind < argc)
+	if (optind < argc)
 	{
 		help(argv[0]);
 		return 1;

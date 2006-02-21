@@ -96,7 +96,9 @@ AC_ARG_WITH([default-config-file],
 LOCALSTATEDIR="$vardir"
 AC_SUBST(LOCALSTATEDIR)
 AC_SUBST(DEFAULT_CONFIG_FILE) 
-AC_DEFINE_UNQUOTED(CONFIG_FILE, ["$DEFAULT_CONFIG_FILE"], [The default config file location])
+AC_DEFINE_UNQUOTED(DEFAULT_CONFIG_FILE, 
+                   ["$DEFAULT_CONFIG_FILE"], 
+                   [The default config file location])
 
 AC_CONFIG_FILES([
 	Makefile libesort/Makefile common/Makefile index/Makefile

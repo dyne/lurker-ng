@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.10 2006-02-21 11:52:11 terpstra Exp $
+/*  $Id: list.cpp,v 1.11 2006-02-21 13:28:54 terpstra Exp $
  *  
  *  list.cpp - Parse the config file for helper scripts
  *  
@@ -37,7 +37,7 @@ void help(const char* name)
 {
 	cerr << "Lurker-list (v" << VERSION << ") parses lists from the config file.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " -c <config-file> -f <locale>\n";
+	cerr << "Usage: " << name << " [-c <config-file>] [-f <locale>]\n";
 	cerr << "                         [-i -g -t -a -l -d -s -o] [listid ...]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 {
 	int c;
 	
-	const char* config   = 0;
+	const char* config   = DEFAULT_CONFIG_FILE;
 	int         fields   = 0;
 	bool        ids      = false;
 	bool        group    = false;
@@ -118,12 +118,6 @@ int main(int argc, char** argv)
 			help(argv[0]);
 			return 1;
 		}
-	}
-	
-	if (!config)
-	{
-		help(argv[0]);
-		return 1;
 	}
 	
 	if (fields >= 2)
