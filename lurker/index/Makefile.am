@@ -16,11 +16,11 @@ lurker_search_SOURCES = search.cpp
 
 # Install an empty database
 install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(htmldir)
-	touch $(DESTDIR)$(htmldir)/db
+	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)
+	touch $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db
 
 uninstall-local:
-	rm -f $(DESTDIR)$(htmldir)/db
+	rm -f $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db
 
 # Generate man pages if in maintainer mode
 if MAINTAINER_MODE
