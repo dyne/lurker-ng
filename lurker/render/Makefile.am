@@ -1,4 +1,4 @@
-cgidir = ${libdir}/cgi-bin
+cgidir = @cgi_bin_dir@
 
 cgi_PROGRAMS = lurker.cgi jump.cgi keyword.cgi bounce.cgi
 

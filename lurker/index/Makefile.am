@@ -18,6 +18,7 @@ dist_man_MANS = lurker-index.1 lurker-list.1 lurker-params.1 \
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)
+	touch $(DESTDIR)$(localstatedir)/lib/$(PACAKGE)/db
 
 if MAINTAINER_MODE
 lurker-index.1: lurker-index.sgml

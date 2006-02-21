@@ -1,4 +1,4 @@
-SUBDIRS = . libesort common index prune render ui imgs
+SUBDIRS = libesort common index prune render ui imgs .
 
 # Work around mimelib bug on MacOS X
 AM_CPPFLAGS = -DDW_UNIX
@@ -22,3 +22,20 @@ nodist_mimelib_libmimelib_a_SOURCES = \
 	mimelib/text.cpp mimelib/token.cpp mimelib/uuencode.cpp
 
 endif
+
+install-data-local::
+	@echo
+	@echo "*** PLEASE READ ***"
+	@echo
+	@echo "Lurker config files have not been installed (for your protection)"
+	@echo "If you would like the default config files installed, run:"
+	@echo "  make install-config"
+	@echo
+	@echo "*** PLEASE READ ***"
+	@echo
+
+install-config:
+	$(mkinstalldirs) $(DESTDIR)$(default_config_dir)
+	$(INSTALL_DATA) lurker.conf apache.conf $(DESTDIR)$(default_config_dir)
+	@echo
+	@echo "Now put 'include $(default_config_dir)/apache.conf' in your apache config"

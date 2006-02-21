@@ -1,5 +1,5 @@
 # Lurker configuration file (lurker.conf).
-# Install as @DEFAULT_CONFIG_FILE@ on your system.
+# Install as @DEFAULT_CONFIG_DIR@/@PACKAGE@.conf on your system.
 
 #############################################################################
 # Global configuration

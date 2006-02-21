@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP EGREP LOCAL_MIMELIB_TRUE LOCAL_MIMELIB_FALSE LOCALSTATEDIR DEFAULT_CONFIG_FILE DEFAULT_WWW_DIR LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP EGREP LOCAL_MIMELIB_TRUE LOCAL_MIMELIB_FALSE default_config_dir default_www_dir cgi_bin_dir LOCALSTATEDIR DEFAULT_CONFIG_DIR DEFAULT_WWW_DIR CGI_BIN_DIR LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -868,12 +868,14 @@ Optional Packages:
                           Location of mimelib/message.h
   --with-mimelib-libname=LIB
                           Try an alternative library name
-  --with-default-config-file=FILE
-                          Where the lurker looks for a configuration file
-                          default=SYSCONFDIR/lurker.conf
+  --with-default-config-dir=DIR
+                          Where the lurker looks for a configuration files
+                          default=SYSCONFDIR/lurker
   --with-default-www-dir=DIR
                           Where the lurker places bootstrap web files
                           default=LOCALSTATEDIR/www/lurker
+  --with-cgi-bin-dir=DIR  Where the lurker places cgi files
+                          default=LIBDIR/cgi-bin
 
 Some influential environment variables:
   CC          C compiler command
@@ -4978,12 +4980,12 @@ fi
 fi
 
 
-# Check whether --with-default-config-file or --without-default-config-file was given.
-if test "${with_default_config_file+set}" = set; then
-  withval="$with_default_config_file"
-  default_config_file="$withval"
+# Check whether --with-default-config-dir or --without-default-config-dir was given.
+if test "${with_default_config_dir+set}" = set; then
+  withval="$with_default_config_dir"
+  default_config_dir="$withval"
 else
-  default_config_file="$sysconfdir/$PACKAGE.conf"
+  default_config_dir="\${sysconfdir}/\${PACKAGE}"
 fi;
 
 # Check whether --with-default-www-dir or --without-default-www-dir was given.
@@ -4991,21 +4993,38 @@ if test "${with_default_www_dir+set}" = set; then
   withval="$with_default_www_dir"
   default_www_dir="$withval"
 else
-  default_www_dir="$localstatedir/www/$PACKAGE"
+  default_www_dir="\${localstatedir}/www/\${PACKAGE}"
 fi;
+
+# Check whether --with-cgi-bin-dir or --without-cgi-bin-dir was given.
+if test "${with_cgi_bin_dir+set}" = set; then
+  withval="$with_cgi_bin_dir"
+  cgi_bin_dir="$withval"
+else
+  cgi_bin_dir="\${libdir}/cgi-bin"
+fi;
+
+
+
 
 # We need to fully evaluate some variables for the config and source files
 prefix_backup="$prefix"
+exec_prefix_backup="$exec_prefix"
 if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
+if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
 LOCALSTATEDIR=`eval echo ${localstatedir}`
 DEFAULT_WWW_DIR=`eval echo ${default_www_dir}`
-DEFAULT_CONFIG_FILE=`eval echo ${default_config_file}`
+DEFAULT_CONFIG_DIR=`eval echo ${default_config_dir}`
+CGI_BIN_DIR=`eval echo ${cgi_bin_dir}`
 LOCALSTATEDIR=`eval echo ${LOCALSTATEDIR}`
 DEFAULT_WWW_DIR=`eval echo ${DEFAULT_WWW_DIR}`
-DEFAULT_CONFIG_FILE=`eval echo ${DEFAULT_CONFIG_FILE}`
+DEFAULT_CONFIG_DIR=`eval echo ${DEFAULT_CONFIG_DIR}`
+CGI_BIN_DIR=`eval echo ${CGI_BIN_DIR}`
 prefix="$prefix_backup"
+exec_prefix="$exec_prefix_backup"
 
-# Needed in lurker.conf:
+# Needed in lurker.conf and apache.conf:
+
 
 
 
@@ -5013,11 +5032,11 @@ prefix="$prefix_backup"
 # Needed in source:
 
 cat >>confdefs.h <<_ACEOF
-#define DEFAULT_CONFIG_FILE "$DEFAULT_CONFIG_FILE"
+#define DEFAULT_CONFIG_FILE "$DEFAULT_CONFIG_DIR/$PACKAGE.conf"
 _ACEOF
 
 
-                                                                                          ac_config_files="$ac_config_files Makefile libesort/Makefile common/Makefile index/Makefile ui/Makefile imgs/Makefile prune/Makefile render/Makefile lurker.conf"
+                                                                                                    ac_config_files="$ac_config_files Makefile libesort/Makefile common/Makefile index/Makefile ui/Makefile imgs/Makefile prune/Makefile render/Makefile lurker.conf apache.conf"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -5605,6 +5624,7 @@ do
   "prune/Makefile" ) CONFIG_FILES="$CONFIG_FILES prune/Makefile" ;;
   "render/Makefile" ) CONFIG_FILES="$CONFIG_FILES render/Makefile" ;;
   "lurker.conf" ) CONFIG_FILES="$CONFIG_FILES lurker.conf" ;;
+  "apache.conf" ) CONFIG_FILES="$CONFIG_FILES apache.conf" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
   "config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
@@ -5745,9 +5765,13 @@ s,@CXXCPP@,$CXXCPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@LOCAL_MIMELIB_TRUE@,$LOCAL_MIMELIB_TRUE,;t t
 s,@LOCAL_MIMELIB_FALSE@,$LOCAL_MIMELIB_FALSE,;t t
+s,@default_config_dir@,$default_config_dir,;t t
+s,@default_www_dir@,$default_www_dir,;t t
+s,@cgi_bin_dir@,$cgi_bin_dir,;t t
 s,@LOCALSTATEDIR@,$LOCALSTATEDIR,;t t
-s,@DEFAULT_CONFIG_FILE@,$DEFAULT_CONFIG_FILE,;t t
+s,@DEFAULT_CONFIG_DIR@,$DEFAULT_CONFIG_DIR,;t t
 s,@DEFAULT_WWW_DIR@,$DEFAULT_WWW_DIR,;t t
+s,@CGI_BIN_DIR@,$CGI_BIN_DIR,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF

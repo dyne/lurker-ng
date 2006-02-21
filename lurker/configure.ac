@@ -78,40 +78,54 @@ else
    [AC_MSG_ERROR(Need mimelib to link)])
 fi
 
-AC_ARG_WITH([default-config-file], 
-            AC_HELP_STRING([--with-default-config-file=FILE],
-                           [Where the lurker looks for a configuration file [default=SYSCONFDIR/lurker.conf]]), 
-            default_config_file="$withval", 
-            default_config_file="$sysconfdir/$PACKAGE.conf") 
+AC_ARG_WITH([default-config-dir], 
+            AC_HELP_STRING([--with-default-config-dir=DIR],
+                           [Where the lurker looks for a configuration files [default=SYSCONFDIR/lurker]]), 
+            default_config_dir="$withval", 
+            default_config_dir="\${sysconfdir}/\${PACKAGE}") 
 AC_ARG_WITH([default-www-dir],
             AC_HELP_STRING([--with-default-www-dir=DIR],
                            [Where the lurker places bootstrap web files [default=LOCALSTATEDIR/www/lurker]]), 
             default_www_dir="$withval", 
-            default_www_dir="$localstatedir/www/$PACKAGE") 
+            default_www_dir="\${localstatedir}/www/\${PACKAGE}") 
+AC_ARG_WITH([cgi-bin-dir],
+            AC_HELP_STRING([--with-cgi-bin-dir=DIR],
+                           [Where the lurker places cgi files [default=LIBDIR/cgi-bin]]), 
+            cgi_bin_dir="$withval", 
+            cgi_bin_dir="\${libdir}/cgi-bin") 
+AC_SUBST(default_config_dir)
+AC_SUBST(default_www_dir)
+AC_SUBST(cgi_bin_dir)
 
 # We need to fully evaluate some variables for the config and source files
 prefix_backup="$prefix"
+exec_prefix_backup="$exec_prefix"
 if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
+if test "x${exec_prefix}" = "xNONE"; then exec_prefix="${prefix}"; fi
 LOCALSTATEDIR=`eval echo ${localstatedir}`
 DEFAULT_WWW_DIR=`eval echo ${default_www_dir}`
-DEFAULT_CONFIG_FILE=`eval echo ${default_config_file}`
+DEFAULT_CONFIG_DIR=`eval echo ${default_config_dir}`
+CGI_BIN_DIR=`eval echo ${cgi_bin_dir}`
 LOCALSTATEDIR=`eval echo ${LOCALSTATEDIR}`
 DEFAULT_WWW_DIR=`eval echo ${DEFAULT_WWW_DIR}`
-DEFAULT_CONFIG_FILE=`eval echo ${DEFAULT_CONFIG_FILE}`
+DEFAULT_CONFIG_DIR=`eval echo ${DEFAULT_CONFIG_DIR}`
+CGI_BIN_DIR=`eval echo ${CGI_BIN_DIR}`
 prefix="$prefix_backup"
+exec_prefix="$exec_prefix_backup"
 
-# Needed in lurker.conf:
+# Needed in lurker.conf and apache.conf:
 AC_SUBST(LOCALSTATEDIR)
-AC_SUBST(DEFAULT_CONFIG_FILE) 
+AC_SUBST(DEFAULT_CONFIG_DIR) 
 AC_SUBST(DEFAULT_WWW_DIR)
+AC_SUBST(CGI_BIN_DIR)
 
 # Needed in source:
 AC_DEFINE_UNQUOTED(DEFAULT_CONFIG_FILE, 
-                   ["$DEFAULT_CONFIG_FILE"], 
+                   ["$DEFAULT_CONFIG_DIR/$PACKAGE.conf"], 
                    [The default config file location])
 
 AC_CONFIG_FILES([
 	Makefile libesort/Makefile common/Makefile index/Makefile
 	ui/Makefile imgs/Makefile prune/Makefile render/Makefile
-	lurker.conf])
+	lurker.conf apache.conf])
 AC_OUTPUT

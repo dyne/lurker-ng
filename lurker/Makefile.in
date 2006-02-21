@@ -36,10 +36,11 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(srcdir)/lurker.conf.in $(top_srcdir)/configure AUTHORS \
-	COPYING ChangeLog INSTALL NEWS tools/depcomp tools/install-sh \
-	tools/missing tools/mkinstalldirs
+	$(srcdir)/Makefile.in $(srcdir)/apache.conf.in \
+	$(srcdir)/config.h.in $(srcdir)/lurker.conf.in \
+	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
+	tools/depcomp tools/install-sh tools/missing \
+	tools/mkinstalldirs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
@@ -49,7 +50,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = lurker.conf
+CONFIG_CLEAN_FILES = lurker.conf apache.conf
 LIBRARIES = $(noinst_LIBRARIES)
 AR = ar
 ARFLAGS = cru
@@ -115,13 +116,14 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CGI_BIN_DIR = @CGI_BIN_DIR@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
-DEFAULT_CONFIG_FILE = @DEFAULT_CONFIG_FILE@
+DEFAULT_CONFIG_DIR = @DEFAULT_CONFIG_DIR@
 DEFAULT_WWW_DIR = @DEFAULT_WWW_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
@@ -173,7 +175,10 @@ am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
 build_alias = @build_alias@
+cgi_bin_dir = @cgi_bin_dir@
 datadir = @datadir@
+default_config_dir = @default_config_dir@
+default_www_dir = @default_www_dir@
 exec_prefix = @exec_prefix@
 host_alias = @host_alias@
 includedir = @includedir@
@@ -191,7 +196,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-SUBDIRS = . libesort common index prune render ui imgs
+SUBDIRS = libesort common index prune render ui imgs .
 
 # Work around mimelib bug on MacOS X
 AM_CPPFLAGS = -DDW_UNIX
@@ -266,6 +271,8 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 distclean-hdr:
 	-rm -f config.h stamp-h1
 lurker.conf: $(top_builddir)/config.status $(srcdir)/lurker.conf.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+apache.conf: $(top_builddir)/config.status $(srcdir)/apache.conf.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 clean-noinstLIBRARIES:
@@ -1090,7 +1097,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am:
+install-data-am: install-data-local
 
 install-exec-am:
 
@@ -1130,14 +1137,32 @@ uninstall-info: uninstall-info-recursive
 	distclean-compile distclean-generic distclean-hdr \
 	distclean-recursive distclean-tags distcleancheck distdir \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	maintainer-clean-recursive mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-recursive pdf pdf-am ps ps-am \
-	tags tags-recursive uninstall uninstall-am uninstall-info-am
+	install install-am install-data install-data-am \
+	install-data-local install-exec install-exec-am install-info \
+	install-info-am install-man install-strip installcheck \
+	installcheck-am installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic maintainer-clean-recursive \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-am uninstall-info-am
 
+
+install-data-local::
+	@echo
+	@echo "*** PLEASE READ ***"
+	@echo
+	@echo "Lurker config files have not been installed (for your protection)"
+	@echo "If you would like the default config files installed, run:"
+	@echo "  make install-config"
+	@echo
+	@echo "*** PLEASE READ ***"
+	@echo
+
+install-config:
+	$(mkinstalldirs) $(DESTDIR)$(default_config_dir)
+	$(INSTALL_DATA) lurker.conf apache.conf $(DESTDIR)$(default_config_dir)
+	@echo
+	@echo "Now put 'include $(default_config_dir)/apache.conf' in your apache config"
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
