@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.12 2006-02-21 12:49:36 terpstra Exp $
+/*  $Id: thread.cpp,v 1.13 2006-02-21 18:37:29 terpstra Exp $
  *  
  *  thread.cpp - Handle a thread/ command
  *  
@@ -103,6 +103,7 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../ui/thread.xsl\"?>\n"
 		<< "<thread xml:lang=\"" << req.language << "\">\n"
+		<< " <mode>" << req.ext << "</mode>\n"
 		<< " " << cfg(req.language) << "\n"
 		<< " <hash>" << subject_hash(source.subject().c_str()) << "</hash>\n";
 	

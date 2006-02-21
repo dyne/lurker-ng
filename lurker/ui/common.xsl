@@ -8,7 +8,7 @@
 <xsl:variable name="jump-date" select="concat(/*/server/eoa-year, '1201.000000.00000000')"/>
 
 <!-- Output control -->
-<xsl:variable name="type" select="'html'"/>
+<xsl:variable name="type" select="/*/mode"/>
 <xsl:output method="html" indent="no" encoding="UTF-8"
             doctype-system="http://www.w3.org/TR/html4/strict.dtd"
             doctype-public="-//W3C//DTD HTML 4.0 Transitional//EN"/>

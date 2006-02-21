@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.41 2006-02-21 12:49:36 terpstra Exp $
+/*  $Id: message.cpp,v 1.42 2006-02-21 18:37:29 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -864,6 +864,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../ui/message.xsl\"?>\n"
 		<< "<message xml:lang=\"" << req.language << "\">\n"
+		<< " <mode>" << req.ext << "</mode>\n"
 		<< " " << cfg(req.language) << "\n"
 		<< " " << source << "\n";
 	

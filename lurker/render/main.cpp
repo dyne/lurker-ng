@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.18 2006-02-21 16:50:46 terpstra Exp $
+/*  $Id: main.cpp,v 1.19 2006-02-21 18:37:29 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -191,8 +191,9 @@ int main(int argc, char** argv)
 		else	document.resize(csplit);
 	}
 	
-	if (argc > 1) request = argv[1];
-	if (argc > 2) config  = argv[2];
+	// was used for debugging, but apache2 sets command-line options!
+	// if (argc > 1) request = argv[1];
+	// if (argc > 2) config  = argv[2];
 	
 	if (config == "") config = DEFAULT_CONFIG_FILE;
 	

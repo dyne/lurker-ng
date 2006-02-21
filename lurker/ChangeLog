@@ -21,6 +21,7 @@ v2.0:
 	 - document must be either a frontend path, or the missing document
 	 - config-file is optional
 	Include an apache.conf which should work with the given settings
+	Restored rudimentary xml support (firefox supports it finally)
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE
