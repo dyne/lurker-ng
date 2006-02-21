@@ -1,5 +1,5 @@
-uidir = ${wwwdir}/ui
-htmldir = ${wwwdir}
+uidir = ${default_www_dir}/ui
+htmldir = ${default_www_dir}
 
 dist_ui_DATA = \
 	default.css common.js lang.xsl common.xsl list.xsl message.xsl \

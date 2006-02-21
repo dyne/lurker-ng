@@ -75,6 +75,7 @@ CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFAULT_CONFIG_FILE = @DEFAULT_CONFIG_FILE@
+DEFAULT_WWW_DIR = @DEFAULT_WWW_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
@@ -143,7 +144,6 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-wwwdir = @wwwdir@
 imgsdir = ${wwwdir}/imgs
 dist_imgs_DATA = \
 	a.png b.png c.png d.png e.png f.png g.png h.png i.png j.png k.png \

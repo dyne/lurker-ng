@@ -179,3 +179,27 @@ dbdir = @LOCALSTATEDIR@/lib/@PACKAGE@
 
 
 #############################################################################
+# Front-end configuration
+#############################################################################
+
+# Lurker can manage multiple frontends/web interfaces.
+# A frontend always has (and is identified by) it's cache directory.
+# Each frontend specifies which lists/groups should be included.
+
+# This front-end will include all lists/groups
+frontend = @DEFAULT_WWW_DIR@
+
+# Here are some more examples:
+
+# This front-end will include only the list lurker-users
+# frontend = /var/www/only-one
+# 	allow_list = lurker-users
+
+# This front-end will include all lists, except lurker-users
+# frontend = /var/www/all-but-one
+#	deny_list = lurker-users
+
+# This front-end will include only group open-source, but omit lurker-users
+# frontend = /var/www/one-group-without-one-list
+#	allow_group = open-source
+#	deny_list = lurker-users

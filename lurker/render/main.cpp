@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.16 2006-02-21 13:28:54 terpstra Exp $
+/*  $Id: main.cpp,v 1.17 2006-02-21 15:46:22 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -168,12 +168,18 @@ int main(int argc, char** argv)
 	bind_textdomain_codeset(PACKAGE, "utf-8");
 #endif
 	
+	// Every document about CGI agrees these exist:
 	if ((tmp = getenv("QUERY_STRING")) != 0) config  = tmp;
-	if ((tmp = getenv("REQUEST_URI" )) != 0) request = tmp;
 	if ((tmp = getenv("SERVER_NAME" )) != 0) host    = tmp;
 	if ((tmp = getenv("SERVER_PORT" )) != 0) port    = tmp;
 	if ((tmp = getenv("SCRIPT_NAME" )) != 0) cgipath = tmp;
+	// Many CGI 'standards' seem to agree this one exists for https:
 	if ((tmp = getenv("HTTPS"       )) != 0) https   = tmp;
+	
+	// CGI guarantees this in case called as an error document
+	if ((tmp = getenv("REDIRECT_URL")) != 0) request = tmp;
+	// ... however, as we aren't always called that way, try this too:
+	if ((tmp = getenv("REQUEST_URI" )) != 0) request = tmp;
 	
 	if (argc > 1) request = argv[1];
 	if (argc > 2) config  = argv[2];

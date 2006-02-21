@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.11 2006-02-21 11:38:15 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.12 2006-02-21 15:46:21 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -29,6 +29,7 @@
 #include <map>
 #include <set>
 #include <iostream>
+#include <vector>
 
 #if __GNUC__ == 2
 #include <strstream>
@@ -43,6 +44,7 @@ using std::string;
 using std::map;
 using std::set;
 using std::ostream;
+using std::vector;
 
 // localized string
 class lstring
@@ -80,6 +82,7 @@ struct List
 	set<string> languages;
 	
 	bool offline;
+	bool allowed; // Set to true if the config file enabled this list
 	
 	// localize these
 	lstring title;		// could make sense in some cases 
@@ -97,10 +100,27 @@ struct List
  	{ return SerializeMagic(*this, locale); }
 };
 
+struct Frontend
+{
+ 	enum Perm { ALLOW, DENY };
+ 	enum What { GROUP, LIST };
+ 	
+ 	struct Entry
+	{
+		Perm perm;
+		What what;
+		string key;
+ 	};
+ 	
+ 	vector<Entry> entries;
+};
+
 class Config
 {
  private:
  	List* list;
+ 	Frontend* frontend;
+ 	
  	string group;
 #if __GNUC__ == 2
 	strstream error;
@@ -119,10 +139,12 @@ class Config
  	};
  	
  	typedef map<string, GroupData> Groups;
+ 	typedef map<string, Frontend> Frontends;
  	
- 	Lists  lists;
+ 	Lists lists;
  	Groups groups;
- 	 	
+ 	Frontends frontends;
+        
  	// never localize paths, commands, or addresses
  	string	dbdir;
  	string	xslt;
@@ -162,6 +184,9 @@ class Config
  	// Open the config from this file.
  	int load(const string& file, bool toplevel = true);
  	int process_command(const string& key, const string& val, const string& dir);
+ 	
+ 	// Set the allowed flag on lists
+ 	void set_permissions(const Frontend& f);
  	
  	struct SerializeMagic
  	{

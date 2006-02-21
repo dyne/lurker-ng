@@ -76,6 +76,7 @@ CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFAULT_CONFIG_FILE = @DEFAULT_CONFIG_FILE@
+DEFAULT_WWW_DIR = @DEFAULT_WWW_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
@@ -144,9 +145,8 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-wwwdir = @wwwdir@
-uidir = ${wwwdir}/ui
-htmldir = ${wwwdir}
+uidir = ${default_www_dir}/ui
+htmldir = ${default_www_dir}
 dist_ui_DATA = \
 	default.css common.js lang.xsl common.xsl list.xsl message.xsl \
 	mindex.xsl search.xsl splash.xsl thread.xsl lang.xml \

@@ -78,24 +78,34 @@ else
    [AC_MSG_ERROR(Need mimelib to link)])
 fi
 
-wwwdir="${localstatedir}/www/${PACKAGE}"
-AC_SUBST(wwwdir)
-
-prefix_backup="$prefix"
-if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
-etcdir=`eval echo ${sysconfdir}`
-vardir=`eval echo ${localstatedir}`
-prefix="$prefix_backup"
-
 AC_ARG_WITH([default-config-file], 
             AC_HELP_STRING([--with-default-config-file=FILE],
                            [Where the lurker looks for a configuration file [default=SYSCONFDIR/lurker.conf]]), 
-            DEFAULT_CONFIG_FILE="$withval", 
-            DEFAULT_CONFIG_FILE="$etcdir/lurker.conf") 
+            default_config_file="$withval", 
+            default_config_file="$sysconfdir/$PACKAGE.conf") 
+AC_ARG_WITH([default-www-dir],
+            AC_HELP_STRING([--with-default-www-dir=DIR],
+                           [Where the lurker places bootstrap web files [default=LOCALSTATEDIR/www/lurker]]), 
+            default_www_dir="$withval", 
+            default_www_dir="$localstatedir/www/$PACKAGE") 
 
-LOCALSTATEDIR="$vardir"
+# We need to fully evaluate some variables for the config and source files
+prefix_backup="$prefix"
+if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
+LOCALSTATEDIR=`eval echo ${localstatedir}`
+DEFAULT_WWW_DIR=`eval echo ${default_www_dir}`
+DEFAULT_CONFIG_FILE=`eval echo ${default_config_file}`
+LOCALSTATEDIR=`eval echo ${LOCALSTATEDIR}`
+DEFAULT_WWW_DIR=`eval echo ${DEFAULT_WWW_DIR}`
+DEFAULT_CONFIG_FILE=`eval echo ${DEFAULT_CONFIG_FILE}`
+prefix="$prefix_backup"
+
+# Needed in lurker.conf:
 AC_SUBST(LOCALSTATEDIR)
 AC_SUBST(DEFAULT_CONFIG_FILE) 
+AC_SUBST(DEFAULT_WWW_DIR)
+
+# Needed in source:
 AC_DEFINE_UNQUOTED(DEFAULT_CONFIG_FILE, 
                    ["$DEFAULT_CONFIG_FILE"], 
                    [The default config file location])

@@ -11,6 +11,9 @@ v2.0:
 	ui/ files are now installed to ui
 	New automake 1.9.6, autoconf 2.59
 	Removed old '-b' option; '-m' remains to import a single message
+	Add configure option to control web directory
+	Every list MUST be contained in a group
+	Added frontend support to the config file
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE

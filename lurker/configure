@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP EGREP LOCAL_MIMELIB_TRUE LOCAL_MIMELIB_FALSE wwwdir LOCALSTATEDIR DEFAULT_CONFIG_FILE LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP EGREP LOCAL_MIMELIB_TRUE LOCAL_MIMELIB_FALSE LOCALSTATEDIR DEFAULT_CONFIG_FILE DEFAULT_WWW_DIR LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -871,6 +871,9 @@ Optional Packages:
   --with-default-config-file=FILE
                           Where the lurker looks for a configuration file
                           default=SYSCONFDIR/lurker.conf
+  --with-default-www-dir=DIR
+                          Where the lurker places bootstrap web files
+                          default=LOCALSTATEDIR/www/lurker
 
 Some influential environment variables:
   CC          C compiler command
@@ -4974,27 +4977,40 @@ fi
 
 fi
 
-wwwdir="${localstatedir}/www/${PACKAGE}"
-
-
-prefix_backup="$prefix"
-if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
-etcdir=`eval echo ${sysconfdir}`
-vardir=`eval echo ${localstatedir}`
-prefix="$prefix_backup"
-
 
 # Check whether --with-default-config-file or --without-default-config-file was given.
 if test "${with_default_config_file+set}" = set; then
   withval="$with_default_config_file"
-  DEFAULT_CONFIG_FILE="$withval"
+  default_config_file="$withval"
 else
-  DEFAULT_CONFIG_FILE="$etcdir/lurker.conf"
+  default_config_file="$sysconfdir/$PACKAGE.conf"
 fi;
 
-LOCALSTATEDIR="$vardir"
+# Check whether --with-default-www-dir or --without-default-www-dir was given.
+if test "${with_default_www_dir+set}" = set; then
+  withval="$with_default_www_dir"
+  default_www_dir="$withval"
+else
+  default_www_dir="$localstatedir/www/$PACKAGE"
+fi;
+
+# We need to fully evaluate some variables for the config and source files
+prefix_backup="$prefix"
+if test "x${prefix}" = "xNONE"; then prefix="${ac_default_prefix}"; fi
+LOCALSTATEDIR=`eval echo ${localstatedir}`
+DEFAULT_WWW_DIR=`eval echo ${default_www_dir}`
+DEFAULT_CONFIG_FILE=`eval echo ${default_config_file}`
+LOCALSTATEDIR=`eval echo ${LOCALSTATEDIR}`
+DEFAULT_WWW_DIR=`eval echo ${DEFAULT_WWW_DIR}`
+DEFAULT_CONFIG_FILE=`eval echo ${DEFAULT_CONFIG_FILE}`
+prefix="$prefix_backup"
+
+# Needed in lurker.conf:
 
 
+
+
+# Needed in source:
 
 cat >>confdefs.h <<_ACEOF
 #define DEFAULT_CONFIG_FILE "$DEFAULT_CONFIG_FILE"
@@ -5729,9 +5745,9 @@ s,@CXXCPP@,$CXXCPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@LOCAL_MIMELIB_TRUE@,$LOCAL_MIMELIB_TRUE,;t t
 s,@LOCAL_MIMELIB_FALSE@,$LOCAL_MIMELIB_FALSE,;t t
-s,@wwwdir@,$wwwdir,;t t
 s,@LOCALSTATEDIR@,$LOCALSTATEDIR,;t t
 s,@DEFAULT_CONFIG_FILE@,$DEFAULT_CONFIG_FILE,;t t
+s,@DEFAULT_WWW_DIR@,$DEFAULT_WWW_DIR,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF

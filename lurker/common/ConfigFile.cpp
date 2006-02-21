@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.18 2006-02-21 11:52:11 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.19 2006-02-21 15:46:21 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -333,7 +333,7 @@ bool lstring::is_set() const
 }
 
 Config::Config()
- : list(0), group("lists"), error(), lists(), groups(),
+ : list(0), frontend(0), group(""), error(), lists(), groups(),
    dbdir(""), 
    xslt("cat -"),
    pgpv_mime("off"),
@@ -514,7 +514,14 @@ int Config::process_command(const string& keys, const string& val, const string&
 			return -1;
 		}
 		
+		if (groups.find(val) != groups.end())
+		{
+			error << "Group id '" << val << "' already exists!" << endl;
+			return -1;
+		}
+		
 		group = val;
+		groups[group]; // make sure it exists
 	}
 	else if (key == "heading")
 	{
@@ -523,6 +530,12 @@ int Config::process_command(const string& keys, const string& val, const string&
 	}
 	else if (key == "list")
 	{
+		if (group == "")
+		{
+			error << "List id '" << val << "' is not a member of any group!" << endl;
+			return -1;
+		}
+		
 		len = 128;
 		if (!isSimple(val) || val.length() == 0)
 		{
@@ -545,8 +558,8 @@ int Config::process_command(const string& keys, const string& val, const string&
 		}
 		else
 		{
-			// re-enter list scope
-			list = &lists[val];
+			error << "List id '" << val << "' already exists!" << endl;
+			return -1;
 		}
 	}
 	else if (key == "title")
@@ -641,6 +654,106 @@ int Config::process_command(const string& keys, const string& val, const string&
 		}
 		
 		list->description.translate(lc, val);
+	}
+	else if (key == "frontend")
+	{
+		len = 10240; // Long paths are ... ok
+		
+		if (lc != "")
+		{
+			error << "frontend paths cannot be localized" << endl;
+			return -1;
+		}
+		
+		if (frontends.find(val) == frontends.end())
+		{
+			frontend = &frontends[val];
+		}
+		else
+		{
+			error << "Frontend '" << val << "' already exists!" << endl;
+			return -1;
+		}
+	}
+	else if (key == "allow_list")
+	{
+		if (frontend == 0)
+		{
+			error << "No frontend defined for allow_list = '" << val << "'" << endl;
+			return -1;
+		}
+		
+		if (lists.find(val) == lists.end())
+		{
+			error << "List '" << val << "' does not exist for allow_list" << endl;
+			return -1;
+		}
+		
+		Frontend::Entry e;
+		e.perm = Frontend::ALLOW;
+		e.what = Frontend::LIST;
+		e.key = val;
+		frontend->entries.push_back(e);
+	}
+	else if (key == "deny_list")
+	{
+		if (frontend == 0)
+		{
+			error << "No frontend defined for deny_list = '" << val << "'" << endl;
+			return -1;
+		}
+		
+		if (lists.find(val) == lists.end())
+		{
+			error << "List '" << val << "' does not exist for deny_list" << endl;
+			return -1;
+		}
+		
+		Frontend::Entry e;
+		e.perm = Frontend::DENY;
+		e.what = Frontend::LIST;
+		e.key = val;
+		frontend->entries.push_back(e);
+	}
+	else if (key == "allow_group")
+	{
+		if (frontend == 0)
+		{
+			error << "No frontend defined for allow_group = '" << val << "'" << endl;
+			return -1;
+		}
+		
+		if (groups.find(val) == groups.end())
+		{
+			error << "Group '" << val << "' does not exist for allow_group" << endl;
+			return -1;
+		}
+		
+		Frontend::Entry e;
+		e.perm = Frontend::ALLOW;
+		e.what = Frontend::GROUP;
+		e.key = val;
+		frontend->entries.push_back(e);
+	}
+	else if (key == "deny_group")
+	{
+		if (frontend == 0)
+		{
+			error << "No frontend defined for deny_group = '" << val << "'" << endl;
+			return -1;
+		}
+		
+		if (groups.find(val) == groups.end())
+		{
+			error << "Group '" << val << "' does not exist for deny_group" << endl;
+			return -1;
+		}
+		
+		Frontend::Entry e;
+		e.perm = Frontend::DENY;
+		e.what = Frontend::GROUP;
+		e.key = val;
+		frontend->entries.push_back(e);
 	}
 	else if (key == "dbdir")
 	{
@@ -861,4 +974,40 @@ ostream& operator << (ostream& o, const Config::SerializeMagic& cm)
 	o << "/></server>";
 	
 	return o;
+}
+
+void Config::set_permissions(const Frontend& f)
+{
+	vector<Frontend::Entry>::const_iterator ei,
+		es = f.entries.begin(),
+		ee = f.entries.end();
+	
+	Lists::iterator li,
+		ls = lists.begin(),
+		le = lists.end();
+	
+	// Empty list or first entry deny means default to allow
+	bool def = (es == ee) || (es->perm == Frontend::DENY);
+	for (li = ls; li != le; ++li) li->second.allowed = def;
+	
+	// Walk each entry toggling permissions as we go
+	for (ei = es; ei != ee; ++ei)
+	{
+		bool allowed = (ei->perm == Frontend::ALLOW);
+		
+		if (ei->what == Frontend::LIST)
+		{
+			lists[ei->key].allowed = allowed;
+		}
+		else
+		{ // group
+			Members::const_iterator mi,
+				ms = groups[ei->key].members.begin(),
+				me = groups[ei->key].members.end();
+			for (mi = ms; mi != me; ++mi)
+			{
+				lists[*mi].allowed = allowed;
+			}
+		}
+	}
 }
