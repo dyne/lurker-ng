@@ -4,6 +4,9 @@ v2.0:
 	Include a fix for Solaris my_timegm from Moritz Eysholdt
 	Add mimelib workaround for MacOS X
 	Extend the trimming of []s in subjects to 40 (for japanese lists)
+	Removed the 'regroupable' option, this is now manditory off
+	Language is now a manditory field for mailing lists
+	A single mailing list may now host multiple written languages
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE

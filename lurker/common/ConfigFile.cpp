@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.16 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.17 2006-02-21 11:38:15 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -345,7 +345,6 @@ Config::Config()
    web_cache(true),
    hide_email(false),
    raw_email(true),
-   regroupable(true),
    modified(0)
 {
 }
@@ -609,7 +608,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 			return -1;
 		}
 		
-		list->language = lval;
+		list->languages.insert(lval);
 	}
 	else if (key == "offline")
 	{
@@ -731,23 +730,6 @@ int Config::process_command(const string& keys, const string& val, const string&
 			return -1;
 		}
 	}
-	else if (key == "regroupable")
-	{
-		if (lc != "")
-		{
-			error << "regroupable cannot be localized" << endl;
-			return -1;
-		}
-		if (val == "off" || val == "false")
-			regroupable = false;
-		else if (val == "on" || val == "true")
-			regroupable = true;
-		else
-		{
-			error << "regroupable must be set to on/off or true/false!" << endl;
-			return -1;
-		}
-	}
 	else if (key == "raw_email")
 	{
 		if (lc != "")
@@ -793,6 +775,16 @@ int Config::process_command(const string& keys, const string& val, const string&
 		return -1;
 	}
 	
+	Lists::const_iterator i, e;
+	for (i = lists.begin(), e = lists.end(); i != e; ++i)
+	{
+		if (i->second.languages.empty()) 
+		{
+			error << "List '" << i->first << "' has no language!" << endl;
+			return -1;
+		}
+	}
+	
 	return 0;
 }
 
@@ -803,8 +795,11 @@ ostream& operator << (ostream& o, const List::SerializeMagic& lm)
 	
 	o << "<list>"
 	  << "<id>" << m.mbox << "</id>"
-	  << "<group>" << m.group << "</group>"
-	  << "<language>" << m.language << "</language>";
+	  << "<group>" << m.group << "</group>";
+	
+	set<string>::const_iterator i, e;
+	for (i = m.languages.begin(), e = m.languages.end(); i != e; ++i)
+		o << "<language>" << *i << "</language>";
 	
 	if (m.offline)
 		o << "<offline/>";

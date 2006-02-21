@@ -1,4 +1,4 @@
-/*  $Id: Search.cpp,v 1.6 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: Search.cpp,v 1.7 2006-02-21 11:38:15 terpstra Exp $
  *  
  *  Search.cpp - Execute a keyword search
  *  
@@ -361,36 +361,7 @@ void Search::keyword(const string& key)
 	if (key[0] != '-')
 		need_any = false;
 	
-	Searcher* s;
-	if (cfg.regroupable && word.substr(0, sizeof(LU_KEYWORD_GROUP)-1) == LU_KEYWORD_GROUP)
-	{
-		OrSearcher* o = new OrSearcher(criterea.dir);
-		Config::Groups::const_iterator g = 
-			cfg.groups.find(word.substr(sizeof(LU_KEYWORD_GROUP)-1, string::npos));
-		if (g != cfg.groups.end())
-		{
-			Config::Members::iterator m;
-			for (m = g->second.members.begin(); m != g->second.members.end(); ++m)
-				o->push(new WordSearcher(criterea, LU_KEYWORD_LIST + *m));
-		}
-		s = o->simplify();
-	}
-	else if (cfg.regroupable && word.substr(0, sizeof(LU_KEYWORD_LANGUAGE)-1) == LU_KEYWORD_LANGUAGE)
-	{
-		string lang(word, sizeof(LU_KEYWORD_LANGUAGE)-1, string::npos);
-		OrSearcher* o = new OrSearcher(criterea.dir);
-		for (Config::Lists::const_iterator l = cfg.lists.begin();
-		     l != cfg.lists.end(); ++l)
-		{
-			if (l->second.language != lang) continue;
-			o->push(new WordSearcher(criterea, LU_KEYWORD_LIST + l->first));
-		}
-		s = o->simplify();
-	}
-	else
-	{
-		s = new WordSearcher(criterea, word);
-	}
+	Searcher* s = new WordSearcher(criterea, word);
 	
 	if (key[0] == '-')
 		s = new NotSearcher(s, criterea.dir);

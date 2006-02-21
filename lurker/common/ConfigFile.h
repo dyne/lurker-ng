@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.10 2004-08-27 17:53:44 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.11 2006-02-21 11:38:15 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -77,7 +77,7 @@ struct List
 	string mbox;
 	string address;
 	string group;
-	string language;
+	set<string> languages;
 	
 	bool offline;
 	
@@ -138,7 +138,6 @@ class Config
  	bool	web_cache;
  	bool	hide_email;
  	bool	raw_email;
- 	bool	regroupable;
  	time_t	modified; // the timestamp of modification for the config file
  	
  	// parameters specific for rendering

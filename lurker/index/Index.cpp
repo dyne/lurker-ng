@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.32 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: Index.cpp,v 1.33 2006-02-21 11:38:15 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -462,7 +462,6 @@ int Index::index_control(time_t import)
 	
 	/* emulated group and language searches are impossibly slow.
 	 * these keywords are a must for large archives.
-	 * see the regroupable option in the stock lurker.conf
 	 */
 	if (writer->insert(
 		LU_KEYWORD
@@ -471,12 +470,14 @@ int Index::index_control(time_t import)
 		'\0' +
 		id.raw()) != 0) ok = false;
 	
-	if (writer->insert(
-		LU_KEYWORD
-		LU_KEYWORD_LANGUAGE +
-		list.language +
-		'\0' +
-		id.raw()) != 0) ok = false;
+	set<string>::const_iterator i, e;
+	for (i = list.languages.begin(), e = list.languages.end(); i != e; ++i)
+		if (writer->insert(
+			LU_KEYWORD
+			LU_KEYWORD_LANGUAGE +
+			*i +
+			'\0' +
+			id.raw()) != 0) ok = false;
 	
 	MessageId importStamp(import);
 	if (writer->insert(
