@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.20 2006-02-21 19:45:46 terpstra Exp $
+/*  $Id: main.cpp,v 1.21 2006-02-21 21:28:31 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -156,6 +156,41 @@ Request parse_request(const string& param)
 	return out;
 }
 
+inline int fromHex(char c)
+{
+	if (c >= 'A' && c <= 'Z') return c - 'A' + 10;
+	if (c >= 'a' && c <= 'z') return c - 'a' + 10;
+	return c - '0';
+}
+
+string decipherHalf(const string& str)
+{
+	// cout << "deciper: " << str << endl;
+	
+	string out;
+	
+	string::size_type b = 0, e;
+	
+	while ((e = str.find_first_of("%+", b)) 
+		!= string::npos)
+	{
+		out.append(str, b, e - b);
+		if (str[e] == '+') out.append(" ");
+		else if (str.length() > e+2)
+		{
+			int ch = fromHex(str[e+1]) << 4 | fromHex(str[e+2]);
+			out += ((char)ch);
+			e += 2;
+		}
+		
+		b = e+1;
+	}
+	
+	out.append(str, b, str.length() - b);
+	
+	return out;
+}
+
 int main(int argc, char** argv)
 {
 	string config, frontend, document, request, host, port, cgipath, https;
@@ -275,7 +310,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	string param   = tokens[tokens.size()-1];
+	string param   = decipherHalf(tokens[tokens.size()-1]);
 	string command = tokens[tokens.size()-2];
 	string server;
 	

@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.43 2006-02-21 19:45:46 terpstra Exp $
+/*  $Id: message.cpp,v 1.44 2006-02-21 21:28:31 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -695,6 +695,7 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 	// Identical error if missing or forbidden (security)
 	if ((ok = source.load(db, cfg)) != "" || !source.allowed())
 	{
+		if (ok == "") ok = "not in a mailbox"; // fake
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
 		cout << error(_("Database message source pull failure"), ok,

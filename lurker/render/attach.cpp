@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.13 2006-02-21 19:45:46 terpstra Exp $
+/*  $Id: attach.cpp,v 1.14 2006-02-21 21:28:31 terpstra Exp $
  *  
  *  attach.cpp - Handle a attach/ command
  *  
@@ -124,6 +124,7 @@ int handle_attach(const Config& cfg, ESort::Reader* db, const string& param)
 	// Identical error if missing or not allowed
 	if ((ok = source.load(db, cfg)) != "" || !source.allowed())
 	{
+		if (ok == "") ok = "not in a mailbox"; // fake
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
 		cout << error(_("Database attach source pull failure"), ok,

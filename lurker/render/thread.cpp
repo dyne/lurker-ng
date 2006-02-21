@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.14 2006-02-21 19:45:46 terpstra Exp $
+/*  $Id: thread.cpp,v 1.15 2006-02-21 21:28:31 terpstra Exp $
  *  
  *  thread.cpp - Handle a thread/ command
  *  
@@ -54,6 +54,7 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 	// Identical error for a not allowed message as non-existing (security)
 	if ((ok = source.load(db, cfg)) != "" || !source.allowed())
 	{
+		if (ok == "") ok = "not in a mailbox"; // fake
 		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html\r\n\r\n";
 		cout << error(_("Database thread source pull failure"), ok,

@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.21 2006-02-21 20:40:33 terpstra Exp $
+/*  $Id: search.cpp,v 1.22 2006-02-21 21:28:31 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -48,41 +48,6 @@ int search_format_error(const string& param)
 		  "A searc request must be formatted like: "
 		  "search/YYYYMMDD.HHMMSS.hashcode@word,word,word.xml"));
 	return 1;
-}
-
-inline int fromHex(char c)
-{
-	if (c >= 'A' && c <= 'Z') return c - 'A' + 10;
-	if (c >= 'a' && c <= 'z') return c - 'a' + 10;
-	return c - '0';
-}
-                        
-string decipherHalf(const string& str)
-{
-	// cout << "deciper: " << str << endl;
-	
-	string out;
-	
-	string::size_type b = 0, e;
-	
-	while ((e = str.find_first_of("%+", b)) 
-		!= string::npos)
-	{
-		out.append(str, b, e - b);
-		if (str[e] == '+') out.append(" ");
-		else if (str.length() > e+2)
-		{
-			int ch = fromHex(str[e+1]) << 4 | fromHex(str[e+2]);
-			out += ((char)ch);
-			e += 2;
-		}
-		
-		b = e+1;
-	}
-	
-	out.append(str, b, str.length() - b);
-	
-	return out;
 }
 
 int pull_allowed(const Config& cfg, ESort::Reader* db, vector<Summary>& v, Search& s)
@@ -137,7 +102,7 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 	++o;
 	
 	MessageId id(req.options.c_str());
-	string raw = decipherHalf(req.options.substr(o, string::npos));
+	string raw = req.options.substr(o, string::npos);
 	string keys(raw);
 	// we need to translate '!' to '/'
 	for (string::size_type es = 0; es < keys.length(); ++es)
