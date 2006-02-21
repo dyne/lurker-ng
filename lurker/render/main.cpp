@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.17 2006-02-21 15:46:22 terpstra Exp $
+/*  $Id: main.cpp,v 1.18 2006-02-21 16:50:46 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -158,7 +158,7 @@ Request parse_request(const string& param)
 
 int main(int argc, char** argv)
 {
-	string config, cdpath, request, host, port, cgipath, https;
+	string config, frontend, document, request, host, port, cgipath, https;
 	const char* tmp;
 	
 #if 0	
@@ -169,49 +169,36 @@ int main(int argc, char** argv)
 #endif
 	
 	// Every document about CGI agrees these exist:
-	if ((tmp = getenv("QUERY_STRING")) != 0) config  = tmp;
-	if ((tmp = getenv("SERVER_NAME" )) != 0) host    = tmp;
-	if ((tmp = getenv("SERVER_PORT" )) != 0) port    = tmp;
-	if ((tmp = getenv("SCRIPT_NAME" )) != 0) cgipath = tmp;
+	if ((tmp = getenv("QUERY_STRING")) != 0) document = tmp;
+	if ((tmp = getenv("SERVER_NAME" )) != 0) host     = tmp;
+	if ((tmp = getenv("SERVER_PORT" )) != 0) port     = tmp;
+	if ((tmp = getenv("SCRIPT_NAME" )) != 0) cgipath  = tmp;
 	// Many CGI 'standards' seem to agree this one exists for https:
-	if ((tmp = getenv("HTTPS"       )) != 0) https   = tmp;
+	if ((tmp = getenv("HTTPS"       )) != 0) https    = tmp;
 	
 	// CGI guarantees this in case called as an error document
-	if ((tmp = getenv("REDIRECT_URL")) != 0) request = tmp;
+	if ((tmp = getenv("REDIRECT_URL")) != 0) request  = tmp;
 	// ... however, as we aren't always called that way, try this too:
-	if ((tmp = getenv("REQUEST_URI" )) != 0) request = tmp;
+	if ((tmp = getenv("REQUEST_URI" )) != 0) request  = tmp;
+	
+	string::size_type csplit;
+	if ((csplit = document.find('?')) != string::npos)
+	{
+		config = document.substr(csplit+1, string::npos);
+		
+		if (csplit != 0 && document[csplit-1] == '\\')
+			document.resize(csplit-1);
+		else	document.resize(csplit);
+	}
 	
 	if (argc > 1) request = argv[1];
 	if (argc > 2) config  = argv[2];
 	
-	string::size_type csplit;
-	if ((csplit = config.find('?')) != string::npos)
-	{
-		cdpath = config.substr(csplit+1, string::npos);
-		
-		if (csplit != 0 && config[csplit-1] == '\\')
-			config.resize(csplit-1);
-		else	config.resize(csplit);
-	}
+	if (config == "") config = DEFAULT_CONFIG_FILE;
 	
-	if (config == "")
-	{
-		config = DEFAULT_CONFIG_FILE;
-		return 1;
-	}
 	if (request == "")
 	{
-		help(_("no request set"));
-		return 1;
-	}
-	
-	if (cdpath != "" && chdir(cdpath.c_str()) != 0)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Cannot chdir"), cdpath + ":" + strerror(errno),
-			_("The specified path to the document root could "
-			  "not be entered. Check the argument and permissions."));
+		help(_("no request set (REDIRECT_URL and REQUEST_URI both missing)"));
 		return 1;
 	}
 	
@@ -222,6 +209,39 @@ int main(int argc, char** argv)
 		cout <<	"Content-Type: text/html\r\n\r\n";
 		cout << error(_("Cannot open config file"), "Config::load",
 			cfg.getError());
+		return 1;
+	}
+	
+	// Look for the matching front-end
+	frontend = "";
+	Config::Frontends::const_iterator i, e;
+	for (i = cfg.frontends.begin(), e = cfg.frontends.end(); i != e; ++i)
+	{
+		if (i->first == document.substr(0, i->first.length()))
+		{
+			frontend = i->first;
+			break;
+		}
+	}
+	
+	if (frontend == "")
+	{
+		cout << "Status: 200 OK\r\n";
+		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout << error(_("No matching frontend"), document,
+			_("The frontend specified in the webserver "
+			  "configuration does not match any frontend in the "
+			  "lurker config file."));
+		return 1;
+	}
+	
+	if (chdir(frontend.c_str()) != 0)
+	{
+		cout << "Status: 200 OK\r\n";
+		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout << error(_("Cannot chdir"), frontend + ":" + strerror(errno),
+			_("The specified frontend path could "
+			  "not be entered. Check the path and permissions."));
 		return 1;
 	}
 	
@@ -255,6 +275,18 @@ int main(int argc, char** argv)
 	string param   = tokens[tokens.size()-1];
 	string command = tokens[tokens.size()-2];
 	string server;
+	
+	if (document != frontend &&
+	    frontend + '/' + command + '/' + param != document)
+	{
+		cout << "Status: 200 OK\r\n";
+		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout << error(_("Requested document is in error"), document,
+			_("The requested document does not match the file "
+			  "lurker intends to generate: ")
+		        + frontend + '/' + command + '/' + param);
+		return 1;
+	}
 	
 	if (https == "on")
 	{

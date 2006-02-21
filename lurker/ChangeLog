@@ -17,6 +17,9 @@ v2.0:
 	Prune no longer needs/supports the '-d' option
 	Lurker-search will automatically run lurker-prune after changes
 	Fixed searching for 'id:messsage-id'
+	lurker.cgi parameters are now 'document?config-file'
+	 - document must be either a frontend path, or the missing document
+	 - config-file is optional
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE

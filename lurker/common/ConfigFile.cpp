@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.20 2006-02-21 16:28:38 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.21 2006-02-21 16:50:46 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -697,7 +697,14 @@ int Config::process_command(const string& keys, const string& val, const string&
 		
 		if (lc != "")
 		{
-			error << "frontend paths cannot be localized" << endl;
+			error << "frontend path '" <<  val << "' cannot be localized" << endl;
+			return -1;
+		}
+		
+		// Require absolute path
+		if (val.length() == 0 || val[0] != '/')
+		{
+			error << "frontend path is not absolute '" << val << "' (must start with a '/')!" << endl;
 			return -1;
 		}
 		
