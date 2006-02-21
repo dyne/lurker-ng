@@ -16,6 +16,7 @@ v2.0:
 	Added frontend support to the config file
 	Prune no longer needs/supports the '-d' option
 	Lurker-search will automatically run lurker-prune after changes
+	Fixed searching for 'id:messsage-id'
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE

@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.33 2006-02-21 11:38:15 terpstra Exp $
+/*  $Id: Index.cpp,v 1.34 2006-02-21 16:20:04 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -289,15 +289,28 @@ int Index::index_id(bool userdate, time_t server)
 	
 	id = MessageId(stamp, hash);
 	
-	if (messageId.length() && writer->insert(
-		LU_KEYWORD +
-		string(LU_KEYWORD_MESSAGE_ID) +
-		messageId +
-		'\0' + 
-		id.raw()) != 0)
+	if (messageId.length())
 	{
-		cerr << "Failed to insert message id keyword!" << endl;
-		return -1;
+		// Raw message-id for threading
+		if (writer->insert(
+			LU_KEYWORD +
+			string(LU_KEYWORD_MESSAGE_ID) +
+			messageId +
+			'\0' + 
+			id.raw()) != 0)
+		{
+			cerr << "Failed to insert message id keyword!" << endl;
+			return -1;
+		}
+		
+		// digested message-id for user searches
+		if (my_keyword_digest_string(
+			messageId.c_str(), messageId.length(),
+			LU_KEYWORD_MESSAGE_ID, &feed_writer, this, 0) != 0)
+		{
+			cerr << "Failed to index message-id" << endl;
+			return -1;
+		}
 	}
 	
 	if (writer->insert(

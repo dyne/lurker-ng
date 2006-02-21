@@ -3,7 +3,6 @@
 	multiple front-ends (use mbox from summary data to hide lists)
 	fix lurker-regenerate for deleted email
 	somehow allow deleting messages from web
-	fix case-sensitive id: searches
 
 -------------------------------------------------------------
 
