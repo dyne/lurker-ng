@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.7 2006-02-21 13:28:54 terpstra Exp $
+/*  $Id: search.cpp,v 1.8 2006-02-21 16:11:45 terpstra Exp $
  *  
  *  search.cpp - Search for messages in lurker database (optionally delete)
  *  
@@ -70,6 +70,8 @@ int main(int argc, char** argv)
 	bool verbose = false;
 	bool quiet = false;
 	string keyword;
+	
+	string self = argv[0];
 	
 	while ((c = getopt(argc, (char*const*)argv, "c:k:dvfq?")) != -1)
 	{
@@ -239,12 +241,20 @@ int main(int argc, char** argv)
 			return 1;
 		}
 		
+		string::size_type x = self.find('/');
+		string prune;
+		
+		if (x == string::npos) prune = "lurker-prune";
+		else prune = string(self, 0, x+1) + "lurker-prune";
+		
 		if (!quiet)
 		{
 			cerr << "\n";
 			cerr << "Database modified -- cache is now invalid.\n";
-			cerr << "Re-run lurker-prune with the '-p' option.\n";
+			cerr << "Running: " << prune << " -c " << config << " -p\n";
 		}
+		
+		execlp(prune.c_str(), prune.c_str(), "-c", config, "-p", NULL);
 	}
 	
 	return 0;

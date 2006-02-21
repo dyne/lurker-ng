@@ -1,4 +1,4 @@
-/*  $Id: prune.cpp,v 1.15 2006-02-21 13:28:54 terpstra Exp $
+/*  $Id: prune.cpp,v 1.16 2006-02-21 16:11:45 terpstra Exp $
  *  
  *  prune.cpp - Prune obsolete / stale cache files
  *  
@@ -45,13 +45,19 @@
 
 using namespace std;
 
+bool        verbose = false;
+bool        purge = false;
+time_t      modifyTime = 60*60*24*7;
+time_t      accessTime = 60*60*24*1;
+
 void help(const char* name)
 {
 	cerr << "Lurker-prune (v" << VERSION << ") prunes the web-server cache.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " [-c <config-file>] [-m <d> -a <d> -p -v]\n";
+	cerr << "Usage: " << name << " [-c <config-file>] [-f <frontend>] [-m <d> -a <d> -p -v]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
+	cerr << "\t-f <frontend>    Only clear cache from the named frontend        [all]\n";
 	cerr << "\t-m <days>        Keep cached files for at most this many days      [7]\n";
 	cerr << "\t-a <days>        Kill cached files not accessed for this many days [1]\n";
 	cerr << "\t-p               Purge everything even if it appears to not be expired\n";
@@ -62,71 +68,11 @@ void help(const char* name)
 	cerr << "\n";
 }
 
-int main(int argc, char** argv)
+int execute(const Config& cfg, const string& docroot)
 {
-	int c;
+	if (verbose) cout << "Cleaning document root " << docroot << endl;
 	
-	const char* config  = DEFAULT_CONFIG_FILE;
-	const char* docroot = 0; // will be obsolete soon
-	bool        verbose = false;
-	bool        purge = false;
-	time_t      modifyTime = 60*60*24*7;
-	time_t      accessTime = 60*60*24*1;
-	
-	srandom(time(0));
-	
-	while ((c = getopt(argc, (char*const*)argv, "c:d:m:a:vp?")) != -1)
-	{
-		switch ((char)c)
-		{
-		case 'c':
-			config = optarg;
-			break;
-		case 'd':
-			docroot = optarg;
-			break;
-		case 'm':
-			modifyTime = atol(optarg)*60*60*24;
-			if (!modifyTime)
-			{
-				help(argv[0]);
-				return 1;
-			}
-			break;
-		case 'a':
-			accessTime = atol(optarg)*60*60*24;
-			if (!accessTime)
-			{
-				help(argv[0]);
-				return 1;
-			}
-			break;
-		case 'p':
-			purge = true;
-			break;
-		case 'v':
-			verbose = true;
-			break;
-		default:
-			help(argv[0]);
-			return 1;
-		}
-	}
-	
-	if (!docroot || optind < argc)
-	{
-		help(argv[0]);
-		return 1;
-	}
-	
-	Config cfg;
-	if (cfg.load(config) != 0)
-	{
-		cerr << cfg.getError() << flush;
-		return 1;
-	}
-	
-	string docfile = string(docroot) + "/lurker.docroot";
+	string docfile = docroot + "/lurker.docroot";
 	int fd = open(docfile.c_str(), O_RDWR | O_CREAT, 0666);
 	if (fd == -1)
 	{
@@ -167,7 +113,7 @@ int main(int argc, char** argv)
 	
 	if (state == USED)
 	{
-		if (verbose) cout << "Already pruning this docroot" << endl;
+		if (verbose) cout << "Already pruning docroot " << docroot << endl;
 		return 0;
 	}
 	
@@ -186,7 +132,7 @@ int main(int argc, char** argv)
 	
 	time_t beginfix = time(0);
 	
-	if (chdir(docroot) != 0)
+	if (chdir(docroot.c_str()) != 0)
 	{
 		cerr << "chdir: " << docroot << ": " << strerror(errno) << endl;
 		return 1;
@@ -220,6 +166,81 @@ int main(int argc, char** argv)
 	{
 		cerr << "touching " << docfile << ": " << strerror(errno) << endl;
 		return 1;
+	}
+	
+	return 0;
+}
+	
+int main(int argc, char** argv)
+{
+	int c;
+	
+	const char* config  = DEFAULT_CONFIG_FILE;
+	const char* docroot = 0;
+	
+	srandom(time(0));
+	
+	while ((c = getopt(argc, (char*const*)argv, "c:f:m:a:vp?")) != -1)
+	{
+		switch ((char)c)
+		{
+		case 'c':
+			config = optarg;
+			break;
+		case 'f':
+			docroot = optarg;
+			break;
+		case 'm':
+			modifyTime = atol(optarg)*60*60*24;
+			if (!modifyTime)
+			{
+				help(argv[0]);
+				return 1;
+			}
+			break;
+		case 'a':
+			accessTime = atol(optarg)*60*60*24;
+			if (!accessTime)
+			{
+				help(argv[0]);
+				return 1;
+			}
+			break;
+		case 'p':
+			purge = true;
+			break;
+		case 'v':
+			verbose = true;
+			break;
+		default:
+			help(argv[0]);
+			return 1;
+		}
+	}
+	
+	if (optind < argc)
+	{
+		help(argv[0]);
+		return 1;
+	}
+	
+	Config cfg;
+	if (cfg.load(config) != 0)
+	{
+		cerr << cfg.getError() << flush;
+		return 1;
+	}
+	
+	if (docroot) execute(cfg, docroot);
+	else
+	{
+		Config::Frontends::const_iterator i,
+			s = cfg.frontends.begin(),
+			e = cfg.frontends.end();
+		for (i = s; i != e; ++i)
+		{
+			execute(cfg, i->first);
+		}
 	}
 	
 	return 0;

@@ -14,6 +14,8 @@ v2.0:
 	Add configure option to control web directory
 	Every list MUST be contained in a group
 	Added frontend support to the config file
+	Prune no longer needs/supports the '-d' option
+	Lurker-search will automatically run lurker-prune after changes
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE
