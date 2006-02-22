@@ -70,7 +70,10 @@
   <xsl:apply-templates mode="mailtobody"/>
 </xsl:template>
 <xsl:template match="mime" mode="mailtobody">
-  <xsl:apply-templates match="mime" mode="mailtobody"/>
+  <xsl:apply-templates select="mime" mode="mailtobody"/>
+</xsl:template>
+<xsl:template match="signed" mode="mailtobody">
+  <xsl:apply-templates select="data/mime" mode="mailtobody"/>
 </xsl:template>
 
 <xsl:template name="reply-link">
