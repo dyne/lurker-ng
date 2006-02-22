@@ -66,7 +66,7 @@
   <xsl:text>&gt; </xsl:text>
 </xsl:template>
 <xsl:template match="tab" mode="mailtobody">
-  <xsl:text>	</xsl:text>
+  <xsl:text>    </xsl:text>
 </xsl:template>
 <xsl:template match="art" mode="mailtobody"/>
 <xsl:template match="mime[@type='text/plain' or @type='text/html']" mode="mailtobody">
@@ -245,7 +245,7 @@
    <td><xsl:call-template name="attachments"/></td>
   </xsl:if>
   <td>
-   <a onClick="trash('{server/cgi-url}/zap.cgi?{summary/id}');">
+   <a href="javascript:trash('{server/cgi-url}/zap.cgi?{summary/id}');">
     <img src="../imgs/trash.png"/>
    </a>
    <xsl:if test="mbox/list/email/@address">
