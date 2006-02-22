@@ -70,6 +70,12 @@ Quick start
   If this is a new installation of lurker, try also: make install-config
   Then customize the template lurker.conf file.
 
+  Make certain that lurker.cgi can modify /usr/local/var/www/lurker.
+  If CGI programs run as www-data: chown -R www-data /usr/local/var/www/lurker
+
+  Make certain that the CGI can read /usr/local/var/lib/lurker.
+  Run 'lurker-index' with umask 002 to ensure it remains readable.
+
 4 Setup delivery of new mail to lurker-index
   
   For procmail, 
@@ -133,6 +139,6 @@ Quick start
         RewriteCond %{REQUEST_FILENAME} !-s
         RewriteRule ^(attach|list|mbox|message|mindex|search|splash|thread)/[^/]+$ /cgi-lurker/lurker.cgi?%{REQUEST_FILENAME} [L,PT]
 
-8 point your browser at the url where lurker is installed
+8 Point your browser at the url where lurker is installed
 
 Enjoy!
