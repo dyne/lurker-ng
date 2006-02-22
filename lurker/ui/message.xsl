@@ -65,6 +65,9 @@
 <xsl:template match="br" mode="mailtobody">
   <xsl:text>&gt; </xsl:text>
 </xsl:template>
+<xsl:template match="tab" mode="mailtobody">
+  <xsl:text>	</xsl:text>
+</xsl:template>
 <xsl:template match="art" mode="mailtobody"/>
 <xsl:template match="mime[@type='text/plain' or @type='text/html']" mode="mailtobody">
   <xsl:apply-templates mode="mailtobody"/>
@@ -173,6 +176,9 @@
 </xsl:template>
 <xsl:template mode="body" match="br">
  <xsl:if test="not(ancestor::art)"><br/></xsl:if>
+</xsl:template>
+<xsl:template match="tab" mode="body">
+  <xsl:text>&#160;&#160;&#160;&#160;</xsl:text>
 </xsl:template>
 <xsl:template mode="body" match="signed">
  <xsl:element name="div">

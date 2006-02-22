@@ -44,7 +44,7 @@
  <xsl:value-of select="substring(id,5,2)"/>
  <xsl:text>-</xsl:text>  
  <xsl:value-of select="substring(id,7,2)"/>
- <xsl:text>&#160;</xsl:text>
+ <xsl:text> </xsl:text>
  <xsl:value-of select="substring(id,10,2)"/>
  <xsl:text>:</xsl:text>
  <xsl:value-of select="substring(id,12,2)"/>
