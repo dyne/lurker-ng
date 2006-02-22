@@ -302,7 +302,9 @@
         <xsl:call-template name="reply-link"/>
       </xsl:if>
       &#160;
-      <img src="../imgs/trash.png"/>
+      <a onClick="trash('{server/cgi-url}/zap.cgi?{summary/id}');">
+        <img src="../imgs/trash.png"/>
+      </a>
       <xsl:if test="/message/server/raw-email">
         <xsl:call-template name="attachments"/>
       </xsl:if>
