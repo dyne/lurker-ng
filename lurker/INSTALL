@@ -31,114 +31,99 @@ Quick start
   To control the zlib location, setting these options may help:
   --with-zlib-include=DIR     Location of zlib.h
   --with-zlib-libname=LIB     Try an alternative library name
+
+  These settings also help control where lurker installs:
+  --prefix=/usr               Put programs in /usr/bin and /usr/lib/cgi-bin
+  --localstatedir=/var        Put db in /var/lib/lurker, web in /var/www/lurker
+  --sysconfdir=/etc           Put config files in /etc/lurker
   
-  To control the environment, variants of these flags may help:
-  LDFLAGS="-L/sw/lib"
-  CPPFLAGS="-I/sw/include"
+  --with-default-www-dir=/var/www/lurker  More specific control
+  --with-default-config-dir=/etc/lurker   Lurker finds config here by default
+  --with-cgi-bin-dir=/usr/lib/cgi-bin     Place cgi programs in another spot
   
 2 make
 
 3 make install	(as root if you don't have permission)
   
   You may want to strip the binaries as they can be quite large.
+  eg: strip -s /usr/lib/cgi-bin/*.cgi /usr/bin/lurker-*
 
   This will install these files:
   
-  	/usr/local/lib/cgi-bin/*.cgi
+  	(with-cgi-bin [/usr/local/lib/cgi-bin])/*.cgi
   		- The CGIs which power lurker
   		- These must be placed such that the webserver can run them
-  	/usr/local/var/www/lurker/*
+  	(default-www-dir [/usr/local/var/www])/*
   		- The lurker content which must be web accessible
   		- The subdirectories "attach, list, mbox, message, mindex,
   		  search, splash, and thread" must all be writeable by
   		  whatever user executes lurker.cgi
-  	/usr/local/bin/lurker-*
+  	(bindir [/usr/local/bin])/lurker-*
   		- Command-line utilities for importing email, cleaning
   		  cached web files, and interfacing with shell scripts
-  	/usr/local/var/lib/lurker/*
+  	(localstatedir [/usr/local/var])/lib/lurker/*
   		- The lurker database directory where mail is imported to
   		- The directory and its contents must be writeable by the
   		  user who runs lurker-index
   		- This must be readable by the user who runs lurker.cgi
   
-  You must install the file /usr/local/etc/lurker.conf by hand.
-  Then customize it using the provided lurker.conf as a starting point.
+  If this is a new installation of lurker, try also: make install-config
+  Then customize the template lurker.conf file.
 
 4 Setup delivery of new mail to lurker-index
   
   For procmail, 
 	:0 w
 	* ^X-Mailing-List: <debian-japanese@lists.debian.org>.*
-	| lurker-index -c /etc/lurker.conf -l japanese -m
+	| lurker-index -l japanese -m
   ... works for me.
+
+  You may find the command 'sg' (switch group) and procmail's UMASK variable
+  helpful for a shared setup using a 'lurker' group.
 
 5 Feed archived mail through lurker-index.
   
-  lurker-index -c /etc/lurker.conf -l devel -b 5 < debian-devel.mbox
-  
-  Keep in mind these points:
-  
-    a. Lurker imports benefit primarily from a fast CPU and fast RAM.
-       Lurker rendering of pages benefits from more RAM (for disk cache).
-    
-    b. The lurker database will consume space on the order of 40% of the
-       mailboxes it indexes. You must keep the mbox lurker creates, 
-       although the original mbox is not required after lurker-index.
-    
-    c. Nearly all of the processing time lurker spends is on importing
-       messages. Once you have indexed your archive, lurker no longer needs
-       as much resources.
+  lurker-index -l devel < debian-devel.mbox
+  lurker-index -l devel -i debian-devel.maildir  
     
 6 Setup a cronjob to update the archive every 15 minutes
   
-  0,15,30,45 * * * * lurker-prune -c /etc/lurker.conf -d /path/to/www/lurker
+  If you are installing lurker system-wide, put this in /etc/cron.d/lurker:
+     0,15,30,45 * * * * www-data lurker-prune
+  If you are installing lurker in your home directory, add:
+     0,15,30,45 * * * * lurker-prune
   
   This must be run with the ability to read and delete files from the
-  web-server cache directory.
+  web-server cache directory. If you don't configure this correctly,
+  new email will not appear in your web server.
   
 7 Configure your webserver.
   
+  If you are using apache, and ran 'make install-config', then you should
+  just need to put 'include /usr/local/etc/lurker/apache.conf' in your
+  apache configuration. You will also need to enable mod_rewrite.
+  
+  The following instructions apply to users of other web servers:
+  
   You must make certain that .xsl and .xml files have type text/xml.
-  For email reply support .rfc822 must have type message/rfc822.
   You must set the default charset to UTF-8 for these files.
   You must make lurker your 404 error handler or another way of creating
       missing cache files (eg: apache's RewriteRule).
-  You must pass the config file and lurker's document root to lurker.cgi 
-      as ? delimited arguments in QUERY_STRING 'cfgfile?docdir'. The docdir
-      is relative to the location of lurker.cgi and cfgfile is relative to
-      the docdir.
+  You must pass the configured frontend to lurker.cgi in the QUERY_STRING.
+      For example, invoking lurker as: 'lurker.cgi?/usr/local/var/www/lurker'
+      will probably set this variable for you.
   
-  NOTE: The docdir here is the location of lurker.docroot.
-  This has nothing at all to do with your webservers document root.
-  Typically this is /usr/local/var/www/lurker or /var/www/lurker.
-  
-  If you run apache with a directory structure like:
+  Here are some samples of how to configure lurker with apache:
+  (If you actually run apache, use the supplied config file instead!)
 
-	www/
-		lurker.conf
-		cgi-bin/
-			lurker.cgi
-			keyword.cgi
-			jump.cgi
-		htdocs/
-			.htaccess
-			index.html
-			browserdetect.js
-			lurker.docroot
-			splash/
-			search/
-			mindex/
-			...
-
-   then .htaccess should contain:
-
+  These commands setup lurker to handle missing pages:
 	AddType text/xml .xsl
 	AddType text/xml .xml
 	AddType message/rfc822 .rfc822
 	AddDefaultCharset UTF-8
-	ErrorDocument 404 /cgi-bin/lurker.cgi?../lurker.conf?../htdocs
+	ErrorDocument 404 /cgi-bin/lurker.cgi?/usr/local/var/www
    
-   or, using the Rewite Engine (avoids 404 log messages):
+   If you can use a Rewite Engine (avoids 404 log messages), this is best:
 
 	AddType text/xml .xsl
 	AddType text/xml .xml
@@ -146,7 +131,7 @@ Quick start
 	AddDefaultCharset UTF-8
         RewriteEngine on
         RewriteCond %{REQUEST_FILENAME} !-s
-        RewriteRule (attach|list|mbox|message|mindex|search|splash|thread)/ /cgi-bin/lurker.cgi?../lurker/lurker.conf?../htdocs [T=application/x-httpd-cgi,L,PT]
+        RewriteRule ^(attach|list|mbox|message|mindex|search|splash|thread)/[^/]+$ /cgi-lurker/lurker.cgi?%{REQUEST_FILENAME} [L,PT]
 
 8 point your browser at the url where lurker is installed
 

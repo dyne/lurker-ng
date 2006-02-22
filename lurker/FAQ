@@ -1,7 +1,7 @@
 Why are the dates broken on messages imported from a maildir?
 Why is lurker warning about From lines during my import?
+Why are new mails not appearing in my archive?
 How do I add support for my language to lurker?
-How do I change the output language?
 Why are all my dates off by a fixed hour / don't use "From " header?
 Why shouldn't I open the lurker mboxs with a mail reader?
 Why do I get "opening database: Operation not supported" on MacOS?
@@ -43,6 +43,12 @@ A: Lurker tries to detect corrupt mailboxes. If the quoted text included
    starting with 'From ' as part of the message body without a warning.
 
 
+Q: Why are new mails not appearing in my archive?
+
+A: You probably forgot to setup a cronjob to run lurker-prune.
+   Please read the INSTALL file, section 6.
+
+
 Q: How do I add support for my language to lurker?
 
 A: First, find out your ISO 639 language code.
@@ -64,12 +70,6 @@ A: First, find out your ISO 639 language code.
    Send your freshly created file to lurker-users@lists.sourceforge.net
    so that you will be included in the lurker credits and other people
    can benefit from your work!
-
-
-Q: How do I change the output language?
-
-A: This used to be a global setting; hence this FAQ entry.
-   Now the language is selected from the user interface.
 
 
 Q: Why are all my dates off by a fixed hour / don't use "From " header?

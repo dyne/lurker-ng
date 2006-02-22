@@ -26,6 +26,7 @@ v2.0:
 	Art no longer matches paragraph starts, only trailing signatures
 	Include trash can icon for deleting junk email
 	Adjusted gpg settings to be more modern
+	Modernized the INSTALL documentation
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE
