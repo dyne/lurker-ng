@@ -13,7 +13,6 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
-
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -51,39 +50,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(SHELL) $(top_srcdir)/tools/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = lurker.conf apache.conf
-LIBRARIES = $(noinst_LIBRARIES)
-AR = ar
-ARFLAGS = cru
-mimelib_libmimelib_a_AR = $(AR) $(ARFLAGS)
-mimelib_libmimelib_a_LIBADD =
-@LOCAL_MIMELIB_TRUE@nodist_mimelib_libmimelib_a_OBJECTS =  \
-@LOCAL_MIMELIB_TRUE@	address.$(OBJEXT) addrlist.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	attach.$(OBJEXT) basicmsg.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	binhex.$(OBJEXT) body.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	bodypart.$(OBJEXT) boyermor.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	datetime.$(OBJEXT) disptype.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	dw_cte.$(OBJEXT) dw_date.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	dw_mime.$(OBJEXT) dwstring.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	entity.$(OBJEXT) field.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	fieldbdy.$(OBJEXT) group.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	headers.$(OBJEXT) mailbox.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	mboxlist.$(OBJEXT) mechansm.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	mediatyp.$(OBJEXT) message.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	msgcmp.$(OBJEXT) msgid.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	multipar.$(OBJEXT) param.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	text.$(OBJEXT) token.$(OBJEXT) \
-@LOCAL_MIMELIB_TRUE@	uuencode.$(OBJEXT)
-mimelib_libmimelib_a_OBJECTS = $(nodist_mimelib_libmimelib_a_OBJECTS)
-am__dirstamp = $(am__leading_dot)dirstamp
-DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
-depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
-am__depfiles_maybe = depfiles
-CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-CXXLD = $(CXX)
-CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
-	-o $@
-SOURCES = $(nodist_mimelib_libmimelib_a_SOURCES)
+SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
@@ -196,32 +163,12 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-SUBDIRS = libesort common index prune render ui imgs .
+SUBDIRS = mymime libesort common index prune render ui imgs .
 EXTRA_DIST = FAQ
-
-# Work around mimelib bug on MacOS X
-AM_CPPFLAGS = -DDW_UNIX
-
-# Support building mimelib ourselves
-@LOCAL_MIMELIB_TRUE@noinst_LIBRARIES = mimelib/libmimelib.a
-@LOCAL_MIMELIB_TRUE@nodist_mimelib_libmimelib_a_SOURCES = \
-@LOCAL_MIMELIB_TRUE@	mimelib/address.cpp mimelib/addrlist.cpp mimelib/attach.cpp \
-@LOCAL_MIMELIB_TRUE@	mimelib/basicmsg.cpp mimelib/binhex.cpp mimelib/body.cpp \
-@LOCAL_MIMELIB_TRUE@	mimelib/bodypart.cpp mimelib/boyermor.cpp \
-@LOCAL_MIMELIB_TRUE@	mimelib/datetime.cpp mimelib/disptype.cpp mimelib/dw_cte.cpp \
-@LOCAL_MIMELIB_TRUE@	mimelib/dw_date.cpp mimelib/dw_mime.cpp mimelib/dwstring.cpp \
-@LOCAL_MIMELIB_TRUE@	mimelib/entity.cpp mimelib/field.cpp mimelib/fieldbdy.cpp \
-@LOCAL_MIMELIB_TRUE@	mimelib/group.cpp mimelib/headers.cpp mimelib/mailbox.cpp \
-@LOCAL_MIMELIB_TRUE@	mimelib/mboxlist.cpp mimelib/mechansm.cpp \
-@LOCAL_MIMELIB_TRUE@	mimelib/mediatyp.cpp mimelib/message.cpp mimelib/msgcmp.cpp \
-@LOCAL_MIMELIB_TRUE@	mimelib/msgid.cpp mimelib/multipar.cpp mimelib/param.cpp \
-@LOCAL_MIMELIB_TRUE@	mimelib/text.cpp mimelib/token.cpp mimelib/uuencode.cpp
-
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .cpp .o .obj
 am--refresh:
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -276,502 +223,6 @@ lurker.conf: $(top_builddir)/config.status $(srcdir)/lurker.conf.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 apache.conf: $(top_builddir)/config.status $(srcdir)/apache.conf.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-
-clean-noinstLIBRARIES:
-	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
-mimelib/$(am__dirstamp):
-	@$(mkdir_p) mimelib
-	@: > mimelib/$(am__dirstamp)
-mimelib/libmimelib.a: $(mimelib_libmimelib_a_OBJECTS) $(mimelib_libmimelib_a_DEPENDENCIES) mimelib/$(am__dirstamp)
-	-rm -f mimelib/libmimelib.a
-	$(mimelib_libmimelib_a_AR) mimelib/libmimelib.a $(mimelib_libmimelib_a_OBJECTS) $(mimelib_libmimelib_a_LIBADD)
-	$(RANLIB) mimelib/libmimelib.a
-
-mostlyclean-compile:
-	-rm -f *.$(OBJEXT)
-
-distclean-compile:
-	-rm -f *.tab.c
-
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/address.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/addrlist.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/attach.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/basicmsg.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/binhex.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/body.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bodypart.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/boyermor.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/datetime.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/disptype.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dw_cte.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dw_date.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dw_mime.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dwstring.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/entity.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/field.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fieldbdy.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/group.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/headers.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mailbox.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mboxlist.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mechansm.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mediatyp.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/message.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msgcmp.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msgid.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/multipar.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/param.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/text.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/token.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uuencode.Po@am__quote@
-
-.cpp.o:
-@am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
-
-.cpp.obj:
-@am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ `$(CYGPATH_W) '$<'`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-address.o: mimelib/address.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT address.o -MD -MP -MF "$(DEPDIR)/address.Tpo" -c -o address.o `test -f 'mimelib/address.cpp' || echo '$(srcdir)/'`mimelib/address.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/address.Tpo" "$(DEPDIR)/address.Po"; else rm -f "$(DEPDIR)/address.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/address.cpp' object='address.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o address.o `test -f 'mimelib/address.cpp' || echo '$(srcdir)/'`mimelib/address.cpp
-
-address.obj: mimelib/address.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT address.obj -MD -MP -MF "$(DEPDIR)/address.Tpo" -c -o address.obj `if test -f 'mimelib/address.cpp'; then $(CYGPATH_W) 'mimelib/address.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/address.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/address.Tpo" "$(DEPDIR)/address.Po"; else rm -f "$(DEPDIR)/address.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/address.cpp' object='address.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o address.obj `if test -f 'mimelib/address.cpp'; then $(CYGPATH_W) 'mimelib/address.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/address.cpp'; fi`
-
-addrlist.o: mimelib/addrlist.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT addrlist.o -MD -MP -MF "$(DEPDIR)/addrlist.Tpo" -c -o addrlist.o `test -f 'mimelib/addrlist.cpp' || echo '$(srcdir)/'`mimelib/addrlist.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/addrlist.Tpo" "$(DEPDIR)/addrlist.Po"; else rm -f "$(DEPDIR)/addrlist.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/addrlist.cpp' object='addrlist.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o addrlist.o `test -f 'mimelib/addrlist.cpp' || echo '$(srcdir)/'`mimelib/addrlist.cpp
-
-addrlist.obj: mimelib/addrlist.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT addrlist.obj -MD -MP -MF "$(DEPDIR)/addrlist.Tpo" -c -o addrlist.obj `if test -f 'mimelib/addrlist.cpp'; then $(CYGPATH_W) 'mimelib/addrlist.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/addrlist.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/addrlist.Tpo" "$(DEPDIR)/addrlist.Po"; else rm -f "$(DEPDIR)/addrlist.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/addrlist.cpp' object='addrlist.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o addrlist.obj `if test -f 'mimelib/addrlist.cpp'; then $(CYGPATH_W) 'mimelib/addrlist.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/addrlist.cpp'; fi`
-
-attach.o: mimelib/attach.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT attach.o -MD -MP -MF "$(DEPDIR)/attach.Tpo" -c -o attach.o `test -f 'mimelib/attach.cpp' || echo '$(srcdir)/'`mimelib/attach.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/attach.Tpo" "$(DEPDIR)/attach.Po"; else rm -f "$(DEPDIR)/attach.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/attach.cpp' object='attach.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o attach.o `test -f 'mimelib/attach.cpp' || echo '$(srcdir)/'`mimelib/attach.cpp
-
-attach.obj: mimelib/attach.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT attach.obj -MD -MP -MF "$(DEPDIR)/attach.Tpo" -c -o attach.obj `if test -f 'mimelib/attach.cpp'; then $(CYGPATH_W) 'mimelib/attach.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/attach.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/attach.Tpo" "$(DEPDIR)/attach.Po"; else rm -f "$(DEPDIR)/attach.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/attach.cpp' object='attach.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o attach.obj `if test -f 'mimelib/attach.cpp'; then $(CYGPATH_W) 'mimelib/attach.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/attach.cpp'; fi`
-
-basicmsg.o: mimelib/basicmsg.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT basicmsg.o -MD -MP -MF "$(DEPDIR)/basicmsg.Tpo" -c -o basicmsg.o `test -f 'mimelib/basicmsg.cpp' || echo '$(srcdir)/'`mimelib/basicmsg.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/basicmsg.Tpo" "$(DEPDIR)/basicmsg.Po"; else rm -f "$(DEPDIR)/basicmsg.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/basicmsg.cpp' object='basicmsg.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o basicmsg.o `test -f 'mimelib/basicmsg.cpp' || echo '$(srcdir)/'`mimelib/basicmsg.cpp
-
-basicmsg.obj: mimelib/basicmsg.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT basicmsg.obj -MD -MP -MF "$(DEPDIR)/basicmsg.Tpo" -c -o basicmsg.obj `if test -f 'mimelib/basicmsg.cpp'; then $(CYGPATH_W) 'mimelib/basicmsg.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/basicmsg.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/basicmsg.Tpo" "$(DEPDIR)/basicmsg.Po"; else rm -f "$(DEPDIR)/basicmsg.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/basicmsg.cpp' object='basicmsg.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o basicmsg.obj `if test -f 'mimelib/basicmsg.cpp'; then $(CYGPATH_W) 'mimelib/basicmsg.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/basicmsg.cpp'; fi`
-
-binhex.o: mimelib/binhex.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT binhex.o -MD -MP -MF "$(DEPDIR)/binhex.Tpo" -c -o binhex.o `test -f 'mimelib/binhex.cpp' || echo '$(srcdir)/'`mimelib/binhex.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/binhex.Tpo" "$(DEPDIR)/binhex.Po"; else rm -f "$(DEPDIR)/binhex.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/binhex.cpp' object='binhex.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o binhex.o `test -f 'mimelib/binhex.cpp' || echo '$(srcdir)/'`mimelib/binhex.cpp
-
-binhex.obj: mimelib/binhex.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT binhex.obj -MD -MP -MF "$(DEPDIR)/binhex.Tpo" -c -o binhex.obj `if test -f 'mimelib/binhex.cpp'; then $(CYGPATH_W) 'mimelib/binhex.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/binhex.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/binhex.Tpo" "$(DEPDIR)/binhex.Po"; else rm -f "$(DEPDIR)/binhex.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/binhex.cpp' object='binhex.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o binhex.obj `if test -f 'mimelib/binhex.cpp'; then $(CYGPATH_W) 'mimelib/binhex.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/binhex.cpp'; fi`
-
-body.o: mimelib/body.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT body.o -MD -MP -MF "$(DEPDIR)/body.Tpo" -c -o body.o `test -f 'mimelib/body.cpp' || echo '$(srcdir)/'`mimelib/body.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/body.Tpo" "$(DEPDIR)/body.Po"; else rm -f "$(DEPDIR)/body.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/body.cpp' object='body.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o body.o `test -f 'mimelib/body.cpp' || echo '$(srcdir)/'`mimelib/body.cpp
-
-body.obj: mimelib/body.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT body.obj -MD -MP -MF "$(DEPDIR)/body.Tpo" -c -o body.obj `if test -f 'mimelib/body.cpp'; then $(CYGPATH_W) 'mimelib/body.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/body.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/body.Tpo" "$(DEPDIR)/body.Po"; else rm -f "$(DEPDIR)/body.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/body.cpp' object='body.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o body.obj `if test -f 'mimelib/body.cpp'; then $(CYGPATH_W) 'mimelib/body.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/body.cpp'; fi`
-
-bodypart.o: mimelib/bodypart.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT bodypart.o -MD -MP -MF "$(DEPDIR)/bodypart.Tpo" -c -o bodypart.o `test -f 'mimelib/bodypart.cpp' || echo '$(srcdir)/'`mimelib/bodypart.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/bodypart.Tpo" "$(DEPDIR)/bodypart.Po"; else rm -f "$(DEPDIR)/bodypart.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/bodypart.cpp' object='bodypart.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o bodypart.o `test -f 'mimelib/bodypart.cpp' || echo '$(srcdir)/'`mimelib/bodypart.cpp
-
-bodypart.obj: mimelib/bodypart.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT bodypart.obj -MD -MP -MF "$(DEPDIR)/bodypart.Tpo" -c -o bodypart.obj `if test -f 'mimelib/bodypart.cpp'; then $(CYGPATH_W) 'mimelib/bodypart.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/bodypart.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/bodypart.Tpo" "$(DEPDIR)/bodypart.Po"; else rm -f "$(DEPDIR)/bodypart.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/bodypart.cpp' object='bodypart.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o bodypart.obj `if test -f 'mimelib/bodypart.cpp'; then $(CYGPATH_W) 'mimelib/bodypart.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/bodypart.cpp'; fi`
-
-boyermor.o: mimelib/boyermor.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT boyermor.o -MD -MP -MF "$(DEPDIR)/boyermor.Tpo" -c -o boyermor.o `test -f 'mimelib/boyermor.cpp' || echo '$(srcdir)/'`mimelib/boyermor.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/boyermor.Tpo" "$(DEPDIR)/boyermor.Po"; else rm -f "$(DEPDIR)/boyermor.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/boyermor.cpp' object='boyermor.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o boyermor.o `test -f 'mimelib/boyermor.cpp' || echo '$(srcdir)/'`mimelib/boyermor.cpp
-
-boyermor.obj: mimelib/boyermor.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT boyermor.obj -MD -MP -MF "$(DEPDIR)/boyermor.Tpo" -c -o boyermor.obj `if test -f 'mimelib/boyermor.cpp'; then $(CYGPATH_W) 'mimelib/boyermor.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/boyermor.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/boyermor.Tpo" "$(DEPDIR)/boyermor.Po"; else rm -f "$(DEPDIR)/boyermor.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/boyermor.cpp' object='boyermor.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o boyermor.obj `if test -f 'mimelib/boyermor.cpp'; then $(CYGPATH_W) 'mimelib/boyermor.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/boyermor.cpp'; fi`
-
-datetime.o: mimelib/datetime.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT datetime.o -MD -MP -MF "$(DEPDIR)/datetime.Tpo" -c -o datetime.o `test -f 'mimelib/datetime.cpp' || echo '$(srcdir)/'`mimelib/datetime.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/datetime.Tpo" "$(DEPDIR)/datetime.Po"; else rm -f "$(DEPDIR)/datetime.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/datetime.cpp' object='datetime.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o datetime.o `test -f 'mimelib/datetime.cpp' || echo '$(srcdir)/'`mimelib/datetime.cpp
-
-datetime.obj: mimelib/datetime.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT datetime.obj -MD -MP -MF "$(DEPDIR)/datetime.Tpo" -c -o datetime.obj `if test -f 'mimelib/datetime.cpp'; then $(CYGPATH_W) 'mimelib/datetime.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/datetime.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/datetime.Tpo" "$(DEPDIR)/datetime.Po"; else rm -f "$(DEPDIR)/datetime.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/datetime.cpp' object='datetime.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o datetime.obj `if test -f 'mimelib/datetime.cpp'; then $(CYGPATH_W) 'mimelib/datetime.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/datetime.cpp'; fi`
-
-disptype.o: mimelib/disptype.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT disptype.o -MD -MP -MF "$(DEPDIR)/disptype.Tpo" -c -o disptype.o `test -f 'mimelib/disptype.cpp' || echo '$(srcdir)/'`mimelib/disptype.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/disptype.Tpo" "$(DEPDIR)/disptype.Po"; else rm -f "$(DEPDIR)/disptype.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/disptype.cpp' object='disptype.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o disptype.o `test -f 'mimelib/disptype.cpp' || echo '$(srcdir)/'`mimelib/disptype.cpp
-
-disptype.obj: mimelib/disptype.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT disptype.obj -MD -MP -MF "$(DEPDIR)/disptype.Tpo" -c -o disptype.obj `if test -f 'mimelib/disptype.cpp'; then $(CYGPATH_W) 'mimelib/disptype.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/disptype.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/disptype.Tpo" "$(DEPDIR)/disptype.Po"; else rm -f "$(DEPDIR)/disptype.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/disptype.cpp' object='disptype.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o disptype.obj `if test -f 'mimelib/disptype.cpp'; then $(CYGPATH_W) 'mimelib/disptype.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/disptype.cpp'; fi`
-
-dw_cte.o: mimelib/dw_cte.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT dw_cte.o -MD -MP -MF "$(DEPDIR)/dw_cte.Tpo" -c -o dw_cte.o `test -f 'mimelib/dw_cte.cpp' || echo '$(srcdir)/'`mimelib/dw_cte.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/dw_cte.Tpo" "$(DEPDIR)/dw_cte.Po"; else rm -f "$(DEPDIR)/dw_cte.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/dw_cte.cpp' object='dw_cte.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o dw_cte.o `test -f 'mimelib/dw_cte.cpp' || echo '$(srcdir)/'`mimelib/dw_cte.cpp
-
-dw_cte.obj: mimelib/dw_cte.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT dw_cte.obj -MD -MP -MF "$(DEPDIR)/dw_cte.Tpo" -c -o dw_cte.obj `if test -f 'mimelib/dw_cte.cpp'; then $(CYGPATH_W) 'mimelib/dw_cte.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/dw_cte.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/dw_cte.Tpo" "$(DEPDIR)/dw_cte.Po"; else rm -f "$(DEPDIR)/dw_cte.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/dw_cte.cpp' object='dw_cte.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o dw_cte.obj `if test -f 'mimelib/dw_cte.cpp'; then $(CYGPATH_W) 'mimelib/dw_cte.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/dw_cte.cpp'; fi`
-
-dw_date.o: mimelib/dw_date.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT dw_date.o -MD -MP -MF "$(DEPDIR)/dw_date.Tpo" -c -o dw_date.o `test -f 'mimelib/dw_date.cpp' || echo '$(srcdir)/'`mimelib/dw_date.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/dw_date.Tpo" "$(DEPDIR)/dw_date.Po"; else rm -f "$(DEPDIR)/dw_date.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/dw_date.cpp' object='dw_date.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o dw_date.o `test -f 'mimelib/dw_date.cpp' || echo '$(srcdir)/'`mimelib/dw_date.cpp
-
-dw_date.obj: mimelib/dw_date.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT dw_date.obj -MD -MP -MF "$(DEPDIR)/dw_date.Tpo" -c -o dw_date.obj `if test -f 'mimelib/dw_date.cpp'; then $(CYGPATH_W) 'mimelib/dw_date.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/dw_date.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/dw_date.Tpo" "$(DEPDIR)/dw_date.Po"; else rm -f "$(DEPDIR)/dw_date.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/dw_date.cpp' object='dw_date.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o dw_date.obj `if test -f 'mimelib/dw_date.cpp'; then $(CYGPATH_W) 'mimelib/dw_date.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/dw_date.cpp'; fi`
-
-dw_mime.o: mimelib/dw_mime.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT dw_mime.o -MD -MP -MF "$(DEPDIR)/dw_mime.Tpo" -c -o dw_mime.o `test -f 'mimelib/dw_mime.cpp' || echo '$(srcdir)/'`mimelib/dw_mime.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/dw_mime.Tpo" "$(DEPDIR)/dw_mime.Po"; else rm -f "$(DEPDIR)/dw_mime.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/dw_mime.cpp' object='dw_mime.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o dw_mime.o `test -f 'mimelib/dw_mime.cpp' || echo '$(srcdir)/'`mimelib/dw_mime.cpp
-
-dw_mime.obj: mimelib/dw_mime.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT dw_mime.obj -MD -MP -MF "$(DEPDIR)/dw_mime.Tpo" -c -o dw_mime.obj `if test -f 'mimelib/dw_mime.cpp'; then $(CYGPATH_W) 'mimelib/dw_mime.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/dw_mime.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/dw_mime.Tpo" "$(DEPDIR)/dw_mime.Po"; else rm -f "$(DEPDIR)/dw_mime.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/dw_mime.cpp' object='dw_mime.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o dw_mime.obj `if test -f 'mimelib/dw_mime.cpp'; then $(CYGPATH_W) 'mimelib/dw_mime.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/dw_mime.cpp'; fi`
-
-dwstring.o: mimelib/dwstring.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT dwstring.o -MD -MP -MF "$(DEPDIR)/dwstring.Tpo" -c -o dwstring.o `test -f 'mimelib/dwstring.cpp' || echo '$(srcdir)/'`mimelib/dwstring.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/dwstring.Tpo" "$(DEPDIR)/dwstring.Po"; else rm -f "$(DEPDIR)/dwstring.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/dwstring.cpp' object='dwstring.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o dwstring.o `test -f 'mimelib/dwstring.cpp' || echo '$(srcdir)/'`mimelib/dwstring.cpp
-
-dwstring.obj: mimelib/dwstring.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT dwstring.obj -MD -MP -MF "$(DEPDIR)/dwstring.Tpo" -c -o dwstring.obj `if test -f 'mimelib/dwstring.cpp'; then $(CYGPATH_W) 'mimelib/dwstring.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/dwstring.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/dwstring.Tpo" "$(DEPDIR)/dwstring.Po"; else rm -f "$(DEPDIR)/dwstring.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/dwstring.cpp' object='dwstring.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o dwstring.obj `if test -f 'mimelib/dwstring.cpp'; then $(CYGPATH_W) 'mimelib/dwstring.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/dwstring.cpp'; fi`
-
-entity.o: mimelib/entity.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT entity.o -MD -MP -MF "$(DEPDIR)/entity.Tpo" -c -o entity.o `test -f 'mimelib/entity.cpp' || echo '$(srcdir)/'`mimelib/entity.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/entity.Tpo" "$(DEPDIR)/entity.Po"; else rm -f "$(DEPDIR)/entity.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/entity.cpp' object='entity.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o entity.o `test -f 'mimelib/entity.cpp' || echo '$(srcdir)/'`mimelib/entity.cpp
-
-entity.obj: mimelib/entity.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT entity.obj -MD -MP -MF "$(DEPDIR)/entity.Tpo" -c -o entity.obj `if test -f 'mimelib/entity.cpp'; then $(CYGPATH_W) 'mimelib/entity.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/entity.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/entity.Tpo" "$(DEPDIR)/entity.Po"; else rm -f "$(DEPDIR)/entity.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/entity.cpp' object='entity.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o entity.obj `if test -f 'mimelib/entity.cpp'; then $(CYGPATH_W) 'mimelib/entity.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/entity.cpp'; fi`
-
-field.o: mimelib/field.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT field.o -MD -MP -MF "$(DEPDIR)/field.Tpo" -c -o field.o `test -f 'mimelib/field.cpp' || echo '$(srcdir)/'`mimelib/field.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/field.Tpo" "$(DEPDIR)/field.Po"; else rm -f "$(DEPDIR)/field.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/field.cpp' object='field.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o field.o `test -f 'mimelib/field.cpp' || echo '$(srcdir)/'`mimelib/field.cpp
-
-field.obj: mimelib/field.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT field.obj -MD -MP -MF "$(DEPDIR)/field.Tpo" -c -o field.obj `if test -f 'mimelib/field.cpp'; then $(CYGPATH_W) 'mimelib/field.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/field.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/field.Tpo" "$(DEPDIR)/field.Po"; else rm -f "$(DEPDIR)/field.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/field.cpp' object='field.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o field.obj `if test -f 'mimelib/field.cpp'; then $(CYGPATH_W) 'mimelib/field.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/field.cpp'; fi`
-
-fieldbdy.o: mimelib/fieldbdy.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fieldbdy.o -MD -MP -MF "$(DEPDIR)/fieldbdy.Tpo" -c -o fieldbdy.o `test -f 'mimelib/fieldbdy.cpp' || echo '$(srcdir)/'`mimelib/fieldbdy.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fieldbdy.Tpo" "$(DEPDIR)/fieldbdy.Po"; else rm -f "$(DEPDIR)/fieldbdy.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/fieldbdy.cpp' object='fieldbdy.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fieldbdy.o `test -f 'mimelib/fieldbdy.cpp' || echo '$(srcdir)/'`mimelib/fieldbdy.cpp
-
-fieldbdy.obj: mimelib/fieldbdy.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fieldbdy.obj -MD -MP -MF "$(DEPDIR)/fieldbdy.Tpo" -c -o fieldbdy.obj `if test -f 'mimelib/fieldbdy.cpp'; then $(CYGPATH_W) 'mimelib/fieldbdy.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/fieldbdy.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/fieldbdy.Tpo" "$(DEPDIR)/fieldbdy.Po"; else rm -f "$(DEPDIR)/fieldbdy.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/fieldbdy.cpp' object='fieldbdy.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fieldbdy.obj `if test -f 'mimelib/fieldbdy.cpp'; then $(CYGPATH_W) 'mimelib/fieldbdy.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/fieldbdy.cpp'; fi`
-
-group.o: mimelib/group.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT group.o -MD -MP -MF "$(DEPDIR)/group.Tpo" -c -o group.o `test -f 'mimelib/group.cpp' || echo '$(srcdir)/'`mimelib/group.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/group.Tpo" "$(DEPDIR)/group.Po"; else rm -f "$(DEPDIR)/group.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/group.cpp' object='group.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o group.o `test -f 'mimelib/group.cpp' || echo '$(srcdir)/'`mimelib/group.cpp
-
-group.obj: mimelib/group.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT group.obj -MD -MP -MF "$(DEPDIR)/group.Tpo" -c -o group.obj `if test -f 'mimelib/group.cpp'; then $(CYGPATH_W) 'mimelib/group.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/group.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/group.Tpo" "$(DEPDIR)/group.Po"; else rm -f "$(DEPDIR)/group.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/group.cpp' object='group.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o group.obj `if test -f 'mimelib/group.cpp'; then $(CYGPATH_W) 'mimelib/group.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/group.cpp'; fi`
-
-headers.o: mimelib/headers.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT headers.o -MD -MP -MF "$(DEPDIR)/headers.Tpo" -c -o headers.o `test -f 'mimelib/headers.cpp' || echo '$(srcdir)/'`mimelib/headers.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/headers.Tpo" "$(DEPDIR)/headers.Po"; else rm -f "$(DEPDIR)/headers.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/headers.cpp' object='headers.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o headers.o `test -f 'mimelib/headers.cpp' || echo '$(srcdir)/'`mimelib/headers.cpp
-
-headers.obj: mimelib/headers.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT headers.obj -MD -MP -MF "$(DEPDIR)/headers.Tpo" -c -o headers.obj `if test -f 'mimelib/headers.cpp'; then $(CYGPATH_W) 'mimelib/headers.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/headers.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/headers.Tpo" "$(DEPDIR)/headers.Po"; else rm -f "$(DEPDIR)/headers.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/headers.cpp' object='headers.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o headers.obj `if test -f 'mimelib/headers.cpp'; then $(CYGPATH_W) 'mimelib/headers.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/headers.cpp'; fi`
-
-mailbox.o: mimelib/mailbox.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mailbox.o -MD -MP -MF "$(DEPDIR)/mailbox.Tpo" -c -o mailbox.o `test -f 'mimelib/mailbox.cpp' || echo '$(srcdir)/'`mimelib/mailbox.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mailbox.Tpo" "$(DEPDIR)/mailbox.Po"; else rm -f "$(DEPDIR)/mailbox.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/mailbox.cpp' object='mailbox.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mailbox.o `test -f 'mimelib/mailbox.cpp' || echo '$(srcdir)/'`mimelib/mailbox.cpp
-
-mailbox.obj: mimelib/mailbox.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mailbox.obj -MD -MP -MF "$(DEPDIR)/mailbox.Tpo" -c -o mailbox.obj `if test -f 'mimelib/mailbox.cpp'; then $(CYGPATH_W) 'mimelib/mailbox.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/mailbox.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mailbox.Tpo" "$(DEPDIR)/mailbox.Po"; else rm -f "$(DEPDIR)/mailbox.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/mailbox.cpp' object='mailbox.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mailbox.obj `if test -f 'mimelib/mailbox.cpp'; then $(CYGPATH_W) 'mimelib/mailbox.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/mailbox.cpp'; fi`
-
-mboxlist.o: mimelib/mboxlist.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mboxlist.o -MD -MP -MF "$(DEPDIR)/mboxlist.Tpo" -c -o mboxlist.o `test -f 'mimelib/mboxlist.cpp' || echo '$(srcdir)/'`mimelib/mboxlist.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mboxlist.Tpo" "$(DEPDIR)/mboxlist.Po"; else rm -f "$(DEPDIR)/mboxlist.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/mboxlist.cpp' object='mboxlist.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mboxlist.o `test -f 'mimelib/mboxlist.cpp' || echo '$(srcdir)/'`mimelib/mboxlist.cpp
-
-mboxlist.obj: mimelib/mboxlist.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mboxlist.obj -MD -MP -MF "$(DEPDIR)/mboxlist.Tpo" -c -o mboxlist.obj `if test -f 'mimelib/mboxlist.cpp'; then $(CYGPATH_W) 'mimelib/mboxlist.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/mboxlist.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mboxlist.Tpo" "$(DEPDIR)/mboxlist.Po"; else rm -f "$(DEPDIR)/mboxlist.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/mboxlist.cpp' object='mboxlist.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mboxlist.obj `if test -f 'mimelib/mboxlist.cpp'; then $(CYGPATH_W) 'mimelib/mboxlist.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/mboxlist.cpp'; fi`
-
-mechansm.o: mimelib/mechansm.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mechansm.o -MD -MP -MF "$(DEPDIR)/mechansm.Tpo" -c -o mechansm.o `test -f 'mimelib/mechansm.cpp' || echo '$(srcdir)/'`mimelib/mechansm.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mechansm.Tpo" "$(DEPDIR)/mechansm.Po"; else rm -f "$(DEPDIR)/mechansm.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/mechansm.cpp' object='mechansm.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mechansm.o `test -f 'mimelib/mechansm.cpp' || echo '$(srcdir)/'`mimelib/mechansm.cpp
-
-mechansm.obj: mimelib/mechansm.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mechansm.obj -MD -MP -MF "$(DEPDIR)/mechansm.Tpo" -c -o mechansm.obj `if test -f 'mimelib/mechansm.cpp'; then $(CYGPATH_W) 'mimelib/mechansm.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/mechansm.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mechansm.Tpo" "$(DEPDIR)/mechansm.Po"; else rm -f "$(DEPDIR)/mechansm.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/mechansm.cpp' object='mechansm.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mechansm.obj `if test -f 'mimelib/mechansm.cpp'; then $(CYGPATH_W) 'mimelib/mechansm.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/mechansm.cpp'; fi`
-
-mediatyp.o: mimelib/mediatyp.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mediatyp.o -MD -MP -MF "$(DEPDIR)/mediatyp.Tpo" -c -o mediatyp.o `test -f 'mimelib/mediatyp.cpp' || echo '$(srcdir)/'`mimelib/mediatyp.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mediatyp.Tpo" "$(DEPDIR)/mediatyp.Po"; else rm -f "$(DEPDIR)/mediatyp.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/mediatyp.cpp' object='mediatyp.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mediatyp.o `test -f 'mimelib/mediatyp.cpp' || echo '$(srcdir)/'`mimelib/mediatyp.cpp
-
-mediatyp.obj: mimelib/mediatyp.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mediatyp.obj -MD -MP -MF "$(DEPDIR)/mediatyp.Tpo" -c -o mediatyp.obj `if test -f 'mimelib/mediatyp.cpp'; then $(CYGPATH_W) 'mimelib/mediatyp.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/mediatyp.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mediatyp.Tpo" "$(DEPDIR)/mediatyp.Po"; else rm -f "$(DEPDIR)/mediatyp.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/mediatyp.cpp' object='mediatyp.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mediatyp.obj `if test -f 'mimelib/mediatyp.cpp'; then $(CYGPATH_W) 'mimelib/mediatyp.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/mediatyp.cpp'; fi`
-
-message.o: mimelib/message.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT message.o -MD -MP -MF "$(DEPDIR)/message.Tpo" -c -o message.o `test -f 'mimelib/message.cpp' || echo '$(srcdir)/'`mimelib/message.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/message.Tpo" "$(DEPDIR)/message.Po"; else rm -f "$(DEPDIR)/message.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/message.cpp' object='message.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o message.o `test -f 'mimelib/message.cpp' || echo '$(srcdir)/'`mimelib/message.cpp
-
-message.obj: mimelib/message.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT message.obj -MD -MP -MF "$(DEPDIR)/message.Tpo" -c -o message.obj `if test -f 'mimelib/message.cpp'; then $(CYGPATH_W) 'mimelib/message.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/message.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/message.Tpo" "$(DEPDIR)/message.Po"; else rm -f "$(DEPDIR)/message.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/message.cpp' object='message.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o message.obj `if test -f 'mimelib/message.cpp'; then $(CYGPATH_W) 'mimelib/message.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/message.cpp'; fi`
-
-msgcmp.o: mimelib/msgcmp.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT msgcmp.o -MD -MP -MF "$(DEPDIR)/msgcmp.Tpo" -c -o msgcmp.o `test -f 'mimelib/msgcmp.cpp' || echo '$(srcdir)/'`mimelib/msgcmp.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/msgcmp.Tpo" "$(DEPDIR)/msgcmp.Po"; else rm -f "$(DEPDIR)/msgcmp.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/msgcmp.cpp' object='msgcmp.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o msgcmp.o `test -f 'mimelib/msgcmp.cpp' || echo '$(srcdir)/'`mimelib/msgcmp.cpp
-
-msgcmp.obj: mimelib/msgcmp.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT msgcmp.obj -MD -MP -MF "$(DEPDIR)/msgcmp.Tpo" -c -o msgcmp.obj `if test -f 'mimelib/msgcmp.cpp'; then $(CYGPATH_W) 'mimelib/msgcmp.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/msgcmp.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/msgcmp.Tpo" "$(DEPDIR)/msgcmp.Po"; else rm -f "$(DEPDIR)/msgcmp.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/msgcmp.cpp' object='msgcmp.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o msgcmp.obj `if test -f 'mimelib/msgcmp.cpp'; then $(CYGPATH_W) 'mimelib/msgcmp.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/msgcmp.cpp'; fi`
-
-msgid.o: mimelib/msgid.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT msgid.o -MD -MP -MF "$(DEPDIR)/msgid.Tpo" -c -o msgid.o `test -f 'mimelib/msgid.cpp' || echo '$(srcdir)/'`mimelib/msgid.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/msgid.Tpo" "$(DEPDIR)/msgid.Po"; else rm -f "$(DEPDIR)/msgid.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/msgid.cpp' object='msgid.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o msgid.o `test -f 'mimelib/msgid.cpp' || echo '$(srcdir)/'`mimelib/msgid.cpp
-
-msgid.obj: mimelib/msgid.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT msgid.obj -MD -MP -MF "$(DEPDIR)/msgid.Tpo" -c -o msgid.obj `if test -f 'mimelib/msgid.cpp'; then $(CYGPATH_W) 'mimelib/msgid.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/msgid.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/msgid.Tpo" "$(DEPDIR)/msgid.Po"; else rm -f "$(DEPDIR)/msgid.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/msgid.cpp' object='msgid.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o msgid.obj `if test -f 'mimelib/msgid.cpp'; then $(CYGPATH_W) 'mimelib/msgid.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/msgid.cpp'; fi`
-
-multipar.o: mimelib/multipar.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT multipar.o -MD -MP -MF "$(DEPDIR)/multipar.Tpo" -c -o multipar.o `test -f 'mimelib/multipar.cpp' || echo '$(srcdir)/'`mimelib/multipar.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/multipar.Tpo" "$(DEPDIR)/multipar.Po"; else rm -f "$(DEPDIR)/multipar.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/multipar.cpp' object='multipar.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o multipar.o `test -f 'mimelib/multipar.cpp' || echo '$(srcdir)/'`mimelib/multipar.cpp
-
-multipar.obj: mimelib/multipar.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT multipar.obj -MD -MP -MF "$(DEPDIR)/multipar.Tpo" -c -o multipar.obj `if test -f 'mimelib/multipar.cpp'; then $(CYGPATH_W) 'mimelib/multipar.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/multipar.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/multipar.Tpo" "$(DEPDIR)/multipar.Po"; else rm -f "$(DEPDIR)/multipar.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/multipar.cpp' object='multipar.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o multipar.obj `if test -f 'mimelib/multipar.cpp'; then $(CYGPATH_W) 'mimelib/multipar.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/multipar.cpp'; fi`
-
-param.o: mimelib/param.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT param.o -MD -MP -MF "$(DEPDIR)/param.Tpo" -c -o param.o `test -f 'mimelib/param.cpp' || echo '$(srcdir)/'`mimelib/param.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/param.Tpo" "$(DEPDIR)/param.Po"; else rm -f "$(DEPDIR)/param.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/param.cpp' object='param.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o param.o `test -f 'mimelib/param.cpp' || echo '$(srcdir)/'`mimelib/param.cpp
-
-param.obj: mimelib/param.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT param.obj -MD -MP -MF "$(DEPDIR)/param.Tpo" -c -o param.obj `if test -f 'mimelib/param.cpp'; then $(CYGPATH_W) 'mimelib/param.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/param.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/param.Tpo" "$(DEPDIR)/param.Po"; else rm -f "$(DEPDIR)/param.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/param.cpp' object='param.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o param.obj `if test -f 'mimelib/param.cpp'; then $(CYGPATH_W) 'mimelib/param.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/param.cpp'; fi`
-
-text.o: mimelib/text.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT text.o -MD -MP -MF "$(DEPDIR)/text.Tpo" -c -o text.o `test -f 'mimelib/text.cpp' || echo '$(srcdir)/'`mimelib/text.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/text.Tpo" "$(DEPDIR)/text.Po"; else rm -f "$(DEPDIR)/text.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/text.cpp' object='text.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o text.o `test -f 'mimelib/text.cpp' || echo '$(srcdir)/'`mimelib/text.cpp
-
-text.obj: mimelib/text.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT text.obj -MD -MP -MF "$(DEPDIR)/text.Tpo" -c -o text.obj `if test -f 'mimelib/text.cpp'; then $(CYGPATH_W) 'mimelib/text.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/text.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/text.Tpo" "$(DEPDIR)/text.Po"; else rm -f "$(DEPDIR)/text.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/text.cpp' object='text.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o text.obj `if test -f 'mimelib/text.cpp'; then $(CYGPATH_W) 'mimelib/text.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/text.cpp'; fi`
-
-token.o: mimelib/token.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT token.o -MD -MP -MF "$(DEPDIR)/token.Tpo" -c -o token.o `test -f 'mimelib/token.cpp' || echo '$(srcdir)/'`mimelib/token.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/token.Tpo" "$(DEPDIR)/token.Po"; else rm -f "$(DEPDIR)/token.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/token.cpp' object='token.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o token.o `test -f 'mimelib/token.cpp' || echo '$(srcdir)/'`mimelib/token.cpp
-
-token.obj: mimelib/token.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT token.obj -MD -MP -MF "$(DEPDIR)/token.Tpo" -c -o token.obj `if test -f 'mimelib/token.cpp'; then $(CYGPATH_W) 'mimelib/token.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/token.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/token.Tpo" "$(DEPDIR)/token.Po"; else rm -f "$(DEPDIR)/token.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/token.cpp' object='token.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o token.obj `if test -f 'mimelib/token.cpp'; then $(CYGPATH_W) 'mimelib/token.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/token.cpp'; fi`
-
-uuencode.o: mimelib/uuencode.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT uuencode.o -MD -MP -MF "$(DEPDIR)/uuencode.Tpo" -c -o uuencode.o `test -f 'mimelib/uuencode.cpp' || echo '$(srcdir)/'`mimelib/uuencode.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/uuencode.Tpo" "$(DEPDIR)/uuencode.Po"; else rm -f "$(DEPDIR)/uuencode.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/uuencode.cpp' object='uuencode.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o uuencode.o `test -f 'mimelib/uuencode.cpp' || echo '$(srcdir)/'`mimelib/uuencode.cpp
-
-uuencode.obj: mimelib/uuencode.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT uuencode.obj -MD -MP -MF "$(DEPDIR)/uuencode.Tpo" -c -o uuencode.obj `if test -f 'mimelib/uuencode.cpp'; then $(CYGPATH_W) 'mimelib/uuencode.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/uuencode.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/uuencode.Tpo" "$(DEPDIR)/uuencode.Po"; else rm -f "$(DEPDIR)/uuencode.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mimelib/uuencode.cpp' object='uuencode.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o uuencode.obj `if test -f 'mimelib/uuencode.cpp'; then $(CYGPATH_W) 'mimelib/uuencode.cpp'; else $(CYGPATH_W) '$(srcdir)/mimelib/uuencode.cpp'; fi`
 uninstall-info-am:
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -1050,7 +501,7 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(LIBRARIES) config.h
+all-am: Makefile config.h
 installdirs: installdirs-recursive
 installdirs-am:
 install: install-recursive
@@ -1073,21 +524,18 @@ clean-generic:
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
-	-rm -f mimelib/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
 
-clean-am: clean-generic clean-noinstLIBRARIES mostlyclean-am
+clean-am: clean-generic mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
-distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-hdr distclean-tags
+distclean-am: clean-am distclean-generic distclean-hdr distclean-tags
 
 dvi: dvi-recursive
 
@@ -1112,13 +560,12 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-recursive
 
-mostlyclean-am: mostlyclean-compile mostlyclean-generic
+mostlyclean-am: mostlyclean-generic
 
 pdf: pdf-recursive
 
@@ -1133,18 +580,17 @@ uninstall-am: uninstall-info-am
 uninstall-info: uninstall-info-recursive
 
 .PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am am--refresh check \
-	check-am clean clean-generic clean-noinstLIBRARIES \
-	clean-recursive ctags ctags-recursive dist dist-all dist-bzip2 \
-	dist-gzip dist-shar dist-tarZ dist-zip distcheck distclean \
-	distclean-compile distclean-generic distclean-hdr \
-	distclean-recursive distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am \
-	install-data-local install-exec install-exec-am install-info \
-	install-info-am install-man install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic maintainer-clean-recursive \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
+	check-am clean clean-generic clean-recursive ctags \
+	ctags-recursive dist dist-all dist-bzip2 dist-gzip dist-shar \
+	dist-tarZ dist-zip distcheck distclean distclean-generic \
+	distclean-hdr distclean-recursive distclean-tags \
+	distcleancheck distdir distuninstallcheck dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-data-local install-exec \
+	install-exec-am install-info install-info-am install-man \
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
+	maintainer-clean-recursive mostlyclean mostlyclean-generic \
 	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
 	uninstall uninstall-am uninstall-info-am
 

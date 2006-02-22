@@ -61,7 +61,7 @@ if test "x$with_mimelib_local" != "xno"; then
  AC_MSG_CHECKING(for mimelib)
  AC_MSG_RESULT(local)
  CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/mimelib"
- LIBS="-L\$(top_srcdir)/mimelib -lmimelib $LIBS"
+ LIBS="-L\$(top_srcdir)/mymime -lmimelib $LIBS"
 else
  AM_CONDITIONAL(LOCAL_MIMELIB, false)
  AC_SEARCH_HEADER_DIRS(
@@ -127,5 +127,5 @@ AC_DEFINE_UNQUOTED(DEFAULT_CONFIG_FILE,
 AC_CONFIG_FILES([
 	Makefile libesort/Makefile common/Makefile index/Makefile
 	ui/Makefile imgs/Makefile prune/Makefile render/Makefile
-	lurker.conf apache.conf])
+	mymime/Makefile lurker.conf apache.conf])
 AC_OUTPUT

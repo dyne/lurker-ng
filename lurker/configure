@@ -4741,7 +4741,7 @@ echo $ECHO_N "checking for mimelib... $ECHO_C" >&6
  echo "$as_me:$LINENO: result: local" >&5
 echo "${ECHO_T}local" >&6
  CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/mimelib"
- LIBS="-L\$(top_srcdir)/mimelib -lmimelib $LIBS"
+ LIBS="-L\$(top_srcdir)/mymime -lmimelib $LIBS"
 else
 
 
@@ -5036,7 +5036,7 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-                                                                                                    ac_config_files="$ac_config_files Makefile libesort/Makefile common/Makefile index/Makefile ui/Makefile imgs/Makefile prune/Makefile render/Makefile lurker.conf apache.conf"
+                                                                                                              ac_config_files="$ac_config_files Makefile libesort/Makefile common/Makefile index/Makefile ui/Makefile imgs/Makefile prune/Makefile render/Makefile mymime/Makefile lurker.conf apache.conf"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -5623,6 +5623,7 @@ do
   "imgs/Makefile" ) CONFIG_FILES="$CONFIG_FILES imgs/Makefile" ;;
   "prune/Makefile" ) CONFIG_FILES="$CONFIG_FILES prune/Makefile" ;;
   "render/Makefile" ) CONFIG_FILES="$CONFIG_FILES render/Makefile" ;;
+  "mymime/Makefile" ) CONFIG_FILES="$CONFIG_FILES mymime/Makefile" ;;
   "lurker.conf" ) CONFIG_FILES="$CONFIG_FILES lurker.conf" ;;
   "apache.conf" ) CONFIG_FILES="$CONFIG_FILES apache.conf" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;

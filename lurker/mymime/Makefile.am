@@ -3,8 +3,8 @@ AM_CPPFLAGS = -DDW_UNIX
 
 # Support building mimelib ourselves
 if LOCAL_MIMELIB
-noinst_LIBRARIES = ../mimelib/libmimelib.a
-nodist_mimelib_libmimelib_a_SOURCES = \
+noinst_LIBRARIES = libmimelib.a
+nodist_libmimelib_a_SOURCES = \
 	../mimelib/address.cpp ../mimelib/addrlist.cpp ../mimelib/attach.cpp \
 	../mimelib/basicmsg.cpp ../mimelib/binhex.cpp ../mimelib/body.cpp \
 	../mimelib/bodypart.cpp ../mimelib/boyermor.cpp \
