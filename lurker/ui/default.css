@@ -104,8 +104,11 @@ div.messageBody {
   margin-top: 1em;
 }
 
-table.attachments {
+div.rightbar {
   float: right;
+}
+
+table.attachments {
   border: 2px solid #e8e8e8;
   background-color: white;
 }
