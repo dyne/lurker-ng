@@ -87,7 +87,20 @@ table {
   border-spacing: 0;
 }
 
-tr { vertical-align:top; text-align:left; font-family: Arial, sans-serif; padding:0 }
+table.index tr {
+  font-family: Arial, sans-serif;
+}
+
+table.navigation tr {
+  font-family: Arial, sans-serif;
+}
+
+tr { 
+  vertical-align: top; 
+  text-align: left; 
+  padding: 0; 
+}
+
 .thRow { background-color:#DDF }   /* header row for mindex/thread/search tables */
 tr.lit  { background-color:#77F }  /* even rows in mindex/thread/search tables */
 tr.row1 { background-color:#DDD }  /* even rows in mindex/thread/search tables */
@@ -104,8 +117,25 @@ div.messageBody {
   margin-top: 1em;
 }
 
-div.rightbar {
+/* opsbar = row of them */
+table.opsbar {
+  width: 100%;
+  border: none;
+}
+table.opsbar td {
+  padding: 0 0 0 0;
+  margin: 0 0 0 0;
+}
+
+div.opsfloat {
   float: right;
+  margin: 0 0 0 0;
+  padding: 0 0 0 0;
+}
+
+/* opsbox = table on right with attachments */
+table.opsbox td {
+  padding: 0 0 0 10;
 }
 
 table.attachments {
@@ -164,7 +194,6 @@ table.appears td {
 td {
   padding: 0 2px 0px 2px;
   vertical-align: top;
-  font-family: Arial, sans-serif;
 }
 
 ul {
@@ -247,10 +276,10 @@ div.data {
 }
 
 img.photo {
+ float: right;
  border: 0;
  margin: 0;
  padding: 0;
- float: right;
 }
 .padded td { padding-bottom:1px }  /* Adds padding to output tables containing Discussion Tree icon */
 

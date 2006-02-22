@@ -139,7 +139,7 @@
 
 <xsl:template name="attachments">
  <table class="attachments">
-  <tr><th align="left"><xsl:value-of select="$attachments"/></th></tr>
+  <tr><th align="left"><xsl:value-of select="$attachments"/>:</th></tr>
   <tr><td>
    <a href="../mbox/{summary/id}.rfc822"><xsl:value-of select="$raw-email"/></a><br/>
    <xsl:apply-templates mode="attach" select="mime"/>
@@ -232,6 +232,24 @@
 </xsl:template>
 
 
+<!-- Format the operation box on the right -->
+<xsl:template name="opsbox">
+ <table class="opsbox"><tr>
+  <xsl:if test="/message/server/raw-email">
+   <td><xsl:call-template name="attachments"/></td>
+  </xsl:if>
+  <td>
+   <a onClick="trash('{server/cgi-url}/zap.cgi?{summary/id}');">
+    <img src="../imgs/trash.png"/>
+   </a>
+   <xsl:if test="mbox/list/email/@address">
+    <br/><xsl:call-template name="reply-link"/>
+   </xsl:if>
+  </td>
+ </tr></table>
+</xsl:template>
+
+
 <!-- Format a message request -->
 <xsl:template match="message">
  <html lang="{$lang}">
@@ -302,19 +320,19 @@
    </div>
    
    <div class="body">
-     <div class="rightbar">
-      <xsl:if test="mbox/list/email/@address">
-        <xsl:call-template name="reply-link"/>
-      </xsl:if>
-      &#160;
-      <a onClick="trash('{server/cgi-url}/zap.cgi?{summary/id}');">
-        <img src="../imgs/trash.png"/>
-      </a>
-      <xsl:if test="/message/server/raw-email">
-        <xsl:call-template name="attachments"/>
-      </xsl:if>
-    </div>
-    <xsl:call-template name="header-fields"/>
+    <xsl:choose>
+     <!-- don't let the attachments run into the signature box -->
+     <xsl:when test="//signed">
+      <table class="opsbar"><tr>
+       <td><xsl:call-template name="header-fields"/></td>
+       <td align="right"><xsl:call-template name="opsbox"/></td>
+      </tr></table>
+     </xsl:when>
+     <xsl:otherwise>
+      <div class="opsfloat"><xsl:call-template name="opsbox"/></div>
+      <div><xsl:call-template name="header-fields"/></div>
+     </xsl:otherwise>
+    </xsl:choose>
     <div class="messageBody">
      <xsl:apply-templates mode="body" select="mime"/>
     </div>
