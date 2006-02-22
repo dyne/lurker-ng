@@ -21,7 +21,6 @@ v2.0:
 	 - document must be either a frontend path, or the missing document
 	 - config-file is optional
 	Include an apache.conf which should work with the given settings
-	Restored rudimentary xml support (firefox supports it finally)
 	Messages from unavailable lists appear to completely not exist
 	Brought back an improved version of the reply link
 	Art no longer matches paragraph starts, only trailing signatures

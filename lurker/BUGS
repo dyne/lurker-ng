@@ -1,7 +1,5 @@
 ---- Agenda for 1.4:
 	fix lurker-regenerate for deleted email
-	somehow allow deleting messages from web
-	figure out a way to eliminate '.en' from xml version (language-free)
 
 -------------------------------------------------------------
 
