@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.44 2006-02-21 21:28:31 terpstra Exp $
+/*  $Id: message.cpp,v 1.45 2006-02-22 02:56:33 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -981,6 +981,15 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 #endif
 	
 	cache.o << " </threading>\n";
+	
+	if (message.Headers().HasMessageId())
+	{
+		vector<string> mids = extract_message_ids(
+			message.Headers().MessageId().AsString().c_str());
+		if (mids.size() > 0)
+			cache.o << " <message-id>" << xmlEscape << mids[0] 
+				<< "</message-id>\n";
+	}
 	
 	long aid = 0;
 	// default charset is ISO-8859-1

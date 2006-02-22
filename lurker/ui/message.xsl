@@ -68,9 +68,72 @@
 <xsl:template match="signed" mode="attach">
  <xsl:apply-templates mode="attach" select="data/mime"/>
 </xsl:template>
+
+<xsl:template match="email[@name]" mode="mailto">
+  <xsl:if test="position()!=1">, </xsl:if>
+  <xsl:text>&quot;</xsl:text>
+  <xsl:value-of select="@name"/>
+  <xsl:text>&quot; &lt;</xsl:text>
+  <xsl:value-of select="@address"/>
+  <xsl:text>&gt;</xsl:text>
+</xsl:template>
+<xsl:template match="email" mode="mailto">
+  <xsl:if test="position()!=1">, </xsl:if>
+  <xsl:value-of select="@address"/>
+</xsl:template>
+
+<xsl:template match="br" mode="mailtobody">
+  <xsl:text>&gt; </xsl:text>
+</xsl:template>
+<xsl:template match="art" mode="mailtobody"/>
+<xsl:template match="mime[@id='1']" mode="mailtobody">
+  <xsl:apply-templates mode="mailtobody"/>
+</xsl:template>
+<xsl:template match="mime" mode="mailtobody"/>
+
 <xsl:template name="attachments">
  <table class="attachments">
   <tr><th align="left"><xsl:value-of select="$attachments"/></th></tr>
+  <xsl:if test="mbox/list/email/@address">
+  <tr><td>
+   <xsl:element name="a">
+    <xsl:attribute name="href">
+     <xsl:text>mailto:</xsl:text>
+     <xsl:apply-templates select="mbox/list/email[@address]" mode="mailto"/>
+     <xsl:text>?Subject=</xsl:text>
+     <xsl:if test="not(contains(summary/subject,'Re:'))">Re: </xsl:if>
+     <xsl:value-of select="summary/subject"/>
+     <xsl:if test="not(summary/subject)">your mail</xsl:if>
+     <xsl:if test="message-id">
+      <xsl:text>&amp;References=</xsl:text>
+      <xsl:value-of select="message-id"/>
+      <xsl:text>&amp;In-Reply-To=</xsl:text>
+      <xsl:value-of select="message-id"/>
+     </xsl:if>
+     <xsl:variable name="listmails">
+      <xsl:for-each select="mbox/list/email[@address]">
+       <xsl:value-of select="translate(@address, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"/>
+       <xsl:text>,</xsl:text>
+      </xsl:for-each>
+     </xsl:variable>
+     <xsl:variable name="allmails" select="(to/email[@address] | cc/email[@address] | summary/email[@address])"/>
+     <xsl:variable name="restmails" select="$allmails[not(contains($listmails,translate(concat(@address,','), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')))]"/>
+     <xsl:if test="$restmails">
+       <xsl:text>&amp;CC=</xsl:text>
+       <xsl:apply-templates select="$restmails" mode="mailto"/>
+     </xsl:if>
+     <xsl:text>&amp;Body=On </xsl:text>
+     <xsl:apply-templates select="summary" mode="text-date"/>
+     <xsl:text>, </xsl:text>
+     <xsl:apply-templates select="summary/email" mode="email-name"/>
+     <xsl:text> wrote:
+&gt; </xsl:text>
+     <xsl:apply-templates select="mime" mode="mailtobody"/>
+    </xsl:attribute>
+    reply
+   </xsl:element>
+  </td></tr>
+  </xsl:if>
   <tr><td>
    <a href="../mbox/{summary/id}.rfc822"><xsl:value-of select="$raw-email"/></a><br/>
    <xsl:apply-templates mode="attach" select="mime"/>

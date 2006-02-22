@@ -1,4 +1,4 @@
-/*  $Id: XmlEscape.cpp,v 1.10 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: XmlEscape.cpp,v 1.11 2006-02-22 02:56:33 terpstra Exp $
  *  
  *  XmlEscape.cpp - A stream manipulator-like thing for escaping XML
  *  
@@ -36,8 +36,8 @@ ostream& XmlOstream::operator << (char c)
 	{
 		switch (c)
 		{
-		case '\n':	return o << "<br/>\n";
-		case '\t':	return o << "        ";
+		case '\n':	return o << "\n<br/>";
+		case '\t':	return o << "&#160;&#160;&#160;";
 		case '\r':	return o;
 		default:	return o << "?"; // drop the char
 		}
