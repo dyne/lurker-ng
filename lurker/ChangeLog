@@ -25,6 +25,7 @@ v2.0:
 	Messages from unavailable lists appear to completely not exist
 	Brought back an improved version of the reply link
 	Art no longer matches paragraph starts, only trailing signatures
+	Include trash can icon for deleting junk email
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE
