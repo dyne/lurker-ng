@@ -66,10 +66,12 @@
   <xsl:text>&gt; </xsl:text>
 </xsl:template>
 <xsl:template match="art" mode="mailtobody"/>
-<xsl:template match="mime[@id='1']" mode="mailtobody">
+<xsl:template match="mime[@type='text/plain' or @type='text/html']" mode="mailtobody">
   <xsl:apply-templates mode="mailtobody"/>
 </xsl:template>
-<xsl:template match="mime" mode="mailtobody"/>
+<xsl:template match="mime" mode="mailtobody">
+  <xsl:apply-templates match="mime" mode="mailtobody"/>
+</xsl:template>
 
 <xsl:template name="reply-link">
  <xsl:element name="a">
