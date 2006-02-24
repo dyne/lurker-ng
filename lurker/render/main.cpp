@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.21 2006-02-21 21:28:31 terpstra Exp $
+/*  $Id: main.cpp,v 1.22 2006-02-24 16:40:48 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -34,6 +34,7 @@
 #include <vector>
 
 #include "commands.h"
+#include "parse.h"
 
 #include <unistd.h>	// chdir
 
@@ -152,41 +153,6 @@ Request parse_request(const string& param)
 			_("The specified locale is not valid."));
 		exit(1);
 	}
-	
-	return out;
-}
-
-inline int fromHex(char c)
-{
-	if (c >= 'A' && c <= 'Z') return c - 'A' + 10;
-	if (c >= 'a' && c <= 'z') return c - 'a' + 10;
-	return c - '0';
-}
-
-string decipherHalf(const string& str)
-{
-	// cout << "deciper: " << str << endl;
-	
-	string out;
-	
-	string::size_type b = 0, e;
-	
-	while ((e = str.find_first_of("%+", b)) 
-		!= string::npos)
-	{
-		out.append(str, b, e - b);
-		if (str[e] == '+') out.append(" ");
-		else if (str.length() > e+2)
-		{
-			int ch = fromHex(str[e+1]) << 4 | fromHex(str[e+2]);
-			out += ((char)ch);
-			e += 2;
-		}
-		
-		b = e+1;
-	}
-	
-	out.append(str, b, str.length() - b);
 	
 	return out;
 }

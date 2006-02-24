@@ -1,4 +1,4 @@
-/*  $Id: parse.h,v 1.3 2006-02-24 16:37:38 terpstra Exp $
+/*  $Id: parse.h,v 1.4 2006-02-24 16:40:48 terpstra Exp $
  *  
  *  parse.h - Deal with CGI ugliness
  *  
@@ -30,8 +30,11 @@
 
 using namespace std;
 
-map<string, string>	getParams();
-map<string, string>	getCookies();
-int			redirectUrl(const string& url);
+string decipherHalf(const string& str);
+
+map<string, string> getParams();
+map<string, string> getCookies();
+
+int redirectUrl(const string& url);
 
 #endif

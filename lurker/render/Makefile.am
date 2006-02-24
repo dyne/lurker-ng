@@ -8,7 +8,7 @@ LDADD = ../common/libcommon.a ../libesort/libesort.a
 lurker_cgi_SOURCES = \
 	main.cpp art.cpp url.cpp mailto.cpp quote.cpp attach.cpp list.cpp \
 	mbox.cpp message.cpp mindex.cpp search.cpp splash.cpp thread.cpp \
-	Cache.cpp Threading.cpp \
+	Cache.cpp Threading.cpp parse.cpp \
 	Cache.h Threading.h commands.h error.h parse.h
 
 jump_cgi_SOURCES = parse.cpp jump.cpp
