@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.9 2006-02-21 19:45:45 terpstra Exp $
+/*  $Id: search.cpp,v 1.10 2006-02-24 15:00:30 terpstra Exp $
  *  
  *  search.cpp - Search for messages in lurker database (optionally delete)
  *  
@@ -70,8 +70,6 @@ int main(int argc, char** argv)
 	bool verbose = false;
 	bool quiet = false;
 	string keyword;
-	
-	string self = argv[0];
 	
 	while ((c = getopt(argc, (char*const*)argv, "c:k:dvfq?")) != -1)
 	{
@@ -204,6 +202,12 @@ int main(int argc, char** argv)
 	if (erase)
 	{
 		if (!quiet) cerr << "Marking messages as deleted" << endl;
+		
+		// The idea is that lurker-prune already kills cache which
+		// refers to a newly imported message (regardless of time).
+		// Therefore, report the deleted message as new.
+		MessageId importStamp(time(0));
+		
 		for (vector<Summary>::iterator i = result.begin(); 
 		     i != result.end();
 		     ++i)
@@ -228,6 +232,15 @@ int main(int argc, char** argv)
 				cerr << "Delete summary failed; operation aborted.\n";
 				return 1;
 			}
+			if (db->insert(
+				LU_CACHE + 
+				importStamp.raw().substr(0, 4) + 
+				i->id().raw()) != 0)
+			{
+				perror("insert");
+				cerr << "Delete cache eviction failed; operation aborted.\n";
+				return 1;
+			}
 		}
 	}
 	
@@ -241,22 +254,9 @@ int main(int argc, char** argv)
 			return 1;
 		}
 		
-		string::size_type x = self.find('/');
-		string prune;
-		
-		if (x == string::npos) prune = "lurker-prune";
-		else prune = string(self, 0, x+1) + "lurker-prune";
-		
 		if (!quiet)
 		{
-			cerr << "\n";
-			cerr << "Database modified -- cache is now invalid.\n";
-			cerr << "Running: " << prune << " -c " << config << " -p -v\n";
-			execlp(prune.c_str(), prune.c_str(), "-c", config, "-p", "-v", NULL);
-		}
-		else
-		{
-			execlp(prune.c_str(), prune.c_str(), "-c", config, "-p", NULL);
+			cerr << "Cache will be automatically corrected when the cronjob next runs.\n";
 		}
 	}
 	
