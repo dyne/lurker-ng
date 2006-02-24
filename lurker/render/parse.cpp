@@ -1,4 +1,4 @@
-/*  $Id: parse.cpp,v 1.6 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: parse.cpp,v 1.7 2006-02-24 16:37:38 terpstra Exp $
  *  
  *  parse.cpp - Deal with CGI ugliness
  *  
@@ -32,7 +32,8 @@ inline int fromHex(char c)
 {
 	if (c >= 'A' && c <= 'Z') return c - 'A' + 10;
 	if (c >= 'a' && c <= 'z') return c - 'a' + 10;
-	return c - '0';
+	if (c >= '0' && c <= '9') return c - '0';
+	return -1;
 }
 
 string decipherHalf(const string& str)
@@ -40,23 +41,30 @@ string decipherHalf(const string& str)
 //	cout << "deciper: " << str << endl;
 	
 	string out;
+	int high, low;
 	
 	string::size_type b = 0, e;
 	while ((e = str.find_first_of("%+", b)) != string::npos)
 	{
 		out.append(str, b, e - b);
 		if (str[e] == '+') out.append(" ");
-		else if (str.length() > e+2)
+		else if (str.length() > e+2 &&
+		         (high = fromHex(str[e+1])) != -1 &&
+		         (low = fromHex(str[e+2])) != -1)
 		{
-			int ch = fromHex(str[e+1]) << 4 | fromHex(str[e+2]);
+			int ch = high << 4 | low;
 			out += ((char)ch);
 			e += 2;
+		}
+		else
+		{	// keep the broken escape char
+			out.append("%");
 		}
 		
 		b = e+1;
 	}
 	
-	out.append(str, b, str.length() - b);
+	out.append(str, b, string::npos);
 	
 	return out;
 }
@@ -77,7 +85,7 @@ map<string, string> getParams()
 {
 	map<string, string> out;
 	
-	char* x = getenv("QUERY_STRING");
+	const char* x = getenv("QUERY_STRING");
 	
 	string str = x?x:"";
 	
@@ -90,8 +98,35 @@ map<string, string> getParams()
 	{
 		out.insert(splitParam(str.substr(b, e - b)));
 		b = str.find_first_not_of('&', e+1);
+		if (b == string::npos) break;
 	}
-	out.insert(splitParam(str.substr(b, str.length() - b)));
+	if (b != string::npos) 
+		out.insert(splitParam(str.substr(b, str.length() - b)));
+	
+	return out;
+}
+
+map<string, string> getCookies()
+{
+	map<string, string> out;
+	
+	const char* x = getenv("HTTP_COOKIE");
+	
+	string str = x?x:"";
+	
+//	cout << "parse: " << str << endl;
+	
+	string::size_type b = str.find_first_not_of("; ", 0), e;
+	if (b == string::npos) return out;
+	
+	while ((e = str.find_first_of("; ", b)) != string::npos)
+	{
+		out.insert(splitParam(str.substr(b, e - b)));
+		b = str.find_first_not_of("; ", e+1);
+		if (b == string::npos) break;
+	}
+	if (b != string::npos)
+		out.insert(splitParam(str.substr(b, str.length() - b)));
 	
 	return out;
 }

@@ -1,4 +1,4 @@
-/*  $Id: parse.h,v 1.2 2003-04-21 18:26:21 terpstra Exp $
+/*  $Id: parse.h,v 1.3 2006-02-24 16:37:38 terpstra Exp $
  *  
  *  parse.h - Deal with CGI ugliness
  *  
@@ -31,6 +31,7 @@
 using namespace std;
 
 map<string, string>	getParams();
+map<string, string>	getCookies();
 int			redirectUrl(const string& url);
 
 #endif
