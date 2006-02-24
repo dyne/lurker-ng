@@ -5,14 +5,14 @@ epath="$1"
 cfg="$2"
 
 if ! test -z "$epath"; then \
-        if ! echo "$epath" | grep "^/"; then
+        if ! echo "$epath" | grep -q "^/"; then
                 echo If a path is specified, it must be absolute
                 exit 1
         fi
         epath="$epath/";
 fi
 if ! test -z "$cfg"; then \
-        if ! echo "$cfg" | grep "^/"; then
+        if ! echo "$cfg" | grep -q "^/"; then
                 echo If a config file is specified, its path must be absolute
                 exit 1
         fi
