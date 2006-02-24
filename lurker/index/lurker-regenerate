@@ -22,14 +22,14 @@ fi
 dbdir=`"${epath}lurker-params" $copt "$cfg" -d`
 cd "$dbdir"
 
-if test -d tmp; then \
+if test -d .tmp; then \
         echo "The database appears to already have/is being converted."
-        echo "Please deal with the 'tmp' folder in the $dbdir and try again"
+        echo "Please deal with the '.tmp' folder in the $dbdir and try again"
         exit 1
 fi
 
-mkdir tmp
-cd tmp
+mkdir .tmp
+cd .tmp
 mv -i ../* .
 
 for l in `"${epath}lurker-list" $copt "$cfg" -i`; do
@@ -39,5 +39,4 @@ for l in `"${epath}lurker-list" $copt "$cfg" -i`; do
 done
 
 cd ..
-rm -rf tmp
-
+rm -rf .tmp
