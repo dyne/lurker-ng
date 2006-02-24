@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.9 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: message.cpp,v 1.10 2006-02-24 15:53:41 terpstra Exp $
  *  
  *  message.cpp - Cleanup after a message/ command
  *  
@@ -102,7 +102,7 @@ void PTable::calc_message(KSI ks)
 		if (self == ids.end())
 		{
 			// if it can't find us, then we are not in the range
-			// off messages whose mindex is affected by import
+			// of messages whose mindex is affected by import
 			continue;
 		}
 		

@@ -1,3 +1,9 @@
+lurker-prune loads summary data for every message between newest and oldest
+present in the cache. That's WAY too much shit in RAM. The reason this
+happens is because we don't know how far back in time a thread/mindex
+reaches. We need to be able to answer the question of whether or not the
+message's subject/successor is modified.
+
 Ideas:
 	In-message forward/backward for search results
 	Bring back message count estimates
@@ -10,10 +16,6 @@ Ideas:
 
 Need a way to jump to threads other than just the newest
 --- perhaps include list histogram at bottom of thread page?
-
-Set timestamp to config file + all used messages: hard
-	- would need to also fix language, timestamp, etc ...
-	- caching issue causes real problems since fed through xsltproc
 
 BUGS:
 	There is a slight bug in advance() pre-commit post-insert.

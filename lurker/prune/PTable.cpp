@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.19 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: PTable.cpp,v 1.20 2006-02-24 15:53:41 terpstra Exp $
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  
@@ -144,6 +144,7 @@ string PTable::loadSummaries()
 		// read all the values
 		switch (*k)
 		{
+		case LU_MESSAGE_DELETED:
 		case LU_MESSAGE_AUTHOR_EMAIL:
 		case LU_MESSAGE_AUTHOR_NAME:
 			// noop
@@ -248,16 +249,18 @@ string PTable::loadLists()
 
 string PTable::load()
 {
-	loadDir("attach",  false);
-	loadDir("list",    false);
-	loadDir("mbox",    false);
-	loadDir("message", true);
-	loadDir("mindex",  false);
-	loadDir("search",  false);
-	loadDir("splash",  false);
-	loadDir("thread",  true);
+	string ok;
 	
-	loadNewIds();
+	if ((ok = loadDir("attach",  false)) != "") return ok;
+	if ((ok = loadDir("list",    false)) != "") return ok;
+	if ((ok = loadDir("mbox",    false)) != "") return ok;
+	if ((ok = loadDir("message", true))  != "") return ok;
+	if ((ok = loadDir("mindex",  false)) != "") return ok;
+	if ((ok = loadDir("search",  false)) != "") return ok;
+	if ((ok = loadDir("splash",  false)) != "") return ok;
+	if ((ok = loadDir("thread",  true))  != "") return ok;
+	
+	if ((ok = loadNewIds()) != "") return ok;
 	
 	if (newIds.empty()) return "";
 	time_t threshold = 
@@ -266,9 +269,9 @@ string PTable::load()
 	if (threshold > MASSACRE_THRESHOLD)
 		return "";
 	
-	loadSummaries();
-	loadThreads();
-	loadLists();
+	if ((ok = loadSummaries()) != "") return ok;
+	if ((ok = loadThreads()) != "") return ok;
+	if ((ok = loadLists()) != "") return ok;
 	
 	return "";
 }
