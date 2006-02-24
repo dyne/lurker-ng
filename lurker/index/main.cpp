@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.47 2006-02-24 14:12:04 terpstra Exp $
+/*  $Id: main.cpp,v 1.48 2006-02-24 14:35:38 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -667,7 +667,7 @@ int main(int argc, char** argv)
 		
 		string prefix(LU_KEYWORD + string(LU_KEYWORD_DELETED) + '\0');
 		auto_ptr<ESort::Walker> walk(
-			db->seek(prefix, "", ESort::Forward));
+			dbh->seek(prefix, "", ESort::Forward));
 		
 		while (walk->advance() != -1)
 		{
