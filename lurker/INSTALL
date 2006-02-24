@@ -72,9 +72,12 @@ Quick start
 
   Make certain that lurker.cgi can modify /usr/local/var/www/lurker.
   If CGI programs run as www-data: chown -R www-data /usr/local/var/www/lurker
-
+  
   Make certain that the CGI can read /usr/local/var/lib/lurker.
   Run 'lurker-index' with umask 002 to ensure it remains readable.
+  
+  Make sure that zap.cgi can modify /usr/local/var/lib/lurker.
+  The best way to do this is with a setgid zap.cgi owned by the lurker group.
 
 4 Setup delivery of new mail to lurker-index
   
@@ -101,7 +104,7 @@ Quick start
   
   This must be run with the ability to read and delete files from the
   web-server cache directory. If you don't configure this correctly,
-  new email will not appear in your web server.
+  new email will not appear in your archive.
   
 7 Configure your webserver.
   

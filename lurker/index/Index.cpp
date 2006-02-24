@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.34 2006-02-21 16:20:04 terpstra Exp $
+/*  $Id: Index.cpp,v 1.35 2006-02-24 13:17:29 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -232,7 +232,7 @@ int feed_writer(const char* keyword, void* arg)
 	return i->writer->insert(x);
 }
 
-int Index::index_id(bool userdate, time_t server)
+int Index::index_id(bool userdate, time_t server, bool& exist)
 {
 	time_t stamp = server;
 	string messageId;
@@ -288,6 +288,13 @@ int Index::index_id(bool userdate, time_t server)
 	}
 	
 	id = MessageId(stamp, hash);
+	if (blacklist.find(id) != blacklist.end())
+	{
+		// Messages marked as blacklisted use the 'exist' flag to
+		// avoid being imported into the database.
+		exist = true;
+		return 0;
+	}
 	
 	if (messageId.length())
 	{
@@ -656,9 +663,13 @@ int Index::index(bool userdate, time_t envelope, time_t import, bool check, bool
 //	cout << message.Headers().Subject().AsString().c_str() << endl;
 	
 	if (index_author() < 0) return -1;
-	if (index_id(userdate, envelope) < 0) return -1;
-	if (index_summary(check, exist) < 0) return -1;
 	
+	/* If the message is blacklisted, we mark it as 'existing' */
+	if (index_id(userdate, envelope, exist) < 0) return -1;
+	if (exist) return 0;
+	
+	/* If the message is already imported, mark it as 'existing' */
+	if (index_summary(check, exist) < 0) return -1;
 	if (exist) return 0;
 	
 	if (index_threading(      )                < 0) return -1;

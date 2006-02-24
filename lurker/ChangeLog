@@ -27,6 +27,7 @@ v2.0:
 	Include trash can icon for deleting junk email
 	Adjusted gpg settings to be more modern
 	Modernized the INSTALL documentation
+	Updated lurker-regenerate to work with deleted email
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE

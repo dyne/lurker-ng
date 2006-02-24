@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.45 2006-02-21 13:28:54 terpstra Exp $
+/*  $Id: main.cpp,v 1.46 2006-02-24 13:17:29 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -34,6 +34,7 @@
 #include <esort.h>
 
 #include <iostream>
+#include <set>
 #include <cstdio>
 #include <ctime>
 #include <cstdlib>
@@ -43,10 +44,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <errno.h>
 
 #include <zlib.h>
 
 #include "Index.h"
+#include <Keys.h>
 
 #include "config.h"
 #ifdef HAVE_SYSEXITS_H
@@ -66,6 +69,7 @@ time_t get_date (const char *p, const time_t *now);
 using namespace std;
 
 auto_ptr<ESort::Writer> db;
+set<MessageId> blacklist;
 
 string         append;
 List*          list = 0;
@@ -95,6 +99,7 @@ void help(const char* name)
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-m               Input is a single message (not a mailbox)\n";
 	cerr << "\t-i <mbox/mdir>   Read input from mbox or maildir instead of std input\n";
+	cerr << "\t-p <history>     Prevent deleted messages in DB history from importing\n";
 	cerr << "\t-v               Verbose operation\n";
 	cerr << "\t-d               Drop duplicates per list\n";
 	cerr << "\t-n               Don't compress messages\n";
@@ -351,7 +356,8 @@ int index(DwString& msg, time_t arrival)
 		append.append(msg.c_str(), msg.length());
 	}
 	
-	Index i(message, db.get(), *list, start, msg.length() + strlen(prefix));
+	Index i(message, db.get(), *list, blacklist, 
+	        start, msg.length() + strlen(prefix));
 	
 	bool exist;
 	if (i.index(userdate, arrival, import, dropdup, exist) != 0)
@@ -542,11 +548,12 @@ int main(int argc, char** argv)
 	const char* config  = DEFAULT_CONFIG_FILE;
 	const char* listn   = 0;
 	const char* input   = 0;
+	const char* histdb  = 0;
 	bool single = false;
 	
 	srandom(time(0));
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:l:i:mvndfu?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:l:i:p:mvndfu?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -558,6 +565,9 @@ int main(int argc, char** argv)
 			break;
 		case 'i':
 			input = optarg;
+			break;
+		case 'p':
+			histdb = optarg;
 			break;
 		case 'm':
 			single = true;
@@ -610,15 +620,16 @@ int main(int argc, char** argv)
 		return LEX_DATAERR;
 	}
 	
+	string dbname = cfg.dbdir + "/db";
 	ESort::Parameters params(synced);
 	// work around g++ 2.95 borkage
 	auto_ptr<ESort::Writer> dbt(
-		ESort::Writer::opendb(cfg.dbdir + "/db", params));
+		ESort::Writer::opendb(dbname, params));
 	db = dbt;
 	
 	if (!db.get())
 	{
-		perror("opening database");
+		perror(dbname.c_str());
 		return LEX_IOERR;
 	}
 	
@@ -630,6 +641,41 @@ int main(int argc, char** argv)
 		return LEX_IOERR;
 	}
 	length = lseek(mbox, 0, SEEK_END);
+	
+	/* load the blacklist from the old database */
+	if (histdb)
+	{
+		auto_ptr<ESort::Reader> dbh(
+			ESort::Reader::opendb(histdb, params));
+		if (!dbh.get())
+		{
+			perror(histdb);
+			return LEX_IOERR;
+		}
+		
+		string prefix(LU_KEYWORD + string(LU_KEYWORD_DELETED) + '\0');
+		auto_ptr<ESort::Walker> walk(
+			db->seek(prefix, "", ESort::Forward));
+		
+		while (walk->advance() != -1)
+		{
+			if (walk->key.length() != 
+			    prefix.length() + MessageId::raw_len)
+			{
+				cerr << histdb << " contains corrupt deleted entries" << endl;
+				return LEX_IOERR;
+			}
+			
+			MessageId id(walk->key.c_str() + prefix.length(), 
+			             MessageId::raw_len);
+			blacklist.insert(id);
+		}
+		if (errno != 0)
+		{
+			perror("walking history database");
+			return LEX_IOERR;
+		}
+	}
 	
 	/** Begin processing input.
 	 */
