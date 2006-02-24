@@ -17,7 +17,9 @@ lurker_search_SOURCES = search.cpp
 # Install an empty database
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)
-	touch $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db
+	if ! test -f $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db; then \
+		echo 1 8192 255 > $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db; \
+	fi
 
 uninstall-local:
 	rm -f $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db
