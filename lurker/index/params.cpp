@@ -1,4 +1,4 @@
-/*  $Id: params.cpp,v 1.14 2006-02-21 13:28:54 terpstra Exp $
+/*  $Id: params.cpp,v 1.15 2006-02-24 14:12:04 terpstra Exp $
  *  
  *  params.cpp - Parse the config file for helper scripts
  *  
@@ -132,9 +132,15 @@ int main(int argc, char** argv)
 		}
 	}
 	
-	if (optind < argc)
+	while (optind < argc)
 	{
-		help(argv[0]);
+		if (!argv[optind][0])
+		{	// ignore empty arguments
+			optind++;
+			continue;
+		}
+		
+		cerr << "Unexpected argument: '" << argv[optind] << "'\n";
 		return 1;
 	}
 	

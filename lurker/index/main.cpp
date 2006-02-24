@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.46 2006-02-24 13:17:29 terpstra Exp $
+/*  $Id: main.cpp,v 1.47 2006-02-24 14:12:04 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -593,9 +593,21 @@ int main(int argc, char** argv)
 		}
 	}
 	
-	if (!listn || optind < argc)
+	while (optind < argc)
 	{
-		help(argv[0]);
+		if (!argv[optind][0])
+		{	// ignore empty arguments
+			optind++;
+			continue;
+		}
+		
+		cerr << "Unexpected argument: '" << argv[optind] << "'\n";
+		return LEX_USAGE;
+	}
+	
+	if (!listn)
+	{
+		cerr << "No list was specified (the -l option is manditory)\n";
 		return LEX_USAGE;
 	}
 	

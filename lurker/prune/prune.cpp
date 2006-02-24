@@ -1,4 +1,4 @@
-/*  $Id: prune.cpp,v 1.16 2006-02-21 16:11:45 terpstra Exp $
+/*  $Id: prune.cpp,v 1.17 2006-02-24 14:12:04 terpstra Exp $
  *  
  *  prune.cpp - Prune obsolete / stale cache files
  *  
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
 			modifyTime = atol(optarg)*60*60*24;
 			if (!modifyTime)
 			{
-				help(argv[0]);
+				cerr << "Modification time is not a number!\n";
 				return 1;
 			}
 			break;
@@ -202,7 +202,7 @@ int main(int argc, char** argv)
 			accessTime = atol(optarg)*60*60*24;
 			if (!accessTime)
 			{
-				help(argv[0]);
+				cerr << "Access time is not a number!\n";
 				return 1;
 			}
 			break;
@@ -218,9 +218,15 @@ int main(int argc, char** argv)
 		}
 	}
 	
-	if (optind < argc)
+	while (optind < argc)
 	{
-		help(argv[0]);
+		if (!argv[optind][0])
+		{	// ignore empty arguments
+			optind++;
+			continue;
+		}
+		
+		cerr << "Unexpected argument: '" << argv[optind] << "'\n";
 		return 1;
 	}
 	

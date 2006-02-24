@@ -28,6 +28,7 @@ v2.0:
 	Adjusted gpg settings to be more modern
 	Modernized the INSTALL documentation
 	Updated lurker-regenerate to work with deleted email
+	Improved error reporting on bad command-line options
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE

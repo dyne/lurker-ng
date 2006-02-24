@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.12 2006-02-24 13:59:07 terpstra Exp $
+/*  $Id: list.cpp,v 1.13 2006-02-24 14:12:04 terpstra Exp $
  *  
  *  list.cpp - Parse the config file for helper scripts
  *  
@@ -136,6 +136,7 @@ int main(int argc, char** argv)
 	vector<List> output;
 	for (; optind < argc; ++optind)
 	{
+		if (!argv[optind][0]) continue; // ignore empty arguments
 		Config::Lists::const_iterator l = cfg.lists.find(argv[optind]);
 		if (l == cfg.lists.end())
 		{
