@@ -40,3 +40,8 @@ done
 
 cd ..
 rm -rf .tmp
+
+echo "Database has been regenerated; please double-check the permissions"
+echo "Now flushing all web cache (re-run as root if you lack www permission)"
+echo "  ${epath}lurker-prune $copt $cfg -p"
+"${epath}lurker-prune" $copt "$cfg" -p
