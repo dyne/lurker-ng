@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.11 2006-02-21 13:28:54 terpstra Exp $
+/*  $Id: list.cpp,v 1.12 2006-02-24 13:59:07 terpstra Exp $
  *  
  *  list.cpp - Parse the config file for helper scripts
  *  
@@ -170,9 +170,10 @@ int main(int argc, char** argv)
 		if (!fields || language)
 		{
 			set<string>::const_iterator i, e;
-			for (i = o->languages.begin(), e = o->languages.end(); i != e; ++i)
+			for (i = o->languages.begin(), e = o->languages.end(); i != e; )
 			{
 				cout << *i;
+				++i;
 				if (i == e)	cout << "\n";
 				else		cout << ",";
 			}
