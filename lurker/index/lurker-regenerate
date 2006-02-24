@@ -1,30 +1,43 @@
 #! /bin/sh -e
-# Expects: (path to lurker-index / lurker-params) (cfg)
-# Both are optional
+# Options: [path to lurker-*] [config file]
 
 epath="$1"
 cfg="$2"
 
-if ! test -z "$epath"; then $epath="$epath/"; fi
-if ! test -z "$cfg"; then copt="-c"; fi
+if ! test -z "$epath"; then \
+        if ! echo "$epath" | grep "^/"; then
+                echo If a path is specified, it must be absolute
+                exit 1
+        fi
+        epath="$epath/";
+fi
+if ! test -z "$cfg"; then \
+        if ! echo "$cfg" | grep "^/"; then
+                echo If a config file is specified, its path must be absolute
+                exit 1
+        fi
+        copt="-c"
+fi
 
-dbdir=`${epath}lurker-params $copt "$cfg" -d`
+dbdir=`"${epath}lurker-params" $copt "$cfg" -d`
 cd "$dbdir"
 
 if test -d .tmp; then \
-	echo The database appears to already have/is being converted.
-	echo Please deal with the '.tmp' folder in the $dbdir and try again
-	exit 1
+        echo The database appears to already have/is being converted.
+        echo Please deal with the '.tmp' folder in the $dbdir and try again
+        exit 1
 fi
 
 mkdir .tmp
 cd .tmp
 mv -i ../* .
 
-for l in `${epath}lurker-list $copt "$cfg" -i`; do
+for l in `"${epath}lurker-list" $copt "$cfg" -i`; do
   echo Reindexing $l
-  gzip -dfc < $l | ${epath}lurker-index $copt "$cfg" -p ./db -l $l -v
+  if ! test -f $l; then continue; fi
+  gzip -dfc < $l | "${epath}lurker-index" $copt "$cfg" -p ./db -l $l -v
 done
 
 cd ..
 rm -rf .tmp
+
