@@ -609,10 +609,15 @@ install-data-local:
 	@echo
 
 install-config:
+	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)
+	if ! test -f $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db; then \
+		echo 1 8192 255 > $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db; \
+	fi
 	$(mkinstalldirs) $(DESTDIR)$(default_config_dir)
 	$(INSTALL_DATA) lurker.conf apache.conf $(DESTDIR)$(default_config_dir)
 	@echo
 	@echo "Now put 'include $(default_config_dir)/apache.conf' in your apache config"
+	@echo "And don't forget to setup a cron job as described in the INSTALL file"
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

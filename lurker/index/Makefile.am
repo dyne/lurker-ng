@@ -1,5 +1,5 @@
 bin_PROGRAMS = lurker-index lurker-list lurker-params lurker-search
-bin_SCRIPTS = lurker-regenerate
+dist_bin_SCRIPTS = lurker-regenerate
 dist_man_MANS = lurker-index.1 lurker-list.1 lurker-params.1 \
 		lurker-search.1 lurker-regenerate.1
 EXTRA_DIST = lurker-drop-rlimit.cpp \

@@ -38,8 +38,8 @@ POST_UNINSTALL = :
 bin_PROGRAMS = lurker-index$(EXEEXT) lurker-list$(EXEEXT) \
 	lurker-params$(EXEEXT) lurker-search$(EXEEXT)
 subdir = index
-DIST_COMMON = $(dist_man_MANS) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in
+DIST_COMMON = $(dist_bin_SCRIPTS) $(dist_man_MANS) \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
@@ -73,8 +73,8 @@ lurker_search_OBJECTS = $(am_lurker_search_OBJECTS)
 lurker_search_LDADD = $(LDADD)
 lurker_search_DEPENDENCIES = ../common/libcommon.a \
 	../libesort/libesort.a
-binSCRIPT_INSTALL = $(INSTALL_SCRIPT)
-SCRIPTS = $(bin_SCRIPTS)
+dist_binSCRIPT_INSTALL = $(INSTALL_SCRIPT)
+SCRIPTS = $(dist_bin_SCRIPTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/tools/depcomp
 am__depfiles_maybe = depfiles
@@ -189,7 +189,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-bin_SCRIPTS = lurker-regenerate
+dist_bin_SCRIPTS = lurker-regenerate
 dist_man_MANS = lurker-index.1 lurker-list.1 lurker-params.1 \
 		lurker-search.1 lurker-regenerate.1
 
@@ -271,21 +271,21 @@ lurker-params$(EXEEXT): $(lurker_params_OBJECTS) $(lurker_params_DEPENDENCIES)
 lurker-search$(EXEEXT): $(lurker_search_OBJECTS) $(lurker_search_DEPENDENCIES) 
 	@rm -f lurker-search$(EXEEXT)
 	$(CXXLINK) $(lurker_search_LDFLAGS) $(lurker_search_OBJECTS) $(lurker_search_LDADD) $(LIBS)
-install-binSCRIPTS: $(bin_SCRIPTS)
+install-dist_binSCRIPTS: $(dist_bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
-	@list='$(bin_SCRIPTS)'; for p in $$list; do \
+	@list='$(dist_bin_SCRIPTS)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  if test -f $$d$$p; then \
 	    f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
-	    echo " $(binSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(bindir)/$$f'"; \
-	    $(binSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(bindir)/$$f"; \
+	    echo " $(dist_binSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(bindir)/$$f'"; \
+	    $(dist_binSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(bindir)/$$f"; \
 	  else :; fi; \
 	done
 
-uninstall-binSCRIPTS:
+uninstall-dist_binSCRIPTS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(bin_SCRIPTS)'; for p in $$list; do \
+	@list='$(dist_bin_SCRIPTS)'; for p in $$list; do \
 	  f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
 	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
@@ -492,7 +492,7 @@ info-am:
 
 install-data-am: install-data-local install-man
 
-install-exec-am: install-binPROGRAMS install-binSCRIPTS
+install-exec-am: install-binPROGRAMS install-dist_binSCRIPTS
 
 install-info: install-info-am
 
@@ -517,8 +517,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
-	uninstall-info-am uninstall-local uninstall-man
+uninstall-am: uninstall-binPROGRAMS uninstall-dist_binSCRIPTS \
+	uninstall-info-am uninstall-man
 
 uninstall-man: uninstall-man1
 
@@ -526,25 +526,20 @@ uninstall-man: uninstall-man1
 	clean-generic ctags distclean distclean-compile \
 	distclean-generic distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-binPROGRAMS \
-	install-binSCRIPTS install-data install-data-am \
-	install-data-local install-exec install-exec-am install-info \
-	install-info-am install-man install-man1 install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-binSCRIPTS \
-	uninstall-info-am uninstall-local uninstall-man uninstall-man1
+	install-data install-data-am install-data-local \
+	install-dist_binSCRIPTS install-exec install-exec-am \
+	install-info install-info-am install-man install-man1 \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-dist_binSCRIPTS uninstall-info-am uninstall-man \
+	uninstall-man1
 
 
-# Install an empty database
+# Create the database directory
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)
-	if ! test -f $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db; then \
-		echo 1 8192 255 > $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db; \
-	fi
-
-uninstall-local:
-	rm -f $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db
 
 # Generate man pages if in maintainer mode
 @MAINTAINER_MODE_TRUE@lurker-index.1: lurker-index.sgml
