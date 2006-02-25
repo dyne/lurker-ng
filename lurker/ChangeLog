@@ -30,6 +30,7 @@ v2.0:
 	Updated lurker-regenerate to work with deleted email
 	Improved error reporting on bad command-line options
 	Fixed a bug in lurker-prune that aborted list loading or delete flags
+	lurker-search now supports specifying messages by raw id
 
 v1.3:
 	Applied a patch from Benjamin Boksa to fix highlight under MacOS IE

@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.10 2006-02-24 15:00:30 terpstra Exp $
+/*  $Id: search.cpp,v 1.11 2006-02-25 00:32:25 terpstra Exp $
  *  
  *  search.cpp - Search for messages in lurker database (optionally delete)
  *  
@@ -44,6 +44,7 @@ void help(const char* name)
 	cerr << "\t-d               Delete matching messages\n";
 	cerr << "\t-f               Don't prompt before deleting\n";
 	cerr << "\t-v               Output message summaries\n";
+	cerr << "\t-i               Take lurker message ids instead of keywords\n";
 	cerr << "\t-q               Don't output message ids or status\n";
 	cerr << "\n";
 	cerr << "Execute a keyword search to find messages.\n";
@@ -69,9 +70,10 @@ int main(int argc, char** argv)
 	bool force = false;
 	bool verbose = false;
 	bool quiet = false;
+	bool ids = false;
 	string keyword;
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:k:dvfq?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:k:dvfiq?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -92,6 +94,9 @@ int main(int argc, char** argv)
 			break;
 		case 'q':
 			quiet = true;
+			break;
+		case 'i':
+			ids = true;
 			break;
 		default:
 			help(argv[0]);
@@ -138,29 +143,55 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	Search s(cfg, dbr.get(), ESort::Forward);
-	
-	while (optind < argc) s.keyword(argv[optind++]);
-	
 	vector<Summary> result;
-	vector<Summary>::size_type sz = 0;
-	while (s.pull(1, result) && result.size() == sz+1)
+	
+	if (ids)
 	{
-		sz = result.size();
+		for (; optind < argc; ++optind) 
+		{
+			if (!argv[optind][0]) continue; // skip empty
+			MessageId id(argv[optind]);
+			if (id.serialize() != argv[optind])
+			{
+				cerr << "'" << argv[optind] << "' is not a message-id\n";
+				return 1;
+			}
+			result.push_back(Summary(id));
+		}
+	}
+	else
+	{
+		Search s(cfg, dbr.get(), ESort::Forward);
 		
+		for (; optind < argc; ++optind) 
+		{
+			if (!argv[optind][0]) continue; // skip empty
+			s.keyword(argv[optind]);
+		}
+		
+		vector<Summary>::size_type sz = 0;
+		while (s.pull(1, result) && result.size() == sz+1)
+		{
+			sz = result.size();
+		}
+	}
+	
+	vector<Summary>::iterator i, e = result.end();
+	for (i = result.begin(); i != e; ++i)
+	{
 		if (!quiet)
-			cout << "id: " << result.back().id().serialize() << "\n";
+			cout << "id: " << i->id().serialize() << "\n";
 		if (verbose)
 		{
 			string ok;
-			if ((ok = result.back().load(dbr.get(), cfg)) != "")
+			if ((ok = i->load(dbr.get(), cfg)) != "")
 			{
 				cerr << "Failed to load: " << ok << "\n";
 				return 1;
 			}
-			cout << "sb: " << result.back().subject() << "\n";
-			cout << "au: \"" << result.back().author_name() << "\" <"
-			     << result.back().author_email() << ">\n";
+			cout << "sb: " << i->subject() << "\n";
+			cout << "au: \"" << i->author_name() << "\" <"
+			     << i->author_email() << ">\n";
 		}
 	}
 	
@@ -182,9 +213,7 @@ int main(int argc, char** argv)
 	if (keyword != "")
 	{
 		if (!quiet) cerr << "Tagging messages with keyword" << endl;
-		for (vector<Summary>::iterator i = result.begin(); 
-		     i != result.end();
-		     ++i)
+		for (i = result.begin(); i != e; ++i)
 		{
 			if (db->insert(
 				LU_KEYWORD +
@@ -208,9 +237,7 @@ int main(int argc, char** argv)
 		// Therefore, report the deleted message as new.
 		MessageId importStamp(time(0));
 		
-		for (vector<Summary>::iterator i = result.begin(); 
-		     i != result.end();
-		     ++i)
+		for (i = result.begin(); i != e; ++i)
 		{
 			if (db->insert(
 				LU_KEYWORD +
