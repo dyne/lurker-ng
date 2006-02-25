@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.45 2006-02-22 02:56:33 terpstra Exp $
+/*  $Id: message.cpp,v 1.46 2006-02-25 01:05:41 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -179,7 +179,7 @@ void my_service_quote(
 	my_service_pic(o, s, e-s, cfg);
 }
 
-void find_and_replace(string& target, const string& token, const string& value)
+static void find_and_replace(string& target, const string& token, const string& value)
 {
 	string::size_type x = 0;
 	while ((x = target.find(token, x)) != string::npos)

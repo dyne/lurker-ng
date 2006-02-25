@@ -66,8 +66,8 @@ am_lurker_cgi_OBJECTS = main.$(OBJEXT) art.$(OBJEXT) url.$(OBJEXT) \
 	mailto.$(OBJEXT) quote.$(OBJEXT) attach.$(OBJEXT) \
 	list.$(OBJEXT) mbox.$(OBJEXT) message.$(OBJEXT) \
 	mindex.$(OBJEXT) search.$(OBJEXT) splash.$(OBJEXT) \
-	thread.$(OBJEXT) Cache.$(OBJEXT) Threading.$(OBJEXT) \
-	parse.$(OBJEXT)
+	thread.$(OBJEXT) zap.$(OBJEXT) Cache.$(OBJEXT) \
+	Threading.$(OBJEXT) parse.$(OBJEXT)
 lurker_cgi_OBJECTS = $(am_lurker_cgi_OBJECTS)
 lurker_cgi_LDADD = $(LDADD)
 lurker_cgi_DEPENDENCIES = ../common/libcommon.a ../libesort/libesort.a
@@ -98,6 +98,7 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BINDIR = @BINDIR@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -187,7 +188,7 @@ LDADD = ../common/libcommon.a ../libesort/libesort.a
 lurker_cgi_SOURCES = \
 	main.cpp art.cpp url.cpp mailto.cpp quote.cpp attach.cpp list.cpp \
 	mbox.cpp message.cpp mindex.cpp search.cpp splash.cpp thread.cpp \
-	Cache.cpp Threading.cpp parse.cpp \
+	zap.cpp Cache.cpp Threading.cpp parse.cpp \
 	Cache.h Threading.h commands.h error.h parse.h
 
 jump_cgi_SOURCES = parse.cpp jump.cpp
@@ -287,6 +288,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/splash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/url.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zap.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \

@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.22 2006-02-24 16:40:48 terpstra Exp $
+/*  $Id: main.cpp,v 1.23 2006-02-25 01:05:41 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -328,6 +328,7 @@ int main(int argc, char** argv)
 	else if (command == "attach")  return handle_attach (cfg, db.get(), param);
 	else if (command == "mbox")    return handle_mbox   (cfg, db.get(), param);
 	else if (command == "list")    return handle_list   (cfg, db.get(), param);
+	else if (command == "zap")     return handle_zap    (cfg, db.get(), param);
 	else
 	{
 		cout << "Status: 200 OK\r\n";

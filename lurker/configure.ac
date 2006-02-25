@@ -106,10 +106,12 @@ LOCALSTATEDIR=`eval echo ${localstatedir}`
 DEFAULT_WWW_DIR=`eval echo ${default_www_dir}`
 DEFAULT_CONFIG_DIR=`eval echo ${default_config_dir}`
 CGI_BIN_DIR=`eval echo ${cgi_bin_dir}`
+BINDIR=`eval echo ${bindir}`
 LOCALSTATEDIR=`eval echo ${LOCALSTATEDIR}`
 DEFAULT_WWW_DIR=`eval echo ${DEFAULT_WWW_DIR}`
 DEFAULT_CONFIG_DIR=`eval echo ${DEFAULT_CONFIG_DIR}`
 CGI_BIN_DIR=`eval echo ${CGI_BIN_DIR}`
+BINDIR=`eval echo ${BINDIR}`
 prefix="$prefix_backup"
 exec_prefix="$exec_prefix_backup"
 
@@ -118,6 +120,7 @@ AC_SUBST(LOCALSTATEDIR)
 AC_SUBST(DEFAULT_CONFIG_DIR) 
 AC_SUBST(DEFAULT_WWW_DIR)
 AC_SUBST(CGI_BIN_DIR)
+AC_SUBST(BINDIR)
 
 # Needed in source:
 AC_DEFINE_UNQUOTED(DEFAULT_CONFIG_FILE, 

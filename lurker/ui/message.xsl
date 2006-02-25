@@ -245,7 +245,7 @@
    <td><xsl:call-template name="attachments"/></td>
   </xsl:if>
   <td>
-   <a href="javascript:trash('{server/cgi-url}/zap.cgi?{summary/id}');">
+   <a href="javascript:trash('{server/doc-url}/zap/{summary/id}.{$ext}');">
     <img src="../imgs/trash.png"/>
    </a>
    <xsl:if test="mbox/list/email/@address">

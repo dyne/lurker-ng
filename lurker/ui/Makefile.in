@@ -66,6 +66,7 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BINDIR = @BINDIR@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -352,7 +353,7 @@ uninstall-am: uninstall-dist_htmlDATA uninstall-dist_uiDATA \
 
 # Create the directories for dynamic content
 install-data-local:
-	for i in attach list mbox message mindex search splash thread; do \
+	for i in attach list mbox message mindex search splash thread zap; do \
 		$(mkinstalldirs) $(DESTDIR)$(htmldir)/$$i; \
 		done
 	touch $(DESTDIR)$(htmldir)/lurker.docroot

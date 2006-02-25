@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.12 2006-02-21 15:46:21 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.13 2006-02-25 01:05:40 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -145,9 +145,12 @@ class Config
  	Groups groups;
  	Frontends frontends;
         
+        string file;  // the name of this config file
+        
  	// never localize paths, commands, or addresses
  	string	dbdir;
  	string	xslt;
+ 	string  delete_message;
  	string	pgpv_mime;
  	string	pgpv_inline;
  	string	admin_address;

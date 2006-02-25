@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP EGREP LOCAL_MIMELIB_TRUE LOCAL_MIMELIB_FALSE default_config_dir default_www_dir cgi_bin_dir LOCALSTATEDIR DEFAULT_CONFIG_DIR DEFAULT_WWW_DIR CGI_BIN_DIR LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP EGREP LOCAL_MIMELIB_TRUE LOCAL_MIMELIB_FALSE default_config_dir default_www_dir cgi_bin_dir LOCALSTATEDIR DEFAULT_CONFIG_DIR DEFAULT_WWW_DIR CGI_BIN_DIR BINDIR LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -5016,14 +5016,17 @@ LOCALSTATEDIR=`eval echo ${localstatedir}`
 DEFAULT_WWW_DIR=`eval echo ${default_www_dir}`
 DEFAULT_CONFIG_DIR=`eval echo ${default_config_dir}`
 CGI_BIN_DIR=`eval echo ${cgi_bin_dir}`
+BINDIR=`eval echo ${bindir}`
 LOCALSTATEDIR=`eval echo ${LOCALSTATEDIR}`
 DEFAULT_WWW_DIR=`eval echo ${DEFAULT_WWW_DIR}`
 DEFAULT_CONFIG_DIR=`eval echo ${DEFAULT_CONFIG_DIR}`
 CGI_BIN_DIR=`eval echo ${CGI_BIN_DIR}`
+BINDIR=`eval echo ${BINDIR}`
 prefix="$prefix_backup"
 exec_prefix="$exec_prefix_backup"
 
 # Needed in lurker.conf and apache.conf:
+
 
 
 
@@ -5773,6 +5776,7 @@ s,@LOCALSTATEDIR@,$LOCALSTATEDIR,;t t
 s,@DEFAULT_CONFIG_DIR@,$DEFAULT_CONFIG_DIR,;t t
 s,@DEFAULT_WWW_DIR@,$DEFAULT_WWW_DIR,;t t
 s,@CGI_BIN_DIR@,$CGI_BIN_DIR,;t t
+s,@BINDIR@,$BINDIR,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF

@@ -10,7 +10,7 @@ dist_ui_DATA = \
 	
 # Create the directories for dynamic content
 install-data-local:
-	for i in attach list mbox message mindex search splash thread; do \
+	for i in attach list mbox message mindex search splash thread zap; do \
 		$(mkinstalldirs) $(DESTDIR)$(htmldir)/$$i; \
 		done
 	touch $(DESTDIR)$(htmldir)/lurker.docroot

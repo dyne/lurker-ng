@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.21 2006-02-21 16:50:46 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.22 2006-02-25 01:05:40 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -334,8 +334,10 @@ bool lstring::is_set() const
 
 Config::Config()
  : list(0), frontend(0), group(""), error(), lists(), groups(),
+   file(""),
    dbdir(""), 
    xslt("cat -"),
+   delete_message(""),
    pgpv_mime("off"),
    pgpv_inline("off"),
    admin_address(""),
@@ -489,6 +491,8 @@ int Config::load(const string& file, bool toplevel)
 			
 			fi = fn;
 		}
+		
+		this->file = file;
 	}
 	
 	if (!ok) return -1;
@@ -832,6 +836,15 @@ int Config::process_command(const string& keys, const string& val, const string&
 			return -1;
 		}
 		xslt = val;
+	}
+	else if (key == "delete_message")
+	{
+		if (lc != "")
+		{
+			error << "delete_message command cannot be localized" << endl;
+			return -1;
+		}
+		delete_message = val;
 	}
 	else if (key == "pgp_verify_mime")
 	{

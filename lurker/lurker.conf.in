@@ -33,7 +33,7 @@ archive = Some Mailing List Archive
 admin_name    = Unconfigured
 admin_address = nill@bitbucket.org
 
-# The command to invoke to transform xml into html.
+# The command invoked to transform xml into html.
 # 
 # Lurker normally generates xml web pages from the database.
 # However, this is very badly supported in even mainstream browsers.
@@ -43,6 +43,16 @@ admin_address = nill@bitbucket.org
 # This command is fed xml via stdin and expected to produce html on stdout.
 
 xslt = xsltproc --nonet -
+
+# The command invoked to delete a message.
+# 
+# Lurker will feed a password from the UI into this command via stdin.
+# The substitution %c denotes the config file of the database to affect.
+# The substitution %i is the lurker message ID of the target email.
+# The recommended setup is to have a 'lurker' group owning /var/lib/lurker
+# Then for the example command to work, you must set 'passwd -g lurker'.
+
+delete_message = sg lurker -c @BINDIR@/lurker-search -d -f -v -i -c %c %i
 
 # The commands lurker uses to verify signatures.
 # 
