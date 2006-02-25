@@ -14,15 +14,9 @@ lurker_list_SOURCES = list.cpp
 lurker_params_SOURCES = params.cpp
 lurker_search_SOURCES = search.cpp
 
-# Install an empty database
+# Create the database directory
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)
-	if ! test -f $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db; then \
-		echo 1 8192 255 > $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db; \
-	fi
-
-uninstall-local:
-	rm -f $(DESTDIR)$(localstatedir)/lib/$(PACKAGE)/db
 
 # Generate man pages if in maintainer mode
 if MAINTAINER_MODE
