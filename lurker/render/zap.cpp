@@ -1,4 +1,4 @@
-/*  $Id: zap.cpp,v 1.2 2006-02-25 01:33:18 terpstra Exp $
+/*  $Id: zap.cpp,v 1.3 2006-02-25 02:04:44 terpstra Exp $
  *  
  *  zap.cpp - Handle a zap/ command
  *  
@@ -136,9 +136,16 @@ int handle_zap(const Config& cfg, ESort::Reader* db, const string& param)
 	}
 	
 	cout << "Status: 200 OK\r\n";
-	cout <<	"Content-Type: text/plain\r\n\r\n";
-	cout << "The message has been deleted.\n";
-	cout << "It will disappear from cache when the cache trimmer reaches it.\n";
+	cout <<	"Content-Type: text/html\r\n\r\n";
+	cout << "<html><body>\n";
+	cout << _("The message has been deleted.<br>\n");
+	cout << _("It will disappear from the web when the cronjob next runs.<br>\n");
+	cout << _("Going back two pages in 1 second...\n");
+	cout << "<script language=\"JavaScript\"><!--\n";
+	cout << "  function goBack() { history.go(-2); }\n";
+	cout << "  setTimeout('goBack()', 1000);\n";
+	cout << "//--></script>\n";
+	cout << "</body></html>\n";
 	
 	return 0;
 }
