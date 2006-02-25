@@ -1,4 +1,4 @@
-/*  $Id: Summary.cpp,v 1.4 2006-02-21 19:45:45 terpstra Exp $
+/*  $Id: Summary.cpp,v 1.5 2006-02-25 02:04:25 terpstra Exp $
  *  
  *  Summary.cpp - Helper which can load a message given MessageId
  *  
@@ -202,8 +202,9 @@ ostream& operator << (ostream& o, const Summary& s)
 			o << " address=\"" << xmlEscape << s.author_email() << "\"";
 		if (s.author_name().length() > 0)
 			o << " name=\"" << xmlEscape << s.author_name() << "\"";
-		o << "/></summary>";
+		o << "/>";
 	}
 	
+	o << "</summary>";
 	return o;
 }
