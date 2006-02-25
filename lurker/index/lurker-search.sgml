@@ -58,7 +58,7 @@ lurker-search.1: lurker-search.sgml
       <command>&dhpackage;</command>
       <arg>\-c &lt;config-file&gt;</arg>
       <arg>\-k &lt;keyword&gt;</arg>
-      <arg>\-d \-f \-v \-q</arg>
+      <arg>\-d \-f \-i \-v \-q</arg>
       <arg>&lt;terms&gt;*</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
@@ -95,6 +95,12 @@ lurker-search.1: lurker-search.sgml
         <term><option>\-f</option></term>
         <listitem>
           <para>Don't prompt before deleting</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>\-i</option></term>
+        <listitem>
+          <para>Command line paramers are not search terms, but message IDs.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

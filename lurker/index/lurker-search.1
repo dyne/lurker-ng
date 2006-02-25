@@ -1,62 +1,9 @@
-.\" $Header: /home/terpstra/cvt/lurker/lurker/index/lurker-search.1,v 1.5 2004-10-09 14:48:18 terpstra Exp $
-.\"
-.\"	transcript compatibility for postscript use.
-.\"
-.\"	synopsis:  .P! <file.ps>
-.\"
-.de P!
-.fl
-\!!1 setgray
-.fl
-\\&.\"
-.fl
-\!!0 setgray
-.fl			\" force out current output buffer
-\!!save /psv exch def currentpoint translate 0 0 moveto
-\!!/showpage{}def
-.fl			\" prolog
-.sy sed -e 's/^/!/' \\$1\" bring in postscript file
-\!!psv restore
-.
-.de pF
-.ie     \\*(f1 .ds f1 \\n(.f
-.el .ie \\*(f2 .ds f2 \\n(.f
-.el .ie \\*(f3 .ds f3 \\n(.f
-.el .ie \\*(f4 .ds f4 \\n(.f
-.el .tm ? font overflow
-.ft \\$1
-..
-.de fP
-.ie     !\\*(f4 \{\
-.	ft \\*(f4
-.	ds f4\"
-'	br \}
-.el .ie !\\*(f3 \{\
-.	ft \\*(f3
-.	ds f3\"
-'	br \}
-.el .ie !\\*(f2 \{\
-.	ft \\*(f2
-.	ds f2\"
-'	br \}
-.el .ie !\\*(f1 \{\
-.	ft \\*(f1
-.	ds f1\"
-'	br \}
-.el .tm ? font underflow
-..
-.ds f1\"
-.ds f2\"
-.ds f3\"
-.ds f4\"
-'\" t 
-.ta 8n 16n 24n 32n 40n 48n 56n 64n 72n  
 .TH "LURKER\-SEARCH" "1" 
 .SH "NAME" 
 lurker\-search \(em parses parameters from the config file 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker\-search\fR [\-c <config-file>]  [\-k <keyword>]  [\-d \-f \-v \-q]  [<terms>*]  
+\fBlurker\-search\fR [\-c <config-file>]  [\-k <keyword>]  [\-d \-f \-i \-v \-q]  [<terms>*]  
 .SH "DESCRIPTION" 
 .PP 
 \fBlurker\-search\fR searches a lurker database the same 
@@ -71,6 +18,8 @@ Tag the matching messages with this keyword.
 Delete the messages found by this search 
 .IP "\fB\-f\fP" 10 
 Don't prompt before deleting 
+.IP "\fB\-i\fP" 10 
+Command line paramers are not search terms, but message IDs. 
 .IP "\fB\-v\fP" 10 
 Output message summary information 
 .IP "\fB\-q\fP" 10 
@@ -119,7 +68,7 @@ GNU General Public License for more details.
 .PP 
 You should have received a copy of the GNU General Public License 
 along with this program; if not, write to the Free Software 
-Foundation, Inc., 59 Temple Place - Suite 330, 
+Foundation, Inc., 59 Temple Place \- Suite 330, 
 Boston, MA 02111-1307, USA. 
  
 .SH "BUGS" 
@@ -128,4 +77,4 @@ Before reporting a bug, please confirm that the bug you found is
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
 <lurker\-users@lists.sourceforge.net>. 
-.\" created by instant / docbook-to-man, Sat 28 Aug 2004, 23:30 
+.\" created by instant / docbook-to-man, Sat 25 Feb 2006, 01:35 
