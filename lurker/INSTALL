@@ -76,8 +76,8 @@ Quick start
   Make certain that the CGI can read /usr/local/var/lib/lurker.
   Run 'lurker-index' with umask 002 to ensure it remains readable.
   
-  Make sure that zap.cgi can modify /usr/local/var/lib/lurker.
-  The best way to do this is with a setgid zap.cgi owned by the lurker group.
+  lurker-index and lurker-prune (cronjob) modify /usr/local/var/lib/lurker.
+  Make sure they have write access, but leave it accessible to the CGI.
 
 4 Setup delivery of new mail to lurker-index
   
