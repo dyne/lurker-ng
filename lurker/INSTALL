@@ -81,14 +81,19 @@ Quick start
 
 4 Setup delivery of new mail to lurker-index
   
-  For procmail, 
+  For procmail and a simple one user install:
 	:0 w
 	* ^X-Mailing-List: <debian-japanese@lists.debian.org>.*
 	| lurker-index -l japanese -m
-  ... works for me.
-
-  You may find the command 'sg' (switch group) and procmail's UMASK variable
-  helpful for a shared setup using a 'lurker' group.
+  
+  Or with a lurker group:
+	UMASK=002
+	:0 w
+	* ^X-Mailing-List: <debian-japanese@lists.debian.org>.*
+	| sg lurker -c "lurker-index -l japanese -m"
+  
+  In the this example 'sg' is used to change to the lurker group.
+  The UMASK setting also tells procmail to make the files group writeable.
 
 5 Feed archived mail through lurker-index.
   
