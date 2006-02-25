@@ -95,7 +95,7 @@ function trash(kill)
 		var pass = prompt('Enter the admin password to confirm deletion');
 		if (pass != null)
 		{
-			document.cookie = "lurker-pass="+pass+"; path=/";
+			document.cookie = "lurker-pass="+escape(pass)+"; path=/";
 			self.location = kill;
 		}
 	}
