@@ -1,4 +1,4 @@
-/*  $Id: zap.cpp,v 1.1 2006-02-25 01:05:41 terpstra Exp $
+/*  $Id: zap.cpp,v 1.2 2006-02-25 01:33:18 terpstra Exp $
  *  
  *  zap.cpp - Handle a zap/ command
  *  
@@ -33,9 +33,12 @@
 #include <mimelib/utility.h>
 
 #include "commands.h"
+#include "parse.h"
 #include "Summary.h"
 
 #include <iostream>
+#include <iomanip>
+#include <cstdio>
 
 using std::cout;
 
@@ -99,9 +102,43 @@ int handle_zap(const Config& cfg, ESort::Reader* db, const string& param)
 	find_and_replace(cmd, "%c", cfg.file);
 	find_and_replace(cmd, "%i", id.serialize());
 	
-	cout << "Status: 200 OK\r\n";
-	cout <<	"Content-Type: text/html\r\n\r\n";
+	map<string, string> cookies = getCookies();
+	string pass = cookies["lurker-pass"];
 	
+#if 0
+	cmd += " 2>&1";
+	cout << "Status: 200 OK\r\n";
+	cout <<	"Content-Type: text/plain\r\n\r\n";
 	cout << cmd << "\n";
+	cout << pass << "\n";
+	cout << std::flush;
+#endif
+	
+	FILE* f = popen(cmd.c_str(), "w");
+	if (!f)
+	{
+		cout << "Status: 200 OK\r\n";
+		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout << error(_("Executing delete command failed"), cmd,
+			_("Perhaps the command is in error?"));
+		return 1;
+	}
+	
+	fputs(pass.c_str(), f);
+	if (pclose(f) != 0)
+	{
+		cout << "Status: 200 OK\r\n";
+		cout << "Set-Cookie: lurker-pass=wrong; path=/; expires=Wed, 10 Jan 1990 20:00:00 GMT\r\n";
+		cout <<	"Content-Type: text/html\r\n\r\n";
+		cout << error(_("Delete command failed"), cmd,
+			_("Perhaps you prodived a bad password?"));
+		return 1;
+	}
+	
+	cout << "Status: 200 OK\r\n";
+	cout <<	"Content-Type: text/plain\r\n\r\n";
+	cout << "The message has been deleted.\n";
+	cout << "It will disappear from cache when the cache trimmer reaches it.\n";
+	
 	return 0;
 }
