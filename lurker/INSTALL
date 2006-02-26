@@ -56,7 +56,7 @@ Quick start
   	(default-www-dir [/usr/local/var/www])/*
   		- The lurker content which must be web accessible
   		- The subdirectories "attach, list, mbox, message, mindex,
-  		  search, splash, and thread, zap" must all be writeable by
+  		  search, splash, thread, and zap" must all be writeable by
   		  whatever user executes lurker.cgi
   	(bindir [/usr/local/bin])/lurker-*
   		- Command-line utilities for importing email, cleaning
