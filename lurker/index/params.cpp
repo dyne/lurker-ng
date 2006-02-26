@@ -1,4 +1,4 @@
-/*  $Id: params.cpp,v 1.15 2006-02-24 14:12:04 terpstra Exp $
+/*  $Id: params.cpp,v 1.16 2006-02-26 14:09:07 terpstra Exp $
  *  
  *  params.cpp - Parse the config file for helper scripts
  *  
@@ -38,7 +38,7 @@ void help(const char* name)
 	cerr << "Lurker-params (v" << VERSION << ") parses params from the config file.\n";
 	cerr << "\n";
 	cerr << "Usage: " << name << " [-c <config-file>] [-f <locale>]\n";
-	cerr << "                         [-d -a -n -e -x -m -i -w -h -r -g]\n";
+	cerr << "                         [-d -a -n -e -x -m -i -k -w -h -r]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-f <locale>      Output the fields for this locale\n";
@@ -49,6 +49,7 @@ void help(const char* name)
 	cerr << "\t-x               Output only the xslt processing command\n";
 	cerr << "\t-m               Output only the mime pgp verifying command\n";
 	cerr << "\t-i               Output only the inline pgp verifying command\n";
+	cerr << "\t-k               Output only the message delete command\n";
 	cerr << "\t-w               Output only the web_cache state\n";
 	cerr << "\t-h               Output only the hide_email state\n";
 	cerr << "\t-r               Output only the raw_email state\n";
@@ -71,12 +72,13 @@ int main(int argc, char** argv)
 	bool        xslt          = false;
 	bool        pgpv_mime     = false;
 	bool        pgpv_inline   = false;
+	bool        delete_message= false;
 	bool        web_cache     = false;
 	bool        hide_email    = false;
 	bool        raw_email     = false;
 	string lc;
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:f:danexmiwhrg?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:f:danexmikwhr?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -113,6 +115,10 @@ int main(int argc, char** argv)
 		case 'i':
 			++fields;
 			pgpv_inline = true;
+			break;
+		case 'k':
+			++fields;
+			delete_message = true;
 			break;
 		case 'w':
 			++fields;
@@ -164,6 +170,7 @@ int main(int argc, char** argv)
 	if (!fields || xslt)          cout << cfg.xslt          << "\n";
 	if (!fields || pgpv_mime)     cout << cfg.pgpv_mime     << "\n";
 	if (!fields || pgpv_inline)   cout << cfg.pgpv_inline   << "\n";
+	if (!fields || delete_message)cout << cfg.delete_message<< "\n";
 	if (!fields || web_cache)     cout << (cfg.web_cache?"on":"off") << "\n";
 	if (!fields || hide_email)    cout << (cfg.hide_email?"on":"off") << "\n";
 	if (!fields || raw_email)     cout << (cfg.raw_email?"on":"off") << "\n";
