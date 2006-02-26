@@ -3,17 +3,21 @@
 lurker\-regenerate \(em imports messages into the archive 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker\-regenerate <lurker\-index> <config file>\fR 
+\fBlurker\-regenerate\fR [<bin-dir>]  [<config-file>]  
 .SH "DESCRIPTION" 
 .PP 
 \fBlurker\-regenerate\fR regenerates obsolete 
 lurker databases created by lurker >= 0.6. It generates 
 a new database first, then removes the old one. You will 
 need enough space for 2 times your obsolete database. 
-lurker\-index should be the location of the lurker\-index executable 
-[normally /usr/bin/lurker\-index] and config file should be the  
-location of your config file [normally /etc/lurker/lurker.conf]. 
- 
+The two arguments are optional. 
+.SH "OPTIONS" 
+.IP "\fBbin-dir\fP" 10 
+The directory containing lurker-{index,list,params,prune}. 
+This defaults to where 'make install' placed them. 
+.IP "\fBconfig-file\fP" 10 
+The config-file for which lurker-regenerate rebuilds the  
+database. 
 .SH "SEE ALSO" 
 .PP 
 lurker documentation on http://lurker.sourceforge.net/ and in 
@@ -27,4 +31,4 @@ the terms of the GNU Free Documentation
 License, Version 1.1 or any later version published by the Free 
 Software Foundation; with no Invariant Sections, no Front-Cover 
 Texts and no Back-Cover Texts. 
-.\" created by instant / docbook-to-man, Tue 21 Feb 2006, 14:02 
+.\" created by instant / docbook-to-man, Sun 26 Feb 2006, 14:46 

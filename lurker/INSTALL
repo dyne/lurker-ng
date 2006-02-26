@@ -56,7 +56,7 @@ Quick start
   	(default-www-dir [/usr/local/var/www])/*
   		- The lurker content which must be web accessible
   		- The subdirectories "attach, list, mbox, message, mindex,
-  		  search, splash, and thread" must all be writeable by
+  		  search, splash, and thread, zap" must all be writeable by
   		  whatever user executes lurker.cgi
   	(bindir [/usr/local/bin])/lurker-*
   		- Command-line utilities for importing email, cleaning
@@ -145,7 +145,7 @@ Quick start
 	AddDefaultCharset UTF-8
         RewriteEngine on
         RewriteCond %{REQUEST_FILENAME} !-s
-        RewriteRule ^(attach|list|mbox|message|mindex|search|splash|thread)/[^/]+$ /cgi-lurker/lurker.cgi?%{REQUEST_FILENAME} [L,PT]
+        RewriteRule ^(attach|list|mbox|message|mindex|search|splash|thread|zap)/[^/]+$ /cgi-lurker/lurker.cgi?%{REQUEST_FILENAME} [L,PT]
 
 8 Point your browser at the url where lurker is installed
 

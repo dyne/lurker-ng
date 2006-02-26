@@ -55,7 +55,9 @@ lurker-regenerate.1: lurker-regenerate.sgml
   </refnamediv>
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>&dhpackage; &lt;lurker\-index&gt; &lt;config file&gt;</command>
+      <command>&dhpackage;</command>
+      <arg>&lt;bin-dir&gt;</arg>
+      <arg>&lt;config-file&gt;</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -65,11 +67,27 @@ lurker-regenerate.1: lurker-regenerate.sgml
       lurker databases created by lurker >= 0.6. It generates
       a new database first, then removes the old one. You will
       need enough space for 2 times your obsolete database.
-      lurker\-index should be the location of the lurker\-index executable
-      [normally /usr/bin/lurker\-index] and config file should be the 
-      location of your config file [normally /etc/lurker/lurker.conf].
-      </para>
+      The two arguments are optional.</para>
 
+  </refsect1>
+  <refsect1>
+    <title>OPTIONS</title>
+    <variablelist>
+      <varlistentry>
+        <term><option>bin-dir</option></term>
+        <listitem>
+          <para>The directory containing lurker-{index,list,params,prune}.
+                This defaults to where 'make install' placed them.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>config-file</option></term>
+        <listitem>
+          <para>The config-file for which lurker-regenerate rebuilds the 
+                database.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
   </refsect1>
   <refsect1>
     <title>SEE ALSO</title>

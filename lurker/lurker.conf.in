@@ -148,7 +148,7 @@ dbdir = @LOCALSTATEDIR@/lib/@PACKAGE@
 
 # Lurker needs to be told all of the lists you will be archiving here.
 # New mailing lists may be added at any time and the archive will adjust.
-# If you must remove a list, purge the database (rm -rf) and re-import.
+# If you must remove a list, you will need to run lurker-regenerate.
 # 
 # Mailing lists are collected into groups on the front page and for searching.
 # Each group has an id used for searches and a heading.
