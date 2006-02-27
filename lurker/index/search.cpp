@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.11 2006-02-25 00:32:25 terpstra Exp $
+/*  $Id: search.cpp,v 1.12 2006-02-27 01:53:55 terpstra Exp $
  *  
  *  search.cpp - Search for messages in lurker database (optionally delete)
  *  
@@ -37,7 +37,7 @@ void help(const char* name)
 {
 	cerr << "Lurker-search (v" << VERSION << ") searches for messages in a lurker database.\n";
 	cerr << "\n";
-	cerr << "Usage: " << name << " [-c <config-file>] [-k <keyword>] [ -d -f -v -q ] <terms>*\n";
+	cerr << "Usage: " << name << " [-c <config-file>] [-k <keyword>] [ -d -f -v -i -q ] <terms>*\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-k <keyword>     Add the specified keyword tag to hits\n";

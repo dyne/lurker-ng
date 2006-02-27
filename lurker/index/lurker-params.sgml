@@ -58,7 +58,7 @@ lurker-params.1: lurker-params.sgml
       <command>&dhpackage;</command>
       <arg>\-c &lt;config-file&gt;</arg>
       <arg>\-f &lt;locale&gt;</arg>
-      <arg>\-d \-a \-n \-e \-x \-m \-i \-w \-h \-r \-g</arg>
+      <arg>\-d \-a \-n \-e \-x \-m \-i \-k \-w \-h \-r</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
@@ -128,6 +128,12 @@ lurker-params.1: lurker-params.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><option>\-k</option></term>
+        <listitem>
+          <para>Output only the command for deleting a message</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term><option>\-w</option></term>
         <listitem>
           <para>Output only the web_cache state</para>
@@ -143,12 +149,6 @@ lurker-params.1: lurker-params.sgml
         <term><option>\-r</option></term>
         <listitem>
           <para>Output only the raw_email state</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>\-g</option></term>
-        <listitem>
-          <para>Output only the regroupable state</para>
         </listitem>
       </varlistentry>
     </variablelist>
