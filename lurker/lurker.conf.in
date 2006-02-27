@@ -50,7 +50,8 @@ xslt = xsltproc --nonet -
 # The substitution %c denotes the config file of the database to affect.
 # The substitution %i is the lurker message ID of the target email.
 # The recommended setup is to have a 'lurker' group owning /var/lib/lurker
-# Then for the example command to work, you must set 'passwd -g lurker'.
+# Then for the example command to work, you must set 'gpasswd lurker'.
+# On some systems this is 'passwd -g lurker', there may be other variants.
 
 delete_message = sg lurker -c "@BINDIR@/lurker-search -d -f -q -i -c %c %i"
 
