@@ -6,11 +6,20 @@ lurker\-regenerate \(em imports messages into the archive
 \fBlurker\-regenerate\fR [<bin-dir>]  [<config-file>]  
 .SH "DESCRIPTION" 
 .PP 
-\fBlurker\-regenerate\fR regenerates obsolete 
-lurker databases created by lurker >= 0.6. It generates 
-a new database first, then removes the old one. You will 
-need enough space for 2 times your obsolete database. 
+\fBlurker\-regenerate\fR regenerates a lurker database. 
+It generates a new database first, then replaces the old one with 
+the new one. You will need enough diskspace for a full copy of the 
+database that you want to regenerate. 
 The two arguments are optional. 
+.PP 
+Regenerating the lurker database is the only way to recover 
+disk space from deleted emails. If you delete an entire mailing 
+list, you should regenerate the database. 
+.PP 
+Be aware of the fact that lurker-regenerate supports only databases 
+from lurker >= 0.6. If you want to regenerate databases from earlier 
+versions of lurker, you'll need to rm \-rf the whole database and reimport 
+it manually. 
 .SH "OPTIONS" 
 .IP "\fBbin-dir\fP" 10 
 The directory containing lurker-{index,list,params,prune}. 
@@ -20,15 +29,34 @@ The config-file for which lurker-regenerate rebuilds the
 database. 
 .SH "SEE ALSO" 
 .PP 
-lurker documentation on http://lurker.sourceforge.net/ and in 
-/usr/share/doc/lurker. 
-.SH "AUTHOR" 
+lurker\-index(1), lurker\-list(1), lurker\-params(1), lurker\-prune(1), lurker\-search(1) 
 .PP 
-This manual page was written by Jonas Meurer <jonas@freesources.org> for 
-the \fBDebian\fP system (but may be used by others).  Permission is 
-granted to copy, distribute and/or modify this document under 
-the terms of the GNU Free Documentation 
-License, Version 1.1 or any later version published by the Free 
-Software Foundation; with no Invariant Sections, no Front-Cover 
-Texts and no Back-Cover Texts. 
-.\" created by instant / docbook-to-man, Sun 26 Feb 2006, 14:46 
+lurker documentation on http://lurker.sourceforge.net/ 
+.SH "COPYRIGHT" 
+.PP 
+Copyright (C) 2003-2006: Jonas Meurer <jonas@freesources.org> 
+ 
+.PP 
+This program is free software; you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by 
+the Free Software Foundation; version 2. 
+ 
+.PP 
+This program is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of 
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+GNU General Public License for more details. 
+ 
+.PP 
+You should have received a copy of the GNU General Public License 
+along with this program; if not, write to the Free Software 
+Foundation, Inc., 59 Temple Place \- Suite 330, 
+Boston, MA 02111-1307, USA. 
+ 
+.SH "BUGS" 
+.PP 
+Before reporting a bug, please confirm that the bug you found is 
+still present in the latest official release. If the problem persists, 
+then send mail with instructions describing how to reproduce the bug to 
+<>. 
+.\" created by instant / docbook-to-man, Mon 27 Feb 2006, 16:28 
