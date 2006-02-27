@@ -63,11 +63,20 @@ lurker-regenerate.1: lurker-regenerate.sgml
   <refsect1>
     <title>DESCRIPTION</title>
 
-    <para><command>&dhpackage;</command> regenerates obsolete
-      lurker databases created by lurker >= 0.6. It generates
-      a new database first, then removes the old one. You will
-      need enough space for 2 times your obsolete database.
+    <para><command>&dhpackage;</command> regenerates a lurker database.
+      It generates a new database first, then replaces the old one with
+      the new one. You will need enough diskspace for a full copy of the
+      database that you want to regenerate.
       The two arguments are optional.</para>
+
+    <para>Regenerating the lurker database is the only way to recover
+      disk space from deleted emails. If you delete an entire mailing
+      list, you should regenerate the database.</para>
+
+    <para>Be aware of the fact that lurker-regenerate supports only databases
+      from lurker >= 0.6. If you want to regenerate databases from earlier
+      versions of lurker, you'll need to rm -rf the whole database and reimport
+      it manually.</para>
 
   </refsect1>
   <refsect1>
@@ -92,20 +101,45 @@ lurker-regenerate.1: lurker-regenerate.sgml
   <refsect1>
     <title>SEE ALSO</title>
 
-    <para>lurker documentation on http://lurker.sourceforge.net/ and in
-    /usr/share/doc/lurker.</para>
+    <para>lurker\-index(1), lurker\-list(1), lurker\-params(1), lurker\-prune(1), lurker\-search(1)</para>
+    <para>lurker documentation on http://lurker.sourceforge.net/</para>
 
   </refsect1>
   <refsect1>
-    <title>AUTHOR</title>
+    <title>COPYRIGHT</title>
 
-    <para>This manual page was written by &dhusername; <&dhemail;> for
-      the &debian; system (but may be used by others).  Permission is
-      granted to copy, distribute and/or modify this document under
-      the terms of the <acronym>GNU</acronym> Free Documentation
-      License, Version 1.1 or any later version published by the Free
-      Software Foundation; with no Invariant Sections, no Front-Cover
-      Texts and no Back-Cover Texts.</para>
+    <para>
+    Copyright (C) 2003-2006: &dhusername; &lt;&dhemail;&gt;
+    </para>
+
+    <para>
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; version 2.
+    </para>
+
+    <para>
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    </para>
+
+    <para>
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    </para>
+  </refsect1>
+
+  <refsect1>
+    <title>BUGS</title>
+
+    <para>Before reporting a bug, please confirm that the bug you found is
+    still present in the latest official release. If the problem persists,
+    then send mail with instructions describing how to reproduce the bug to
+    &lt;&support;&gt;.</para>
 
   </refsect1>
 </refentry>
