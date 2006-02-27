@@ -1,62 +1,9 @@
-.\" $Header: /home/terpstra/cvt/lurker/lurker/prune/lurker-prune.1,v 1.9 2004-10-09 14:48:18 terpstra Exp $
-.\"
-.\"	transcript compatibility for postscript use.
-.\"
-.\"	synopsis:  .P! <file.ps>
-.\"
-.de P!
-.fl
-\!!1 setgray
-.fl
-\\&.\"
-.fl
-\!!0 setgray
-.fl			\" force out current output buffer
-\!!save /psv exch def currentpoint translate 0 0 moveto
-\!!/showpage{}def
-.fl			\" prolog
-.sy sed -e 's/^/!/' \\$1\" bring in postscript file
-\!!psv restore
-.
-.de pF
-.ie     \\*(f1 .ds f1 \\n(.f
-.el .ie \\*(f2 .ds f2 \\n(.f
-.el .ie \\*(f3 .ds f3 \\n(.f
-.el .ie \\*(f4 .ds f4 \\n(.f
-.el .tm ? font overflow
-.ft \\$1
-..
-.de fP
-.ie     !\\*(f4 \{\
-.	ft \\*(f4
-.	ds f4\"
-'	br \}
-.el .ie !\\*(f3 \{\
-.	ft \\*(f3
-.	ds f3\"
-'	br \}
-.el .ie !\\*(f2 \{\
-.	ft \\*(f2
-.	ds f2\"
-'	br \}
-.el .ie !\\*(f1 \{\
-.	ft \\*(f1
-.	ds f1\"
-'	br \}
-.el .tm ? font underflow
-..
-.ds f1\"
-.ds f2\"
-.ds f3\"
-.ds f4\"
-'\" t 
-.ta 8n 16n 24n 32n 40n 48n 56n 64n 72n  
 .TH "LURKER\-PRUNE" "1" 
 .SH "NAME" 
 lurker\-prune \(em prunes the web-server cache 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker\-prune\fR [\-c <config-file>]  [\-d <docroot>]  [\-p \-v]  
+\fBlurker\-prune\fR [\-c <config-file>]  [\-d <docroot>]  [\-m <days>]  [\-a <days>]  [\-p \-v]  
 .SH "DESCRIPTION" 
 .PP 
 \fBlurker\-prune\fR prunes obsolete or stale files 
@@ -128,7 +75,7 @@ GNU General Public License for more details.
 .PP 
 You should have received a copy of the GNU General Public License 
 along with this program; if not, write to the Free Software 
-Foundation, Inc., 59 Temple Place - Suite 330, 
+Foundation, Inc., 59 Temple Place \- Suite 330, 
 Boston, MA 02111-1307, USA. 
  
 .SH "BUGS" 
@@ -137,4 +84,4 @@ Before reporting a bug, please confirm that the bug you found is
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
 <lurker\-users@lists.sourceforge.net>. 
-.\" created by instant / docbook-to-man, Sat 28 Aug 2004, 23:30 
+.\" created by instant / docbook-to-man, Mon 27 Feb 2006, 02:55 
