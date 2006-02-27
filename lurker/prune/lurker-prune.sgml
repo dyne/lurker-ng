@@ -59,6 +59,8 @@ lurker-prune.1: lurker-prune.sgml
       <command>&dhpackage;</command>
       <arg>\-c &lt;config-file&gt;</arg>
       <arg>\-d &lt;docroot&gt;</arg>
+      <arg>\-m &lt;days&gt;</arg>
+      <arg>\-a &lt;days&gt;</arg>
       <arg>\-p \-v</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
