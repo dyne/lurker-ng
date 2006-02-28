@@ -64,6 +64,12 @@ h1 a:visited { color:#11F }
 dt a { font-weight: normal }
 .mime-label a { background-color:#DDF; padding:3px; font-weight:bold }
 
+img.inline {
+  max-width: 640;
+  max-height: 480;
+  width: expression(this.width > 640 ? 640 : true); 
+}
+
 img { border: 0; margin: 0; padding: 0; }
 
 h2 img { vertical-align:middle; padding-top:1px }

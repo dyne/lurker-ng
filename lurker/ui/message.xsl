@@ -177,6 +177,27 @@
 <xsl:template mode="body" match="br">
  <xsl:if test="not(ancestor::art)"><br/></xsl:if>
 </xsl:template>
+<xsl:template mode="body" match="mime[@type='image/gif']">
+  <a href="../attach/{@id}@{/message/summary/id}.gif">
+   <img class="inline" src="../attach/{@id}@{/message/summary/id}.gif"/>
+  </a>
+  <br/>
+  <xsl:apply-templates/>
+</xsl:template>
+<xsl:template mode="body" match="mime[@type='image/jpeg']">
+  <a href="../attach/{@id}@{/message/summary/id}.jpg">
+   <img class="inline" src="../attach/{@id}@{/message/summary/id}.jpg"/>
+  </a>
+  <br/>
+  <xsl:apply-templates/>
+</xsl:template>
+<xsl:template mode="body" match="mime[@type='image/png']">
+  <a href="../attach/{@id}@{/message/summary/id}.png">
+    <img class="inline" src="../attach/{@id}@{/message/summary/id}.png"/>
+  </a>
+  <br/>
+  <xsl:apply-templates/>
+</xsl:template>
 <xsl:template match="tab" mode="body">
   <xsl:text>&#160;&#160;&#160;&#160;</xsl:text>
 </xsl:template>
