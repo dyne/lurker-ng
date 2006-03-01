@@ -1,4 +1,4 @@
-/*  $Id: keyword.cpp,v 1.16 2006-03-01 14:19:03 terpstra Exp $
+/*  $Id: keyword.cpp,v 1.17 2006-03-01 16:00:01 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -98,7 +98,7 @@ int main()
 		while ((x = i->find('/', x)) != string::npos)
 			(*i)[x++] = '!';
 		
-		url += uriEncode(*i);
+		url += *i;
 	}
 	url += "." + args["format"];
 	
