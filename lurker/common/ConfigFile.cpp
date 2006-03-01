@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.22 2006-02-25 01:05:40 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.23 2006-03-01 14:02:51 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -999,10 +999,10 @@ ostream& operator << (ostream& o, const Config::SerializeMagic& cm)
 	o << "<server>"
 	  << "<version>" << VERSION << "</version>"
 	  << "<eoa-year>" << year << "</eoa-year>"
-	  << "<doc-url>" << c.docUrl << "</doc-url>"
-	  << "<cgi-url>" << c.cgiUrl << "</cgi-url>"
+	  << "<doc-url>" << xmlEscape << c.docUrl << "</doc-url>"
+	  << "<cgi-url>" << xmlEscape << c.cgiUrl << "</cgi-url>"
 	  << "<command>" << c.command << "</command>"
-	  << "<options>" << c.options << "</options>";
+	  << "<options>" << xmlEscape << c.options << "</options>";
 	
 	if (c.raw_email) o << "<raw-email/>";
 	
