@@ -9,6 +9,13 @@
  to="To"
  cc="CC"
  attachments="Attachments"
+ 
+ delete-message="Delete this message"
+ reply-to-message="Reply to this message"
+ regarding-subject="Re: "
+ quote-open="On "
+ quote-middle=", "
+ quote-close=" wrote:"
 
  tree-context="This message is part of the following thread:"
  full-tree="the complete thread tree sorted by date"

@@ -10,6 +10,13 @@
  cc="Kopio"
  attachments="Liitteet"
 
+ delete-message="Delete this message"
+ reply-to-message="Reply to this message"
+ regarding-subject="Re: "
+ quote-open="On "
+ quote-middle=", "
+ quote-close=" wrote:"
+
  tree-context="Tämä viesti kuuluu seuraavaan säikeeseen:"
  full-tree="Näytä säikeen viestit aikajärjestyksessä"
  mail-appears-in="Viesti on lähetetty seuraaville postituslistoille:"

@@ -10,6 +10,13 @@
  cc="CC"
  attachments="Anexos"
 
+ delete-message="Delete this message"
+ reply-to-message="Reply to this message"
+ regarding-subject="Re: "
+ quote-open="On "
+ quote-middle=", "
+ quote-close=" wrote:"
+
  tree-context="Esta mensagem é parte da seguinte discussão:"
  full-tree="a lista completa das discussões ordenadas por data"
  mail-appears-in="Esta mensagem foi colocada nas seguintes mailing lists:"

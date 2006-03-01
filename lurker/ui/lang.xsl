@@ -22,6 +22,13 @@
 <xsl:variable name="cc" select="document($langfile)/text/@cc"/>
 <xsl:variable name="attachments" select="document($langfile)/text/@attachments"/>
 
+<xsl:variable name="delete-message" select="document($langfile)/text/@delete-message"/>
+<xsl:variable name="reply-to-message" select="document($langfile)/text/@reply-to-message"/>
+<xsl:variable name="regarding-subject" select="document($langfile)/text/@regarding-subject"/>
+<xsl:variable name="quote-open" select="document($langfile)/text/@quote-open"/>
+<xsl:variable name="quote-middle" select="document($langfile)/text/@quote-middle"/>
+<xsl:variable name="quote-close" select="document($langfile)/text/@quote-close"/>
+
 <xsl:variable name="tree-context" select="document($langfile)/text/@tree-context"/>
 <xsl:variable name="full-tree" select="document($langfile)/text/@full-tree"/>
 <xsl:variable name="mail-appears-in" select="document($langfile)/text/@mail-appears-in"/>

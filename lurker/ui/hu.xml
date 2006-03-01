@@ -10,6 +10,13 @@
  cc="CC"
  attachments="Csatolmányok"
 
+ delete-message="Delete this message"
+ reply-to-message="Reply to this message"
+ regarding-subject="Re: "
+ quote-open="On "
+ quote-middle=", "
+ quote-close=" wrote:"
+
  tree-context="Ez az üzenet a következő szál része:"
  full-tree="a teljes szál-fa dátum szerinti rendezve"
  mail-appears-in="Ezt az üzenetet a következő levelezőlistákra küldték el:"

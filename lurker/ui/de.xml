@@ -10,6 +10,13 @@
  cc="CC"
  attachments="Anhänge"
 
+ delete-message="Lösche diese Nachricht"
+ reply-to-message="Antworte diese Nachricht"
+ regarding-subject="AW: "
+ quote-open="Am "
+ quote-middle=", "
+ quote-close=" schrieb:"
+
  tree-context="Diese Nachricht ist Teil des folgenden Threads:"
  full-tree="Der komplette Thread sortiert nach Datum"
  mail-appears-in="Diese Nachricht wurde auf der folgenden Mailing-List gepostet:"

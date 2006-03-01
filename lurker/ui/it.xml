@@ -10,6 +10,13 @@
  cc="CC"
  attachments="Allegati"
 
+ delete-message="Delete this message"
+ reply-to-message="Reply to this message"
+ regarding-subject="Re: "
+ quote-open="On "
+ quote-middle=", "
+ quote-close=" wrote:"
+
  tree-context="Questo messaggio è parte di questo thread:"
  full-tree="il thread completo ordinato per data"
  mail-appears-in="Questo messaggio è stato inviato alle seguenti mailing lists:"

@@ -85,7 +85,9 @@
    <xsl:text>mailto:</xsl:text>
    <xsl:apply-templates select="mbox/list/email[@address]" mode="mailto"/>
    <xsl:text>?Subject=</xsl:text>
-   <xsl:if test="not(contains(summary/subject,'Re:'))">Re: </xsl:if>
+   <xsl:if test="not(contains(summary/subject, $regarding-subject))">
+    <xsl:value-of select="$regarding-subject"/>
+   </xsl:if>
    <xsl:value-of select="summary/subject"/>
    <xsl:if test="not(summary/subject)">your mail</xsl:if>
    <xsl:if test="message-id">
@@ -106,15 +108,17 @@
      <xsl:text>&amp;CC=</xsl:text>
      <xsl:apply-templates select="$restmails" mode="mailto"/>
    </xsl:if>
-   <xsl:text>&amp;Body=On </xsl:text>
+   <xsl:text>&amp;Body=</xsl:text>
+   <xsl:value-of select="$quote-open"/>
    <xsl:apply-templates select="summary" mode="text-date"/>
-   <xsl:text>, </xsl:text>
+   <xsl:value-of select="$quote-middle"/>
    <xsl:apply-templates select="summary/email" mode="email-name"/>
-   <xsl:text> wrote:
+   <xsl:value-of select="$quote-close"/>
+   <xsl:text>
 &gt; </xsl:text>
    <xsl:apply-templates select="mime" mode="mailtobody"/>
   </xsl:attribute>
-  <img src="../imgs/reply.png" alt="R"/>
+  <img src="../imgs/reply.png" alt="{$reply-to-message}" title="{$reply-to-message}"/>
  </xsl:element>
 </xsl:template>
 
@@ -267,7 +271,7 @@
   </xsl:if>
   <td>
    <a href="javascript:trash('{server/doc-url}/zap/{summary/id}.{$ext}');">
-    <img src="../imgs/trash.png"/>
+    <img src="../imgs/trash.png" alt="{$delete-message}" title="{$delete-message}"/>
    </a>
    <xsl:if test="mbox/list/email/@address">
     <br/><xsl:call-template name="reply-link"/>

@@ -10,6 +10,13 @@
  cc="Cc"
  attachments="Adjuntos"
 
+ delete-message="Delete this message"
+ reply-to-message="Reply to this message"
+ regarding-subject="Re: "
+ quote-open="On "
+ quote-middle=", "
+ quote-close=" wrote:"
+
  tree-context="Este mensaje es parte del siguiente hilo:"
  full-tree="el árbol completo de hilos, ordenados por fecha"
  mail-appears-in="Este mensaje se envió a las siguientes listas de correo:"

@@ -10,6 +10,13 @@
  cc="CC"
  attachments="Attachements"
 
+ delete-message="Delete this message"
+ reply-to-message="Reply to this message"
+ regarding-subject="Re: "
+ quote-open="On "
+ quote-middle=", "
+ quote-close=" wrote:"
+
  tree-context="Ce message fait partie du fil suivant :"
  full-tree="l'arborescence du fil complet triée par date"
  mail-appears-in="Ce message a été envoyé sur les listes de diffusion suivantes :"

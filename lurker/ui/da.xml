@@ -10,6 +10,13 @@
  cc="CC"
  attachments="Vedhæftede filer"
 
+ delete-message="Delete this message"
+ reply-to-message="Reply to this message"
+ regarding-subject="Re: "
+ quote-open="On "
+ quote-middle=", "
+ quote-close=" wrote:"
+
  tree-context="Dette indlæg hører under følgende tråd:"
  full-tree="Det komplette tråd-træ sorteret efter dato"
  mail-appears-in="Dette indlæg blev indsendt til følgende postlister:"

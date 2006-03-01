@@ -10,6 +10,13 @@
  cc="CC"
  attachments="Adjunts"
 
+ delete-message="Delete this message"
+ reply-to-message="Reply to this message"
+ regarding-subject="Re: "
+ quote-open="On "
+ quote-middle=", "
+ quote-close=" wrote:"
+
  tree-context="Aquest missatge és part del següent fil:"
  full-tree="l'arbre de fils complet ordenat per data"
  mail-appears-in="Aquest missatge es va enviar a les següents llistes de correu:"

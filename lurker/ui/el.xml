@@ -10,6 +10,13 @@
  cc="Υ/ο"
  attachments="Συνημμένα"
 
+ delete-message="Delete this message"
+ reply-to-message="Reply to this message"
+ regarding-subject="Re: "
+ quote-open="On "
+ quote-middle=", "
+ quote-close=" wrote:"
+
  tree-context="Αυτό το μήνυμα είναι μέρος του ακόλουθου νήματος:"
  full-tree="το πλήρες δέντρο νημάτων ταξινομημένο κατά ημερομηνία"
  mail-appears-in="Το μήνυμα αυτό δημοσιεύτηκε στις ακόλουθες λίστες: "

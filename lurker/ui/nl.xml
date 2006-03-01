@@ -10,6 +10,13 @@
  cc="CC"
  attachments="Bijlagen"
 
+ delete-message="Delete this message"
+ reply-to-message="Reply to this message"
+ regarding-subject="Re: "
+ quote-open="On "
+ quote-middle=", "
+ quote-close=" wrote:"
+
  tree-context="Deze boodschap maakt deel uit van devolgende draad:"
  full-tree="de volledige draad-boom gesorteerd op datum"
  mail-appears-in="Deze boodschap werd naar devolgende mailinglijsten gestuurd:"

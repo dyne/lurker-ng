@@ -10,6 +10,13 @@
  cc="CC"
  attachments="添付ファイル"
 
+ delete-message="Delete this message"
+ reply-to-message="Reply to this message"
+ regarding-subject="Re: "
+ quote-open="On "
+ quote-middle=", "
+ quote-close=" wrote:"
+
  tree-context="このメッセージは次のスレッドの一部です:"
  full-tree="日付によるスレッドの仕分け"
  mail-appears-in="このメッセージは次のメーリングリストに投稿されました:"
