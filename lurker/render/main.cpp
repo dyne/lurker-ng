@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.26 2006-03-01 15:19:29 terpstra Exp $
+/*  $Id: main.cpp,v 1.27 2006-03-01 15:35:45 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -163,12 +163,15 @@ int main(int argc, char** argv)
 	if ((tmp = getenv("SCRIPT_NAME" )) != 0) cgipath  = tmp;
 	// Many CGI 'standards' seem to agree this one exists for https:
 	if ((tmp = getenv("HTTPS"       )) != 0) https    = tmp;
-	if ((tmp = getenv("LURKER_CONFIG"))!= 0) config   = tmp;
 	
 	// CGI guarantees this in case called as an error document
 	if ((tmp = getenv("REDIRECT_URL")) != 0) request  = tmp;
 	// ... however, as we aren't always called that way, try this too:
 	if ((tmp = getenv("REQUEST_URI" )) != 0) request  = tmp;
+	
+	// get an over-ridden config location
+	if ((tmp = getenv("REDIRECT_LURKER_CONFIG")) != 0) config = tmp;
+	if ((tmp = getenv("LURKER_CONFIG"))          != 0) config = tmp;
 	
 	if (request == "")
 		help(_("no request set (REDIRECT_URL and REQUEST_URI both missing)"));
