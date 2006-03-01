@@ -10,12 +10,12 @@
  cc="CC"
  attachments="Vedhæftede filer"
 
- delete-message="Delete this message"
- reply-to-message="Reply to this message"
+ delete-message="Slet denne besked"
+ reply-to-message="Besvar denne besked"
  regarding-subject="Re: "
- quote-open="On "
- quote-middle=", "
- quote-close=" wrote:"
+ quote-open=""
+ quote-middle=", skrev "
+ quote-close=":"
 
  tree-context="Dette indlæg hører under følgende tråd:"
  full-tree="Det komplette tråd-træ sorteret efter dato"
