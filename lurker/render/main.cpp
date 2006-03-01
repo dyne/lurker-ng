@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.23 2006-02-25 01:05:41 terpstra Exp $
+/*  $Id: main.cpp,v 1.24 2006-03-01 13:20:14 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -176,25 +176,12 @@ int main(int argc, char** argv)
 	if ((tmp = getenv("SCRIPT_NAME" )) != 0) cgipath  = tmp;
 	// Many CGI 'standards' seem to agree this one exists for https:
 	if ((tmp = getenv("HTTPS"       )) != 0) https    = tmp;
+	if ((tmp = getenv("LURKER_CONFIG"))!= 0) config   = tmp;
 	
 	// CGI guarantees this in case called as an error document
 	if ((tmp = getenv("REDIRECT_URL")) != 0) request  = tmp;
 	// ... however, as we aren't always called that way, try this too:
 	if ((tmp = getenv("REQUEST_URI" )) != 0) request  = tmp;
-	
-	string::size_type csplit;
-	if ((csplit = document.find('?')) != string::npos)
-	{
-		config = document.substr(csplit+1, string::npos);
-		
-		if (csplit != 0 && document[csplit-1] == '\\')
-			document.resize(csplit-1);
-		else	document.resize(csplit);
-	}
-	
-	// was used for debugging, but apache2 sets command-line options!
-	// if (argc > 1) request = argv[1];
-	// if (argc > 2) config  = argv[2];
 	
 	if (config == "") config = DEFAULT_CONFIG_FILE;
 	
