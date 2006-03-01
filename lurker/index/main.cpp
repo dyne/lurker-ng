@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.48 2006-02-24 14:35:38 terpstra Exp $
+/*  $Id: main.cpp,v 1.49 2006-03-01 14:11:05 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -49,6 +49,7 @@
 #include <zlib.h>
 
 #include "Index.h"
+#include <XmlEscape.h>
 #include <Keys.h>
 
 #include "config.h"
@@ -444,7 +445,7 @@ string::size_type find_message_boundary(const string& str, string::size_type o)
 		// well, we gave it the benefit of the doubt, but ...
 		// this just don't look like a message break
 		
-		cerr << "warning: treating '" << header << "' as part of a message because it does not have an @ in the username or a valid date." << endl;
+		cerr << "warning: treating '" << xmlEscape << header << "' (string is xml escaped) as part of a message because it does not have an @ in the username or a valid date." << endl;
 		// implicitly continue the loop
 	}
 	
