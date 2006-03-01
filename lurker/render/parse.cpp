@@ -1,4 +1,4 @@
-/*  $Id: parse.cpp,v 1.7 2006-02-24 16:37:38 terpstra Exp $
+/*  $Id: parse.cpp,v 1.8 2006-03-01 14:19:04 terpstra Exp $
  *  
  *  parse.cpp - Deal with CGI ugliness
  *  
@@ -131,17 +131,41 @@ map<string, string> getCookies()
 	return out;
 }
 
+string uriEncode(const string& str)
+{
+	string out;
+	static const char tbl[17] = "0123456789ABCDEF";
+	
+	string::size_type b = 0, e;
+	while ((e = str.find_first_not_of(
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789:/.", 
+		b)) != string::npos)
+	{
+		out.append(str, b, e - b);
+		
+		out += '%';
+		out += tbl[(str[e] >> 4) & 0xF];
+		out += tbl[(str[e] >> 0) & 0xF];
+		
+		b = e+1;
+	}
+	
+	out.append(str, b, str.length() - b);
+	
+	return out;
+}
+
 int redirectUrl(const string& url)
 {
 	cout << "Status: 303 Moved Permanently\r\n"
-	     << "Location: " << url << "\r\n"
+	     << "Location: " << uriEncode(url) << "\r\n"
 	     << "Content-type: text/html\r\n\r\n"
 	     << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
 	     << "<html><head>\r\n"
 	     << "<title>301 Moved Permanently</title>\r\n"
 	     << "</head><body>\r\n"
 	     << "<h1>Moved Permanently</h1>\r\n"
-	     << "The document has moved <a href=\"" << url << "\">here</a>.\r\n"
+	     << "The document has moved <a href=\"" << uriEncode(url) << "\">here</a>.\r\n"
 	     << "<p><hr>\r\n"
 	     << "</body></html>\r\n";
 	

@@ -1,4 +1,4 @@
-/*  $Id: keyword.cpp,v 1.15 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: keyword.cpp,v 1.16 2006-03-01 14:19:03 terpstra Exp $
  *  
  *  jump.cpp - Jump to a given date offset
  *  
@@ -48,37 +48,6 @@ int push_key(const char* keyword, void* arg)
 	return 0;
 }
 
-string uri_encode(const string& str)
-{
-	string out;
-	static const char tbl[17] = "0123456789ABCDEF";
-	
-	string::size_type b = 0, e;
-	while ((e = str.find_first_not_of(
-		"abcdefghijklmnopqrstuvwxyz0123456789:.", 
-		b)) != string::npos)
-	{
-		out.append(str, b, e - b);
-		
-		if (str[e] == '/')
-		{	// filenames can't have '/'
-			out += "%21"; // hex for !
-		}
-		else
-		{
-			out += '%';
-			out += tbl[(str[e] >> 4) & 0xF];
-			out += tbl[(str[e] >> 0) & 0xF];
-		}
-		
-		b = e+1;
-	}
-	
-	out.append(str, b, str.length() - b);
-	
-	return out;
-}
-
 int main()
 {
 	map<string, string> args = getParams();
@@ -123,7 +92,13 @@ int main()
 	for (i = keys.begin(); i != keys.end(); ++i)
 	{
 		if (i != keys.begin()) url += ",";
-		url += uri_encode(*i);
+		
+		// Escape '/' to '!' in url to avoid path problems
+		string::size_type x = 0;
+		while ((x = i->find('/', x)) != string::npos)
+			(*i)[x++] = '!';
+		
+		url += uriEncode(*i);
 	}
 	url += "." + args["format"];
 	

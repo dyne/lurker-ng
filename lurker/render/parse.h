@@ -1,4 +1,4 @@
-/*  $Id: parse.h,v 1.4 2006-02-24 16:40:48 terpstra Exp $
+/*  $Id: parse.h,v 1.5 2006-03-01 14:19:04 terpstra Exp $
  *  
  *  parse.h - Deal with CGI ugliness
  *  
@@ -35,6 +35,7 @@ string decipherHalf(const string& str);
 map<string, string> getParams();
 map<string, string> getCookies();
 
+string uriEncode(const string& str);
 int redirectUrl(const string& url);
 
 #endif
