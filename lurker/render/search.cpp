@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.23 2006-03-01 14:55:45 terpstra Exp $
+/*  $Id: search.cpp,v 1.24 2006-03-01 15:19:29 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -83,8 +83,7 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 	++o;
 	
 	MessageId id(req.options.c_str());
-	string raw = req.options.substr(o, string::npos);
-	string keys(raw);
+	string keys = req.options.substr(o, string::npos);
 	// we need to translate '!' to '/'
 	for (string::size_type es = 0; es < keys.length(); ++es)
 		if (keys[es] == '!') keys[es] = '/';
@@ -136,11 +135,7 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 	for (i = left; i > 0; --i)  queue.push_back(backward[i-1]);
 	for (i = 0; i < right; ++i) queue.push_back(forward[i]);
 	
-	Cache cache(cfg, "search", 
-		param.substr(0, o) + 
-		raw + "." +	// this is transformed so the webserver can eat it
-		req.language + "." +
-		req.ext, req.ext);
+	Cache cache(cfg, "search", param, req.ext);
 	
 	cache.o << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<?xml-stylesheet type=\"text/xsl\" href=\"../ui/search.xsl\"?>\n"

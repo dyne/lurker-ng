@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.25 2006-03-01 14:55:45 terpstra Exp $
+/*  $Id: main.cpp,v 1.26 2006-03-01 15:19:29 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -128,6 +128,15 @@ Request parse_request(const string& param)
 		out.ext = param.substr(dot1+1, string::npos);
 	}
 	
+	if (out.ext.length() < 3 || out.ext.length() > 4)
+		error(_("Bogus extension"), out.ext,
+		      _("The extension is not 3 or 4 characters long."));
+	
+	for (string::size_type i = 0; i < out.ext.length(); ++i)
+		if (out.ext[i] < 'a' || out.ext[i] > 'z')
+			error(_("Bogus extension"), out.ext,
+			      _("Not simple lower-case letters."));
+	
 	if (!lstring::locale_normalize(out.language))
 		error(_("Bogus locale"), out.language,
 		      _("The specified locale is not valid."));
@@ -161,12 +170,11 @@ int main(int argc, char** argv)
 	// ... however, as we aren't always called that way, try this too:
 	if ((tmp = getenv("REQUEST_URI" )) != 0) request  = tmp;
 	
-	if (config == "") config = DEFAULT_CONFIG_FILE;
-	
 	if (request == "")
 		help(_("no request set (REDIRECT_URL and REQUEST_URI both missing)"));
 	
 	Config cfg;
+	if (config == "") config = DEFAULT_CONFIG_FILE;
 	if (cfg.load(config.c_str()) != 0)
 		 error(_("Cannot open config file"), "Config::load",
 		       cfg.getError());
