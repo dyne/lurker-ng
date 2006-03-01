@@ -135,6 +135,9 @@ Quick start
 	AddType text/xml .xml
 	AddType message/rfc822 .rfc822
 	AddDefaultCharset UTF-8
+	
+	# Optionally over-rule lurker's default config (needs mod_env)
+	# SetEnv LURKER_CONFIG /path/to/lurker.conf
 	ErrorDocument 404 /cgi-bin/lurker.cgi?/usr/local/var/www
    
    If you can use a Rewite Engine (avoids 404 log messages), this is best:
@@ -145,7 +148,8 @@ Quick start
 	AddDefaultCharset UTF-8
         RewriteEngine on
         RewriteCond %{REQUEST_FILENAME} !-s
-        RewriteRule ^(attach|list|mbox|message|mindex|search|splash|thread|zap)/[^/]+$ /cgi-lurker/lurker.cgi?%{REQUEST_FILENAME} [L,PT]
+	# The E=LURKER_CONFIG is optional
+        RewriteRule ^(attach|list|mbox|message|mindex|search|splash|thread|zap)/[^/]+$ /cgi-lurker/lurker.cgi?%{REQUEST_FILENAME} [L,PT,E=LURKER_CONFIG:/path/to/lurker.conf]
 
 8 Point your browser at the url where lurker is installed
 

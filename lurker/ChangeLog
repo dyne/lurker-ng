@@ -1,3 +1,9 @@
+v2.1:
+	lurker.cgi now reads config file information from the environment
+	  variable LURKER_CONFIG as opposed to the redirected query
+	  string. The old version was vulnerable to reading a named file.
+	Updated the apache.conf and install docs to demonstrate this
+
 v2.0:
 	Zap XOPEN_SOURCE/GNU_SOURCE defines for broken systems (osx, freebsd)
 	Minor documentation fix in lurker.conf about list id limit (128)
