@@ -1,4 +1,4 @@
-/*  $Id: parse.cpp,v 1.9 2006-03-01 16:00:01 terpstra Exp $
+/*  $Id: parse.cpp,v 1.10 2006-03-01 18:25:22 terpstra Exp $
  *  
  *  parse.cpp - Deal with CGI ugliness
  *  
@@ -138,7 +138,7 @@ string uriEncode(const string& str)
 	
 	string::size_type b = 0, e;
 	while ((e = str.find_first_not_of(
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789:/.,@-!", 
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~:/.,@-!", 
 		b)) != string::npos)
 	{
 		out.append(str, b, e - b);

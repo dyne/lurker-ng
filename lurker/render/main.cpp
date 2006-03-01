@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.27 2006-03-01 15:35:45 terpstra Exp $
+/*  $Id: main.cpp,v 1.28 2006-03-01 18:25:22 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -217,6 +217,7 @@ int main(int argc, char** argv)
 		        "by everyone since you are serving them on a website "
 		        "anyways."));
 	
+	request = decipherHalf(request);
 	vector<string> tokens;
 	tokenize(request, tokens, "/");
 	if (tokens.size() < 2)
@@ -224,7 +225,7 @@ int main(int argc, char** argv)
 		      _("The request does not have at least two directory "
 		        "components. It must be like ..../command/param.xml"));
 	
-	string param   = decipherHalf(tokens[tokens.size()-1]);
+	string param   = tokens[tokens.size()-1];
 	string command = tokens[tokens.size()-2];
 	string server;
 	
