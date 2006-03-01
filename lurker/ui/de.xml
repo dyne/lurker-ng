@@ -10,8 +10,8 @@
  cc="CC"
  attachments="Anhänge"
 
- delete-message="Lösche diese Nachricht"
- reply-to-message="Antworte diese Nachricht"
+ delete-message="Nachricht löschen"
+ reply-to-message="Nachricht beantworten"
  regarding-subject="AW: "
  quote-open="Am "
  quote-middle=", "
