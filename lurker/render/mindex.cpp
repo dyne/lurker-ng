@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.18 2006-02-21 19:45:46 terpstra Exp $
+/*  $Id: mindex.cpp,v 1.19 2006-03-01 14:55:45 terpstra Exp $
  *  
  *  mindex.cpp - Handle a mindex/ command
  *  
@@ -37,18 +37,6 @@
 
 using namespace std;
 
-int mindex_format_error(const string& param)
-{
-	cout << "Status: 200 OK\r\n";
-	cout <<	"Content-Type: text/html\r\n\r\n";
-	cout << error(_("Bad request"), param,
-		_("The given parameter was not of the correct format. "
-		  "A mindex request must be formatted like: "
-		  "mindex/list@YYYYMMDD.HHMMSS.hashcode.xml where list "
-		  "is the id of an indexed mailing list."));
-	return 1;
-}
-
 int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 {
 	Request req = parse_request(param);
@@ -58,7 +46,11 @@ int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 	if (o == string::npos || 
 	    !MessageId::is_full(req.options.c_str()+o+1) ||
 	    req.options.length() != o+1+MessageId::full_len)
-		return mindex_format_error(param);
+	    	error(_("Bad request"), param,
+	    	      _("The given parameter was not of the correct format. "
+	    	        "A mindex request must be formatted like: "
+	    	        "mindex/list@YYYYMMDD.HHMMSS.hashcode.xml where list "
+	    	        "is the id of an indexed mailing list."));
 	
 	MessageId id(req.options.c_str()+o+1);
 	string listn(req.options, 0, o);
@@ -67,15 +59,10 @@ int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	// Identical error message if it's missing or not allowed (security)
 	if (li == cfg.lists.end() || !li->second.allowed)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("No such list"), listn,
-			_("The specified mailing list is not available in this "
-			  "archive. Perhaps you misspelled it or went to the "
-			  "wrong server?"));
-		return 1;
-	}
+		error(_("No such list"), listn,
+		      _("The specified mailing list is not available in this "
+		        "archive. Perhaps you misspelled it or went to the "
+		        "wrong server?"));
 	
 	const List& list = li->second;
 	
@@ -93,15 +80,10 @@ int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	if (!forwardk .pull(35, forward ) ||
 	    !backwardk.pull(35, backward))
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database mindex seek failure"), "pull",
-			_("Something internal to the database failed. "
-			  "Please contact the lurker user mailing list for "
-			  "furth assistence."));
-		return 1;
-	}
+		error(_("Database mindex seek failure"), "pull",
+		      _("Something internal to the database failed. "
+		        "Please contact the lurker user mailing list for "
+		        "furth assistence."));
 	
 	vector<Summary>::size_type left, right, i;
 	if (forward.size() + backward.size() < 20)
@@ -135,15 +117,10 @@ int handle_mindex(const Config& cfg, ESort::Reader* db, const string& param)
 			break;
 	
 	if (ok != "")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database mindex pull failure"), ok,
-			_("Something internal to the database failed. "
-			  "Please contact the lurker user mailing list for "
-			  "further assistence."));
-		return 1;
-	}
+		error(_("Database mindex pull failure"), ok,
+		      _("Something internal to the database failed. "
+		        "Please contact the lurker user mailing list for "
+		        "further assistence."));
 	
 	Cache cache(cfg, "mindex", param, req.ext);
 	

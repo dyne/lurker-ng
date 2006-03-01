@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.14 2006-02-21 21:28:31 terpstra Exp $
+/*  $Id: attach.cpp,v 1.15 2006-03-01 14:55:44 terpstra Exp $
  *  
  *  attach.cpp - Handle a attach/ command
  *  
@@ -38,28 +38,6 @@
 #include <iostream>
 
 using std::cout;
-
-int attach_format_error(const string& param)
-{
-	cout << "Status: 200 OK\r\n";
-	cout <<	"Content-Type: text/html\r\n\r\n";
-	cout << error(_("Bad request"), param,
-		_("The given parameter was not of the correct format. "
-		  "An attach request must be formatted like: "
-		  "attach/id@YYYYMMDD.HHMMSS.hashcode.xml where id "
-		  "is the number of the attachment."));
-	return 1;
-}
-
-int attach_no_permission(const string& param)
-{
-	cout << "Status: 200 OK\r\n";
-	cout <<	"Content-Type: text/html\r\n\r\n";
-	cout << error(_("Permission Denied"), param,
-		_("Access to mail attachments has been disabled. "
-		  "Contact the site administrator if this is a problem."));
-	return 1;
-}
 
 DwEntity& attach_find(DwEntity& e, long& x)
 {
@@ -111,11 +89,17 @@ int handle_attach(const Config& cfg, ESort::Reader* db, const string& param)
 	long n = atol(param.c_str());
 	
 	if (!cfg.raw_email)
-		return attach_no_permission(param);
+		error(_("Permission Denied"), param,
+		      _("Access to mail attachments has been disabled. "
+		        "Contact the site administrator if this is a problem."));
 	
 	if (o == string::npos || n <= 0 || 
 	    !MessageId::is_full(param.c_str()+o+1))
-		return attach_format_error(param);
+		error(_("Bad request"), param,
+		      _("The given parameter was not of the correct format. "
+		        "An attach request must be formatted like: "
+		        "attach/id@YYYYMMDD.HHMMSS.hashcode.xml where id "
+		        "is the number of the attachment."));
 	
 	MessageId id(param.c_str()+o+1);
 	string ok;
@@ -125,32 +109,19 @@ int handle_attach(const Config& cfg, ESort::Reader* db, const string& param)
 	if ((ok = source.load(db, cfg)) != "" || !source.allowed())
 	{
 		if (ok == "") ok = "not in a mailbox"; // fake
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database attach source pull failure"), ok,
-			_("The specified message does not exist."));
-		return 1;
+		error(_("Database attach source pull failure"), ok,
+		      _("The specified message does not exist."));
 	}
 	
 	if (source.deleted())
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database attach source pull failure"), "not found",
-			_("The specified message has been deleted."));
-		return 1;
-	}
+		error(_("Database attach source pull failure"), "not found",
+		      _("The specified message has been deleted."));
 	
 	DwMessage message;
 	if ((ok = source.message(cfg.dbdir, message)) != "")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("MBox read failure"), ok,
-			_("Unable to open message in the mailbox. "
-			  "Perhaps it has been deleted or moved?"));
-		return 1;
-	}
+		error(_("MBox read failure"), ok,
+		      _("Unable to open message in the mailbox. "
+		        "Perhaps it has been deleted or moved?"));
 	
 	DwEntity& e = attach_find(message, n);
 	
@@ -161,10 +132,8 @@ int handle_attach(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	// if (e.hasHeaders() &&
 	if (e.Headers().HasContentType())
-	{
 		cout << unfold_header(
 			e.Headers().ContentType().AsString().c_str());
-	}
 	else	cout <<	"text/plain";
 	cout << "\r\n";
 	

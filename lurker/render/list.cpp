@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.15 2006-02-21 19:45:46 terpstra Exp $
+/*  $Id: list.cpp,v 1.16 2006-03-01 14:55:45 terpstra Exp $
  *  
  *  list.cpp - Handle a list/ command
  *  
@@ -46,29 +46,6 @@ using namespace std;
 #define NUM_TOPICS	20
 #define NUM_DAYS	14
 
-int list_format_error(const string& param)
-{
-	cout << "Status: 200 OK\r\n";
-	cout <<	"Content-Type: text/html\r\n\r\n";
-	cout << error(_("Bad request"), param,
-		_("The given parameter was not of the correct format. "
-		  "A list request must be formatted like: "
-		  "list/listid.xml where listid "
-		  "is the id of an indexed mailing list."));
-	return 1;
-}
-
-int list_load_error(const string& ok)
-{
-	cout << "Status: 200 OK\r\n";
-	cout <<	"Content-Type: text/html\r\n\r\n";
-	cout << error(_("Database list pull failure"), ok,
-		_("Something internal to the database failed. "
-		  "Please contact the lurker user mailing list for "
-		  "further assistence."));
-	return 1;
-}
-
 // nested types break g++ 2.95
 struct NewTopic
 {
@@ -101,7 +78,11 @@ int load_topic(const Config& cfg, ESort::Reader* db, const string& hash, NewTopi
 		{
 			Summary sum(id);
 			string ok = sum.load(db, cfg);
-			if (ok != "") return list_load_error(ok);
+			if (ok != "") 
+				error(_("Database list pull failure"), ok,
+				      _("Something internal to the database failed. "
+				        "Please contact the lurker user mailing list for "
+				        "further assistence."));
 			if (!sum.deleted()) t.newest = sum;
 		}
 		
@@ -126,15 +107,10 @@ int handle_list(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	// Identical error message if it's missing or not allowed (security)
 	if (li == cfg.lists.end() || !li->second.allowed)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("No such list"), req.options,
-			_("The specified mailing list is not available in this "
-			  "archive. Perhaps you misspelled it or went to the "
-			  "wrong server?"));
-		return 1;
-	}
+		error(_("No such list"), req.options,
+		      _("The specified mailing list is not available in this "
+		        "archive. Perhaps you misspelled it or went to the "
+		        "wrong server?"));
 	
 	const List& list = li->second;
 	

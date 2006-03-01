@@ -1,4 +1,4 @@
-/*  $Id: zap.cpp,v 1.3 2006-02-25 02:04:44 terpstra Exp $
+/*  $Id: zap.cpp,v 1.4 2006-03-01 14:55:45 terpstra Exp $
  *  
  *  zap.cpp - Handle a zap/ command
  *  
@@ -54,25 +54,15 @@ int handle_zap(const Config& cfg, ESort::Reader* db, const string& param)
 	Request req = parse_request(param);
 	
 	if (!MessageId::is_full(req.options.c_str()))
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Bad request"), param,
-			_("The given parameter was not of the correct format. "
-			  "A zap request must be formatted like: "
-			  "zap/YYYYMMDD.HHMMSS.hashcode.lc.xml"));
-		return 1;
-	}
+		error(_("Bad request"), param,
+		      _("The given parameter was not of the correct format. "
+		        "A zap request must be formatted like: "
+		        "zap/YYYYMMDD.HHMMSS.hashcode.lc.xml"));
 	
 	if (cfg.delete_message == "")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Permission Denied"), param,
-			_("Deleting email (option delete_message) has been disabled. "
-			  "Contact the site administrator if this is a problem."));
-		return 1;
-	}
+		error(_("Permission Denied"), param,
+		      _("Deleting email (option delete_message) has been disabled. "
+		        "Contact the site administrator if this is a problem."));
 	
 	MessageId id(req.options.c_str());
 	string ok;
@@ -82,21 +72,13 @@ int handle_zap(const Config& cfg, ESort::Reader* db, const string& param)
 	if ((ok = source.load(db, cfg)) != "" || !source.allowed())
 	{
 		if (ok == "") ok = "not in a mailbox"; // fake
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database zap source pull failure"), ok,
-			_("The specified message does not exist."));
-		return 1;
+		error(_("Database zap source pull failure"), ok,
+		      _("The specified message does not exist."));
 	}
 	
 	if (source.deleted())
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database zap source pull failure"), "not found",
-			_("The specified message has been deleted."));
-		return 1;
-	}
+		error(_("Database zap source pull failure"), "not found",
+		      _("The specified message has been deleted."));
 	
 	string cmd = cfg.delete_message;
 	find_and_replace(cmd, "%c", cfg.file);
@@ -116,24 +98,14 @@ int handle_zap(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	FILE* f = popen(cmd.c_str(), "w");
 	if (!f)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Executing delete command failed"), cmd,
-			_("Perhaps the command is in error?"));
-		return 1;
-	}
+		error(_("Executing delete command failed"), cmd,
+		      _("Perhaps the command is in error?"));
 	
 	fputs(pass.c_str(), f);
 	if (pclose(f) != 0)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout << "Set-Cookie: lurker-pass=wrong; path=/; expires=Wed, 10 Jan 1990 20:00:00 GMT\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Delete command failed"), cmd,
-			_("Perhaps you prodived a bad password?"));
-		return 1;
-	}
+		error(_("Delete command failed"), cmd,
+		      _("Perhaps you prodived a bad password?"),
+		      "Set-Cookie: lurker-pass=wrong; path=/; expires=Wed, 10 Jan 1990 20:00:00 GMT\r\n");
 	
 	cout << "Status: 200 OK\r\n";
 	cout <<	"Content-Type: text/html\r\n\r\n";

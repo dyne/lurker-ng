@@ -1,4 +1,4 @@
-/*  $Id: splash.cpp,v 1.16 2006-02-21 21:34:02 terpstra Exp $
+/*  $Id: splash.cpp,v 1.17 2006-03-01 14:55:45 terpstra Exp $
  *  
  *  splash.cpp - Handle a splash/ command
  *  
@@ -33,15 +33,10 @@ int handle_splash(const Config& cfg, ESort::Reader* db, const string& param)
 	cfg.options = req.options;
 	
 	if (req.options != "index")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Bad request"), param,
-			_("The given parameter was not of the correct format. "
-			  "A splash request must be formatted like: "
-			  "splash/index.lc.xml"));
-		return 1;
-	}
+		error(_("Bad request"), param,
+		      _("The given parameter was not of the correct format. "
+		        "A splash request must be formatted like: "
+		        "splash/index.lc.xml"));
 	
 	Cache cache(cfg, "splash", param, req.ext);
 	

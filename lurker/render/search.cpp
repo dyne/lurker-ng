@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.22 2006-02-21 21:28:31 terpstra Exp $
+/*  $Id: search.cpp,v 1.23 2006-03-01 14:55:45 terpstra Exp $
  *  
  *  sindex.cpp - Handle a search/ command
  *  
@@ -39,17 +39,6 @@
 #include "Cache.h"
 #include "ConfigFile.h"
 
-int search_format_error(const string& param)
-{
-	cout << "Status: 200 OK\r\n";
-	cout <<	"Content-Type: text/html\r\n\r\n";
-	cout << error(_("Bad request"), param,
-		_("The given parameter was not of the correct format. "
-		  "A searc request must be formatted like: "
-		  "search/YYYYMMDD.HHMMSS.hashcode@word,word,word.xml"));
-	return 1;
-}
-
 int pull_allowed(const Config& cfg, ESort::Reader* db, vector<Summary>& v, Search& s)
 {
 	string ok;
@@ -59,26 +48,17 @@ int pull_allowed(const Config& cfg, ESort::Reader* db, vector<Summary>& v, Searc
 	{
 		i = v.size();
 		if (!s.pull(1, v))
-		{
-			cout << "Status: 200 OK\r\n";
-			cout <<	"Content-Type: text/html\r\n\r\n";
-			cout << error(_("Database search seek failure"), strerror(errno),
-				_("Something internal to the database failed. "
-				  "Please contact the lurker user mailing list for "
-				  "furth assistence."));
-			return 1;
-		}
+			error(_("Database search seek failure"), strerror(errno),
+			      _("Something internal to the database failed. "
+			        "Please contact the lurker user mailing list for "
+			        "furth assistence."));
+		
 		if (i == v.size()) break; // no more data
 		if ((ok = v[i].load(db, cfg)) != "")
-		{
-			cout << "Status: 200 OK\r\n";
-			cout <<	"Content-Type: text/html\r\n\r\n";
-			cout << error(_("Database search pull failure"), ok,
-				_("Something internal to the database failed. "
-				  "Please contact the lurker user mailing list for "
-				  "further assistence."));
-			return 1;
-		}
+			error(_("Database search pull failure"), ok,
+			      _("Something internal to the database failed. "
+			        "Please contact the lurker user mailing list for "
+			        "further assistence."));
 		
 		// trim forbidden fruit
 		if (!v[i].allowed() || v[i].deleted()) v.resize(i);
@@ -92,11 +72,12 @@ int handle_search(const Config& cfg, ESort::Reader* db, const string& param)
 	cfg.options = req.options;
 	
 	string::size_type o = req.options.find('@');
-	if (o == string::npos || o != MessageId::full_len)
-		return search_format_error(param);
-	
-	if (!MessageId::is_full(req.options.c_str()))
-		return search_format_error(param);
+	if (o == string::npos || o != MessageId::full_len ||
+	    !MessageId::is_full(req.options.c_str()))
+		error(_("Bad request"), param,
+		      _("The given parameter was not of the correct format. "
+		        "A searc request must be formatted like: "
+		        "search/YYYYMMDD.HHMMSS.hashcode@word,word,word.xml"));
 	
 	vector<string> tokens;
 	++o;

@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.15 2006-02-21 21:28:31 terpstra Exp $
+/*  $Id: thread.cpp,v 1.16 2006-03-01 14:55:45 terpstra Exp $
  *  
  *  thread.cpp - Handle a thread/ command
  *  
@@ -37,15 +37,10 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	if (!MessageId::is_full(req.options.c_str()) ||
 	    req.options.length() != MessageId::full_len)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Bad request"), param,
-			_("The given parameter was not of the correct format. "
-			  "A thread request must be formatted like: "
-			  "thread/YYYYMMDD.HHMMSS.hashcode.xml"));
-		return 1;
-	}
+		error(_("Bad request"), param,
+		      _("The given parameter was not of the correct format. "
+		        "A thread request must be formatted like: "
+		         "thread/YYYYMMDD.HHMMSS.hashcode.xml"));
 	
 	MessageId id(req.options.c_str());
 	string ok;
@@ -55,35 +50,22 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 	if ((ok = source.load(db, cfg)) != "" || !source.allowed())
 	{
 		if (ok == "") ok = "not in a mailbox"; // fake
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database thread source pull failure"), ok,
-			_("The specified message does not exist."));
-		return 1;
+		error(_("Database thread source pull failure"), ok,
+		      _("The specified message does not exist."));
 	}
 	
 	if (source.deleted())
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database thread source pull failure"), "not found",
-			_("The specified message has been deleted."));
-		return 1;
-	}
+		error(_("Database thread source pull failure"), "not found",
+		      _("The specified message has been deleted."));
 	
 	Threading::Key spot;
 	Threading thread;
 	if ((ok = thread.load(db, source, spot)) != "" ||
 	    (ok = thread.draw_tree(db)) != "")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database thread tree load failure"), ok,
-			_("Something internal to the database failed. "
-			  "Please contact the lurker user mailing list for "
-			  "further assistence."));
-		return 1;
-	}
+		error(_("Database thread tree load failure"), ok,
+		      _("Something internal to the database failed. "
+		        "Please contact the lurker user mailing list for "
+		        "further assistence."));
 	
 	set<string> lists;
 	for (Threading::Key j = 0; j < thread.size(); ++j)
@@ -99,15 +81,10 @@ int handle_thread(const Config& cfg, ESort::Reader* db, const string& param)
 	}
 	
 	if (ok != "")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database thread sumary load failure"), ok,
-			_("Something internal to the database failed. "
-			  "Please contact the lurker user mailing list for "
-			  "further assistence."));
-		return 1;
-	}
+		error(_("Database thread sumary load failure"), ok,
+		      _("Something internal to the database failed. "
+		        "Please contact the lurker user mailing list for "
+		        "further assistence."));
 	
 	Cache cache(cfg, "thread", param, req.ext);
 	

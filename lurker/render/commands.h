@@ -1,4 +1,4 @@
-/*  $Id: commands.h,v 1.6 2006-02-25 01:05:41 terpstra Exp $
+/*  $Id: commands.h,v 1.7 2006-03-01 14:55:44 terpstra Exp $
  *  
  *  commands.h - All the commands we support
  *  
@@ -51,10 +51,11 @@ int handle_list   (const Config& c, ESort::Reader* r, const string& param);
 int handle_zap    (const Config& c, ESort::Reader* r, const string& param);
 
 string redirect(const string& url);
-string error(
+void error(
 	const string& main, 
 	const string& sub, 
-	const string& suggest);
+	const string& suggest,
+	const string& header = "");
 
 using std::vector;
 

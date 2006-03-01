@@ -1,4 +1,4 @@
-/*  $Id: Cache.cpp,v 1.13 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id: Cache.cpp,v 1.14 2006-03-01 14:55:42 terpstra Exp $
  *  
  *  Cache.h - Helper which transforms xml -> html and caches files
  *  
@@ -107,34 +107,23 @@ Cache::Cache(const Config& cfg, const string& command, const string& parameter, 
  : bug(new streambug), o(bug)
 {
 	if (chdir(command.c_str()) != 0)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Entering command dir"), command + ":" + strerror(errno),
-			_("Perhaps the directory does not exist to which "
-			  "the cache file is being written."));
-		exit(1);
-	}
+		error(_("Entering command dir"), command + ":" + strerror(errno),
+		      _("Perhaps the directory does not exist to which "
+		        "the cache file is being written."));
 	
 	if (cfg.web_cache)
 	{
 		cache = fopen(parameter.c_str(), "w+");
 		if (!cache)
-		{
-			cout << "Status: 200 OK\r\n";
-			cout <<	"Content-Type: text/html\r\n\r\n";
-			cout << error(_("Creating cache file"), parameter + ":" + strerror(errno),
-				_("Perhaps the user which runs lurker.cgi does not have write "
-				  "permissions to this directory."));
-			exit(1);
-		}
+			error(_("Creating cache file"), parameter + ":" + strerror(errno),
+			      _("Perhaps the user which runs lurker.cgi does not have write "
+			        "permissions to this directory."));
 	}
 	else
 	{
 		cache = stdout;
 	}
 	
-	cout << "Status: 200 OK\r\n";
 	if (ext == "html")
 	{
 		char buf[10] = "";
@@ -143,40 +132,38 @@ Cache::Cache(const Config& cfg, const string& command, const string& parameter, 
 		
 		output = popen(command.c_str(), "w");
 		if (!output)
-		{
-			cout <<	"Content-Type: text/html\r\n\r\n";
-			cout << error(_("Opening xslt pipeline"), strerror(errno),
-				_("The specified xslt pipeline in your config "
-				  "file, entry xslt, could not be opened. "
-				  "Please ensure that the command correctly "
-				  "streams xml into html for you."));
-			exit(1);
-		}
+			error(_("Opening xslt pipeline"), strerror(errno),
+			      _("The specified xslt pipeline in your config "
+			        "file, entry xslt, could not be opened. "
+			        "Please ensure that the command correctly "
+			        "streams xml into html for you."));
 		
+		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/html; charset=UTF-8\r\n\r\n";
 	}
 	else if (ext == "txt")
 	{
+		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/plain\r\n\r\n";
 		output = cache;
 	}
 	else if (ext == "rfc822")
 	{
+		cout << "Status: 200 OK\r\n";
 		cout << "Content-Type: message/rfc822\r\n\r\n";
 		output = cache;
 	}
 	else if (ext == "xml")
 	{
+		cout << "Status: 200 OK\r\n";
 		cout <<	"Content-Type: text/xml; charset=UTF-8\r\n\r\n";
 		output = cache;
 	}
 	else
 	{
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Unknown file type"), ext,
-			_("The requested extension is not supported by lurker. "
-			  "Please reformulate your request."));
-		exit(1);
+		error(_("Unknown file type"), ext,
+		      _("The requested extension is not supported by lurker. "
+		        "Please reformulate your request."));
 	}
 	
 	cout.flush(); // in case of stdout writing next (ick)

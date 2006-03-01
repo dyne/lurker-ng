@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.24 2006-03-01 13:20:14 terpstra Exp $
+/*  $Id: main.cpp,v 1.25 2006-03-01 14:55:45 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -36,44 +36,35 @@
 #include "commands.h"
 #include "parse.h"
 
+#include <XmlEscape.h>
 #include <unistd.h>	// chdir
 
 /* #define DEBUG 1 */
 
 using namespace std;
 
-string redirect(const string& url)
-{
-	return	"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
-		"<html><head>\r\n"
-		"<title>301 Moved Permanently</title>\r\n"
-		"</head><body>\r\n"
-		"<h1>Moved Permanently</h1>\r\n"
-		"The document has moved <a href=\""
-		+ url + 
-		"s\">here</a>.\r\n"
-		"<p><hr>\r\n"
-		"</body></html>\r\n";
-}
-
-string error(
+void error(
 	const string& main, 
 	const string& sub, 
-	const string& suggest)
+	const string& suggest,
+	const string& header)
 {
-	return	"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
-		"<html>\r\n"
-		" <head><title>Lurker - "
-		+ main + 
-		"</title></head>\r\n"
-		" <body>\r\n"
-		"  <h1>Lurker - failed to render page:</h1>\r\n"
-		"  <h2>"
-		+ main + " (" + sub + "):</h2><p>\r\n"
-		+ suggest + "\r\n"
-		"  <p><hr>\r\n"
-		" </body>\r\n"
-		"</html>\r\n";
+	cout << "Status: 200 OK\r\n";
+	cout <<	"Content-Type: text/html\r\n\r\n";
+	cout << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
+	     << "<html>\r\n"
+	     << " <head><title>Lurker - "
+	     <<	xmlEscape << main
+	     << "</title></head>\r\n"
+	     << " <body>\r\n"
+	     << "  <h1>Lurker - failed to render page:</h1>\r\n"
+	     << "  <h2>"
+	     << xmlEscape << main << " (" << xmlEscape << sub << "):</h2><p>\r\n"
+	     << xmlEscape << suggest << "\r\n"
+	     << "  <p><hr>\r\n"
+	     <<	" </body>\r\n"
+	     << "</html>\r\n";
+	exit(1);
 }
 
 void tokenize(
@@ -94,30 +85,22 @@ void tokenize(
 
 void help(const string& about)
 {
-	cout << "Status: 200 OK\r\n";
-	cout <<	"Content-Type: text/html\r\n\r\n";
-	cout << error(_("Not invoked correctly"), about,
-		_("The lurker.cgi must have two parameters: the config file "
-		  "and the request to render. The value of QUERY_STRING is "
-		  "taken to be the config file, and REQUEST_URI is taken "
-		  "to be the requested page to render. Setting a 404 error "
-		  "handler to lurker.cgi?config.file will usually set these "
-		  "environment variables. Additionally, lurker may be invoked "
-		  "from the command-line. Here, the first parameter is the "
-		  "config file and the second is the requested uri."));
+	error(_("Not invoked correctly"), about,
+		_("The lurker.cgi must one parameters: the requested file. "
+		  "The value of QUERY_STRING is taken to be the path of the "
+		  "request file, and REQUEST_URI is taken to be its URL. "
+		  "Setting a 404 error handler to lurker.cgi?/frontend/path "
+		  "will usually set these environment variables. "
+		  "Additionally, lurker can be told to use an alternate config "
+		  "file via the LURKER_CONFIG environment variable."));
 }
 
 Request parse_request(const string& param)
 {
 	string::size_type dot1 = param.rfind('.');
 	if (dot1 == string::npos || dot1 == 0)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Missing extension"), param,
-			_("An extension for the request was required, but missing"));
-		exit(1);
-	}
+		error(_("Missing extension"), param,
+		      _("An extension for the request was required, but missing"));
 	
 	string::size_type dot2 = param.rfind('.', dot1-1);
 	
@@ -146,13 +129,8 @@ Request parse_request(const string& param)
 	}
 	
 	if (!lstring::locale_normalize(out.language))
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Bogus locale"), out.language,
-			_("The specified locale is not valid."));
-		exit(1);
-	}
+		error(_("Bogus locale"), out.language,
+		      _("The specified locale is not valid."));
 	
 	return out;
 }
@@ -186,20 +164,12 @@ int main(int argc, char** argv)
 	if (config == "") config = DEFAULT_CONFIG_FILE;
 	
 	if (request == "")
-	{
 		help(_("no request set (REDIRECT_URL and REQUEST_URI both missing)"));
-		return 1;
-	}
 	
 	Config cfg;
 	if (cfg.load(config.c_str()) != 0)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Cannot open config file"), "Config::load",
-			cfg.getError());
-		return 1;
-	}
+		 error(_("Cannot open config file"), "Config::load",
+		       cfg.getError());
 	
 	// Look for the matching front-end
 	frontend = "";
@@ -214,54 +184,34 @@ int main(int argc, char** argv)
 	}
 	
 	if (frontend == "")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("No matching frontend"), document,
-			_("The frontend specified in the webserver "
-			  "configuration does not match any frontend in the "
-			  "lurker config file."));
-		return 1;
-	}
+		error(_("No matching frontend"), document,
+		      _("The frontend specified in the webserver "
+		        "configuration does not match any frontend in the "
+		        "lurker config file."));
 	
 	cfg.set_permissions(cfg.frontends[frontend]);
 	
 	if (chdir(frontend.c_str()) != 0)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Cannot chdir"), frontend + ":" + strerror(errno),
-			_("The specified frontend path could "
-			  "not be entered. Check the path and permissions."));
-		return 1;
-	}
+		error(_("Cannot chdir"), frontend + ":" + strerror(errno),
+		      _("The specified frontend path could "
+		        "not be entered. Check the path and permissions."));
 	
 	auto_ptr<ESort::Reader> db(ESort::Reader::opendb(cfg.dbdir + "/db"));
 	if (!db.get())
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Cannot open database snapshot"), strerror(errno),
-			_("The configured database 'dbdir' in the config file "
-			  "could not be opened. Typically this means that it is "
-			  "not readable by the user which the cgi is invoked as. "
-			  "We suggest making dbdir and all files in it readable "
-			  "by everyone since you are serving them on a website "
-			  "anyways."));
-		return 1;
-	}
+		error(_("Cannot open database snapshot"), strerror(errno),
+		      _("The configured database 'dbdir' in the config file "
+		        "could not be opened. Typically this means that it is "
+		        "not readable by the user which the cgi is invoked as. "
+		        "We suggest making dbdir and all files in it readable "
+		        "by everyone since you are serving them on a website "
+		        "anyways."));
 	
 	vector<string> tokens;
 	tokenize(request, tokens, "/");
 	if (tokens.size() < 2)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Request malformed"), "tokenize(request)",
-			_("The request does not have at least two directory "
-			  "components. It must be like ..../command/param.xml"));
-		return 1;
-	}
+		error(_("Request malformed"), "tokenize(request)",
+		      _("The request does not have at least two directory "
+		        "components. It must be like ..../command/param.xml"));
 	
 	string param   = decipherHalf(tokens[tokens.size()-1]);
 	string command = tokens[tokens.size()-2];
@@ -269,15 +219,10 @@ int main(int argc, char** argv)
 	
 	if (document != frontend &&
 	    frontend + '/' + command + '/' + param != document)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Requested document is in error"), document,
-			_("The requested document does not match the file "
-			  "lurker intends to generate: ")
-		        + frontend + '/' + command + '/' + param);
-		return 1;
-	}
+		error(_("Requested document is in error"), document,
+		      _("The requested document does not match the file "
+		        "lurker intends to generate: ")
+		      + frontend + '/' + command + '/' + param);
 	
 	if (https == "on")
 	{
@@ -317,11 +262,6 @@ int main(int argc, char** argv)
 	else if (command == "list")    return handle_list   (cfg, db.get(), param);
 	else if (command == "zap")     return handle_zap    (cfg, db.get(), param);
 	else
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Bad command"), command,
-			_("The requested command is not supported."));
-		return 1;
-	}
+		error(_("Bad command"), command, 
+		      _("The requested command is not supported."));
 }

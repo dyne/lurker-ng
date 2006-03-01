@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.46 2006-02-25 01:05:41 terpstra Exp $
+/*  $Id: message.cpp,v 1.47 2006-03-01 14:55:45 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -674,15 +674,10 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 	
 	if (!MessageId::is_full(req.options.c_str()) ||
 	    req.options.length() != MessageId::full_len)
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Bad request"), param,
-			_("The given parameter was not of the correct format. "
-			  "A message request must be formatted like: "
-			  "message/YYYYMMDD.HHMMSS.hashcode.lc.xml"));
-		return 1;
-	}
+		error(_("Bad request"), param,
+		      _("The given parameter was not of the correct format. "
+		        "A message request must be formatted like: "
+		        "message/YYYYMMDD.HHMMSS.hashcode.lc.xml"));
 	
 	MessageId id(req.options.c_str());
 	
@@ -696,61 +691,38 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 	if ((ok = source.load(db, cfg)) != "" || !source.allowed())
 	{
 		if (ok == "") ok = "not in a mailbox"; // fake
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database message source pull failure"), ok,
-			_("The specified message does not exist."));
-		return 1;
+		error(_("Database message source pull failure"), ok,
+		      _("The specified message does not exist."));
 	}
 	
 	if (source.deleted())
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database message source pull failure"), "not found",
-			_("The specified message has been deleted."));
-		return 1;
-	}
+		error(_("Database message source pull failure"), "not found",
+		      _("The specified message has been deleted."));
 	
 	Threading::Key spot;
 	Threading thread;
 	if ((ok = thread.load(db, source, spot)) != "" ||
 	    (ok = thread.draw_snippet(db, spot, cfg)) != "")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database message tree load failure"), ok,
-			_("Something internal to the database failed. "
-			  "Please contact the lurker user mailing list for "
-			  "further assistence."));
-		return 1;
-	}
+		error(_("Database message tree load failure"), ok,
+		      _("Something internal to the database failed. "
+		        "Please contact the lurker user mailing list for "
+		        "further assistence."));
 	
 	Summary thread_prev;
 	Summary thread_next;
 	
 	if ((ok = thread.findprev(spot, db, cfg, thread_prev)) != "" ||
 	    (ok = thread.findnext(spot, db, cfg, thread_next)) != "")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Thread prev/next load failure"), ok,
-			_("Something internal to the database failed. "
-			  "Please contact the lurker user mailing list for "
-			  "further assistence."));
-		return 1;
-	}
+		error(_("Thread prev/next load failure"), ok,
+		      _("Something internal to the database failed. "
+		        "Please contact the lurker user mailing list for "
+		        "further assistence."));
 	
 	DwMessage message;
 	if ((ok = source.message(cfg.dbdir, message)) != "")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("MBox read failure"), ok,
-			_("Unable to open message in the mailbox. "
-			  "Perhaps it has been deleted or moved?"));
-		return 1;
-	}
+		error(_("MBox read failure"), ok,
+		      _("Unable to open message in the mailbox. "
+		        "Perhaps it has been deleted or moved?"));
 	
 	map<string, Summary> followups; // these are all followups NOT in the tree
 	if (message.Headers().HasMessageId())
@@ -785,15 +757,10 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		}
 	}
 	if (ok != "")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database followups load failure"), ok,
-			_("Something internal to the database failed. "
-			  "Please contact the lurker user mailing list for "
-			  "further assistence."));
-		return 1;
-	}
+		error(_("Database followups load failure"), ok,
+		      _("Something internal to the database failed. "
+		        "Please contact the lurker user mailing list for "
+		        "further assistence."));
 	
 	map<string, Summary> repliesTo; // what messages this one replies to
 	if (message.Headers().HasInReplyTo())
@@ -827,15 +794,10 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		}
 	}
 	if (ok != "")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database replies load failure"), ok,
-			_("Something internal to the database failed. "
-			  "Please contact the lurker user mailing list for "
-			  "further assistence."));
-		return 1;
-	}
+		error(_("Database replies load failure"), ok,
+		      _("Something internal to the database failed. "
+		        "Please contact the lurker user mailing list for "
+		        "further assistence."));
 	
 	vector<MBox> boxes;
 	set<string>::iterator mbox;
@@ -849,15 +811,10 @@ int handle_message(const Config& cfg, ESort::Reader* db, const string& param)
 		if ((ok = boxes.back().load(db, id, cfg)) != "") break;
 	}
 	if (ok != "")
-	{
-		cout << "Status: 200 OK\r\n";
-		cout <<	"Content-Type: text/html\r\n\r\n";
-		cout << error(_("Database list links load failure"), ok,
-			_("Something internal to the database failed. "
-			  "Please contact the lurker user mailing list for "
-			  "further assistence."));
-		return 1;
-	}
+		error(_("Database list links load failure"), ok,
+		      _("Something internal to the database failed. "
+		        "Please contact the lurker user mailing list for "
+		        "further assistence."));
 	
 	Cache cache(cfg, "message", param, req.ext);
 	
