@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.28 2006-03-01 18:25:22 terpstra Exp $
+/*  $Id: main.cpp,v 1.29 2006-03-02 21:28:50 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -128,14 +128,15 @@ Request parse_request(const string& param)
 		out.ext = param.substr(dot1+1, string::npos);
 	}
 	
-	if (out.ext.length() < 3 || out.ext.length() > 4)
+	if (out.ext.length() < 3 || out.ext.length() > 6)
 		error(_("Bogus extension"), out.ext,
-		      _("The extension is not 3 or 4 characters long."));
+		      _("The extension is not 3-6 characters long."));
 	
 	for (string::size_type i = 0; i < out.ext.length(); ++i)
-		if (out.ext[i] < 'a' || out.ext[i] > 'z')
+		if ((out.ext[i] < 'a' || out.ext[i] > 'z') &&
+		    (out.ext[i] < '0' || out.ext[i] > '9'))
 			error(_("Bogus extension"), out.ext,
-			      _("Not simple lower-case letters."));
+			      _("Not simple lower-case alphanumeric letters."));
 	
 	if (!lstring::locale_normalize(out.language))
 		error(_("Bogus locale"), out.language,
