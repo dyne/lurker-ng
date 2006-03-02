@@ -1,4 +1,4 @@
-/*  $Id: parse.cpp,v 1.11 2006-03-02 21:43:29 terpstra Exp $
+/*  $Id: parse.cpp,v 1.12 2006-03-02 21:46:00 terpstra Exp $
  *  
  *  parse.cpp - Deal with CGI ugliness
  *  
@@ -159,7 +159,7 @@ int redirectUrl(const string& url)
 {
 	if (url.substr(0, 11) == "javascript:")
 	{
-		cout << "Status 200 OK\r\n"
+		cout << "Status: 200 OK\r\n"
 		     << "Content-type: text/plain\r\n\r\n"
 		     << "Javascript go awaaayyyyyaaayyy! GO AWAY!\n";
 	}
