@@ -10,12 +10,12 @@
  cc="CC"
  attachments="添付ファイル"
 
- delete-message="Delete this message"
- reply-to-message="Reply to this message"
+ delete-message="このメッセージを削除"
+ reply-to-message="このメッセージに返信"
  regarding-subject="Re: "
- quote-open="On "
+ quote-open="日付 "
  quote-middle=", "
- quote-close=" wrote:"
+ quote-close=" 引用:"
 
  tree-context="このメッセージは次のスレッドの一部です:"
  full-tree="日付によるスレッドの仕分け"
