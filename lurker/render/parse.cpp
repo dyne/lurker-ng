@@ -1,4 +1,4 @@
-/*  $Id: parse.cpp,v 1.10 2006-03-01 18:25:22 terpstra Exp $
+/*  $Id: parse.cpp,v 1.11 2006-03-02 21:43:29 terpstra Exp $
  *  
  *  parse.cpp - Deal with CGI ugliness
  *  
@@ -157,17 +157,26 @@ string uriEncode(const string& str)
 
 int redirectUrl(const string& url)
 {
-	cout << "Status: 303 Moved Permanently\r\n"
-	     << "Location: " << uriEncode(url) << "\r\n"
-	     << "Content-type: text/html\r\n\r\n"
-	     << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
-	     << "<html><head>\r\n"
-	     << "<title>301 Moved Permanently</title>\r\n"
-	     << "</head><body>\r\n"
-	     << "<h1>Moved Permanently</h1>\r\n"
-	     << "The document has moved <a href=\"" << uriEncode(url) << "\">here</a>.\r\n"
-	     << "<p><hr>\r\n"
-	     << "</body></html>\r\n";
+	if (url.substr(0, 11) == "javascript:")
+	{
+		cout << "Status 200 OK\r\n"
+		     << "Content-type: text/plain\r\n\r\n"
+		     << "Javascript go awaaayyyyyaaayyy! GO AWAY!\n";
+	}
+	else
+	{
+		cout << "Status: 303 Moved Permanently\r\n"
+		     << "Location: " << uriEncode(url) << "\r\n"
+		     << "Content-type: text/html\r\n\r\n"
+		     << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
+		     << "<html><head>\r\n"
+		     << "<title>301 Moved Permanently</title>\r\n"
+		     << "</head><body>\r\n"
+		     << "<h1>Moved Permanently</h1>\r\n"
+		     << "The document has moved <a href=\"" << uriEncode(url) << "\">here</a>.\r\n"
+		     << "<p><hr>\r\n"
+		     << "</body></html>\r\n";
+	}
 	
 	return 0;
 }
