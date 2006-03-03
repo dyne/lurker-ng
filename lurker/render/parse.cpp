@@ -1,4 +1,4 @@
-/*  $Id: parse.cpp,v 1.12 2006-03-02 21:46:00 terpstra Exp $
+/*  $Id: parse.cpp,v 1.13 2006-03-03 01:04:25 terpstra Exp $
  *  
  *  parse.cpp - Deal with CGI ugliness
  *  
@@ -157,7 +157,12 @@ string uriEncode(const string& str)
 
 int redirectUrl(const string& url)
 {
-	if (url.substr(0, 11) == "javascript:")
+	string proto(url, 0, 11);
+	for (string::size_type i = 0; i < proto.length(); ++i)
+		if (proto[i] >= 'A' && proto[i] <= 'Z')
+			proto[i] += 'a' - 'A';
+	
+	if (proto == "javascript:")
 	{
 		cout << "Status: 200 OK\r\n"
 		     << "Content-type: text/plain\r\n\r\n"
