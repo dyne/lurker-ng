@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <text
  language="Idioma"
- 
+
  thread="Hilo"
  subject="Asunto"
  author="Autor"
@@ -10,22 +10,22 @@
  cc="Cc"
  attachments="Adjuntos"
 
- delete-message="Delete this message"
- reply-to-message="Reply to this message"
+ delete-message="Eliminar este mensaje"
+ reply-to-message="Responder a este mensaje"
  regarding-subject="Re: "
- quote-open="On "
+ quote-open="El "
  quote-middle=", "
- quote-close=" wrote:"
+ quote-close=" escribió:"
 
  tree-context="Este mensaje es parte del siguiente hilo:"
- full-tree="el árbol completo de hilos, ordenados por fecha"
+ full-tree="El árbol completo de hilos, ordenados por fecha"
  mail-appears-in="Este mensaje se envió a las siguientes listas de correo:"
  thread-appears-in="Este mensaje ha aparecido en las siguientes listas de correo:"
  list-info="Información de la lista de correo"
  near-message="Mensajes cercanos"
  old-topics="Temas antiguos"
  new-topics="Temas nuevos"
- raw-email="Obtener mensaje como un correo"
+ raw-email="Obtener este mensaje como un correo"
 
  front-page="Página superior"
  search-menu="Buscar en el archivo en busca de mensajes coincidentes"
@@ -64,7 +64,7 @@
  useful-prefixs="Los términos de búsqueda pueden ir precedidas de au:, sb: y ml: para hacerlos coincidir con el autor, el asunto o la lista de correo, respectivamente."
 
  day-suffix=""
- 
+
  jan="enero"
  feb="febrero"
  mar="marzo"
@@ -80,7 +80,7 @@
 
  unknown-address="Desconocido"
  deleted-name="Eliminado"
- posted-at=", en fecha "
+ posted-at=", mensaje del "
  admin-by="administrado por "
  version="versión "
 />
