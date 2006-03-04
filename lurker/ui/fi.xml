@@ -10,12 +10,12 @@
  cc="Kopio"
  attachments="Liitteet"
 
- delete-message="Delete this message"
- reply-to-message="Reply to this message"
+ delete-message="Poista viesti"
+ reply-to-message="Vastaa"
  regarding-subject="Re: "
- quote-open="On "
- quote-middle=", "
- quote-close=" wrote:"
+ quote-open=""
+ quote-middle=" "
+ quote-close=" kirjoitti:"
 
  tree-context="Tämä viesti kuuluu seuraavaan säikeeseen:"
  full-tree="Näytä säikeen viestit aikajärjestyksessä"
