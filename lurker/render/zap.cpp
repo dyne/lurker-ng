@@ -1,4 +1,4 @@
-/*  $Id: zap.cpp,v 1.5 2006-03-05 02:04:05 terpstra Exp $
+/*  $Id: zap.cpp,v 1.6 2006-03-05 02:08:42 terpstra Exp $
  *  
  *  zap.cpp - Handle a zap/ command
  *  
@@ -52,6 +52,8 @@ static void find_and_replace(string& target, const string& token, const string& 
 int handle_zap(const Config& cfg, ESort::Reader* db, const string& param)
 {
 	Request req = parse_request(param);
+	char errbuf[80];
+	int ret;
 	
 	if (!MessageId::is_full(req.options.c_str()))
 		error(_("Bad request"), param,
@@ -102,10 +104,13 @@ int handle_zap(const Config& cfg, ESort::Reader* db, const string& param)
 		      _("Perhaps the command is in error?"));
 	
 	fputs(pass.c_str(), f);
-	if (pclose(f) != 0)
-		error(_("Delete command failed"), cmd,
+	if ((ret = pclose(f)) != 0)
+	{
+		sprintf(errbuf, "error %d", ret);
+		error(_("Delete command failed"), errbuf,
 		      _("Perhaps you provided a bad password?"),
 		      "Set-Cookie: lurker-pass=wrong; path=/; expires=Wed, 10 Jan 1990 20:00:00 GMT\r\n");
+	}
 	
 	cout << "Status: 200 OK\r\n";
 	cout <<	"Content-Type: text/html\r\n\r\n";
