@@ -1,4 +1,4 @@
-/*  $Id: zap.cpp,v 1.4 2006-03-01 14:55:45 terpstra Exp $
+/*  $Id: zap.cpp,v 1.5 2006-03-05 02:04:05 terpstra Exp $
  *  
  *  zap.cpp - Handle a zap/ command
  *  
@@ -104,7 +104,7 @@ int handle_zap(const Config& cfg, ESort::Reader* db, const string& param)
 	fputs(pass.c_str(), f);
 	if (pclose(f) != 0)
 		error(_("Delete command failed"), cmd,
-		      _("Perhaps you prodived a bad password?"),
+		      _("Perhaps you provided a bad password?"),
 		      "Set-Cookie: lurker-pass=wrong; path=/; expires=Wed, 10 Jan 1990 20:00:00 GMT\r\n");
 	
 	cout << "Status: 200 OK\r\n";
