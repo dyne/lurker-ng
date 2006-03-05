@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.29 2006-03-02 21:28:50 terpstra Exp $
+/*  $Id: main.cpp,v 1.30 2006-03-05 02:16:12 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -50,6 +50,7 @@ void error(
 	const string& header)
 {
 	cout << "Status: 200 OK\r\n";
+	cout << header; /* optional additional header */
 	cout <<	"Content-Type: text/html\r\n\r\n";
 	cout << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n"
 	     << "<html>\r\n"
