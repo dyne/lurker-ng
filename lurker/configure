@@ -3525,7 +3525,8 @@ fi
 
 
 
-for ac_func in timegm
+
+for ac_func in timegm realpath
 do
 as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
 echo "$as_me:$LINENO: checking for $ac_func" >&5
@@ -4108,7 +4109,8 @@ done
 
 
 
-for ac_header in sysexits.h
+
+for ac_header in sysexits.h sys/param.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
