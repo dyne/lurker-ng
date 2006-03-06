@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.30 2006-03-05 02:16:12 terpstra Exp $
+/*  $Id: main.cpp,v 1.31 2006-03-06 09:09:34 terpstra Exp $
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  
@@ -84,18 +84,6 @@ void tokenize(
 	}
 }
 
-void help(const string& about)
-{
-	error(_("Not invoked correctly"), about,
-		_("The lurker.cgi must one parameters: the requested file. "
-		  "The value of QUERY_STRING is taken to be the path of the "
-		  "request file, and REQUEST_URI is taken to be its URL. "
-		  "Setting a 404 error handler to lurker.cgi?/frontend/path "
-		  "will usually set these environment variables. "
-		  "Additionally, lurker can be told to use an alternate config "
-		  "file via the LURKER_CONFIG environment variable."));
-}
-
 Request parse_request(const string& param)
 {
 	string::size_type dot1 = param.rfind('.');
@@ -148,7 +136,7 @@ Request parse_request(const string& param)
 
 int main(int argc, char** argv)
 {
-	string config, frontend, document, request, host, port, cgipath, https;
+	string config, frontend, document, request, host, port, cgipath, https, ok;
 	const char* tmp;
 	
 #if 0	
@@ -159,7 +147,6 @@ int main(int argc, char** argv)
 #endif
 	
 	// Every document about CGI agrees these exist:
-	if ((tmp = getenv("QUERY_STRING")) != 0) document = tmp;
 	if ((tmp = getenv("SERVER_NAME" )) != 0) host     = tmp;
 	if ((tmp = getenv("SERVER_PORT" )) != 0) port     = tmp;
 	if ((tmp = getenv("SCRIPT_NAME" )) != 0) cgipath  = tmp;
@@ -172,24 +159,66 @@ int main(int argc, char** argv)
 	if ((tmp = getenv("REQUEST_URI" )) != 0) request  = tmp;
 	
 	// get an over-ridden config location
-	if ((tmp = getenv("REDIRECT_LURKER_CONFIG")) != 0) config = tmp;
-	if ((tmp = getenv("LURKER_CONFIG"))          != 0) config = tmp;
+	if ((tmp = getenv("REDIRECT_LURKER_CONFIG"))   != 0) config = tmp;
+	if ((tmp = getenv("LURKER_CONFIG"))            != 0) config = tmp;
+	// get the frontend location
+	if ((tmp = getenv("REDIRECT_LURKER_FRONTEND")) != 0) document = tmp;
+	if ((tmp = getenv("LURKER_FRONTEND"))          != 0) document = tmp;
 	
-	if (request == "")
-		help(_("no request set (REDIRECT_URL and REQUEST_URI both missing)"));
+	if (request == "" || host == "" || port == "" || cgipath == "")
+		error(_("Not invoked correctly"), 
+		      _("CGI environment variables missing"),
+		      _("The lurker.cgi must be run as a CGI script. See the "
+		        "INSTALL file distributed with lurker for help setting "
+		        "up your webserver to run lurker.cgi. Lurker.cgi reads "
+		        "the environment variables REDIRECT_URL or REQUEST_URI "
+		        "to determine the missing file requested by the user. "
+		        "Also, SERVER_NAME, SERVER_PORT, and SCRIPT_NAME are "
+		        "used to build absolute redirected URLs."));
+	
+	// be nice: use a default config file
+	if (config == "") config = DEFAULT_CONFIG_FILE;
 	
 	Config cfg;
-	if (config == "") config = DEFAULT_CONFIG_FILE;
 	if (cfg.load(config.c_str()) != 0)
 		 error(_("Cannot open config file"), "Config::load",
-		       cfg.getError());
+		       cfg.getError() +
+		       _("\nPerhaps you should set the LURKER_CONFIG "
+		         "environment variable to select the correct "
+		         "config file location. See the INSTALL file for "
+		         "help on configuring your webserver."));
+	
+	if (document == "" && cfg.frontends.size() > 1)
+		error(_("No frontend specified"), "LURKER_FRONTEND",
+		      _("The lurker config file lists multiple frontends, "
+		        "however, the environment variable LURKER_FRONTEND "
+		        "does not specify which to use. See the INSTALL file "
+		        "for help on configuring your webserver."));
+	
+	// be nice: if only one frontend, use it by default:
+	if (document == "" && cfg.frontends.size() == 1)
+	{
+		document = cfg.frontends.begin()->first;
+	}
+	else
+	{
+		// Simplify the path to the requested document
+		if ((ok = simplifyPath(document)) != "")
+			error(_("Bad document request"), document,
+			      _("The path '") + ok + _("' could not be resolved while "
+			        "attempting to determine which frontend the document "
+			        "belongs to. Perhaps a directory does not exist?"));
+	}
 	
 	// Look for the matching front-end
 	frontend = "";
 	Config::Frontends::const_iterator i, e;
 	for (i = cfg.frontends.begin(), e = cfg.frontends.end(); i != e; ++i)
 	{
-		if (i->first == document.substr(0, i->first.length()))
+		// Either document IS the frontend path or it is a file
+		// contained in the frontend path.
+		if (i->first == document.substr(0, i->first.length()) ||
+		    i->first + "/" == document.substr(0, i->first.length()+1))
 		{
 			frontend = i->first;
 			break;

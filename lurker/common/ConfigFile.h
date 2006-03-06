@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.13 2006-02-25 01:05:40 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.14 2006-03-06 09:09:34 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -45,6 +45,9 @@ using std::map;
 using std::set;
 using std::ostream;
 using std::vector;
+
+// simplify a path by removing trailing '/'s and duplicate '/'s
+string simplifyPath(string& path);
 
 // localized string
 class lstring

@@ -1,6 +1,7 @@
 v2.1:
-	lurker.cgi now reads config file information from the environment
-	  variable LURKER_CONFIG as opposed to the redirected query.
+	lurker.cgi uses the environment to provide location information:
+	  LURKER_CONFIG over-rides the default config file
+	  LURKER_FRONTEND chooses which frontend is being rendered
 	Updated the apache.conf and install docs to demonstrate this
 	Escape all user controllable text which is output as xml/html
 	Escape broken mailbox content displayed during import

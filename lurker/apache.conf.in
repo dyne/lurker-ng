@@ -18,5 +18,5 @@ Alias /lurker @DEFAULT_WWW_DIR@
   # invoke lurker if the requested file does not exist
   RewriteEngine on
   RewriteCond %{REQUEST_FILENAME} !-s
-  RewriteRule ^(attach|list|mbox|message|mindex|search|splash|thread|zap)/[^/]+$ /cgi-lurker/lurker.cgi?%{REQUEST_FILENAME} [L,PT,E=LURKER_CONFIG:@DEFAULT_CONFIG_DIR@/lurker.conf]
+  RewriteRule ^(attach|list|mbox|message|mindex|search|splash|thread|zap)/[^/]+$ /cgi-lurker/lurker.cgi [L,PT,E=LURKER_CONFIG:@DEFAULT_CONFIG_DIR@/lurker.conf,E=LURKER_FRONTEND:%{REQUEST_FILENAME}]
 </Directory>

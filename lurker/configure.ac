@@ -19,8 +19,8 @@ if test "x$USE_MAINTAINER_MODE" != "xno"; then
   CXXFLAGS="$CXXFLAGS -Wall -O0 -g"
 fi
 
-AC_CHECK_FUNCS([timegm])
-AC_CHECK_HEADERS([sysexits.h])
+AC_CHECK_FUNCS([timegm realpath])
+AC_CHECK_HEADERS([sysexits.h sys/param.h])
 
 AC_SEARCH_HEADER_DIRS(
   [iconv.h],

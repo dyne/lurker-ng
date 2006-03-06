@@ -138,7 +138,9 @@ Quick start
 	
 	# Optionally over-rule lurker's default config (needs mod_env)
 	# SetEnv LURKER_CONFIG /path/to/lurker.conf
-	ErrorDocument 404 /cgi-bin/lurker.cgi?/usr/local/var/www
+	# If you have multiple frontends, you need to specify which this is:
+	# SetEnv LURKER_FRONTEND /usr/local/var/www
+	ErrorDocument 404 /cgi-bin/lurker.cgi
    
    If you can use a Rewite Engine (avoids 404 log messages), this is best:
 
@@ -146,10 +148,12 @@ Quick start
 	AddType text/xml .xml
 	AddType message/rfc822 .rfc822
 	AddDefaultCharset UTF-8
+
+	# The E=LURKER_CONFIG is optional if you use the default config file
+	# The E=LURKER_FRONTEND is optional if there is only one frontend
         RewriteEngine on
         RewriteCond %{REQUEST_FILENAME} !-s
-	# The E=LURKER_CONFIG is optional
-        RewriteRule ^(attach|list|mbox|message|mindex|search|splash|thread|zap)/[^/]+$ /cgi-lurker/lurker.cgi?%{REQUEST_FILENAME} [L,PT,E=LURKER_CONFIG:/path/to/lurker.conf]
+        RewriteRule ^(attach|list|mbox|message|mindex|search|splash|thread|zap)/[^/]+$ /cgi-lurker/lurker.cgi [L,PT,E=LURKER_CONFIG:/path/to/lurker.conf,E=LURKER_FRONTEND:%{REQUEST_FILENAME}]
 
 8 Point your browser at the url where lurker is installed
 

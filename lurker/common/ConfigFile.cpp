@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.23 2006-03-01 14:02:51 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.24 2006-03-06 09:09:34 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -29,10 +29,14 @@
 
 #include <fstream>
 #include <iostream>
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <time.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -41,6 +45,47 @@ map<string, string>* lstring::c = 0;
 lstring::lstring(const string& fallback)
 {
 	s[""] = fallback;
+}
+
+string simplifyPath(string& path)
+{
+	string error = "";
+	
+#ifdef HAVE_REALPATH
+	char clean[PATH_MAX];
+	
+	if (realpath(path.c_str(), clean) != 0)
+	{
+		path = clean;
+		return "";
+	}
+	else
+	{
+		// on linux, realpath files if the last part DNE
+		string dir(path, 0, path.rfind('/'));
+		string tag(path, dir.length(), string::npos);
+		
+		if (realpath(dir.c_str(), clean) != 0)
+		{
+			path = clean + tag;
+			return "";
+		}
+	}
+	
+	// realpath failed, report the problem path
+	error = clean;
+	// fall through with best attempt to clean it up anyways
+#endif
+	
+	// The least we can do is to trim trailing '/'s and simplify '//'s
+	while (path.length() && path[path.length()-1] == '/')
+		path.resize(path.length()-1);
+	
+	string::size_type x = 0;
+	while ((x = path.find("//", x)) != string::npos)
+		path.erase(x, 1);
+	
+	return error;
 }
 
 void lstring::prep_c()
@@ -483,9 +528,9 @@ int Config::load(const string& file, bool toplevel)
 			++fn;
 			if (fn == fe) break;
 			
-			if (fi->first == fn->first.substr(0, fi->first.length()))
+			if (fi->first + "/" == fn->first.substr(0, fi->first.length()+1))
 			{
-				cerr << "Frontend '" << fi->first << "' is a prefix of '" << fn->first << "', which is forbidden!" << endl;
+				error << "Frontend '" << fi->first << "' is a prefix of '" << fn->first << "', which is forbidden!" << endl;
 				return -1;
 			}
 			
@@ -705,16 +750,19 @@ int Config::process_command(const string& keys, const string& val, const string&
 			return -1;
 		}
 		
-		// Require absolute path
 		if (val.length() == 0 || val[0] != '/')
 		{
 			error << "frontend path is not absolute '" << val << "' (must start with a '/')!" << endl;
 			return -1;
 		}
 		
-		if (frontends.find(val) == frontends.end())
+		// Cleanup the path, but ignore any problems with the path
+		string sval(val);
+		simplifyPath(sval);
+		
+		if (frontends.find(sval) == frontends.end())
 		{
-			frontend = &frontends[val];
+			frontend = &frontends[sval];
 		}
 		else
 		{
