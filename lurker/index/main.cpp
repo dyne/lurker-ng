@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.49 2006-03-01 14:11:05 terpstra Exp $
+/*  $Id: main.cpp,v 1.50 2006-03-10 00:47:22 terpstra Exp $
  *  
  *  main.cpp - Read the fed data into our database
  *  
@@ -632,6 +632,8 @@ int main(int argc, char** argv)
 		cerr << "The list '" << listn << "' is marked as offline; cannot import to it." << endl;
 		return LEX_DATAERR;
 	}
+	
+	if (cfg.db_umask != -1) umask(cfg.db_umask);
 	
 	string dbname = cfg.dbdir + "/db";
 	ESort::Parameters params(synced);

@@ -50,10 +50,13 @@ xslt = xsltproc --nonet -
 # The substitution %c denotes the config file of the database to affect.
 # The substitution %i is the lurker message ID of the target email.
 # The recommended setup is to have a 'lurker' group owning /var/lib/lurker
-# Then for the example command to work, you must set 'gpasswd lurker'.
-# On some systems this is 'passwd -g lurker', there may be other variants.
+#  Then for the example command to work, you must set 'gpasswd lurker'.
+#  On some systems this is 'passwd -g lurker', there may be other variants.
+# Alternately, you can make the lurker db writable by the CGI.
+#  Then use the second alternative after changing 'password'.
 
 delete_message = sg lurker -c "@BINDIR@/lurker-search -d -f -q -i -c %c %i"
+# delete_message = if test "password" = "`cat`"; then @BINDIR@/lurker-search -d -f -q -i -c %c %i; fi
 
 # The commands lurker uses to verify signatures.
 # 
@@ -101,6 +104,15 @@ delete_message = sg lurker -c "@BINDIR@/lurker-search -d -f -q -i -c %c %i"
 # Before taking a backup, make sure your MTA has a frozen mail queue.
 
 dbdir = @LOCALSTATEDIR@/lib/@PACKAGE@
+
+# The umask to use when creating files in the database.
+# 
+# If this is unset, the umask from the environment of the user is used.
+# You would want to set this to make sure that permissions stay correct.
+# If you want a group writable db, use 002 and a setgid dbdir (rwxrwsr-x).
+# If you want a user only db, use 022 and a dbdir with rwxr-xr-x.
+# 
+# db_umask = 002
 
 # Include another file for additional configuration.
 # 

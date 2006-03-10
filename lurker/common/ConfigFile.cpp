@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.24 2006-03-06 09:09:34 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.25 2006-03-10 00:47:22 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -381,6 +381,7 @@ Config::Config()
  : list(0), frontend(0), group(""), error(), lists(), groups(),
    file(""),
    dbdir(""), 
+   db_umask(-1),
    xslt("cat -"),
    delete_message(""),
    pgpv_mime("off"),
@@ -858,6 +859,22 @@ int Config::process_command(const string& keys, const string& val, const string&
 			return -1;
 		}
 		dbdir = val;
+	}
+	else if (key == "db_umask")
+	{
+		if (lc != "")
+		{
+			error << "db_umask cannot be localized" << endl;
+			return -1;
+		}
+		
+		char* e;
+		db_umask = strtol(val.c_str(), &e, 8);
+		if (val.length() == 0 || *e != 0)
+		{
+			error << "db_mask must be given an octal number, not '" << val << "'" << endl;
+			return -1;
+		}
 	}
 	else if (key == "admin_name")
 	{

@@ -1,4 +1,4 @@
-/*  $Id: params.cpp,v 1.16 2006-02-26 14:09:07 terpstra Exp $
+/*  $Id: params.cpp,v 1.17 2006-03-10 00:47:22 terpstra Exp $
  *  
  *  params.cpp - Parse the config file for helper scripts
  *  
@@ -38,11 +38,12 @@ void help(const char* name)
 	cerr << "Lurker-params (v" << VERSION << ") parses params from the config file.\n";
 	cerr << "\n";
 	cerr << "Usage: " << name << " [-c <config-file>] [-f <locale>]\n";
-	cerr << "                         [-d -a -n -e -x -m -i -k -w -h -r]\n";
+	cerr << "                         [-d -u -a -n -e -x -m -i -k -w -h -r]\n";
 	cerr << "\n";
 	cerr << "\t-c <config-file> Use this config file for lurker settings\n";
 	cerr << "\t-f <locale>      Output the fields for this locale\n";
 	cerr << "\t-d               Output only the dbdir parameter\n";
+	cerr << "\t-u               Output only the db_umask parameter\n";
 	cerr << "\t-a               Output only the archive parameter\n";
 	cerr << "\t-n               Output only the administrator name\n";
 	cerr << "\t-e               Output only the administrator email address\n";
@@ -66,6 +67,7 @@ int main(int argc, char** argv)
 	const char* config        = DEFAULT_CONFIG_FILE;
 	int         fields        = 0;
 	bool        dbdir         = false;
+	bool        db_umask      = false;
 	bool        archive       = false;
 	bool        admin_name    = false;
 	bool        admin_address = false;
@@ -78,7 +80,7 @@ int main(int argc, char** argv)
 	bool        raw_email     = false;
 	string lc;
 	
-	while ((c = getopt(argc, (char*const*)argv, "c:f:danexmikwhr?")) != -1)
+	while ((c = getopt(argc, (char*const*)argv, "c:f:duanexmikwhr?")) != -1)
 	{
 		switch ((char)c)
 		{
@@ -91,6 +93,10 @@ int main(int argc, char** argv)
 		case 'd':
 			++fields;
 			dbdir = true;
+			break;
+		case 'u':
+			++fields;
+			db_umask = true;
 			break;
 		case 'a':
 			++fields;
@@ -163,14 +169,18 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	if (!fields || dbdir)         cout << cfg.dbdir         << "\n";
-	if (!fields || archive)       cout << cfg.archive(lc)   << "\n";
-	if (!fields || admin_name)    cout << cfg.admin_name(lc)<< "\n";
-	if (!fields || admin_address) cout << cfg.admin_address << "\n";
-	if (!fields || xslt)          cout << cfg.xslt          << "\n";
-	if (!fields || pgpv_mime)     cout << cfg.pgpv_mime     << "\n";
-	if (!fields || pgpv_inline)   cout << cfg.pgpv_inline   << "\n";
-	if (!fields || delete_message)cout << cfg.delete_message<< "\n";
+	if (!fields || dbdir)         cout << cfg.dbdir           << "\n";
+	if (!fields || db_umask)
+		if (cfg.db_umask == -1) 
+		                      cout << "user"              << "\n";
+		else                  cout << "0" << oct << cfg.db_umask << "\n";
+	if (!fields || archive)       cout << cfg.archive(lc)     << "\n";
+	if (!fields || admin_name)    cout << cfg.admin_name(lc)  << "\n";
+	if (!fields || admin_address) cout << cfg.admin_address   << "\n";
+	if (!fields || xslt)          cout << cfg.xslt            << "\n";
+	if (!fields || pgpv_mime)     cout << cfg.pgpv_mime       << "\n";
+	if (!fields || pgpv_inline)   cout << cfg.pgpv_inline     << "\n";
+	if (!fields || delete_message)cout << cfg.delete_message  << "\n";
 	if (!fields || web_cache)     cout << (cfg.web_cache?"on":"off") << "\n";
 	if (!fields || hide_email)    cout << (cfg.hide_email?"on":"off") << "\n";
 	if (!fields || raw_email)     cout << (cfg.raw_email?"on":"off") << "\n";

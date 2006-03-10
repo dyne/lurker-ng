@@ -1,3 +1,7 @@
+v2.2:
+	Added support for specifying a umask for the database
+	Removed idiotic/wrong use of 'sg' in INSTALL's import example
+
 v2.1:
 	lurker.cgi uses the environment to provide location information:
 	  LURKER_CONFIG over-rides the default config file

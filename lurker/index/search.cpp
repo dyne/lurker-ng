@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.12 2006-02-27 01:53:55 terpstra Exp $
+/*  $Id: search.cpp,v 1.13 2006-03-10 00:47:22 terpstra Exp $
  *  
  *  search.cpp - Search for messages in lurker database (optionally delete)
  *  
@@ -28,8 +28,11 @@
 #include <Keys.h>
 
 #include <iostream>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <assert.h>
 #include <stdio.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -124,6 +127,7 @@ int main(int argc, char** argv)
 	{
 		if (verbose) cerr << "opening " << cfg.dbdir << "/db read-write" << endl;
 		// Work around g++ 2.95 bug
+		if (cfg.db_umask != -1) umask(cfg.db_umask);
 		auto_ptr<ESort::Writer> w
 			(ESort::Writer::opendb(cfg.dbdir + "/db"));
 		db = w.get();

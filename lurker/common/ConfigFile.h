@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.14 2006-03-06 09:09:34 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.15 2006-03-10 00:47:22 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -152,6 +152,7 @@ class Config
         
  	// never localize paths, commands, or addresses
  	string	dbdir;
+ 	int	db_umask;
  	string	xslt;
  	string  delete_message;
  	string	pgpv_mime;
