@@ -3,7 +3,7 @@
 lurker\-params \(em parses parameters from the config file 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker\-params\fR [\-c <config-file>]  [\-f <locale>]  [\-d \-a \-n \-e \-x \-m \-i \-k \-w \-h \-r]  
+\fBlurker\-params\fR [\-c <config-file>]  [\-f <locale>]  [\-d \-u \-a \-n \-e \-x \-m \-i \-k \-w \-h \-r]  
 .SH "DESCRIPTION" 
 .PP 
 \fBlurker\-params\fR outputs various lurker settings 
@@ -17,6 +17,8 @@ Choose lurker config fields from the specified locale
 (it defaults to selecting the fallback case for each field). 
 .IP "\fB\-d\fP" 10 
 Output only the dbdir parameter 
+.IP "\fB\-u\fP" 10 
+Output only the db_umask parameter 
 .IP "\fB\-a\fP" 10 
 Output only the archive parameter 
 .IP "\fB\-n\fP" 10 
@@ -69,4 +71,4 @@ Before reporting a bug, please confirm that the bug you found is
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
 <lurker\-users@lists.sourceforge.net>. 
-.\" created by instant / docbook-to-man, Mon 27 Feb 2006, 02:54 
+.\" created by instant / docbook-to-man, Fri 10 Mar 2006, 01:49 
