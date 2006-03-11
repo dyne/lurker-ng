@@ -10,12 +10,12 @@
  cc="CC"
  attachments="Csatolmányok"
 
- delete-message="Delete this message"
- reply-to-message="Reply to this message"
+ delete-message="Üzenet törlése"
+ reply-to-message="Válasz az üzenetre"
  regarding-subject="Re: "
- quote-open="On "
- quote-middle=", "
- quote-close=" wrote:"
+ quote-open=""
+ quote-middle=" napján "
+ quote-close=" ezt írta:"
 
  tree-context="Ez az üzenet a következő szál része:"
  full-tree="a teljes szál-fa dátum szerinti rendezve"
