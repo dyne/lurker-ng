@@ -10,12 +10,12 @@
  cc="CC"
  attachments="Anexos"
 
- delete-message="Delete this message"
- reply-to-message="Reply to this message"
+ delete-message="Apagar esta mensagem"
+ reply-to-message="Responder a esta mensagem"
  regarding-subject="Re: "
- quote-open="On "
+ quote-open="Em "
  quote-middle=", "
- quote-close=" wrote:"
+ quote-close=" escreveu:"
 
  tree-context="Esta mensagem é parte da seguinte discussão:"
  full-tree="a lista completa das discussões ordenadas por data"
