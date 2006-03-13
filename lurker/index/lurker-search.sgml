@@ -51,7 +51,7 @@ lurker-search.1: lurker-search.sgml
   <refnamediv>
     <refname>&dhpackage;</refname>
 
-    <refpurpose>parses parameters from the config file</refpurpose>
+    <refpurpose>searches for messages in a lurker database</refpurpose>
   </refnamediv>
   <refsynopsisdiv>
     <cmdsynopsis>
