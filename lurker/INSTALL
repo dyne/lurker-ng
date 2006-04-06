@@ -112,6 +112,12 @@ Quick start
   just need to put 'include /usr/local/etc/lurker/apache.conf' in your
   apache configuration. You will also need to enable mod_rewrite.
   
+  To keep the hostname listed in cached HTML consistent, you might want to
+  give your server a specific name and instruct it to always use this name
+  for self-referencing URLs. In apache this is done with:
+    ServerName www.mydomain.com
+    UseCanonicalName on
+  
   The following instructions apply to users of other web servers:
   
   You must make certain that .xsl and .xml files have type text/xml.
