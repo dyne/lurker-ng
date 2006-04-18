@@ -6,23 +6,20 @@
 <!-- Format a new thread row -->
 <xsl:template name="max">
  <xsl:param name="args"/>
- <xsl:variable name="rest"  select="$args[position() &gt; 1]"/>
- <xsl:variable name="first">
-  <xsl:value-of select="$args[position()=1]"/>
- </xsl:variable>
- <xsl:variable name="best">
-  <xsl:choose>
-   <xsl:when test="count($args) &gt; 0">
-    <xsl:call-template name="max">
-     <xsl:with-param name="args" select="$rest"/>
-    </xsl:call-template>
-   </xsl:when>
-   <xsl:otherwise>0</xsl:otherwise>
-  </xsl:choose>
- </xsl:variable>
  <xsl:choose>
-  <xsl:when test="$best &gt; $first"><xsl:value-of select="$best"/></xsl:when>
-  <xsl:otherwise><xsl:value-of select="$first"/></xsl:otherwise>
+  <xsl:when test="count($args) = 0">1</xsl:when>
+  <xsl:otherwise>
+   <xsl:variable name="first" select="$args[position()=1]"/>
+   <xsl:variable name="best">
+    <xsl:call-template name="max">
+     <xsl:with-param name="args" select="$args[position() &gt; 1]"/>
+    </xsl:call-template>
+   </xsl:variable>
+   <xsl:choose>
+    <xsl:when test="$best &gt; $first"><xsl:value-of select="$best"/></xsl:when>
+    <xsl:otherwise><xsl:value-of select="$first"/></xsl:otherwise>
+   </xsl:choose>
+  </xsl:otherwise>
  </xsl:choose>
 </xsl:template>
 <xsl:template match="row" mode="newthreads">
@@ -81,7 +78,7 @@
     </xsl:call-template>
    </xsl:variable>
    <xsl:for-each select="day">
-    <img src="../imgs/bar.png" height="{(number(.)*21 div $maxval)+1}" width="5" alt=""/>
+    <img src="../imgs/bar.png" height="{floor((number(.)*21 div $maxval)+1)}" width="5" alt=""/>
    </xsl:for-each>
   </td>
   <td align="right">

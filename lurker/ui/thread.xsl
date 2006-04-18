@@ -25,7 +25,7 @@
    </xsl:choose>
   </xsl:attribute>
   <td nowrap="NOWRAP">
-   <a name="{summary/id}"/>
+   <a name="i{summary/id}"/>
    <xsl:apply-templates mode="tree" select="tree"/>
   </td>
   <td nowrap="NOWRAP"><xsl:value-of select="$deleted-name"/></td>
@@ -54,7 +54,7 @@
    </xsl:choose>
   </xsl:attribute>
   <td nowrap="NOWRAP">
-   <a name="{summary/id}"/>
+   <a name="i{summary/id}"/>
    <xsl:apply-templates mode="tree" select="tree"/>
   </td>
   <td nowrap="NOWRAP"><xsl:apply-templates mode="email-name" select="summary/email"/></td>

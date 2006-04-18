@@ -310,7 +310,7 @@
        <xsl:apply-templates mode="tree" select="threading/snippet/tree[position()=1]"/>
       </td>
       <td align="right">
-       <a href="../thread/{summary/id}.{$ext}#{summary/id}">
+       <a href="../thread/{summary/id}.{$ext}#i{summary/id}">
         <xsl:value-of select="$full-tree"/>
        </a>
       </td>

@@ -1,6 +1,10 @@
 v2.2:
 	Added support for specifying a umask for the database
 	Removed idiotic/wrong use of 'sg' in INSTALL's import example
+	Cleaned up HTML using firefox:
+		Double lang in redirects removed
+		<a name="..."> can't be a number
+		Fixed NaN errors in bar charts
 
 v2.1:
 	lurker.cgi uses the environment to provide location information:
