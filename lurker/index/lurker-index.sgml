@@ -112,15 +112,14 @@ lurker-index.1: lurker-index.sgml
           smarter.</para>
 
           <para>This option should be used when lurker\-index is invoked by
-          the MTA for newly delivered email. For importing batches of
-          archived mail, see the '\-b' option.</para>
+          the MTA for newly delivered email.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
         <term><option>\-i mbox/maildir</option></term>
         <listitem>
           <para>Import messages from the specified mailbox or maildir.
-          When '\-b' is specified, lurker\-index by default reads a mailbox
+          Lurker\-index by default reads a mailbox
           (mbox format) from standard input. If the '\-i' parameter is a file,
           the file is assumed to be in the mbox format and is read instead
           of standard input.  If the parameter is a directory, the directory
