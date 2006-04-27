@@ -58,7 +58,7 @@ lurker-prune.1: lurker-prune.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg>\-c &lt;config-file&gt;</arg>
-      <arg>\-d &lt;docroot&gt;</arg>
+      <arg>\-f &lt;frontend&gt;</arg>
       <arg>\-m &lt;days&gt;</arg>
       <arg>\-a &lt;days&gt;</arg>
       <arg>\-p \-v</arg>
@@ -97,12 +97,11 @@ lurker-prune.1: lurker-prune.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>\-d docroot</option></term>
+        <term><option>\-f frontend</option></term>
         <listitem>
-          <para>The base directory of the lurker cache. This must be set to
-          the directory which contains message/*, thread/*, etc. If you have
-          multiple running lurker interfaces, you must run this pointing
-          at each of the document roots.</para>
+          <para>The directory of the lurker frontend cache to clean. You can
+          selectively purge cache with this option. By default, lurker-prune 
+          will clean all frontends specified in the config file.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
