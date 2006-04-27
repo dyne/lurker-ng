@@ -3,7 +3,7 @@
 lurker\-prune \(em prunes the web-server cache 
 .SH "SYNOPSIS" 
 .PP 
-\fBlurker\-prune\fR [\-c <config-file>]  [\-d <docroot>]  [\-m <days>]  [\-a <days>]  [\-p \-v]  
+\fBlurker\-prune\fR [\-c <config-file>]  [\-f <frontend>]  [\-m <days>]  [\-a <days>]  [\-p \-v]  
 .SH "DESCRIPTION" 
 .PP 
 \fBlurker\-prune\fR prunes obsolete or stale files 
@@ -27,11 +27,10 @@ This might help guard against a potential denial-of-service attack.
 .SH "OPTIONS" 
 .IP "\fB\-c config-file\fP" 10 
 Use this config file for lurker settings. 
-.IP "\fB\-d docroot\fP" 10 
-The base directory of the lurker cache. This must be set to 
-the directory which contains message/*, thread/*, etc. If you have 
-multiple running lurker interfaces, you must run this pointing 
-at each of the document roots. 
+.IP "\fB\-f frontend\fP" 10 
+The directory of the lurker frontend cache to clean. You can 
+selectively purge cache with this option. By default, lurker-prune  
+will clean all frontends specified in the config file. 
 .IP "\fB\-m days\fP" 10 
 Keep cached files for at most this many days. Any cached 
 file regardless of last access will be deleted after the specified 
@@ -84,4 +83,4 @@ Before reporting a bug, please confirm that the bug you found is
 still present in the latest official release. If the problem persists, 
 then send mail with instructions describing how to reproduce the bug to 
 <lurker\-users@lists.sourceforge.net>. 
-.\" created by instant / docbook-to-man, Mon 27 Feb 2006, 02:55 
+.\" created by instant / docbook-to-man, Thu 27 Apr 2006, 19:46 
