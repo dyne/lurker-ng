@@ -1,4 +1,4 @@
-/*  $Id: Summary.h,v 1.3 2006-02-21 19:45:45 terpstra Exp $
+/*  $Id: Summary.h,v 1.4 2006-06-28 16:26:50 terpstra Exp $
  *  
  *  Summary.h - Helper which can load a message given MessageId
  *  
@@ -39,6 +39,9 @@ class DwMessage;
 using std::set;
 using std::ostream;
 using namespace ESort;
+
+// Convert all linear white space into a single space
+string whitespace_sanitize(const string& x);
 
 class Summary
 {

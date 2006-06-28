@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.47 2006-03-01 14:55:45 terpstra Exp $
+/*  $Id: message.cpp,v 1.48 2006-06-28 16:26:50 terpstra Exp $
  *  
  *  message.cpp - Handle a message/ command
  *  
@@ -610,7 +610,7 @@ void message_format_address(ostream& o, DwAddress* a, const string& charset, con
 				o << "<email";
 				if (name != "")
 					o << " name=\"" << xmlEscape 
-					  << name << "\"";
+					  << whitespace_sanitize(name) << "\"";
 				if (addr != "" && !cfg.hide_email)
 					o << " address=\"" << xmlEscape
 					  << addr.c_str() << "\"";

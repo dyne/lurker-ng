@@ -1,4 +1,4 @@
-/*  $Id: Summary.cpp,v 1.5 2006-02-25 02:04:25 terpstra Exp $
+/*  $Id: Summary.cpp,v 1.6 2006-06-28 16:26:50 terpstra Exp $
  *  
  *  Summary.cpp - Helper which can load a message given MessageId
  *  
@@ -207,4 +207,33 @@ ostream& operator << (ostream& o, const Summary& s)
 	
 	o << "</summary>";
 	return o;
+}
+
+// Locale independent
+static inline bool my_isspace(char x)
+{
+	return x == '\t' || x == '\n' || x == '\v' || 
+	       x == '\f' || x == '\r' || x == ' ';
+}
+
+string whitespace_sanitize(const string& x)
+{
+	string out;
+	string::size_type i = 0;
+	
+	// Trim leading whitespace
+	while (i < x.length() && my_isspace(x[i])) i++;
+	
+	while (1)
+	{
+		// Copy non-whitespace
+		while (i < x.length() && !my_isspace(x[i])) out += x[i++];
+		while (i < x.length() && my_isspace(x[i])) i++;
+		if (i == x.length()) break;
+		// If we have more non-whitespace, and passed some whitespace,
+		// then output a single space
+		out += " ";
+	}
+	
+	return out;
 }

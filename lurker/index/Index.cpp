@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.35 2006-02-24 13:17:29 terpstra Exp $
+/*  $Id: Index.cpp,v 1.36 2006-06-28 16:26:50 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -43,6 +43,7 @@
 #include <md5.h>
 
 #include "Index.h"
+#include "Summary.h"
 
 #include <string>
 #include <vector>
@@ -190,6 +191,7 @@ int Index::index_author()
 		if (!author_name .length()) author_name  = addr.second;
 	}
 	
+	author_name = whitespace_sanitize(author_name);
 	utf8Truncate(author_name, 100);
 	//  - nothing longer than 128 could get here (from above)
 	//  - one can never safely truncate an email address

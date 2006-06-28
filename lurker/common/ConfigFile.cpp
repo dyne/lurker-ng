@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.25 2006-03-10 00:47:22 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.26 2006-06-28 16:26:50 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -26,6 +26,7 @@
 
 #include "ConfigFile.h"
 #include "XmlEscape.h"
+#include "Summary.h"
 
 #include <fstream>
 #include <iostream>
@@ -1037,7 +1038,7 @@ ostream& operator << (ostream& o, const List::SerializeMagic& lm)
 	if (m.address.length() > 0)
 		o << " address=\"" << xmlEscape << m.address << "\"";
 	if (m.title.is_set())
-		o << " name=\"" << xmlEscape << m.title(l) << "\"";
+		o << " name=\"" << xmlEscape << whitespace_sanitize(m.title(l)) << "\"";
 	else
 		o << " name=\"" << m.mbox << "\"";
 	
@@ -1081,7 +1082,7 @@ ostream& operator << (ostream& o, const Config::SerializeMagic& cm)
 	if (c.admin_address.length() > 0)
 		o << " address=\"" << xmlEscape << c.admin_address << "\"";
 	if (c.admin_name.is_set())
-		o << " name=\"" << xmlEscape << c.admin_name(l) << "\"";
+		o << " name=\"" << xmlEscape << whitespace_sanitize(c.admin_name(l)) << "\"";
 	o << "/></server>";
 	
 	return o;

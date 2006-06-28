@@ -5,6 +5,7 @@ v2.2:
 		Double lang in redirects removed
 		<a name="..."> can't be a number
 		Fixed NaN errors in bar charts
+	Fixed a bug where a username with line breaks created broken XML
 
 v2.1:
 	lurker.cgi uses the environment to provide location information:
