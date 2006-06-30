@@ -6,6 +6,7 @@ v2.2:
 		<a name="..."> can't be a number
 		Fixed NaN errors in bar charts
 	Fixed a bug where a username with line breaks created broken XML
+	Compare the list address and reply-to insensitively
 
 v2.1:
 	lurker.cgi uses the environment to provide location information:

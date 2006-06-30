@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.36 2006-06-28 16:26:50 terpstra Exp $
+/*  $Id: Index.cpp,v 1.37 2006-06-30 11:53:21 terpstra Exp $
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  
@@ -72,6 +72,23 @@ void utf8Truncate(string& str, string::size_type len)
 	// len is now at the end of a complete multi-byte element or ascii
 	
 	str.resize(len);
+}
+
+static inline char my_toupper(char x)
+{
+	if (x >= 'a' && x <= 'z')
+		return x - 'a' + 'A';
+	else	return x;
+}
+
+static bool strings_equal_case_ignored(const string& a, const string& b)
+{
+	if (a.length() != b.length()) return false;
+	
+	for (string::size_type i = 0; i < a.length(); ++i)
+		if (my_toupper(a[i]) != my_toupper(b[i]))
+			return false;
+	return true;
 }
 
 // first = address, second = name
@@ -159,7 +176,7 @@ int Index::index_author()
 		author_name  = addr.second;
 		
 		// Some evil mailing lists set reply-to the list.
-		if (author_email == list.address)
+		if (strings_equal_case_ignored(author_email, list.address))
 		{
 			author_email = "";
 			author_name = "";
