@@ -65,8 +65,8 @@ dt a { font-weight: normal }
 .mime-label a { background-color:#DDF; padding:3px; font-weight:bold }
 
 img.inline {
-  max-width: 640;
-  max-height: 480;
+  max-width: 640px;
+  max-height: 480px;
   width: expression(this.width > 640 ? 640 : true); 
 }
 
@@ -141,7 +141,7 @@ div.opsfloat {
 
 /* opsbox = table on right with attachments */
 table.opsbox td {
-  padding: 0 0 0 10;
+  padding: 0px 0px 0px 10px;
 }
 
 table.attachments {
