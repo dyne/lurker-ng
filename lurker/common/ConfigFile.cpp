@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.29 2006-07-01 12:46:54 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.30 2006-07-01 13:03:38 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -769,6 +769,14 @@ int Config::process_command(const string& file, int c, const string& keys, const
 		if (frontends.find(sval) == frontends.end())
 		{
 			frontend = &frontends[sval];
+			
+			// Inherit global values
+			frontend->admin_name = admin_name;
+			frontend->admin_address = admin_address;
+			frontend->archive = archive;
+			frontend->hide_email = hide_email;
+			frontend->raw_email = raw_email;
+			frontend->web_cache = web_cache;
 		}
 		else
 		{
@@ -886,7 +894,9 @@ int Config::process_command(const string& file, int c, const string& keys, const
 	}
 	else if (key == "admin_name")
 	{
-		admin_name.translate(lc, val);
+		if (frontend == 0)
+			admin_name.translate(lc, val);
+		else	frontend->admin_name.translate(lc, val);
 	}
 	else if (key == "admin_address")
 	{
@@ -895,11 +905,15 @@ int Config::process_command(const string& file, int c, const string& keys, const
 			ERROR << "admin_address cannot be localized" << endl;
 			return -1;
 		}
-		admin_address = val;
+		if (frontend == 0)
+			admin_address = val;
+		else	frontend->admin_address = val;
 	}
 	else if (key == "archive")
 	{
-		archive.translate(lc, val);
+		if (frontend == 0)
+			archive.translate(lc, val);
+		else	frontend->archive.translate(lc, val);
 	}
 	else if (key == "xslt")
 	{
@@ -944,15 +958,21 @@ int Config::process_command(const string& file, int c, const string& keys, const
 			ERROR << "web_cache cannot be localized" << endl;
 			return -1;
 		}
+		
+		bool newval;
 		if (val == "off" || val == "false")
-			web_cache = false;
+			newval = false;
 		else if (val == "on" || val == "true")
-			web_cache = true;
+			newval = true;
 		else
 		{
 			ERROR << "web_cache must be set to on/off or true/false!" << endl;
 			return -1;
 		}
+		
+		if (frontend == 0)
+			web_cache = newval;
+		else	frontend->web_cache = newval;
 	}
 	else if (key == "hide_email")
 	{
@@ -961,15 +981,21 @@ int Config::process_command(const string& file, int c, const string& keys, const
 			ERROR << "hide_email cannot be localized" << endl;
 			return -1;
 		}
+		
+		bool newval;
 		if (val == "off" || val == "false")
-			hide_email = false;
+			newval = false;
 		else if (val == "on" || val == "true")
-			hide_email = true;
+			newval = true;
 		else
 		{
 			ERROR << "hide_email must be set to on/off or true/false!" << endl;
 			return -1;
 		}
+		
+		if (frontend == 0)
+			hide_email = newval;
+		else	frontend->hide_email = newval;
 	}
 	else if (key == "raw_email")
 	{
@@ -978,15 +1004,21 @@ int Config::process_command(const string& file, int c, const string& keys, const
 			ERROR << "raw_email cannot be localized" << endl;
 			return -1;
 		}
+		
+		bool newval;
 		if (val == "off" || val == "false")
-			raw_email = false;
+			newval = false;
 		else if (val == "on" || val == "true")
-			raw_email = true;
+			newval = true;
 		else
 		{
 			ERROR << "raw_email must be set to on/off or true/false!" << endl;
 			return -1;
 		}
+		
+		if (frontend == 0)
+			raw_email = newval;
+		else	frontend->raw_email = newval;
 	}
 	else if (key == "include")
 	{
@@ -1163,4 +1195,12 @@ void Config::set_permissions(const Frontend& f)
 			}
 		}
 	}
+	
+	// Take the specific settings for the globals
+	archive = f.archive;
+	admin_name = f.admin_name;
+	admin_address = f.admin_address;
+	hide_email = f.hide_email;
+	raw_email = f.raw_email;
+	web_cache = f.web_cache;
 }

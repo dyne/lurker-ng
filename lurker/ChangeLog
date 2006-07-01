@@ -10,6 +10,8 @@ v2.2:
 	Fix foreground colour for people with reversed settings
 	Allow include'ing a directory --> read all files ending with .conf
 	Include filename and line number in config error messages
+	Some previously global settings can now be overriden for frontends
+		admin_{name,address}, archive, {hide,raw}_email, web_cache
 
 v2.1:
 	lurker.cgi uses the environment to provide location information:

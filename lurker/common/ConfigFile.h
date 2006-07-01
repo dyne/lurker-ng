@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.16 2006-07-01 12:46:54 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.17 2006-07-01 13:03:38 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -115,7 +115,14 @@ struct Frontend
 		string key;
  	};
  	
- 	vector<Entry> entries;
+ 	vector<Entry>	entries;
+ 	
+ 	lstring		archive;
+ 	lstring		admin_name;
+ 	string		admin_address;
+ 	bool		hide_email;
+ 	bool		raw_email;
+ 	bool		web_cache;
 };
 
 class Config

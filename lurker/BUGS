@@ -1,5 +1,3 @@
-Change admin_name / etc for multiple frontends?
-
 lurker-prune loads summary data for every message between newest and oldest
 present in the cache. That's WAY too much shit in RAM. The reason this
 happens is because we don't know how far back in time a thread/mindex
