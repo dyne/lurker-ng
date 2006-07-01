@@ -10,7 +10,6 @@ message's subject/successor is modified.
 Ideas:
 	In-message forward/backward for search results
 	Bring back message count estimates
-	Maybe exclude tab indented paragraphs from pre-formatting
 	Printable css
 	Pack the threading tree more densely somehow
 	Phrase searching

@@ -1,3 +1,4 @@
+
 # Lurker configuration file (lurker.conf).
 # Install as @DEFAULT_CONFIG_DIR@/@PACKAGE@.conf on your system.
 
@@ -102,6 +103,7 @@ delete_message = sg lurker -c "@BINDIR@/lurker-search -d -f -q -i -c %c %i"
 # It should be readable by lurker.cgi and lurker-prune.
 # Do not mess with the files in this directory on pain of death.
 # Before taking a backup, make sure your MTA has a frozen mail queue.
+# The path is taken relative to the location of the config file.
 
 dbdir = @LOCALSTATEDIR@/lib/@PACKAGE@
 
@@ -119,6 +121,7 @@ dbdir = @LOCALSTATEDIR@/lib/@PACKAGE@
 # If you have a large number of mailing lists it may help to group them.
 # One strategy to keep organised is to have one config file per group.
 # This also allows collaboratively maintained archives (different owners).
+# The path is interpretted relative to the path of the including config file.
 # 
 # include = another.conf
 
