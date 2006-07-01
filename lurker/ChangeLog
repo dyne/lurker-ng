@@ -8,6 +8,7 @@ v2.2:
 	Fixed a bug where a username with line breaks created broken XML
 	Compare the list address and reply-to insensitively
 	Fix foreground colour for people with reversed settings
+	Allow include'ing a directory --> read all files ending with .conf
 
 v2.1:
 	lurker.cgi uses the environment to provide location information:

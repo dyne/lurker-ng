@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.26 2006-06-28 16:26:50 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.27 2006-07-01 12:09:06 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -30,6 +30,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif
@@ -38,6 +39,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdlib.h>
+#include <dirent.h>
 
 using namespace std;
 
@@ -859,7 +861,10 @@ int Config::process_command(const string& keys, const string& val, const string&
 			error << "dbdir cannot be localized" << endl;
 			return -1;
 		}
-		dbdir = val;
+		
+		if (val[0] == '/')
+			dbdir = val;
+		else	dbdir = dir + val;
 	}
 	else if (key == "db_umask")
 	{
@@ -994,8 +999,42 @@ int Config::process_command(const string& keys, const string& val, const string&
 			file = val;
 		else	file = dir + val;
 		
-		if (load(file, false) != 0)
-			return -1;
+		DIR* d = opendir(file.c_str());
+		if (d)
+		{
+			struct dirent* e;
+			struct stat s;
+			vector<string> paths;
+			while ((e = readdir(d)) != 0)
+			{
+				int len = strlen(e->d_name);
+				if (e->d_name[0] == '.') continue;
+				if (len <= 5) continue;
+				if (strcmp(".conf", &e->d_name[len-5]))
+					continue;
+				
+				string path = file + '/' + e->d_name;
+				if (stat(path.c_str(), &s) != 0) continue;
+				if (!S_ISREG(s.st_mode)) continue;
+				
+				paths.push_back(file);
+			}
+			closedir(d);
+			
+			// Include them in sorted order
+			sort(paths.begin(), paths.end());
+			for (vector<string>::const_iterator i = paths.begin();
+			    i != paths.end(); ++i)
+			{
+				if (load(*i, false) != 0)
+					return -1;
+			}
+		}
+		else
+		{
+			if (load(file, false) != 0)
+				return -1;
+		}
 	}
 	else
 	{

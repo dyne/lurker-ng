@@ -121,9 +121,11 @@ dbdir = @LOCALSTATEDIR@/lib/@PACKAGE@
 # If you have a large number of mailing lists it may help to group them.
 # One strategy to keep organised is to have one config file per group.
 # This also allows collaboratively maintained archives (different owners).
+# If a directory is specified, then all files ending in '.conf' are included.
 # The path is interpretted relative to the path of the including config file.
 # 
 # include = another.conf
+# include = /etc/lurker/conf.d
 
 # Tell lurker to generate web cache.
 # 
