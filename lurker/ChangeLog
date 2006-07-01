@@ -7,6 +7,7 @@ v2.2:
 		Fixed NaN errors in bar charts
 	Fixed a bug where a username with line breaks created broken XML
 	Compare the list address and reply-to insensitively
+	Fix foreground colour for people with reversed settings
 
 v2.1:
 	lurker.cgi uses the environment to provide location information:

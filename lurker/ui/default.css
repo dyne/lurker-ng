@@ -2,6 +2,8 @@ body {
   padding: 0px;
   margin: 0px;
   background-color: #BBF;
+  color: black;
+  font-family: times;
 }
 
 form {
