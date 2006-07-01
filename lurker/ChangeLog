@@ -9,6 +9,7 @@ v2.2:
 	Compare the list address and reply-to insensitively
 	Fix foreground colour for people with reversed settings
 	Allow include'ing a directory --> read all files ending with .conf
+	Include filename and line number in config error messages
 
 v2.1:
 	lurker.cgi uses the environment to provide location information:

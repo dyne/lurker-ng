@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.15 2006-03-10 00:47:22 terpstra Exp $
+/*  $Id: ConfigFile.h,v 1.16 2006-07-01 12:46:54 terpstra Exp $
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  
@@ -190,7 +190,7 @@ class Config
  	
  	// Open the config from this file.
  	int load(const string& file, bool toplevel = true);
- 	int process_command(const string& key, const string& val, const string& dir);
+ 	int process_command(const string& file, int c, const string& key, const string& val, const string& dir);
  	
  	// Set the allowed flag on lists
  	void set_permissions(const Frontend& f);

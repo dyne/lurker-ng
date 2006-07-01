@@ -1,5 +1,4 @@
 Change admin_name / etc for multiple frontends?
-conf.d configuration if include = directory
 
 lurker-prune loads summary data for every message between newest and oldest
 present in the cache. That's WAY too much shit in RAM. The reason this

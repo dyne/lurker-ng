@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.28 2006-07-01 12:18:18 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.29 2006-07-01 12:46:54 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -42,6 +42,8 @@
 #include <dirent.h>
 
 using namespace std;
+
+#define ERROR	error << file << ":" << c << ": "
 
 map<string, string>* lstring::c = 0;
 
@@ -477,7 +479,7 @@ int Config::load(const string& file, bool toplevel)
 		{	// this line continues the previous one.
 			if (key == "")
 			{
-				error << "No key for value '" << line << "'!" << endl;
+				ERROR << "No key for value '" << line << "'!" << endl;
 				ok = false;
 			}
 			else
@@ -489,7 +491,7 @@ int Config::load(const string& file, bool toplevel)
 		}
 		else
 		{
-			if (key != "" && process_command(key, val, dir) != 0) ok = false;
+			if (key != "" && process_command(file, c, key, val, dir) != 0) ok = false;
 			
 			string::size_type leadin = skip_front(line);
 			key.assign(line, leadin, eq-leadin);
@@ -500,11 +502,11 @@ int Config::load(const string& file, bool toplevel)
 	
 	if (toplevel && key == "")
 	{
-		error << "No values set by config file '" << file << "'!" << endl;
+		error << file << ":eof: No values set!" << endl;
 		ok = false;
 	}
 	
-	if (key != "" && process_command(key, val, dir) != 0) ok = false;
+	if (key != "" && process_command(file, c, key, val, dir) != 0) ok = false;
 	
 	if (toplevel)
 	{
@@ -516,7 +518,7 @@ int Config::load(const string& file, bool toplevel)
 		{
 			if (i->second.languages.empty()) 
 			{
-				error << "List '" << i->first << "' has no language!" << endl;
+				error << file << ":eof: List '" << i->first << "' has no language!" << endl;
 				return -1;
 			}
 		}
@@ -534,7 +536,7 @@ int Config::load(const string& file, bool toplevel)
 			
 			if (fi->first + "/" == fn->first.substr(0, fi->first.length()+1))
 			{
-				error << "Frontend '" << fi->first << "' is a prefix of '" << fn->first << "', which is forbidden!" << endl;
+				error << file << ":eof: Frontend '" << fi->first << "' is a prefix of '" << fn->first << "', which is forbidden!" << endl;
 				return -1;
 			}
 			
@@ -563,25 +565,25 @@ bool isSimple(const string& s)
 	return true;
 }
 
-int Config::process_command(const string& keys, const string& val, const string& dir)
+int Config::process_command(const string& file, int c, const string& keys, const string& val, const string& dir)
 {
 //	cout << key << "-" << val << endl;
 	
 	string lc; // locale code
 	string key(keys);
 	
-	string::size_type o, c;
+	string::size_type o, d;
 	if ((o = key.find('[')) != string::npos &&
-	    (c = key.find(']')) != string::npos &&
-	    c > o)
+	    (d = key.find(']')) != string::npos &&
+	    d > o)
 	{
 		// localization option
-		lc.assign(key, o+1, (c-o) - 1);
-		key.erase(o, (c-o) + 1);
+		lc.assign(key, o+1, (d-o) - 1);
+		key.erase(o, (d-o) + 1);
 		
 		if (!lstring::locale_normalize(lc))
 		{
-			error << "Localization code '" << lc << "' is not valid." << endl;
+			ERROR << "Localization code '" << lc << "' is not valid." << endl;
 			return -1;
 		}
 	}
@@ -593,19 +595,19 @@ int Config::process_command(const string& keys, const string& val, const string&
 		len = 128;
 		if (!isSimple(val) || val.length() == 0)
 		{
-			error << "Group id '" << val << "' is not a simple lowercase string!" << endl;
+			ERROR << "Group id '" << val << "' is not a simple lowercase string!" << endl;
 			return -1;
 		}
 		
 		if (lc != "")
 		{
-			error << "group id cannot be localized" << endl;
+			ERROR << "group id cannot be localized" << endl;
 			return -1;
 		}
 		
 		if (groups.find(val) != groups.end())
 		{
-			error << "Group id '" << val << "' already exists!" << endl;
+			ERROR << "Group id '" << val << "' already exists!" << endl;
 			return -1;
 		}
 		
@@ -621,19 +623,19 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (group == "")
 		{
-			error << "List id '" << val << "' is not a member of any group!" << endl;
+			ERROR << "List id '" << val << "' is not a member of any group!" << endl;
 			return -1;
 		}
 		
 		len = 128;
 		if (!isSimple(val) || val.length() == 0)
 		{
-			error << "List id '" << val << "' is not a simple lowercase string!" << endl;
+			ERROR << "List id '" << val << "' is not a simple lowercase string!" << endl;
 			return -1;
 		}
 		if (lc != "")
 		{
-			error << "list id cannot be localized" << endl;
+			ERROR << "list id cannot be localized" << endl;
 			return -1;
 		}
 		
@@ -647,7 +649,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 		}
 		else
 		{
-			error << "List id '" << val << "' already exists!" << endl;
+			ERROR << "List id '" << val << "' already exists!" << endl;
 			return -1;
 		}
 	}
@@ -657,7 +659,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 		
 		if (!list)
 		{
-			error << "No list has been defined for title '" << val << "'!" << endl;
+			ERROR << "No list has been defined for title '" << val << "'!" << endl;
 			return -1;
 		}
 		
@@ -667,12 +669,12 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (!list)
 		{
-			error << "No list has been defined for address '" << val << "'!" << endl;
+			ERROR << "No list has been defined for address '" << val << "'!" << endl;
 			return -1;
 		}
 		if (lc != "")
 		{
-			error << "list address cannot be localized" << endl;
+			ERROR << "list address cannot be localized" << endl;
 			return -1;
 		}
 		
@@ -682,7 +684,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (!list)
 		{
-			error << "No list has been defined for address '" << val << "'!" << endl;
+			ERROR << "No list has been defined for address '" << val << "'!" << endl;
 			return -1;
 		}
 		
@@ -692,19 +694,19 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (!list)
 		{
-			error << "No list has been defined for language '" << val << "'!" << endl;
+			ERROR << "No list has been defined for language '" << val << "'!" << endl;
 			return -1;
 		}
 		if (lc != "")
 		{
-			error << "list language cannot be localized" << endl;
+			ERROR << "list language cannot be localized" << endl;
 			return -1;
 		}
 		
 		string lval(val);
 		if (!lstring::lang_normalize(lval))
 		{
-			error << "Language '" << val << "' is not an ISO 639 language code!" << endl;
+			ERROR << "Language '" << val << "' is not an ISO 639 language code!" << endl;
 			error << "Regional variants are not relevant for searches." << endl;
 			return -1;
 		}
@@ -715,12 +717,12 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (!list)
 		{
-			error << "No list has been defined for offline setting '" << val << "'!" << endl;
+			ERROR << "No list has been defined for offline setting '" << val << "'!" << endl;
 			return -1;
 		}
 		if (lc != "")
 		{
-			error << "list offline cannot be localized" << endl;
+			ERROR << "list offline cannot be localized" << endl;
 			return -1;
 		}
 		
@@ -730,7 +732,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 			list->offline = true;
 		else
 		{
-			error << "offline must be set to on/off or true/false!" << endl;
+			ERROR << "offline must be set to on/off or true/false!" << endl;
 			return -1;
 		}
 	}
@@ -738,7 +740,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (!list)
 		{
-			error << "No list has been defined for address '" << val << "'!" << endl;
+			ERROR << "No list has been defined for address '" << val << "'!" << endl;
 			return -1;
 		}
 		
@@ -750,13 +752,13 @@ int Config::process_command(const string& keys, const string& val, const string&
 		
 		if (lc != "")
 		{
-			error << "frontend path '" <<  val << "' cannot be localized" << endl;
+			ERROR << "frontend path '" <<  val << "' cannot be localized" << endl;
 			return -1;
 		}
 		
 		if (val.length() == 0 || val[0] != '/')
 		{
-			error << "frontend path is not absolute '" << val << "' (must start with a '/')!" << endl;
+			ERROR << "frontend path is not absolute '" << val << "' (must start with a '/')!" << endl;
 			return -1;
 		}
 		
@@ -770,7 +772,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 		}
 		else
 		{
-			error << "Frontend '" << val << "' already exists!" << endl;
+			ERROR << "Frontend '" << val << "' already exists!" << endl;
 			return -1;
 		}
 	}
@@ -778,13 +780,13 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (frontend == 0)
 		{
-			error << "No frontend defined for allow_list = '" << val << "'" << endl;
+			ERROR << "No frontend defined for allow_list = '" << val << "'" << endl;
 			return -1;
 		}
 		
 		if (lists.find(val) == lists.end())
 		{
-			error << "List '" << val << "' does not exist for allow_list" << endl;
+			ERROR << "List '" << val << "' does not exist for allow_list" << endl;
 			return -1;
 		}
 		
@@ -798,13 +800,13 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (frontend == 0)
 		{
-			error << "No frontend defined for deny_list = '" << val << "'" << endl;
+			ERROR << "No frontend defined for deny_list = '" << val << "'" << endl;
 			return -1;
 		}
 		
 		if (lists.find(val) == lists.end())
 		{
-			error << "List '" << val << "' does not exist for deny_list" << endl;
+			ERROR << "List '" << val << "' does not exist for deny_list" << endl;
 			return -1;
 		}
 		
@@ -818,13 +820,13 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (frontend == 0)
 		{
-			error << "No frontend defined for allow_group = '" << val << "'" << endl;
+			ERROR << "No frontend defined for allow_group = '" << val << "'" << endl;
 			return -1;
 		}
 		
 		if (groups.find(val) == groups.end())
 		{
-			error << "Group '" << val << "' does not exist for allow_group" << endl;
+			ERROR << "Group '" << val << "' does not exist for allow_group" << endl;
 			return -1;
 		}
 		
@@ -838,13 +840,13 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (frontend == 0)
 		{
-			error << "No frontend defined for deny_group = '" << val << "'" << endl;
+			ERROR << "No frontend defined for deny_group = '" << val << "'" << endl;
 			return -1;
 		}
 		
 		if (groups.find(val) == groups.end())
 		{
-			error << "Group '" << val << "' does not exist for deny_group" << endl;
+			ERROR << "Group '" << val << "' does not exist for deny_group" << endl;
 			return -1;
 		}
 		
@@ -858,7 +860,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (lc != "")
 		{
-			error << "dbdir cannot be localized" << endl;
+			ERROR << "dbdir cannot be localized" << endl;
 			return -1;
 		}
 		
@@ -870,7 +872,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (lc != "")
 		{
-			error << "db_umask cannot be localized" << endl;
+			ERROR << "db_umask cannot be localized" << endl;
 			return -1;
 		}
 		
@@ -878,7 +880,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 		db_umask = strtol(val.c_str(), &e, 8);
 		if (val.length() == 0 || *e != 0)
 		{
-			error << "db_mask must be given an octal number, not '" << val << "'" << endl;
+			ERROR << "db_mask must be given an octal number, not '" << val << "'" << endl;
 			return -1;
 		}
 	}
@@ -890,7 +892,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (lc != "")
 		{
-			error << "admin_address cannot be localized" << endl;
+			ERROR << "admin_address cannot be localized" << endl;
 			return -1;
 		}
 		admin_address = val;
@@ -903,7 +905,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (lc != "")
 		{
-			error << "xslt command cannot be localized" << endl;
+			ERROR << "xslt command cannot be localized" << endl;
 			return -1;
 		}
 		xslt = val;
@@ -912,7 +914,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (lc != "")
 		{
-			error << "delete_message command cannot be localized" << endl;
+			ERROR << "delete_message command cannot be localized" << endl;
 			return -1;
 		}
 		delete_message = val;
@@ -921,7 +923,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (lc != "")
 		{
-			error << "pgp_verify_mime command cannot be localized" << endl;
+			ERROR << "pgp_verify_mime command cannot be localized" << endl;
 			return -1;
 		}
 		pgpv_mime = val;
@@ -930,7 +932,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (lc != "")
 		{
-			error << "pgp_verify_inline command cannot be localized" << endl;
+			ERROR << "pgp_verify_inline command cannot be localized" << endl;
 			return -1;
 		}
 		pgpv_inline = val;
@@ -939,7 +941,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (lc != "")
 		{
-			error << "web_cache cannot be localized" << endl;
+			ERROR << "web_cache cannot be localized" << endl;
 			return -1;
 		}
 		if (val == "off" || val == "false")
@@ -948,7 +950,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 			web_cache = true;
 		else
 		{
-			error << "web_cache must be set to on/off or true/false!" << endl;
+			ERROR << "web_cache must be set to on/off or true/false!" << endl;
 			return -1;
 		}
 	}
@@ -956,7 +958,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (lc != "")
 		{
-			error << "hide_email cannot be localized" << endl;
+			ERROR << "hide_email cannot be localized" << endl;
 			return -1;
 		}
 		if (val == "off" || val == "false")
@@ -965,7 +967,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 			hide_email = true;
 		else
 		{
-			error << "hide_email must be set to on/off or true/false!" << endl;
+			ERROR << "hide_email must be set to on/off or true/false!" << endl;
 			return -1;
 		}
 	}
@@ -973,7 +975,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (lc != "")
 		{
-			error << "raw_email cannot be localized" << endl;
+			ERROR << "raw_email cannot be localized" << endl;
 			return -1;
 		}
 		if (val == "off" || val == "false")
@@ -982,7 +984,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 			raw_email = true;
 		else
 		{
-			error << "raw_email must be set to on/off or true/false!" << endl;
+			ERROR << "raw_email must be set to on/off or true/false!" << endl;
 			return -1;
 		}
 	}
@@ -990,7 +992,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 	{
 		if (lc != "")
 		{
-			error << "include cannot be localized" << endl;
+			ERROR << "include cannot be localized" << endl;
 			return -1;
 		}
 		string file;
@@ -1038,13 +1040,13 @@ int Config::process_command(const string& keys, const string& val, const string&
 	}
 	else
 	{
-		error << "Unknown configuration directive '" << key << "'!" << endl;
+		ERROR << "Unknown configuration directive '" << key << "'!" << endl;
 		return -1;
 	}
 	
 	if (val.length() > len)
 	{
-		error << "Value '" << val << "' is too long for directive '" << key << "'!" << endl;
+		ERROR << "Value '" << val << "' is too long for directive '" << key << "'!" << endl;
 		return -1;
 	}
 	
