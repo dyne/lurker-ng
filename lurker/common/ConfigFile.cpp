@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.27 2006-07-01 12:09:06 terpstra Exp $
+/*  $Id: ConfigFile.cpp,v 1.28 2006-07-01 12:18:18 terpstra Exp $
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  
@@ -1017,7 +1017,7 @@ int Config::process_command(const string& keys, const string& val, const string&
 				if (stat(path.c_str(), &s) != 0) continue;
 				if (!S_ISREG(s.st_mode)) continue;
 				
-				paths.push_back(file);
+				paths.push_back(path);
 			}
 			closedir(d);
 			
