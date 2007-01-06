@@ -53,6 +53,7 @@ signature AUTOMATA =
         
         val power: t -> t
         val concat: (t * t) -> t
+        val union: (t * t) -> t
         
         val toDFA: t -> Deterministic.t
         val fromDFA: Deterministic.t -> t
@@ -67,6 +68,13 @@ signature AUTOMATA =
           Concat of t * t | Union of t * t | Intersect of t * t
         
         (* val toString: t -> String.string *)
+        
+        (* there is a reason complement and intersection are unsupported by
+         * regular expressions: they are easier to do in DFA, but not NFA!
+         * 
+         * This method performs the costly NFA->DFA conversion only then.
+         *)
+        val toNFA: t -> NonDeterministic.t
         val toDFA: t -> Deterministic.t
       end
     

@@ -303,16 +303,13 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
         (* note: the output is sorted b/c it was in a btree *)
         fun dfs e q =
           let
-            val treeToList = BTree.fold (fn (k, _, l) => k :: l) []
-            val q = ref q
-            val seen = ref BTree.empty
-            fun pass h =
-              if isSome (BTree.get (!seen) h) then q := tl (!q) else (
-                seen := BTree.insert (!seen) (h, ());
-                q := Vector.sub (e, h) @ tl (!q))
-            val () = while not (List.null (!q)) do pass (hd (!q))
+            open BTree
+            fun touch (t, []) = t
+              | touch (t, a :: r) = 
+                if isSome (get t a) then touch (t, r) else
+                touch (insert t (a, ()), Vector.sub (e, a) @ r)
           in
-            treeToList (!seen)
+            fold (fn (k, _, l) => k :: l) [] (touch (empty, q))
           end
         
         fun size (_, a) = Vector.length a
@@ -361,6 +358,18 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
             (Vector.concat [e1, e2], Vector.concat [a1, a2])
           end
         
+        fun union ((e1, a1), (e2, a2)) = 
+          let
+            val l1 = Vector.length a1
+            val e0 = Vector.fromList [[2, l1+2], []]
+            val a0 = Vector.fromList [(false, ZTree.uniform 1),
+                                      (false, ZTree.uniform 1)]
+            val (e1, a1) = mapRenumber     2  (e1, a1)
+            val (e2, a2) = mapRenumber (l1+2) (e2, a2)
+          in
+            (Vector.concat [e0, e1, e2], Vector.concat [a0, a1, a2])
+          end
+                
         fun fromDFA a = (Vector.tabulate (Vector.length a, fn _ => []), a)
         
         (* The general NFA->DFA conversion algorithm works as follows:
@@ -450,7 +459,8 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
         
         fun dotEpsilon (i, [], tail) = tail
           | dotEpsilon (i, h :: r, tail) = 
-              "\t" :: Int.toString i :: "->" :: Int.toString h :: "\n" :: tail
+              "\t" :: Int.toString i :: "->" :: Int.toString h :: "\n" :: 
+              dotEpsilon (i, r, tail)
         fun toDot (n, (e, a)) = String.concat (
           "digraph " :: n :: " {\n" ::
           "\tnode [style=filled,fillcolor=grey,shape=circle]\n" ::
@@ -469,19 +479,16 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
         structure DFA = Deterministic
         structure NFA = NonDeterministic
         
-        fun toDFA Empty = DFA.empty
-          | toDFA Any = DFA.any
-          | toDFA (Char t) = DFA.char t
-          | toDFA (Not e) = DFA.complement (toDFA e)
-          | toDFA (Star e) = 
-              (DFA.optimize o NFA.toDFA o NFA.power o NFA.fromDFA o toDFA) e
-          | toDFA (Concat (e1, e2)) =
-              (DFA.optimize o NFA.toDFA o NFA.concat)
-              (NFA.fromDFA (toDFA e1), NFA.fromDFA (toDFA e2))
-          | toDFA (Union (e1, e2)) =
-              (DFA.optimize o DFA.union) (toDFA e1, toDFA e2)
-          | toDFA (Intersect (e1, e2)) =
-              (DFA.optimize o DFA.intersect) (toDFA e1, toDFA e2)
+        fun toNFA Empty = NFA.fromDFA DFA.empty
+          | toNFA Any = NFA.fromDFA DFA.any
+          | toNFA (Char t) = NFA.fromDFA (DFA.char t)
+          | toNFA (Not e) = (NFA.fromDFA o DFA.complement o toDFA) e
+          | toNFA (Star e) = NFA.power (toNFA e)
+          | toNFA (Concat (e1, e2)) = NFA.concat (toNFA e1, toNFA e2)
+          | toNFA (Union (e1, e2)) = NFA.union (toNFA e1, toNFA e2)
+          | toNFA (Intersect (e1, e2)) = 
+              (NFA.fromDFA o DFA.optimize o DFA.intersect) (toDFA e1, toDFA e2)
+        and toDFA x = (DFA.optimize o NFA.toDFA o toNFA) x
         
 (*
         fun toString Empty = ""
