@@ -22,7 +22,7 @@ structure Alphabet =
     fun foldl f a s = Substring.foldl f a (Substring.full s)
   end  
 
-functor Automata(Alphabet : ALPHABET) : AUTOMATA 
+functor Automata(Alphabet : ALPHABET) :> AUTOMATA 
   where type char   = Alphabet.char
   and   type ZTree.key = Alphabet.char
   and   type string = Alphabet.string =
@@ -241,7 +241,8 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
             fun fmtp (SOME x, SOME y) =
                   if x = y then toString x else toString x ^ "-" ^ toString y
               |	fmtp (x, y) = fmt x ^ "-" ^ fmt y
-            fun append (l, v, r, tree) = 
+            fun append (l, NONE, r, tree) = tree
+              | append (l, SOME v, r, tree) = 
               case BTree.get tree v of
                   NONE => BTree.insert tree (v, [fmtp (l, pred r)])
                 | SOME x => BTree.insert tree (v, fmtp (l, pred r) :: x)
@@ -254,11 +255,12 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
             BTree.foldr print tail edges
           end
           
+        fun optTree (i, (b, t), l) = (i, (b, ZTree.map SOME t), l)
         fun toDot (n, a) = String.concat (
           "strict digraph " :: n :: " {\n" ::
           "\tnode [style=filled,fillcolor=grey,shape=circle]\n" ::
           Vector.foldri dotNode 
-            (Vector.foldri dotEdge ["}\n"] a) a)
+            (Vector.foldri (dotEdge o optTree) ["}\n"] a) a)
         
         fun toSML (n, a) = String.concat (
           "fun step s =\n" ::
@@ -298,7 +300,7 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
     structure NonDeterministic =
       struct
         type state = Deterministic.state
-        type t = state list vector * Deterministic.t
+        type t = state list vector * (bool * state option ZTree.t) vector
         
         (* note: the output is sorted b/c it was in a btree *)
         fun dfs e q =
@@ -313,17 +315,31 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
           end
         
         fun size (_, a) = Vector.length a
-        fun start _ = 0
-        fun accepts (_, a) x = Deterministic.accepts a x
+        fun start _ = [0]
+        fun accepts (_, a) l = 
+          List.exists (fn x => case Vector.sub (a, x) of (b, _) => b) l
         fun step (e, a) (c, l) = dfs e
-          (List.map (fn x => Deterministic.step a (c, x)) l)
-        fun multistep a (s, x) = foldl (step a) x s
-        fun test a s = List.exists (accepts a) (multistep a (s, [start a]))
+          (List.mapPartial (fn x => ZTree.lookup (#2 (Vector.sub (a, x))) c) l)
+        fun multistep a (s, l) = foldl (step a) l s
+        fun test a s = accepts a (multistep a (s, start a))
+        
+        val empty = 
+          (Vector.fromList [[]], 
+           Vector.fromList [(true, ZTree.uniform NONE)])
+        
+        val any = 
+          (Vector.fromList [[], []],
+           Vector.fromList [(false, ZTree.uniform (SOME 1)),
+                            (true,  ZTree.uniform NONE)])
+        fun char t =
+          (Vector.fromList [[], []],
+           Vector.fromList [(false, ZTree.map (fn true => SOME 1 | false => NONE) t),
+                            (true,  ZTree.uniform NONE)])
         
         (* set all accept states to have epsilon transitions to s *)
         fun mapAccept s (e, a) = 
           let
-            fun mapEpsilon (i, l) = if accepts (e, a) i then s :: l else l
+            fun mapEpsilon (i, l) = if accepts (e, a) [i] then s :: l else l
             fun noAccept a = Vector.map (fn (_, x) => (false, x)) a
           in
             (Vector.mapi mapEpsilon e, noAccept a)
@@ -332,7 +348,9 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
         fun mapRenumber x (e, a) =
           let
             val e = Vector.map (List.map (fn i => i + x)) e
-            fun stateRelabel (b, t) = (b, ZTree.map (fn i => i + x) t)
+            fun relabel NONE = NONE
+              | relabel (SOME i) = SOME (x + i)
+            fun stateRelabel (b, t) = (b, ZTree.map relabel t)
           in
             (e, Vector.map stateRelabel a)
           end
@@ -340,10 +358,9 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
         (* Scheme: new start state s accepts and -> all old starts, accepts -> s*)
         fun power (e, a) = 
           let
-            val (e, a) = (mapAccept 0 o mapRenumber 2) (e, a)
-            val e0 = Vector.fromList [[2], []]
-            val a0 = Vector.fromList [(true,  ZTree.uniform 1), 
-                                      (false, ZTree.uniform 1)]
+            val (e, a) = (mapAccept 0 o mapRenumber 1) (e, a)
+            val e0 = Vector.fromList [[1]]
+            val a0 = Vector.fromList [(true,  ZTree.uniform NONE)]
           in
             (Vector.concat [e0, e], Vector.concat [a0, a])
           end
@@ -361,16 +378,21 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
         fun union ((e1, a1), (e2, a2)) = 
           let
             val l1 = Vector.length a1
-            val e0 = Vector.fromList [[2, l1+2], []]
-            val a0 = Vector.fromList [(false, ZTree.uniform 1),
-                                      (false, ZTree.uniform 1)]
-            val (e1, a1) = mapRenumber     2  (e1, a1)
-            val (e2, a2) = mapRenumber (l1+2) (e2, a2)
+            val e0 = Vector.fromList [[1, l1+1]]
+            val a0 = Vector.fromList [(false, ZTree.uniform NONE)]
+            val (e1, a1) = mapRenumber     1  (e1, a1)
+            val (e2, a2) = mapRenumber (l1+1) (e2, a2)
           in
             (Vector.concat [e0, e1, e2], Vector.concat [a0, a1, a2])
           end
                 
-        fun fromDFA a = (Vector.tabulate (Vector.length a, fn _ => []), a)
+        fun fromDFA a = 
+          let
+            fun stateMap (b, t) = (b, ZTree.map SOME t)
+          in
+            (Vector.tabulate (Vector.length a, fn _ => []), 
+             Vector.map stateMap a)
+          end
         
         (* The general NFA->DFA conversion algorithm works as follows:
          *   - we start by calling getName (dfs e [0])
@@ -400,13 +422,15 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
             fun buildTree v =
               let
                 open ZTree
-                datatype tree = Leaf of int | Node of tree * tree
-                fun flatten tail (Leaf i) = i :: tail
+                datatype tree = Leaf of int option | Node of tree * tree
+                fun flatten tail (Leaf (SOME i)) = i :: tail
+                  | flatten tail (Leaf NONE) = tail
                   | flatten tail (Node (l, r)) = flatten (flatten tail r) l
                 
                 fun getIter i = front (#2 (Vector.sub (a, Vector.sub (v, i))))
                 
                 fun grow (l, r) =
+                  if l = r then front (ZTree.uniform (Leaf NONE)) else
                   if l + 1 = r then imap Leaf (getIter l) else
                   let val m = (l+r) div 2 in
                     merge Node (grow (l, m), grow (m, r))
@@ -417,7 +441,13 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
               end
             and mapName l =
               let
-                val v = Vector.fromList l
+                (* We should discard states which are useless *)
+                fun useful x = 
+                  case Vector.sub (a, x) of
+                     (false, t) => 
+                       not (ZTree.equal (op =) (t, ZTree.uniform NONE))
+                   | (_, _) => true
+                val v = Vector.fromList (List.filter useful l)
               in
                 case NTree.get (!names) v of
                     SOME (i, _, _) => i
@@ -426,8 +456,7 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
                         val me = !number before (number := !number + 1)
                         val () = names := NTree.insert (!names)
                           (v, (me, false, ZTree.uniform 0)) (* store name *)
-                        val value = 
-                          (me, List.exists (accepts (e, a)) l, buildTree v)
+                        val value = (me, accepts (e, a) l, buildTree v)
                         val () = names := NTree.insert (!names) (v, value)
                       in
                         me
@@ -479,12 +508,13 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
         structure DFA = Deterministic
         structure NFA = NonDeterministic
         
-        fun toNFA Empty = NFA.fromDFA DFA.empty
-          | toNFA Any = NFA.fromDFA DFA.any
-          | toNFA (Char t) = NFA.fromDFA (DFA.char t)
+        fun toNFA Empty = NFA.empty
+          | toNFA Any = NFA.any
+          | toNFA (Char t) = NFA.char t
           | toNFA (Not e) = (NFA.fromDFA o DFA.complement o toDFA) e
           | toNFA (Star e) = NFA.power (toNFA e)
           | toNFA (Concat (e1, e2)) = NFA.concat (toNFA e1, toNFA e2)
+(*              (NFA.fromDFA o DFA.optimize o NFA.toDFA o NFA.concat) (toNFA e1, toNFA e2) *)
           | toNFA (Union (e1, e2)) = NFA.union (toNFA e1, toNFA e2)
           | toNFA (Intersect (e1, e2)) = 
               (NFA.fromDFA o DFA.optimize o DFA.intersect) (toDFA e1, toDFA e2)
@@ -540,6 +570,7 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
         fun cvtBound (e, 0, NONE) = E.Star e
           | cvtBound (e, i, NONE) = E.Concat (e, cvtBound (e, i-1, NONE))
           | cvtBound (e, 0, SOME 0) = E.Empty
+          | cvtBound (e, 1, SOME 1) = e
           | cvtBound (e, 0, SOME j) = E.Union (E.Empty, cvtBound (e, 1, SOME j))
           | cvtBound (e, i, SOME j) =  E.Concat (e, cvtBound (e, i-1, SOME (j-1)))
           
@@ -580,9 +611,10 @@ functor Automata(Alphabet : ALPHABET) : AUTOMATA
             | (branch, ts'') => (branch, ts'')
         and parse_branch ts =
           case parse_piece ts of
-              (SOME p, ts') => 
-                let val (r, ts'') = parse_branch ts' 
-                in (Concat (p, r), ts'') end
+              (SOME p, ts') =>
+                (case parse_branch ts' of
+                    (Empty, ts'') => (p, ts'')
+                  | (r, ts'') => (Concat (p, r), ts''))
             | (NONE, _) => (Empty, ts)
         and parse_piece ts =
           case parse_atom ts of

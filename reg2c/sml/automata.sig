@@ -45,11 +45,15 @@ signature AUTOMATA =
         type t
         
         val size: t -> int
-        val start: t -> state
-        val accepts: t -> state -> bool
+        val start: t -> state list
+        val accepts: t -> state list -> bool
         val step: t -> (char * state list) -> state list
         val multistep: t -> (string * state list) -> state list
         val test: t -> string -> bool
+        
+        val any: t
+        val empty: t
+        val char: bool ZTree.t -> t
         
         val power: t -> t
         val concat: (t * t) -> t
