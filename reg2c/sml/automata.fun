@@ -70,6 +70,14 @@ functor Automata(Alphabet : ALPHABET) :> AUTOMATA
         
         fun size a = Vector.length a
         fun start _ = 0
+        fun wedge a x =
+          let
+            val (b, t) = Vector.sub (a, x)
+            fun loop y = y = x
+          in
+            ZTree.fold (fn (_, v, _, b) => b andalso loop v) true t
+          end
+        
         fun accepts a x = case Vector.sub (a, x) of (b, _) => b
         fun step a (c, x) = ZTree.lookup (#2 (Vector.sub (a, x))) c
         fun multistep a (s, x) = foldl (step a) x s
@@ -235,7 +243,7 @@ functor Automata(Alphabet : ALPHABET) :> AUTOMATA
         
         fun dotEdge (i, (_, t), tail) = 
           let
-            val toString = String.toCString o Char.toString o Char.chr o ord
+            val toString = Char.toCString o Char.chr o ord
             fun pred NONE = NONE | pred (SOME x) = SOME (chr (ord x - 1))
             fun fmt NONE = "" | fmt (SOME x) = toString x
             fun fmtp (SOME x, SOME y) =
@@ -315,13 +323,22 @@ functor Automata(Alphabet : ALPHABET) :> AUTOMATA
           end
         
         fun size (_, a) = Vector.length a
-        fun start _ = [0]
+        fun start _ = 0
+        fun wedge (_, a) x =
+          let
+            val (b, t) = Vector.sub (a, x)
+            fun loop NONE = true
+              | loop (SOME y) = y = x
+          in
+            ZTree.fold (fn (_, v, _, b) => b andalso loop v) true t
+          end
+        
         fun accepts (_, a) l = 
           List.exists (fn x => case Vector.sub (a, x) of (b, _) => b) l
         fun step (e, a) (c, l) = dfs e
           (List.mapPartial (fn x => ZTree.lookup (#2 (Vector.sub (a, x))) c) l)
         fun multistep a (s, l) = foldl (step a) l s
-        fun test a s = accepts a (multistep a (s, start a))
+        fun test a s = accepts a (multistep a (s, [start a]))
         
         val empty = 
           (Vector.fromList [[]], 
@@ -444,8 +461,7 @@ functor Automata(Alphabet : ALPHABET) :> AUTOMATA
                 (* We should discard states which are useless *)
                 fun useful x = 
                   case Vector.sub (a, x) of
-                     (false, t) => 
-                       not (ZTree.equal (op =) (t, ZTree.uniform NONE))
+                     (false, t) => not (wedge (e, a) x)
                    | (_, _) => true
                 val v = Vector.fromList (List.filter useful l)
               in
@@ -463,7 +479,7 @@ functor Automata(Alphabet : ALPHABET) :> AUTOMATA
                       end
               end
             
-            val _ = mapName (dfs e [0])
+            val _ = mapName (dfs e [start (e, a)])
             val d = Array.tabulate (!number, fn _ => (false, ZTree.uniform 0))
             val () = NTree.app 
               (fn (i, b, t) => Array.update (d, i, (b, t))) (!names)

@@ -13,6 +13,8 @@ signature AUTOMATA =
         val size: t -> int
         val start: t -> state
         val accepts: t -> state -> bool
+        val wedge: t -> state -> bool
+        
         val step: t -> (char * state) -> state
         val multistep: t -> (string * state) -> state
         val test: t -> string -> bool
@@ -45,7 +47,9 @@ signature AUTOMATA =
         type t
         
         val size: t -> int
-        val start: t -> state list
+        val start: t -> state
+        val wedge: t -> state -> bool
+        
         val accepts: t -> state list -> bool
         val step: t -> (char * state list) -> state list
         val multistep: t -> (string * state list) -> state list
