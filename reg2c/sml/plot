@@ -1,0 +1,4 @@
+#! /bin/bash
+pfx=`mktemp "x/$1-XXXXXX"`
+./todot "$*" | dot -Tpng -Efontname=times -o $pfx.nfa.png > $pfx.dfa.png && \
+open $pfx.[nd]fa.png
