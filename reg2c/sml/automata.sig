@@ -76,6 +76,7 @@ signature AUTOMATA =
           Concat of t * t | Union of t * t | Intersect of t * t
         
         (* val toString: t -> String.string *)
+        val reverse: t -> t
         
         (* there is a reason complement and intersection are unsupported by
          * regular expressions: they are easier to do in DFA, but not NFA!

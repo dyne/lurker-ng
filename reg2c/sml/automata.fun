@@ -524,6 +524,15 @@ functor Automata(Alphabet : ALPHABET) :> AUTOMATA
         structure DFA = Deterministic
         structure NFA = NonDeterministic
         
+        fun reverse Empty = Empty
+          | reverse Any = Any
+          | reverse (Char t) = Char t
+          | reverse (Not e) = reverse e
+          | reverse (Star e) = reverse e
+          | reverse (Concat (a, b)) = Concat (reverse b, reverse a)
+          | reverse (Union (a, b)) = Union (reverse a, reverse b)
+          | reverse (Intersect (a, b)) = Intersect (reverse a, reverse b)
+        
         fun toNFA Empty = NFA.empty
           | toNFA Any = NFA.any
           | toNFA (Char t) = NFA.char t
