@@ -48,15 +48,6 @@ functor Automata(Alphabet : ALPHABET) :> AUTOMATA
             "\n" :: i :: "else " ::
             printSML (f, i ^ "  ", r, tail))
     
-    fun toString c = "state" ^ Int.toString c
-    fun printC (i, ZTree.Leaf v, tail) = "goto " :: toString v :: ";" :: tail
-      | printC (i, ZTree.Node (l, k, r), tail) =
-          "\n" :: i :: 
-          "if (*s < " :: (Int.toString o ord) k :: ") " ::
-          printC (i ^ "\t", l, 
-            "\n" :: i :: "else " ::
-            printC (i ^ "\t", r, tail))
-    
     fun dotNode (i, (b, _), tail) = 
           "\t" :: Int.toString i :: " [label=\"\"" ::
           (if i = 0 then ",shape=diamond" else "") ::
@@ -286,23 +277,84 @@ functor Automata(Alphabet : ALPHABET) :> AUTOMATA
              nil) 
             a)
         
-        fun bodyC (i, (b, t), tail) =
-          "\n" :: toString i :: ":\n" ::
-          "\tif (++s == e) return " ::
-          (if b then "1" else "0") :: ";\n\t" ::
-           printC ("\t", t, tail)
-        fun caseC (i, (b, ZTree.Leaf v), tail) =
-              if i = v then 
-                "\n" :: toString i :: ": return " ::
-                (if b then "1" else "0") :: ";\n" :: tail
-              else bodyC (i, (b, ZTree.Leaf v), tail)
-          | caseC (i, (b, t), tail) = bodyC (i, (b, t), tail)
-        fun toC (n, a) = String.concat (
-          "int " :: n :: "(const unsigned char* s, const unsigned char* e) {\n" ::
-          "\t--s;" ::
-          Vector.foldri caseC
-            ["\n}\n"]
-            a)
+        fun caseC (n, i, ZTree.Leaf v, tail) = 
+              "goto " :: n :: "_l" :: Int.toString v :: ";" :: tail
+          | caseC (n, i, ZTree.Node (l, k, r), tail) =
+              "\n" :: i :: 
+              "if (*c < " :: (Int.toString o ord) k :: ") " ::
+              caseC (n, i ^ "\t", l, 
+                "\n" :: i :: "else " ::
+                caseC (n, i ^ "\t", r, tail))
+        fun testC (x as (_, i, ZTree.Leaf _, _)) = "\n" :: i :: caseC x
+          | testC x = caseC x
+        
+        fun toLongestMatchC (n, a) =
+          let
+            fun bodyC (i, (b, t), tail) = "\n" ::
+              n :: "_l" :: Int.toString i :: ":\n" ::
+              (if wedge a i then "" else "\t++c;\n") ::
+              (if i = start a then n ^ "_start:\n" else "") ::
+              (if wedge a i then if b then "\treturn end;" :: tail
+                                      else "\treturn out;" :: tail
+               else 
+               (if b then "\tout = c;\n" else "") ::
+               "\tif (c == end) return out;" :: 
+               testC (n, "\t", t, tail))
+          in
+            String.concat (
+              "const char* " :: n :: "(const char* start, const char* end) {\n" ::
+              "\tconst char* out = 0;\n" ::
+              "\tconst char* c = start;\n" ::
+              "\tgoto " :: n :: "_start;" ::
+              Vector.foldri bodyC
+                ["\n}\n"]
+                a)
+          end
+        
+        fun toShortestMatchC (n, a) =
+          let
+            fun bodyC (i, (b, t), tail) = "\n" ::
+              n :: "_l" :: Int.toString i :: ":\n" ::
+              "\t++c;\n" ::
+              (if i = start a then n ^ "_start:\n" else "") ::
+              (if b then "\treturn c;" :: tail else
+               if wedge a i then "\treturn 0;" :: tail else
+               "\tif (c == end) return 0;" ::
+               testC (n, "\t", t, tail))
+          in
+            String.concat (
+              "const char* " :: n :: "(const char* start, const char* end) {\n" ::
+              "\tconst char* c = start;\n" ::
+              "\tgoto " :: n :: "_start;" ::
+              Vector.foldri bodyC
+                ["\n}\n"]
+                a)
+          end
+        
+        fun toScannerC (n, a) =
+          let
+            fun bodyC (i, (b, t), tail) = "\n" ::
+              n :: "_l" :: Int.toString i :: ":\n" ::
+              "\t*--scratch = " :: (if b then "1" else "0") :: ";\n" ::
+              (if i = start a then n ^ "_start:\n" else "") ::
+              (if wedge a i then 
+                 "\tscratch -= c - start;\n" ::
+                 "\tmemset(scratch, " :: (if b then "1" else "0") :: ", c - start);\n" ::
+                 "\treturn scratch;" :: tail
+               else
+                 "\tif (c-- == start) return scratch;" ::
+                 testC (n, "\t", t, tail))
+          in
+            String.concat (
+              "char* " :: n :: "(const char* start, const char* end) {\n" ::
+              "\tchar* scratch = (char*)malloc(end - start);\n" ::
+              "\tconst char* c = end;\n" ::
+              "\tscratch += (end - start);\n" ::
+              "\tgoto " :: n :: "_start;" ::
+              Vector.foldri bodyC
+                ["\n}\n"]
+                a)
+          end
       end
       
     structure NonDeterministic =
@@ -527,8 +579,8 @@ functor Automata(Alphabet : ALPHABET) :> AUTOMATA
         fun reverse Empty = Empty
           | reverse Any = Any
           | reverse (Char t) = Char t
-          | reverse (Not e) = reverse e
-          | reverse (Star e) = reverse e
+          | reverse (Not e) = Not (reverse e)
+          | reverse (Star e) = Star (reverse e)
           | reverse (Concat (a, b)) = Concat (reverse b, reverse a)
           | reverse (Union (a, b)) = Union (reverse a, reverse b)
           | reverse (Intersect (a, b)) = Intersect (reverse a, reverse b)

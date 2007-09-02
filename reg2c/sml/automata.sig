@@ -38,7 +38,10 @@ signature AUTOMATA =
         
         val toDot: (String.string * t) -> String.string
         val toSML: (String.string * t) -> String.string
-        val toC:   (String.string * t) -> String.string
+        
+        val toLongestMatchC:  (String.string * t) -> String.string
+        val toShortestMatchC: (String.string * t) -> String.string
+        val toScannerC:       (String.string * t) -> String.string
       end
       
     structure NonDeterministic :

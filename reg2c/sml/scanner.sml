@@ -12,12 +12,17 @@ val exp = case args of [] => E.Star E.Any
                      | (x::[]) => RE.toExpression (RE.fromString x)
                      | (x::l) => foldl andexp (RE.toExpression (RE.fromString x)) l
 
-val n = E.toNFA exp
-val () = status ("NFA states: " ^ Int.toString (NFA.size n) ^ "\n")
-val () = print (NFA.toDot ("nfa", n))
-val d = NFA.toDFA n
-val () = status ("DFA states: " ^ Int.toString (DFA.size d) ^ "\n")
-val () = print (DFA.toDot ("dfa", d))
-val d = DFA.optimize d
-val () = status ("DFA states: " ^ Int.toString (DFA.size d) ^ " (optimized)\n")
-val () = print (DFA.toDot ("optdfa", d))
+val d = E.toDFA exp
+val () = print (DFA.toLongestMatchC ("longfn", d))
+
+val () = if DFA.accepts d (DFA.start d)
+         then status "Warning: Regexp accepts the empty string; progressive scanning will hang.\n"
+         else ()
+
+val star = E.Concat (exp, E.Star E.Any)
+val dstar = E.toDFA star
+val () = print (DFA.toShortestMatchC ("shortfn", dstar))
+
+val rstar = E.reverse star
+val drstar = E.toDFA rstar
+val () = print (DFA.toScannerC ("scanner", drstar))

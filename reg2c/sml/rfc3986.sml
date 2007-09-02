@@ -6,12 +6,6 @@
  *  2181 -- domain name syntax
  *)
 
-structure T = Automata(Alphabet)
-structure DFA = T.Deterministic
-structure NFA = T.NonDeterministic
-structure E = T.Expression
-structure RE = T.RegularExpression
-
 fun repl c s = String.translate (fn d => if c = d then s else String.str d)
 
 (* RFC3986: *)
@@ -112,8 +106,5 @@ val mailto = "[mM][aA][iI][lL][tT][oO]:" ^ local_part ^ "@" ^ hostname
 val regexp = "(" ^ inline ^ "|" ^ mailto ^ "|" ^ url ^ ")" ^ 
              "(\\?" ^ query ^ ")?(#" ^ fragment ^ ")?"
 
-val () = print (regexp ^ "\n")
-
-val str :: _ = CommandLine.arguments ()
-val dfa = (E.toDFA o RE.toExpression o RE.fromString) regexp
-val () = print (if DFA.test dfa str then "Accept\n" else "Reject\n")
+(* not a standard! a good heuristic to stop before punctuation *)
+val () = print (regexp ^ " " ^ ".*[a-zA-Z0-9/]" ^ "\n")
