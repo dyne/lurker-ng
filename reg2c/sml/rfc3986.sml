@@ -106,5 +106,16 @@ val mailto = "[mM][aA][iI][lL][tT][oO]:" ^ local_part ^ "@" ^ hostname
 val regexp = "(" ^ inline ^ "|" ^ mailto ^ "|" ^ url ^ ")" ^ 
              "(\\?" ^ query ^ ")?(#" ^ fragment ^ ")?"
 
+structure T = Automata(Alphabet)
+structure DFA = T.Deterministic
+structure NFA = T.NonDeterministic
+structure E = T.Expression
+structure RE = T.RegularExpression
+
 (* not a standard! a good heuristic to stop before punctuation *)
-val () = print (regexp ^ " " ^ ".*[a-zA-Z0-9/]" ^ "\n")
+val fromStr = RE.toExpression o RE.fromString
+val exp = E.Intersect (fromStr regexp, fromStr ".*[a-zA-Z0-9/]")
+val () = print (DFA.toLongestMatchC ("find_url_end", E.toDFA exp))
+
+val exp = E.reverse (E.Concat (exp, E.Star E.Any))
+val () = print (DFA.toScannerC ("find_url_starts", E.toDFA exp))

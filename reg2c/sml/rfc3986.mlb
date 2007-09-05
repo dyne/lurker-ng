@@ -1,0 +1,6 @@
+local
+  $(SML_LIB)/basis/basis.mlb
+  automata.mlb
+in
+  rfc3986.sml
+end
