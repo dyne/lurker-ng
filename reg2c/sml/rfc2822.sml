@@ -28,7 +28,7 @@ val hostname = "("^domainlabel^"\\.)+"^toplabel
 
 val domain_lit = "\\[(" ^ ipv4 ^ "|" ^ ipv6 ^ "|" ^ ipvf ^ ")\\]"
 
-val FWS = "([ \t]+\r\n)[ \t]"
+val FWS = "([ \t]+\r\n)?[ \t]"
 val atext = "[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]"
 val dot_atom = atext ^ "+(\\." ^ atext ^ "+)*"
 val quoted_str = "\"(("^FWS^")?([^\000\t\n\r \\\"]|\\[^\000\n\r]))*("^FWS^")?\""
