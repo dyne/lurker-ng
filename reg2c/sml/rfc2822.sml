@@ -12,7 +12,7 @@ val h16  = "[0-9a-fA-F]{1,4}"
 val l32 = "(H:H|" ^ ipv4 ^ ")" (* l32 *)
 val ipv6 = "(" ^ "(H:){6}L|"
                ^ "::(H:){5}L|"
-               ^ "H?::(H:){4}L|"
+               ^ "(H)?::(H:){4}L|"
                ^ "((H:){0,1}H)?::(H:){3}L|"
                ^ "((H:){0,2}H)?::(H:){2}L|"
                ^ "((H:){0,3}H)?::H:L|"
@@ -31,7 +31,7 @@ val domain_lit = "\\[(" ^ ipv4 ^ "|" ^ ipv6 ^ "|" ^ ipvf ^ ")\\]"
 val FWS = "([ \t]+\r\n)[ \t]"
 val atext = "[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]"
 val dot_atom = atext ^ "+(\\." ^ atext ^ "+)*"
-val quoted_str = "\"(" ^ FWS ^ "?([^\000\t\n\r \\\"]|\\[^\000\n\r]))*" ^ FWS ^ "\""
+val quoted_str = "\"(("^FWS^")?([^\000\t\n\r \\\"]|\\[^\000\n\r]))*("^FWS^")?\""
 
 (* We forbid "obsolete" email addresses *)
 val local_part = "(" ^ dot_atom ^ "|" ^ quoted_str ^ ")"
@@ -43,6 +43,8 @@ structure DFA = T.Deterministic
 structure NFA = T.NonDeterministic
 structure E = T.Expression
 structure RE = T.RegularExpression
+
+val () = print "#include <stdlib.h>\n\n"
 
 val exp = (RE.toExpression o RE.fromString) regexp
 val () = print (DFA.toLongestMatchC ("find_email_end", E.toDFA exp))

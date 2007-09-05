@@ -27,7 +27,7 @@ val h16  = H^"{1,4}"
 val l32 = "(H:H|" ^ ipv4 ^ ")" (* l32 *)
 val ipv6 = "(" ^ "(H:){6}L|"
                ^ "::(H:){5}L|"
-               ^ "H?::(H:){4}L|"
+               ^ "(H)?::(H:){4}L|"
                ^ "((H:){0,1}H)?::(H:){3}L|"
                ^ "((H:){0,2}H)?::(H:){2}L|"
                ^ "((H:){0,3}H)?::H:L|"
@@ -111,6 +111,8 @@ structure DFA = T.Deterministic
 structure NFA = T.NonDeterministic
 structure E = T.Expression
 structure RE = T.RegularExpression
+
+val () = print "#include <stdlib.h>\n\n"
 
 (* not a standard! a good heuristic to stop before punctuation *)
 val fromStr = RE.toExpression o RE.fromString
