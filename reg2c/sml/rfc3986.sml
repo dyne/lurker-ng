@@ -64,7 +64,7 @@ val userinfo = login ^ "(:" ^ pass ^ ")?"
 
 (* RFC3986 allows too much... *)
 (* val scheme = "[a-zA-Z][a-zA-Z0-9+.-]*" *)
-val scheme = "([hH][tT]{2}[pP][sS]?|[fF][tT][pP][sS]?|[fF][iI][lL][eE]|[nN][eE][wW][sS])"
+val scheme = "([hH][tT]{2}[pP][sS]?|[fF][tT][pP][sS]?|[fF][iI][lL][eE]|[nN][eE][wW][sS]|[iI][mM][aA][pP][sS]?)"
 val authority = "(" ^ userinfo ^ "@)?" ^ host ^ "(:[0-9]*)?"
 
 val path = P^"*"
