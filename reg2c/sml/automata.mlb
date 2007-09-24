@@ -1,8 +1,9 @@
 local
   $(SML_LIB)/basis/basis.mlb
-in
+  bitset.sml
   ztree.sml
   btree.sml
+in
   automata.sig
   automata.fun
 end

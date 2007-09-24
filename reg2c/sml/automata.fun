@@ -123,30 +123,41 @@ functor Automata(Alphabet : ALPHABET) :> AUTOMATA
         fun finddups a = 
           let
             val len = size a
-            fun toPair i = (i mod len, i div len)
-            fun ofPair (r, c) = len * c + r
             fun agree (r, c) = accepts a r = accepts a c
-            val v = Array.tabulate (len*len, agree o toPair)
+            
+            fun ofPair (r, c) = r*(r-1) div 2 + c
+            fun toPair i = 
+              let val s = floor (Math.sqrt (Real.fromInt (8*i + 1)))
+                  val r = (1 + s) div 2
+                  val c = i - r*(r-1) div 2
+              in (r, c) end
+            val v = BitSet.tabulate (len*(len-1) div 2, agree o toPair)
             
             open ZTree
             fun tree i = #2 (Vector.sub (a, i))
-            fun fold a (Iter (b, NONE, _)) = b andalso a
-              | fold a (Iter (b, SOME _, iter)) = fold (b andalso a) (iter ())
-            fun match (r, c) = Array.sub (v, ofPair (r, c))
+            fun fold (Iter (b, NONE, _)) = b
+              | fold (Iter (false, SOME _, _)) = false
+              | fold (Iter (true, SOME _, iter)) = fold (iter ())
+            fun match (r, c) = 
+              case Int.compare (r, c) of
+                 EQUAL => true
+               | LESS => BitSet.sub (v, ofPair (c, r))
+               | GREATER => BitSet.sub (v, ofPair (r, c))
             fun distinct (i, b) = b andalso 
-              (fold true o merge match o mapPair (front o tree) o toPair) i
+              (fold o merge match o mapPair (front o tree) o toPair) i
             
             val changed = ref true
             fun update (i, b) = let val n = distinct (i, b) in
               (changed := (!changed orelse (n <> b)); n) end
-            fun pass () = Array.modifyi update v
+            fun pass () = BitSet.modifyi update v
             val () = while (!changed) do (changed := false; pass ())
             
             (* m stores new state name *)
             val m = Array.tabulate (len, fn _ => 0)
             val e = ref 0
             fun whoAmI (i, j) = 
-              if Array.sub (v, ofPair (i, j)) then j else whoAmI (i, j+1)
+              if i = j then i else
+              if BitSet.sub (v, ofPair (i, j)) then j else whoAmI (i, j+1)
             fun setState (i, _) = 
               let val j = whoAmI (i, 0) in
                 if i = j then (!e before e := (!e + 1)) 
