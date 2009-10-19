@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.16 2006-03-01 14:55:45 terpstra Exp $
+/*  $Id$
  *  
  *  thread.cpp - Handle a thread/ command
  *  

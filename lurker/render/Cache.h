@@ -1,4 +1,4 @@
-/*  $Id: Cache.h,v 1.4 2004-08-20 02:42:45 terpstra Exp $
+/*  $Id$
  *  
  *  Cache.h - Helper which transforms xml -> html and caches files
  *  

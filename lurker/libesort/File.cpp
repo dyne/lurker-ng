@@ -1,4 +1,4 @@
-/*  $Id: File.cpp,v 1.12 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  File.cpp - Disk segment for commit'd inserts
  *  

@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.9 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  mindex.cpp - Cleanup after a mindex/ command
  *  

@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.48 2006-06-28 16:26:50 terpstra Exp $
+/*  $Id$
  *  
  *  message.cpp - Handle a message/ command
  *  

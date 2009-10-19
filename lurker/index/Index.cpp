@@ -1,4 +1,4 @@
-/*  $Id: Index.cpp,v 1.37 2006-06-30 11:53:21 terpstra Exp $
+/*  $Id$
  *  
  *  index.cpp - Insert all the keywords from the given email
  *  

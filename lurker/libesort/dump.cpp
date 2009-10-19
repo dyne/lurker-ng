@@ -1,4 +1,4 @@
-/*  $Id: dump.cpp,v 1.7 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  dump.cpp - Dump the contents of a libesort database to cout
  *  

@@ -1,4 +1,4 @@
-/*  $Id: list.cpp,v 1.13 2006-02-24 14:12:04 terpstra Exp $
+/*  $Id$
  *  
  *  list.cpp - Parse the config file for helper scripts
  *  

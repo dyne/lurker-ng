@@ -1,4 +1,4 @@
-/*  $Id: params.cpp,v 1.17 2006-03-10 00:47:22 terpstra Exp $
+/*  $Id$
  *  
  *  params.cpp - Parse the config file for helper scripts
  *  

@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.h,v 1.17 2006-07-01 13:03:38 terpstra Exp $
+/*  $Id$
  *  
  *  ConfigFile.h - Knows how to load the config file
  *  

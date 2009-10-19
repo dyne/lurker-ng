@@ -1,4 +1,4 @@
-/*  $Id: DbMan.cpp,v 1.22 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  DbMan.cpp - Manage the commit'd segments and parameters
  *  

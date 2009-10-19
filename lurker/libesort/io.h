@@ -1,4 +1,4 @@
-/*  $Id: io.h,v 1.3 2003-05-03 12:18:15 terpstra Exp $
+/*  $Id$
  *  
  *  io.h - I/O headers needed for the OS
  *  

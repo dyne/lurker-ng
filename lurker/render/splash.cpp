@@ -1,4 +1,4 @@
-/*  $Id: splash.cpp,v 1.17 2006-03-01 14:55:45 terpstra Exp $
+/*  $Id$
  *  
  *  splash.cpp - Handle a splash/ command
  *  

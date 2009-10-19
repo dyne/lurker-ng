@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.50 2006-03-10 00:47:22 terpstra Exp $
+/*  $Id$
  *  
  *  main.cpp - Read the fed data into our database
  *  

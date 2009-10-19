@@ -1,4 +1,4 @@
-/*  $Id: parse.cpp,v 1.13 2006-03-03 01:04:25 terpstra Exp $
+/*  $Id$
  *  
  *  parse.cpp - Deal with CGI ugliness
  *  

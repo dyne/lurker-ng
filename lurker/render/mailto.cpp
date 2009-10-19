@@ -1,6 +1,6 @@
 /* Copyright: Public domain
  * Produced with reg2c for wesley@terpstra.ca
- * cvs id tag: $Id: mailto.cpp,v 1.2 2003-04-21 18:26:20 terpstra Exp $
+ * cvs id tag: $Id$
  *
  * Regular expression: (([A-Za-z0-9][a-zA-Z0-9._=\-]*[a-zA-Z0-9]|[a-zA-Z0-9])@((([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])\.)*([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9]))\.([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9]))
  */

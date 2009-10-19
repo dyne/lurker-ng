@@ -1,4 +1,4 @@
-/*  $Id: mindex.cpp,v 1.19 2006-03-01 14:55:45 terpstra Exp $
+/*  $Id$
  *  
  *  mindex.cpp - Handle a mindex/ command
  *  

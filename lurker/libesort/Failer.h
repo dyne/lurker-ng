@@ -1,4 +1,4 @@
-/*  $Id: Failer.h,v 1.1 2003-04-24 23:52:36 terpstra Exp $
+/*  $Id$
  *  
  *  Failer.h - Output an error on advance
  *  

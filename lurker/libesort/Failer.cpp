@@ -1,4 +1,4 @@
-/*  $Id: Failer.cpp,v 1.4 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  Failer.cpp - Output an error on advance
  *  

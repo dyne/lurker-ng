@@ -1,4 +1,4 @@
-/*  $Id: Parameters.cpp,v 1.10 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  Parameters.cpp - Control how the database is stored
  *  

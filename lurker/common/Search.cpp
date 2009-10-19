@@ -1,4 +1,4 @@
-/*  $Id: Search.cpp,v 1.8 2006-02-21 20:40:33 terpstra Exp $
+/*  $Id$
  *  
  *  Search.cpp - Execute a keyword search
  *  

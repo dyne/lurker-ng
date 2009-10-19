@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.7 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  mbox.cpp - Cleanup after an mbox/ command
  *  

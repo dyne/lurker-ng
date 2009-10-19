@@ -1,4 +1,4 @@
-/*  $Id: parse.h,v 1.5 2006-03-01 14:19:04 terpstra Exp $
+/*  $Id$
  *  
  *  parse.h - Deal with CGI ugliness
  *  

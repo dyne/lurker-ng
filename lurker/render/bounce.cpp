@@ -1,4 +1,4 @@
-/*  $Id: bounce.cpp,v 1.2 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  bounce.cpp - Bounce to the specified url
  *  

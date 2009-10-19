@@ -1,4 +1,4 @@
-/*  $Id: main.cpp,v 1.31 2006-03-06 09:09:34 terpstra Exp $
+/*  $Id$
  *  
  *  main.cpp - Transform a database snapshot to useful output
  *  

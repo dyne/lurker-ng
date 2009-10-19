@@ -1,6 +1,6 @@
 /* Copyright: Public domain
  * Produced with reg2c for wesley@terpstra.ca
- * cvs id tag: $Id: quote.cpp,v 1.3 2003-06-12 22:15:33 terpstra Exp $
+ * cvs id tag: $Id$
  *
  * Regular expression: (
 ([a-zA-Z]?[a-zA-Z]?[a-zA-Z]?[a-zA-Z]?>)[-	-ÿ]*(

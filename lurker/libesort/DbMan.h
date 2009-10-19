@@ -1,4 +1,4 @@
-/*  $Id: DbMan.h,v 1.6 2003-07-01 13:48:31 terpstra Exp $
+/*  $Id$
  *  
  *  DbMan.h - Manage the commit'd segments and parameters
  *  

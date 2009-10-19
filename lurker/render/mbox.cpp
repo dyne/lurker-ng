@@ -1,4 +1,4 @@
-/*  $Id: mbox.cpp,v 1.13 2006-03-01 14:55:45 terpstra Exp $
+/*  $Id$
  *  
  *  mbox.cpp - Handle a mbox/ command
  *  

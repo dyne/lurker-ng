@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.8 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  attach.cpp - Cleanup after an attach/ command
  *  

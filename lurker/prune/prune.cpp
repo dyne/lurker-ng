@@ -1,4 +1,4 @@
-/*  $Id: prune.cpp,v 1.17 2006-02-24 14:12:04 terpstra Exp $
+/*  $Id$
  *  
  *  prune.cpp - Prune obsolete / stale cache files
  *  

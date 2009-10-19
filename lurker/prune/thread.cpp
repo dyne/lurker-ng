@@ -1,4 +1,4 @@
-/*  $Id: thread.cpp,v 1.9 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  thread.cpp - Cleanup after a thread/ command
  *  

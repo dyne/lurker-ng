@@ -1,4 +1,4 @@
-/*  $Id: Threading.cpp,v 1.14 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  Threading.h - Helper which can load a thread tree
  *  

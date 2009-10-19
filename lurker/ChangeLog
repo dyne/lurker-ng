@@ -17,6 +17,7 @@ v2.2:
 	Made compatible to gcc-4.4
 	Add missing includes for cstdlib cstring
 	Rebuilt getdate.y using bison 2.3
+	Switch from CVS to subversion
 
 v2.1:
 	lurker.cgi uses the environment to provide location information:

@@ -1,4 +1,4 @@
-/*  $Id: Master.cpp,v 1.14 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  Master.cpp - Coordinate commit+read interface
  *  

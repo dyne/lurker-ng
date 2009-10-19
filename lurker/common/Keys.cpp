@@ -1,4 +1,4 @@
-/*  $Id: Keys.cpp,v 1.5 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  Keys.cpp - Digest a hunk of string into keywords.
  *  

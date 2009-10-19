@@ -1,4 +1,4 @@
-/*  $Id: commands.h,v 1.7 2006-03-01 14:55:44 terpstra Exp $
+/*  $Id$
  *  
  *  commands.h - All the commands we support
  *  

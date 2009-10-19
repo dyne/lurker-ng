@@ -1,4 +1,4 @@
-/*  $Id: keyword.cpp,v 1.17 2006-03-01 16:00:01 terpstra Exp $
+/*  $Id$
  *  
  *  jump.cpp - Jump to a given date offset
  *  

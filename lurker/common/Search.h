@@ -1,4 +1,4 @@
-/*  $Id: Search.h,v 1.2 2006-02-21 20:40:33 terpstra Exp $
+/*  $Id$
  *  
  *  Search.h - Helper which can intersect keywords
  *  

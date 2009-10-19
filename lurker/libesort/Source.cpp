@@ -1,4 +1,4 @@
-/*  $Id: Source.cpp,v 1.5 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  Source.cpp - Common segment interface
  *  

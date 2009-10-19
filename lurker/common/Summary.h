@@ -1,4 +1,4 @@
-/*  $Id: Summary.h,v 1.4 2006-06-28 16:26:50 terpstra Exp $
+/*  $Id$
  *  
  *  Summary.h - Helper which can load a message given MessageId
  *  

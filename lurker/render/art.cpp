@@ -1,6 +1,6 @@
 /* Copyright: Public domain
  * Produced with reg2c for (null)
- * cvs id tag: $Id: art.cpp,v 1.7 2006-02-22 02:56:33 terpstra Exp $
+ * cvs id tag: $Id$
  *
  * Regular expression: (
 ((-- |_____+ *|-----+ *)(

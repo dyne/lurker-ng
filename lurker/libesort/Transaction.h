@@ -1,4 +1,4 @@
-/*  $Id: Transaction.h,v 1.3 2003-04-25 14:09:16 terpstra Exp $
+/*  $Id$
  *  
  *  Transaction.h - Write buffer for a commit
  *  

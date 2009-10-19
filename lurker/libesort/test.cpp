@@ -1,4 +1,4 @@
-/*  $Id: test.cpp,v 1.12 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  test.cpp - Write lots of crap and compare with RAM
  *  

@@ -1,4 +1,4 @@
-/*  $Id: CharsetEscape.cpp,v 1.13 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  CharsetEscape.cpp - A stream manipulator-like thing for charset conversion
  *  

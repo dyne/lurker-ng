@@ -1,4 +1,4 @@
-/*  $Id: PTable.cpp,v 1.20 2006-02-24 15:53:41 terpstra Exp $
+/*  $Id$
  *  
  *  PTable.cpp - Prune table records state for pruning
  *  

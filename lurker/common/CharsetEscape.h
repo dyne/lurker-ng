@@ -1,4 +1,4 @@
-/*  $Id: CharsetEscape.h,v 1.4 2003-06-08 16:23:13 terpstra Exp $
+/*  $Rev$
  *  
  *  CharsetEscape.h - A stream manipulator-like thing for charset conversion
  *  

@@ -1,4 +1,4 @@
-/*  $Id: ConfigFile.cpp,v 1.30 2006-07-01 13:03:38 terpstra Exp $
+/*  $Id$
  *  
  *  ConfigFile.cpp - Knows how to load the config file
  *  

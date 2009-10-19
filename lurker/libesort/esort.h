@@ -1,4 +1,4 @@
-/*  $Id: esort.h,v 1.9 2003-07-01 14:05:52 terpstra Exp $
+/*  $Id$
  *  
  *  esort.h - Public interface to libesort
  *  

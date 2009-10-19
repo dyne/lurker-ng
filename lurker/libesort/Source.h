@@ -1,4 +1,4 @@
-/*  $Id: Source.h,v 1.2 2003-04-21 18:25:32 terpstra Exp $
+/*  $Id$
  *  
  *  Source.h - Common segment interface
  *  

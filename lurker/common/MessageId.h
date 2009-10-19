@@ -1,4 +1,4 @@
-/*  $Id: MessageId.h,v 1.6 2004-08-19 23:52:51 terpstra Exp $
+/*  $Id$
  *  
  *  MessageId.h - Helper class for manipulating internal message ids
  *  

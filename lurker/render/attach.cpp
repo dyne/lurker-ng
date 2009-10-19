@@ -1,4 +1,4 @@
-/*  $Id: attach.cpp,v 1.15 2006-03-01 14:55:44 terpstra Exp $
+/*  $Id$
  *  
  *  attach.cpp - Handle a attach/ command
  *  

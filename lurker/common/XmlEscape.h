@@ -1,4 +1,4 @@
-/*  $Id: XmlEscape.h,v 1.2 2003-04-21 18:25:31 terpstra Exp $
+/*  $Id$
  *  
  *  XmlEscape.h - A stream manipulator-like thing for escaping XML
  *  

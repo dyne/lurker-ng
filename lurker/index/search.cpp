@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.13 2006-03-10 00:47:22 terpstra Exp $
+/*  $Id$
  *  
  *  search.cpp - Search for messages in lurker database (optionally delete)
  *  

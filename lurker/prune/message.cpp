@@ -1,4 +1,4 @@
-/*  $Id: message.cpp,v 1.10 2006-02-24 15:53:41 terpstra Exp $
+/*  $Id$
  *  
  *  message.cpp - Cleanup after a message/ command
  *  

@@ -1,4 +1,4 @@
-/*  $Id: Master.h,v 1.5 2003-05-07 15:43:13 terpstra Exp $
+/*  $Id$
  *  
  *  Master.h - Coordinate commit+read interface
  *  

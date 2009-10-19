@@ -1,6 +1,6 @@
 /* Copyright: Public domain
  * Produced with reg2c for wesley@terpstra.ca
- * cvs id tag: $Id: url.cpp,v 1.5 2003-06-11 15:16:12 terpstra Exp $
+ * cvs id tag: $Id$
  *
  * Regular expression: ((((([a-zA-Z]-?)*[a-zA-Z])://((([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])\.)*([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])))|(www\.((([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])\.)*([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9]))\.([A-Za-z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]|[a-zA-Z0-9])))(:([0-9]+))?(((/([A-Za-z@!%~0-9:.,_\-+]*|#))*\/([A-Za-z@!%~0-9:.,_\-+]*[A-Za-z0-9]|#)))?(\#([A-Za-z@!%~0-9:.,_\-+]*[A-Za-z0-9]|#))?(\?([A-Za-z%~0-9.,_=/:;+\&\-]*[A-Za-z0-9]|#))?)
  */

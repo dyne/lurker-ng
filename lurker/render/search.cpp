@@ -1,4 +1,4 @@
-/*  $Id: search.cpp,v 1.24 2006-03-01 15:19:29 terpstra Exp $
+/*  $Id$
  *  
  *  sindex.cpp - Handle a search/ command
  *  

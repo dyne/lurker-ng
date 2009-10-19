@@ -1,4 +1,4 @@
-/*  $Id: XmlEscape.cpp,v 1.12 2006-02-22 21:59:47 terpstra Exp $
+/*  $Id$
  *  
  *  XmlEscape.cpp - A stream manipulator-like thing for escaping XML
  *  

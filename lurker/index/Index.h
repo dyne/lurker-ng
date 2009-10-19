@@ -1,4 +1,4 @@
-/*  $Id: Index.h,v 1.11 2006-02-24 13:17:29 terpstra Exp $
+/*  $Id$
  *  
  *  Index.h - Insert all the keywords from the given email
  *  

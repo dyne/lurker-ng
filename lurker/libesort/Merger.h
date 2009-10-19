@@ -1,4 +1,4 @@
-/*  $Id: Merger.h,v 1.7 2004-10-20 23:53:59 terpstra Exp $
+/*  $Id$
  *  
  *  Merger.h - Combine segments to obtain a database view
  *  

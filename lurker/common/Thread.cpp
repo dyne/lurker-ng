@@ -1,4 +1,4 @@
-/*  $Id: Thread.cpp,v 1.9 2006-02-19 01:46:06 terpstra Exp $
+/*  $Id$
  *  
  *  Thread.h - Helper class for calculating threading
  *  

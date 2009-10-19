@@ -1,4 +1,4 @@
-/*  $Id: Merger.cpp,v 1.14 2006-02-19 01:17:22 terpstra Exp $
+/*  $Id$
  *  
  *  Merger.cpp - Combine segments to obtain a database view
  *  
