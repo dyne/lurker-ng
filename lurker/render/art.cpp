@@ -1,398 +1,283 @@
-/* Copyright: Public domain
- * Produced with reg2c for (null)
- * cvs id tag: $Id$
- *
- * Regular expression: (
-((-- |_____+ *|-----+ *)(
-[-	-ÿ]+)+))
- */
-
-const unsigned char* art_scan_pass1(const unsigned char* s, const unsigned char* e)
-{
-	const unsigned char* last = 0;
-	goto art_scan_pass117;
-	
-art_scan_pass10:
-	last = e;
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 32: 
-		goto art_scan_pass15;
-	case 95: 
-		goto art_scan_pass110;
-	case 45: 
-		goto art_scan_pass115;
-	case 0: case 10: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass11:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 10: 
-		goto art_scan_pass10;
-	case 95: 
-		goto art_scan_pass11;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass12:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 10: 
-		goto art_scan_pass10;
-	case 45: 
-		goto art_scan_pass12;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass13:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 10: 
-		goto art_scan_pass10;
-	case 45: 
-		goto art_scan_pass113;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass14:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 45: 
-		goto art_scan_pass13;
-	case 10: 
-		goto art_scan_pass16;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass15:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 45: 
-		goto art_scan_pass14;
-	case 10: 
-		goto art_scan_pass16;
-	case 95: 
-		goto art_scan_pass110;
-	case 32: 
-		goto art_scan_pass111;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass16:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 32: 
-		goto art_scan_pass15;
-	case 95: 
-		goto art_scan_pass110;
-	case 45: 
-		goto art_scan_pass115;
-	case 0: case 10: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass17:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 95: 
-		goto art_scan_pass11;
-	case 10: 
-		goto art_scan_pass16;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass18:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 10: 
-		goto art_scan_pass16;
-	case 95: 
-		goto art_scan_pass17;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass19:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 10: 
-		goto art_scan_pass16;
-	case 95: 
-		goto art_scan_pass18;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass110:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 10: 
-		goto art_scan_pass16;
-	case 95: 
-		goto art_scan_pass19;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass111:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 10: 
-		goto art_scan_pass16;
-	case 95: 
-		goto art_scan_pass110;
-	case 32: 
-		goto art_scan_pass111;
-	case 45: 
-		goto art_scan_pass115;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass112:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 45: 
-		goto art_scan_pass12;
-	case 10: 
-		goto art_scan_pass16;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass113:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 10: 
-		goto art_scan_pass16;
-	case 45: 
-		goto art_scan_pass112;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass114:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 10: 
-		goto art_scan_pass16;
-	case 45: 
-		goto art_scan_pass113;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass115:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 10: 
-		goto art_scan_pass16;
-	case 45: 
-		goto art_scan_pass114;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass116:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 10: 
-		goto art_scan_pass16;
-	case 0: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
-art_scan_pass117:
-	if (s == e) return last;
-	switch (*(--e))
-	{
-	case 0: case 10: 
-		goto art_scan_pass117;
-	default: goto art_scan_pass116;
-	}
+const char* find_art_end(const char* start, const char* end) {
+	const char* out = 0;
+	const char* c = start;
+	goto find_art_end_start;
+find_art_end_l0:
+	++c;
+find_art_end_start:
+	if (c == end) return out;
+	if (*c < 11) 
+		if (*c < 10) goto find_art_end_l1;
+		else goto find_art_end_l2;
+	else goto find_art_end_l1;
+find_art_end_l1:
+	return out;
+find_art_end_l2:
+	++c;
+	if (c == end) return out;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_end_l3;
+			else goto find_art_end_l5;
+		else goto find_art_end_l1;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_end_l3;
+			else goto find_art_end_l9;
+		else goto find_art_end_l3;
+find_art_end_l3:
+	++c;
+	if (c == end) return out;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_end_l3;
+			else goto find_art_end_l4;
+		else goto find_art_end_l2;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_end_l3;
+			else goto find_art_end_l6;
+		else goto find_art_end_l3;
+find_art_end_l4:
+	++c;
+	out = c;
+	if (c == end) return out;
+	if (*c < 11) 
+		if (*c < 10) goto find_art_end_l4;
+		else goto find_art_end_l5;
+	else goto find_art_end_l4;
+find_art_end_l5:
+	++c;
+	if (c == end) return out;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_end_l4;
+			else goto find_art_end_l5;
+		else goto find_art_end_l1;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_end_l4;
+			else goto find_art_end_l5;
+		else goto find_art_end_l4;
+find_art_end_l6:
+	++c;
+	if (c == end) return out;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_end_l3;
+			else goto find_art_end_l4;
+		else goto find_art_end_l2;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_end_l3;
+			else goto find_art_end_l7;
+		else goto find_art_end_l3;
+find_art_end_l7:
+	++c;
+	if (c == end) return out;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_end_l3;
+			else goto find_art_end_l4;
+		else goto find_art_end_l2;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_end_l3;
+			else goto find_art_end_l8;
+		else goto find_art_end_l3;
+find_art_end_l8:
+	++c;
+	if (c == end) return out;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_end_l3;
+			else goto find_art_end_l4;
+		else goto find_art_end_l2;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_end_l3;
+			else goto find_art_end_l4;
+		else goto find_art_end_l3;
+find_art_end_l9:
+	++c;
+	if (c == end) return out;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_end_l3;
+			else goto find_art_end_l5;
+		else goto find_art_end_l1;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_end_l3;
+			else goto find_art_end_l10;
+		else goto find_art_end_l3;
+find_art_end_l10:
+	++c;
+	if (c == end) return out;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_end_l3;
+			else goto find_art_end_l5;
+		else goto find_art_end_l1;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_end_l3;
+			else goto find_art_end_l11;
+		else goto find_art_end_l3;
+find_art_end_l11:
+	++c;
+	if (c == end) return out;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_end_l3;
+			else goto find_art_end_l5;
+		else goto find_art_end_l1;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_end_l3;
+			else goto find_art_end_l5;
+		else goto find_art_end_l3;
 }
-
-const unsigned char* art_scan_pass2(const unsigned char* s, const unsigned char* e)
-{
-	const unsigned char* last = 0;
-	goto art_scan_pass23;
-	
-art_scan_pass20:
-	return last;
-art_scan_pass21:
-	last = s;
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 0: 
-		goto art_scan_pass20;
-	case 10: 
-		goto art_scan_pass218;
-	default: goto art_scan_pass21;
-	}
-art_scan_pass23:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 10: 
-		goto art_scan_pass24;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass24:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 45: 
-		goto art_scan_pass25;
-	case 95: 
-		goto art_scan_pass27;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass25:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 45: 
-		goto art_scan_pass26;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass26:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 45: 
-		goto art_scan_pass213;
-	case 32: 
-		goto art_scan_pass217;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass27:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 95: 
-		goto art_scan_pass28;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass28:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 95: 
-		goto art_scan_pass29;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass29:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 95: 
-		goto art_scan_pass210;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass210:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 95: 
-		goto art_scan_pass211;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass211:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 95: 
-		goto art_scan_pass211;
-	case 32: 
-		goto art_scan_pass212;
-	case 10: 
-		goto art_scan_pass218;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass212:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 32: 
-		goto art_scan_pass212;
-	case 10: 
-		goto art_scan_pass218;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass213:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 45: 
-		goto art_scan_pass214;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass214:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 45: 
-		goto art_scan_pass215;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass215:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 32: 
-		goto art_scan_pass212;
-	case 45: 
-		goto art_scan_pass215;
-	case 10: 
-		goto art_scan_pass218;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass217:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 10: 
-		goto art_scan_pass218;
-	default: goto art_scan_pass20;
-	}
-art_scan_pass218:
-	if (s == e) return last;
-	switch (*s++)
-	{
-	case 0: case 10: 
-		goto art_scan_pass20;
-	default: goto art_scan_pass21;
-	}
-}
-
-void art_scan(const unsigned char** s, const unsigned char** e)
-{
-	*s = art_scan_pass1(*s, *e);
-	if (*s) *e = art_scan_pass2(*s, *e);
+char* find_art_starts(const char* start, const char* end, char* scratch) {
+	const char* c = end;
+	scratch += (end - start);
+	goto find_art_starts_start;
+find_art_starts_l0:
+	*--scratch = 0;
+find_art_starts_start:
+	if (c-- == start) return scratch;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_starts_l1;
+			else goto find_art_starts_l4;
+		else goto find_art_starts_l0;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_starts_l1;
+			else goto find_art_starts_l8;
+		else goto find_art_starts_l1;
+find_art_starts_l1:
+	*--scratch = 0;
+	if (c-- == start) return scratch;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_starts_l1;
+			else goto find_art_starts_l2;
+		else goto find_art_starts_l0;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_starts_l1;
+			else goto find_art_starts_l5;
+		else goto find_art_starts_l1;
+find_art_starts_l2:
+	*--scratch = 0;
+	if (c-- == start) return scratch;
+	if (*c < 11) 
+		if (*c < 10) goto find_art_starts_l2;
+		else goto find_art_starts_l3;
+	else goto find_art_starts_l2;
+find_art_starts_l3:
+	*--scratch = 1;
+	if (c-- == start) return scratch;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_starts_l2;
+			else goto find_art_starts_l4;
+		else goto find_art_starts_l0;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_starts_l2;
+			else goto find_art_starts_l4;
+		else goto find_art_starts_l2;
+find_art_starts_l4:
+	*--scratch = 0;
+	if (c-- == start) return scratch;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_starts_l2;
+			else goto find_art_starts_l4;
+		else goto find_art_starts_l0;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_starts_l2;
+			else goto find_art_starts_l4;
+		else goto find_art_starts_l2;
+find_art_starts_l5:
+	*--scratch = 0;
+	if (c-- == start) return scratch;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_starts_l1;
+			else goto find_art_starts_l2;
+		else goto find_art_starts_l0;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_starts_l1;
+			else goto find_art_starts_l6;
+		else goto find_art_starts_l1;
+find_art_starts_l6:
+	*--scratch = 0;
+	if (c-- == start) return scratch;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_starts_l1;
+			else goto find_art_starts_l2;
+		else goto find_art_starts_l0;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_starts_l1;
+			else goto find_art_starts_l7;
+		else goto find_art_starts_l1;
+find_art_starts_l7:
+	*--scratch = 0;
+	if (c-- == start) return scratch;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_starts_l1;
+			else goto find_art_starts_l2;
+		else goto find_art_starts_l0;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_starts_l1;
+			else goto find_art_starts_l2;
+		else goto find_art_starts_l1;
+find_art_starts_l8:
+	*--scratch = 0;
+	if (c-- == start) return scratch;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_starts_l1;
+			else goto find_art_starts_l4;
+		else goto find_art_starts_l0;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_starts_l1;
+			else goto find_art_starts_l9;
+		else goto find_art_starts_l1;
+find_art_starts_l9:
+	*--scratch = 0;
+	if (c-- == start) return scratch;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_starts_l1;
+			else goto find_art_starts_l4;
+		else goto find_art_starts_l0;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_starts_l1;
+			else goto find_art_starts_l10;
+		else goto find_art_starts_l1;
+find_art_starts_l10:
+	*--scratch = 0;
+	if (c-- == start) return scratch;
+	if (*c < 11) 
+		if (*c < 10) 
+			if (*c < 9) goto find_art_starts_l1;
+			else goto find_art_starts_l4;
+		else goto find_art_starts_l0;
+	else 
+		if (*c < 33) 
+			if (*c < 32) goto find_art_starts_l1;
+			else goto find_art_starts_l4;
+		else goto find_art_starts_l1;
 }

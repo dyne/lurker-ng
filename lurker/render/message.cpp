@@ -61,122 +61,177 @@
 #define OLD_PGP_DIVIDER	"-----BEGIN PGP SIGNATURE-----\n" 
 #define OLD_PGP_ENDER	"-----END PGP SIGNATURE-----\n"
 
-void    art_scan(const unsigned char** s, const unsigned char** e);
-void    url_scan(const unsigned char** s, const unsigned char** e);
-void mailto_scan(const unsigned char** s, const unsigned char** e);
-void  quote_scan(const unsigned char** s, const unsigned char** e);
-
-#define us(x) ((const unsigned char**)x)
-
+const char* find_art_end(const char* start, const char* end);
+const char* find_quote_end(const char* start, const char* end);
+const char* find_email_end(const char* start, const char* end);
+const char* find_url_end(const char* start, const char* end);
+char* find_art_starts(const char* start, const char* end, char* scratch);
+char* find_quote_starts(const char* start, const char* end, char* scratch);
+char* find_email_starts(const char* start, const char* end, char* scratch);
+char* find_url_starts(const char* start, const char* end, char* scratch);
 
 void my_service_mailto(
 	ostream&		o,
-	const char*		buf, 
-	long			len,
+	char*                   s0,
+	const char*		b0, 
+	const char*		bE,
 	const Config&		cfg)
 {
-	const char* s = buf;
-	const char* e = buf+len;
+	if (b0 == bE) return;
 	
-	const char* sp;
-	const char* ep;
+	char* sE = s0+(bE-b0);
+	char* si = s0;
+	const char* bi = b0;
 	
-	while (sp = s, ep = e, mailto_scan(us(&sp), us(&ep)), sp)
-	{
-		o << xmlEscape << string(s, sp-s);
-		if (cfg.hide_email)
+	find_email_starts(b0, bE, s0);
+	while (si != sE)
+        {
+		if (*si)
 		{
-			string addr(sp, ep-sp);
-			string::size_type l = addr.find('@');
-			if (l != string::npos) addr.resize(l);
-			o << xmlEscape << addr << "@???";
+			o << xmlEscape << string(bi, (si-s0)-(bi-b0));
+			bi = b0 + (si-s0);
+			const char* bj = find_email_end(bi, bE);
+			if (cfg.hide_email)
+			{
+				string addr(bi, bj-bi);
+				string::size_type l = addr.find('@');
+				if (l != string::npos) addr.resize(l);
+				o << xmlEscape << addr << "@???";
+			}
+			else
+			{
+				o << "<mailto>";
+				o << xmlEscape << string(bi, bj-bi);
+				o << "</mailto>";
+			}
+			bi = bj;
+			si = s0 + (bi - b0);
 		}
 		else
 		{
-			o << "<mailto>";
-			o << xmlEscape << string(sp, ep-sp);
-			o << "</mailto>";
+			++si;
 		}
-		
-		s = ep;
 	}
 	
-	o << xmlEscape << string(s, e-s);
+	o << xmlEscape << string(bi, bE-bi);
 }
 
 void my_service_url(
 	ostream&		o,
-	const char*		buf, 
-	long			len,
+	char*			s0,
+	const char*		b0, 
+	const char*		bE,
 	const Config&		cfg)
 {
-	const char* s = buf;
-	const char* e = buf+len;
+	if (b0 == bE) return;
 	
-	const char* sp;
-	const char* ep;
+	char* sE = s0+(bE-b0);
+	char* si = s0;
+	const char* bi = b0;
 	
-	while (sp = s, ep = e, url_scan(us(&sp), us(&ep)), sp)
-	{
-		my_service_mailto(o, s, sp-s, cfg);
-		o << "<url>";
-		o << xmlEscape << string(sp, ep-sp);
-		o << "</url>";
-		
-		s = ep;
+	find_url_starts(b0, bE, s0);
+	while (si != sE)
+        {
+		if (*si)
+		{
+			my_service_mailto(o, s0, bi, b0+(si-s0), cfg);
+			bi = b0 + (si-s0);
+			const char* bj = find_url_end(bi, bE);
+			o << "<url>";
+			o << xmlEscape << string(bi, bj-bi);
+			o << "</url>";
+			bi = bj;
+			si = s0 + (bi - b0);
+		}
+		else
+		{
+			++si;
+		}
 	}
-	
-	my_service_mailto(o, s, e-s, cfg);
+	my_service_mailto(o, s0, bi, bE, cfg);
 }
 
-void my_service_pic(
+void my_service_art(
 	ostream&		o,
-	const char*		buf, 
-	long			len,
+	char*			s0,
+	const char*		b0, 
+	const char*		bE,
 	const Config&		cfg)
 {
-	const char* s = buf;
-	const char* e = buf+len;
+	if (b0 == bE) return;
 	
-	const char* sp;
-	const char* ep;
+	char* sE = s0+(bE-b0);
+	char* si = s0;
+	const char* bi = b0;
 	
-	while (sp = s, ep = e, art_scan(us(&sp), us(&ep)), sp)
-	{
-		my_service_url(o, s, sp-s, cfg);
-		o << "<art>";
-		my_service_url(o, sp, ep-sp, cfg);
-		o << "</art>";
-		
-		s = ep;
+	find_art_starts(b0, bE, s0);
+	while (si != sE)
+        {
+		if (*si)
+		{
+			my_service_url(o, s0, bi, b0+(si-s0), cfg);
+			o << "<art>";
+			bi = b0 + (si-s0);
+			const char* bj = find_art_end(bi, bE);
+			my_service_url(o, s0, bi, bj, cfg);
+			o << "</art>";
+			bi = bj;
+			si = s0 + (bi - b0);
+		}
+		else
+		{
+			++si;
+		}
 	}
-	
-	my_service_url(o, s, e-s, cfg);
+	my_service_url(o, s0, bi, bE, cfg);
 }
 
 void my_service_quote(
 	ostream&		o,
-	const char*		buf, 
+	char*			s0,
+	const char*		b0, 
+	const char*		bE,
+	const Config&		cfg)
+{
+	if (b0 == bE) return;
+	
+	char* sE = s0+(bE-b0);
+	char* si = s0;
+	const char* bi = b0;
+	
+	find_quote_starts(b0, bE, s0);
+	while (si != sE)
+        {
+		if (*si)
+		{
+			my_service_art(o, s0, bi, b0+(si-s0), cfg);
+			o << "<quote>";
+			bi = b0 + (si-s0);
+			const char* bj = find_quote_end(bi, bE);
+			my_service_art(o, s0, bi, bj, cfg);
+			o << "</quote>";
+			bi = bj;
+			si = s0 + (bi - b0);
+		}
+		else
+		{
+			++si;
+		}
+	}
+	
+	my_service_art(o, s0, bi, bE, cfg);
+}
+
+void my_service_process(
+	ostream&		o,
+	const char*		b0, 
 	long			len,
 	const Config&		cfg)
 {
-	const char* s = buf;
-	const char* e = buf+len;
-	
-	const char* sp;
-	const char* ep;
-	
-	while (sp = s, ep = e, quote_scan(us(&sp), us(&ep)), sp)
-	{
-		my_service_pic(o, s, sp-s, cfg);
-		o << "<quote>";
-		my_service_pic(o, sp, ep-sp, cfg);
-		o << "</quote>";
-		
-		s = ep;
-	}
-	
-	my_service_pic(o, s, e-s, cfg);
+	const char* bE = b0 + len;
+	char* s0 = new char [len];
+	my_service_quote(o, s0, b0, bE, cfg);
+	delete s0;
 }
 
 static void find_and_replace(string& target, const string& token, const string& value)
@@ -348,7 +403,7 @@ void process_text(ostream& o, bool html, const string& charset, const DwString& 
 		start = 0;
 		while ((end = utf8.find('<', start)) != string::npos)
 		{
-			my_service_quote(o, utf8.c_str()+start, end-start, cfg);
+			my_service_process(o, utf8.c_str()+start, end-start, cfg);
 			start = utf8.find('>', end);
 			
 			if (start == string::npos) break;
@@ -357,11 +412,11 @@ void process_text(ostream& o, bool html, const string& charset, const DwString& 
 		
 		// deal with half-open tag at end of input
 		if (start != string::npos)
-			my_service_quote(o, utf8.c_str()+start, utf8.length()-start, cfg);
+			my_service_process(o, utf8.c_str()+start, utf8.length()-start, cfg);
 	}
 	else
 	{
-		my_service_quote(o, utf8.c_str(), utf8.length(), cfg);
+		my_service_process(o, utf8.c_str(), utf8.length(), cfg);
 	}
 }
 
