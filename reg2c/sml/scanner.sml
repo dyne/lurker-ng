@@ -12,14 +12,14 @@ val exp = case args of [] => E.Star E.Any
                      | (x::[]) => RE.toExpression (RE.fromString x)
                      | (x::l) => foldl andexp (RE.toExpression (RE.fromString x)) l
 
+val () = print "#include <stdlib.h>\n\n"
+
 val d = E.toDFA exp
 val () = print (DFA.toLongestMatchC ("longfn", d))
 
 val () = if DFA.accepts d (DFA.start d)
          then status "Warning: Regexp accepts the empty string; progressive scanning will hang.\n"
          else ()
-
-val () = print "#include <stdlib.h>\n\n"
 
 val star = E.Concat (exp, E.Star E.Any)
 val dstar = E.toDFA star
