@@ -33,7 +33,8 @@ val domain_lit = "\\[(" ^ ipv4 ^ ")\\]"
 
 (* RFC2822 does not require an alnum to start dot_atom, but works better  *)
 val FWS = "([ \t]*\r\n)?[ \t]+"
-val atext = "[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]"
+(* val atext = "[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]" *)
+val atext = "[a-zA-Z0-9!#$%&'*+/?^_`{|}~-]"
 val dot_atom = "[a-zA-Z0-9]" ^ atext ^ "*(\\." ^ atext ^ "+)*"
 val quoted_str = "\"(("^FWS^")?([^\000\t\n\r \\\"]|\\\\[^\000\n\r]))*("^FWS^")?\""
 
