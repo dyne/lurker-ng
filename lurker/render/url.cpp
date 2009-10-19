@@ -2,7 +2,7 @@ const char* find_url_end(const char* start, const char* end) {
 	const char* out = 0;
 	const char* c = start;
 	goto find_url_end_start;
-find_url_end_l0:
+//find_url_end_l0:
 	++c;
 find_url_end_start:
 	if (c == end) return out;
