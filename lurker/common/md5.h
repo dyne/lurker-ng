@@ -44,7 +44,7 @@
 
 #if UINT_MAX == 4294967295U
 typedef unsigned int UWORD32;
-#elif ULONG_MAX = 4294967295U
+#elif ULONG_MAX == 4294967295U
 typedef unsigned long UWORD32;
 #else
  #error "No 32 bit type"
