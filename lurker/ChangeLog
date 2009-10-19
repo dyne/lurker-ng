@@ -12,6 +12,9 @@ v2.2:
 	Include filename and line number in config error messages
 	Some previously global settings can now be overriden for frontends
 		admin_{name,address}, archive, {hide,raw}_email, web_cache
+	Added Galician language
+	Updated to autoconf 2.61 and automake 1.10.1
+	Made compatible to gcc-4.4
 
 v2.1:
 	lurker.cgi uses the environment to provide location information:
