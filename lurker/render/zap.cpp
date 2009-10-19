@@ -1,4 +1,4 @@
-/*  $Rev$
+/*  $Id$
  *  
  *  zap.cpp - Handle a zap/ command
  *  
