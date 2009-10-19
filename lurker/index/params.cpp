@@ -171,9 +171,11 @@ int main(int argc, char** argv)
 	
 	if (!fields || dbdir)         cout << cfg.dbdir           << "\n";
 	if (!fields || db_umask)
+	{
 		if (cfg.db_umask == -1) 
 		                      cout << "user"              << "\n";
 		else                  cout << "0" << oct << cfg.db_umask << "\n";
+	}
 	if (!fields || archive)       cout << cfg.archive(lc)     << "\n";
 	if (!fields || admin_name)    cout << cfg.admin_name(lc)  << "\n";
 	if (!fields || admin_address) cout << cfg.admin_address   << "\n";
