@@ -45,8 +45,8 @@ val hostname = "("^domainlabel^"\\.)*"^toplabel^"\\.?"
 (* %HH encoding in a domain is rejected by firefox ... so we do too *)
 (* val reg_name = "("^U^"|"^pct_encoded^"|"^S^")*" *)
 
-(* allow empty since we omit it in our 'hostname' rule *)
-val host = "(" ^ iplit ^ "|" ^ ipv4 ^ "|" ^ hostname ^ "|)"
+(* forbid empty, matching "ftp://" sucks *)
+val host = "(" ^ iplit ^ "|" ^ ipv4 ^ "|" ^ hostname ^ ")"
 
 
 (* RFC3986 and RFC1738 disagree about login format 
@@ -64,7 +64,7 @@ val userinfo = login ^ "(:" ^ pass ^ ")?"
 
 (* RFC3986 allows too much... *)
 (* val scheme = "[a-zA-Z][a-zA-Z0-9+.-]*" *)
-val scheme = "([hH][tT]{2}[pP][sS]?|[fF][tT][pP][sS]?|[fF][iI][lL][eE]|[nN][eE][wW][sS]|[iI][mM][aA][pP][sS]?)"
+val scheme = "([hH][tT]{2}[pP][sS]?|[fF][tT][pP][sS]?|[nN][eE][wW][sS]|[iI][mM][aA][pP][sS]?)"
 val authority = "(" ^ userinfo ^ "@)?" ^ host ^ "(:[0-9]*)?"
 
 val path = P^"*"
@@ -77,8 +77,9 @@ val hier_part = "(//" ^ authority ^ path_abempty ^ "|" ^
                         path_rootless ^ "|" ^
                         path_empty ^ ")"
 *)
-val hier_path = "//" ^ authority ^ "(/" ^ path ^ ")*"
-val url = scheme ^ ":" ^ hier_path (* query part later *)
+
+(* query part later *)
+val url = "([fF][iI][lL][eE]:///|" ^ scheme ^ "://" ^ authority ^ ")(/" ^ path ^ ")*" 
 
 (* We'd like to match a bit more ... *)
 val inline = "(" ^ userinfo ^ "@)?" ^
