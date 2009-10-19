@@ -19,6 +19,7 @@ v2.2:
 	Rebuilt getdate.y using bison 2.3
 	Switch from CVS to subversion
 	Place static web content into /usr/share/lurker/www not /var/www
+	Rewrote the markup regexps (linear-time and rfc-derived)
 
 v2.1:
 	lurker.cgi uses the environment to provide location information:
