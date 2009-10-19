@@ -1,5 +1,5 @@
-#define longfn	find_email_end
-#define scanner	find_email_starts
+#define longfn	find_url_end
+#define scanner	find_url_starts
 
 #include <string>
 #include <cstdio>
