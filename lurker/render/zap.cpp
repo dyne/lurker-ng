@@ -1,4 +1,4 @@
-/*  $Id: zap.cpp,v 1.6 2006-03-05 02:08:42 terpstra Exp $
+/*  $Rev$
  *  
  *  zap.cpp - Handle a zap/ command
  *  
