@@ -85,9 +85,9 @@ AC_ARG_WITH([default-config-dir],
             default_config_dir="\${sysconfdir}/\${PACKAGE}") 
 AC_ARG_WITH([default-www-dir],
             AC_HELP_STRING([--with-default-www-dir=DIR],
-                           [Where the lurker places bootstrap web files [default=LOCALSTATEDIR/www/lurker]]), 
+                           [Where the lurker places bootstrap web files [default=DATAROOTDIR/lurker/www]]), 
             default_www_dir="$withval", 
-            default_www_dir="\${localstatedir}/www/\${PACKAGE}") 
+            default_www_dir="\${datarootdir}/\${PACKAGE}/www") 
 AC_ARG_WITH([cgi-bin-dir],
             AC_HELP_STRING([--with-cgi-bin-dir=DIR],
                            [Where the lurker places cgi files [default=LIBDIR/cgi-bin]]), 

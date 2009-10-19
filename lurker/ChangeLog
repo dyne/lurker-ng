@@ -18,6 +18,7 @@ v2.2:
 	Add missing includes for cstdlib cstring
 	Rebuilt getdate.y using bison 2.3
 	Switch from CVS to subversion
+	Place static web content into /usr/share/lurker/www not /var/www
 
 v2.1:
 	lurker.cgi uses the environment to provide location information:

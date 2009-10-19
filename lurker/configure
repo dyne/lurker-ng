@@ -1319,7 +1319,7 @@ Optional Packages:
                           default=SYSCONFDIR/lurker
   --with-default-www-dir=DIR
                           Where the lurker places bootstrap web files
-                          default=LOCALSTATEDIR/www/lurker
+                          default=DATAROOTDIR/lurker/www
   --with-cgi-bin-dir=DIR  Where the lurker places cgi files
                           default=LIBDIR/cgi-bin
 
@@ -5601,7 +5601,7 @@ fi
 if test "${with_default_www_dir+set}" = set; then
   withval=$with_default_www_dir; default_www_dir="$withval"
 else
-  default_www_dir="\${localstatedir}/www/\${PACKAGE}"
+  default_www_dir="\${datarootdir}/\${PACKAGE}/www"
 fi
 
 
