@@ -40,6 +40,7 @@
 #include <cstring>
 #include <cerrno>
 #include <ctime>
+#include <cstdlib>
 
 #include "PTable.h"
 

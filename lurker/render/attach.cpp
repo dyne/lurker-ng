@@ -36,6 +36,7 @@
 #include "Summary.h"
 
 #include <iostream>
+#include <cstdlib>
 
 using std::cout;
 

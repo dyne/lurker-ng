@@ -33,6 +33,7 @@
 /* #define DEBUG */
 
 #include <cassert>
+#include <cstring>
 #include <iostream>
 
 namespace ESort

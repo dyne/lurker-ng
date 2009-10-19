@@ -28,6 +28,7 @@
 
 #include <ctime>
 #include <cstring>
+#include <cstdlib>
 
 int main()
 {

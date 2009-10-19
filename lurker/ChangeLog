@@ -15,6 +15,7 @@ v2.2:
 	Added Galician language
 	Updated to autoconf 2.61 and automake 1.10.1
 	Made compatible to gcc-4.4
+	Add missing includes for cstdlib cstring
 
 v2.1:
 	lurker.cgi uses the environment to provide location information:

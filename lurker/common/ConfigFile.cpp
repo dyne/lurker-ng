@@ -40,6 +40,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <cstring>
 
 using namespace std;
 

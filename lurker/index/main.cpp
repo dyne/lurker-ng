@@ -38,6 +38,7 @@
 #include <cstdio>
 #include <ctime>
 #include <cstdlib>
+#include <cstring>
 
 #include <sys/stat.h>
 #include <sys/types.h>

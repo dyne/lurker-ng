@@ -31,6 +31,8 @@
 #include <vector>
 
 #include <ctime>
+#include <cstdlib>
+#include <cstring>
 
 using std::set;
 

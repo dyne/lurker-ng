@@ -25,6 +25,7 @@
 #define _FILE_OFFSET_BITS 64
 
 #include <cstdio>
+#include <cstring>
 #include <string>
 
 #include "md5.h"

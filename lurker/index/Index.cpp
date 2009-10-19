@@ -41,6 +41,7 @@
 #include <CharsetEscape.h>
 #include <Keys.h>
 #include <md5.h>
+#include <cstdlib>
 
 #include "Index.h"
 #include "Summary.h"
