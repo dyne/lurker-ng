@@ -357,8 +357,7 @@ functor Automata(Alphabet : ALPHABET) :> AUTOMATA
                  testC (n, "\t", t, tail))
           in
             String.concat (
-              "char* " :: n :: "(const char* start, const char* end) {\n" ::
-              "\tchar* scratch = (char*)malloc(end - start);\n" ::
+              "char* " :: n :: "(const char* start, const char* end, char* scratch) {\n" ::
               "\tconst char* c = end;\n" ::
               "\tscratch += (end - start);\n" ::
               "\tgoto " :: n :: "_start;" ::

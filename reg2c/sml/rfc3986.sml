@@ -112,8 +112,6 @@ structure NFA = T.NonDeterministic
 structure E = T.Expression
 structure RE = T.RegularExpression
 
-val () = print "#include <stdlib.h>\n\n"
-
 (* not a standard! a good heuristic to stop before punctuation *)
 val fromStr = RE.toExpression o RE.fromString
 val exp = E.Intersect (fromStr regexp, fromStr ".*[a-zA-Z0-9/]")

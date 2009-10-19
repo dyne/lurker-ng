@@ -18,8 +18,6 @@ structure NFA = T.NonDeterministic
 structure E = T.Expression
 structure RE = T.RegularExpression
 
-val () = print "#include <stdlib.h>\n\n"
-
 val exp = (RE.toExpression o RE.fromString) regexp
 val () = print (DFA.toLongestMatchC ("find_art_end", E.toDFA exp))
 

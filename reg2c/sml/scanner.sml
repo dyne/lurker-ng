@@ -12,8 +12,6 @@ val exp = case args of [] => E.Star E.Any
                      | (x::[]) => RE.toExpression (RE.fromString x)
                      | (x::l) => foldl andexp (RE.toExpression (RE.fromString x)) l
 
-val () = print "#include <stdlib.h>\n\n"
-
 val d = E.toDFA exp
 val () = print (DFA.toLongestMatchC ("longfn", d))
 
