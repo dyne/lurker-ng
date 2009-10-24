@@ -8,6 +8,7 @@ Why do I get "opening database: Operation not supported" on MacOS?
 I run postfix and lurker doesn't import any new email; why?
 Why not store all the messages as XML instead of rendering them as it?
 How can I delete a mailing list?
+How is the "Activity" chart calculated for threads?
 
 ---
 
@@ -168,3 +169,12 @@ A: Bad  answer: 'lurker-search -c lurker.conf -d ml:listid -v'
    delete it's mailbox in the database directory, and run lurker-regenerate.
    Cross-posted messages will remain in the database, and you will recover
    your disk space.
+
+
+Q: How is the "Activity" chart calculated for threads?
+
+A: The bar chart shows how the messages in a thread are distributed through
+   time. The first bar corresponds to within one day. The second bar,
+   between 1 and 2 days. They are all scaled so the largest bar fits the
+   available space. Hence why the sum is also displayed as a scale
+   indication.
