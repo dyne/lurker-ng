@@ -125,6 +125,15 @@ div.messageBody {
   margin-top: 1em;
 }
 
+div.messageBody i.quote {
+  font-size: 95%;
+}
+
+div.messageBody pre {
+  font-family: monospace;
+  font-size: 125%;
+}
+
 /* opsbar = row of them */
 table.opsbar {
   width: 100%;
