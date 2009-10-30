@@ -2095,7 +2095,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=lurker
- VERSION=2.2
+ VERSION=2.3
 
 
 cat >>confdefs.h <<_ACEOF
