@@ -1,5 +1,5 @@
 (* A quoted paragraph consists of lines starting with "> " *)
-val regexp = "(\n([a-zA-Z]{0,4}[>|]+ |>)[^\n]*)+"
+val regexp = "(\n {0,2}([a-zA-Z]{0,4}[>|]+ |>)[^\n]*)+"
 
 structure T = Automata(Alphabet)
 structure DFA = T.Deterministic
