@@ -35,9 +35,19 @@ bool PTable::test_list(KSI ks)
 {
 	const string::size_type skip = sizeof("list"); // null is /
 	
-	string::size_type o = ks->first.find('.', skip);
+	/* We need to work around list-ids which contain a '.'
+	 * For legacy reasons there may be URLs with only a single '.'
+	 * We cannot support legacy URLs AND list-ids with '.', but that's ok.
+	 * Compromise: Strip last two '.'s -- or only last '.' if not two.
+	 */
+	string::size_type o = ks->first.rfind('.');
+	if (o != string::npos && o > skip)
+	{
+		string::size_type tmp = ks->first.rfind('.', o-1);
+		if (tmp != string::npos && tmp >= skip) o = tmp;
+	}
 	
-	return	o != string::npos &&
+	return	o != string::npos && o >= skip &&
 		cfg.lists.find(string(ks->first, skip, o-skip)) != cfg.lists.end();
 }
 
@@ -87,7 +97,14 @@ void PTable::calc_list(KSI ks)
 	}
 	
 	string query(ks->first, 5, string::npos);
-	string::size_type at = query.find('.');
+	string::size_type at = query.rfind('.');
+	
+	/* Same work-around as test_list */
+	if (at != string::npos && at > 0)
+	{
+		string::size_type tmp = ks->first.rfind('.', at-1);
+		if (tmp != string::npos) at = tmp;
+	}
 	
 	string listn(query, 0, at);
 	if (lists.find(listn) == lists.end())

@@ -20,6 +20,7 @@ v2.2:
 	Switch from CVS to subversion
 	Place static web content into /usr/share/lurker/www not /var/www
 	Rewrote the markup regexps (linear-time and rfc-derived)
+	Fix pruning for list-ids with a '.' in their name
 
 v2.1:
 	lurker.cgi uses the environment to provide location information:
