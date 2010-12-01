@@ -212,12 +212,12 @@ int main(int argc, char** argv)
 	
 	// Look for the matching front-end
 	frontend = "";
-	Config::Frontends::const_iterator i, e;
-	for (i = cfg.frontends.begin(), e = cfg.frontends.end(); i != e; ++i)
+	Config::Frontends::const_reverse_iterator i, e;
+	for (i = cfg.frontends.rbegin(), e = cfg.frontends.rend(); i != e; ++i)
 	{
 		// Either document IS the frontend path or it is a file
 		// contained in the frontend path.
-		if (i->first == document.substr(0, i->first.length()) ||
+		if (i->first == document ||
 		    i->first + "/" == document.substr(0, i->first.length()+1))
 		{
 			frontend = i->first;

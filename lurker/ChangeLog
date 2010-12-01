@@ -1,5 +1,6 @@
 v2.4:
 	Update to automake 1.11.1 and autoconf 2.67
+	Do not misidentify frontends which are prefixes of each other
 
 v2.3:
 	Bump the version since there are various 2.2 tarballs floating
