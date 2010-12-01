@@ -1,3 +1,6 @@
+v2.4:
+	Update to automake 1.11.1 and autoconf 2.67
+
 v2.3:
 	Bump the version since there are various 2.2 tarballs floating
 	around the web. Shame on me for not releasing sooner, I guess.
